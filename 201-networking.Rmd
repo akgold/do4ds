@@ -1,19 +1,52 @@
-# Networking and Security
+# How the Internet works
 
-Word List:
+## General Background on Networking
+* Computers communicate by sending packets from one to another
+* Those packets get routed over a network
+* Often frustratingly difficult
+* Built on layers of protocols
+* Physical Infrastructure -> TCP/IP -> HTTP/SSH
 
-Network
-TCP/HTTP/HTTPS
-SSL/TLS
-SSH
-Proxy
-DNS 
-Routing
-Public vs Private Networks
-VPN
-Firewall 
-IP Address
-Domain Name
-Subnets
-Ingress/Egress
-Ports and how they work
+-> Start with single server on the web, gradually build up more complicated <-
+
+### How do computers know where to find each other?
+[Diagram: Packet Routing]
+
+* The internet uses a set of protocols collectively known as TCP/IP -- they define how networked computers create and address packets, and then how those packets are sent, routed, and received.
+* When a computer joins a network, it gets an Internet Protocol (IP) address
+  * V4 vs V6
+* IP addresses are split up into "blocks" -- some reserved for particular uses
+* Routing generally occurs via DNS -- centralized servers that transform the usual human-friendly URLs we know into IP addresses.
+* Public IP addresses are paid -- you'll get one with your EC2 instance
+
+### What happens once they find each other?
+[Diagram: HTTP Request]
+
+* An "application layer" protocol kicks in. This is a protocol for sending actual content from one computer to another. 
+* For example, HTTP defines a client/server relationship where the client (your web browser) makes requests that the server fulfills. 
+  * Other protocols: e.g. websockets
+* Whether you are allowed to access a particular resource is about [Authentication and Authorization](#auth)
+
+# Networking for your data science servers
+## Network Topology
+[Diagram: Common Network Topology]
+
+* Most work occurs inside a VPC
+* IP addresses inside a VPC can be assigned as you wish
+  * Subject to CIDR block rules
+* Need translation between inside and outside -> proxy
+  * If being used for SSH access, usually called bastion
+* Proxies commonly used to serve as firewalls, network address translators, load-balancers 
+* Forward (outbound) proxy vs reverse (inbound) proxy
+* Private vs public subnets
+* Particular ports being "open"
+
+## I've heard HTTPS is a thing
+* Secured HTTP
+* End-to-end encryption using Transport Layer Security (TLS) or Secure Sockets Layer (SSL) HTTP over TLS/SSL
+* Getting and configuring an SSL certificate
+
+## Exercises
+1. Consider going to the website google.com. Draw a diagram of how the following are incorporated: TCP/IP, DNS, HTTP, HTTPS.
+
+TODO: More exercise
