@@ -1,9 +1,5 @@
 # DevOps for Data Science
 
-### Chapter numbering
-Use only evens for now
+This book is under development with CRC press.
 
-0X - Intro + Frontmatter
-2X - Content
-8X - End of Book Stuff
-9X - Appendices
+A rendered version is available via [github pages](https://akgold.github.io/do4ds/).
