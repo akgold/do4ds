@@ -1,8 +1,40 @@
 # Accessing Servers via Browser/HTTP {#auth}
 
+## Your Everyday Experience of Auth and How it Differs from Enterprise
+
+* You do auth all the time
+* Private auth -- login to your bank with a unique username and pw
+* MFA (2FA) -- get a text message or use an authenticator token 
+  * Or yubikey, etc
+* Public auth -- you might login to spotify using your facebook, apple, or google credentials
+  * Spotify is a Service Provider and the other side an Identity Provider
+
 ## How auth works
 1) Check who you are - Authentication
 2) Check whether you should have access - Authorization
+ 
+User goes to login:
+
+1) Make the user provide creds (username/password)
+2) System checks credentials against store
+3) (For SSO) Check if user is allowed to access resource
+4) Send back *something*
+5) User is authorized
+
+## Experiences of Different Auth Systems
+* For users 
+  * Do I have to authenticate to do X?
+  * Where do I authenticate?
+  * With which credentials? 
+ 
+* For Admins
+  * Am I transmitting user details, or just an authentication token/ticket?
+    * Security
+  * Can I easily manage access centrally?
+  * Can I keep credential stores centralized?
+  * How are users created (provisioned) and deprovisioned
+  * Do we have to maintain our own auth server?
+  
  
 Differences between auth types
 1) How is the communication done? Transmit text vs token (type/encryption)
@@ -10,33 +42,80 @@ Differences between auth types
 3) When is authorization checked? 
 4) How encrypted are things?
 
+What does SSO mean?
+* Most commonly used to mean login once and then authentication happens automatically for duration of session
+* Sometimes just used to mean that people use the same username and password across different systems
 
+## Auth Techniques
 
+* How to manage large groups of users with different permissions
 
-* Authentication vs Authorization
-* Private Auth Providers
+### Authorization: Groups, Roles, and Permissions
 
+* Groups: sets of users (e.g. `data-science`)
+* Roles: Role a user should have in the system (e.g. `admin`)
+* Permissions: things someone can do -- can be granted on the basis of membership in a group, role grants, or other attributes
+* Groups and roles are maintained in the central user store
+ 
 
+### Service Accounts
 
-* Public auth providers
+* Often used in contexts where a service is accessing something on behalf of itself
+  * e.g. an app accessing a database on behalf of any user who can access the app
+  
+### Whole-Server Auth (TODO: What is this really called?)
 
-Authentication
-Authorization
+* Often done inside private networks -- instead of providing auth on a per-user/session basis, just allow an entire server access to another
+* e.g. any connection to the database by server A is allowed
 
-PAM/SSSD
-Linux
-LDAP
-AD
-SSO
-SAML
-OAuth2.0
-OIDC
-Kerberos
-In-Product/External
-Service Accounts
-Whole-Server Auth
+## Auth Technologies: Username + Password Systems
+
+### System
+
+* Create user accounts within a given system (e.g. within a produdct, on a server)
+* Have people use those accounts for just that system
+* People need  way more usernames/passwords
+* Hard to provision/deprovision users system-wide
+
+### LDAP/AD
+
+* Lightweight Directory Access Protocol (LDAP) is a relatively old, open, protocol used for doing auth
+* Active Directory (AD) is Microsoft's implementation of LDAP -- huge enterprise install base
+* Confusingly, Azure Active Directory is Microsoft Azure's Cloud Based Identity Management as a Service -- it is most often configured to use a different authentication technology (SAML), not LDAP
+* Considered insecure/outdated by many IT groups
+  * Requires actually submitting credentials through the requester system
+  * No ability to centralize authentication
+  * No seamless SSO experience
+
+## Auth Tech: Token/Ticket Based Systems
+
+* World moving this direction
+
+### Kerberos Tickets
+
+* An old technology, but still considered very secure - server to server transit of token
+* Microsoft-based and integrates tightly with AD
+* Used frequently to make connections to databases
+* Can also be used to establish an SSO experience
+
+### SAML
+
+* The most common type of true SSO for enterprises
+* Login once to a central IdP and an identity token gets stored in web browser
+* Go to a new service, and the identity token requests a service token to use the service
+* XML-based
+* Relatively new -- many enterprises switching to this from LDAP/AD (Azure AD)
+
+### OIDC/OAuth2.0
+
+* Based on JSON Web Tokens (JWT, often pronounced "Jot" b/c reasons...)
+* Technically OIDC is an authentication standard and OAuth an authorization
+* You'll sometimes see e.g. SAML auth + OAuth being used for db access
+* Very similar to SAML from the user perspective
+* More common in external services, SAML often preferred inside enterprises
 
 Resources:
 https://www.okta.com/identity-101/saml-vs-oauth/
 https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/
 https://phoenixnap.com/blog/kerberos-authentication
+https://www.dnsstuff.com/rbac-vs-abac-access-control 
