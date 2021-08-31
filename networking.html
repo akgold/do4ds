@@ -4,11 +4,11 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 1 Introduction | DevOps for Data Science (working title)</title>
+  <title>Chapter 4 Networking and the Internet | DevOps for Data Science (working title)</title>
   <meta name="description" content="A book on DevOps for data science and data scientists." />
   <meta name="generator" content="bookdown 0.23 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 1 Introduction | DevOps for Data Science (working title)" />
+  <meta property="og:title" content="Chapter 4 Networking and the Internet | DevOps for Data Science (working title)" />
   <meta property="og:type" content="book" />
   
   
@@ -16,7 +16,7 @@
   <meta name="github-repo" content="akgold/dv4ds" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 1 Introduction | DevOps for Data Science (working title)" />
+  <meta name="twitter:title" content="Chapter 4 Networking and the Internet | DevOps for Data Science (working title)" />
   
   <meta name="twitter:description" content="A book on DevOps for data science and data scientists." />
   
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="about-the-author.html"/>
-<link rel="next" href="command-line.html"/>
+<link rel="prev" href="computers-and-servers.html"/>
+<link rel="next" href="the-cloud.html"/>
 <script src="libs/jquery/jquery-3.6.0.min.js"></script>
 <link href="libs/gitbook/css/style.css" rel="stylesheet" />
 <link href="libs/gitbook/css/plugin-table.css" rel="stylesheet" />
@@ -283,45 +283,106 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="introduction" class="section level1">
-<h1><span class="header-section-number">Chapter 1</span> Introduction</h1>
-<p>One of the most frequent questions from data scientists is, “how do I ask my IT team for that?” Hopefully, reading this book will help you learn how to ask, or even to DIY.</p>
-<p>Getting work off your laptop often starts with deployment, but increasingly organizations are also doing data science development in centralized data science platforms.</p>
-<p>Encompasses parts of DevOps, MLOps, DataOps.</p>
-<p>If you’re in an environment where you just do data science on your laptop, you probably don’t really need this book. You might find the sections on the command line and on data access interesting, but most of this book will be geared towards server-based data science – whether that’s working in a browser-based data science IDE or trying to deploy data science assets to a server.</p>
-<div id="components" class="section level2">
-<h2><span class="header-section-number">1.1</span> Components</h2>
+<div id="networking" class="section level1">
+<h1><span class="header-section-number">Chapter 4</span> Networking and the Internet</h1>
+<p>Computers communicate with each other via networking. Generally, networking refers to the rules and protocols computers use to find and communicate with one another.</p>
+<p>Before we get into how you can do networking, a little background on what goes over the network. Computers communicate with each other on a call-and-response model. If I want to go to a website, check my bank account, send a chat message, or watch a movie on Netflix, my computer sends a request off to another computer (a server in most cases) and awaits a response.</p>
+<p>The way computer networks work is reasonably similar to the way physical mail works. When you ask your computer to do something over a network, it turns that request into one or more packets. A packet has a header that includes the address it’s going to along with details about the packet itself. Due to some cool information theory, it turns out that it works better to take large payloads, split them up into smaller payloads, and send each packet off independently. The header of each packet includes the destination address, as well as information about how to reconstruct the payloads on the other end.</p>
+<p>There are a number of different sets of rules and protocols in play here that range from the physical interconnections of the wires along the way. There are two really layers that are particularly important to understand from the perspective of a data scientist working on a server.</p>
+<p><img src="images/req_resp.jpeg" /></p>
+<p>The important layers to understand correspond to how to read what’s on the outside of the packet, and what’s on the inside.</p>
+<p>The first part of this chapter is some general information on how computer networks function. The latter part is about how networks tend to be configured in enterprise settings and how you can go about setting up your own network.</p>
+<div id="tcpip-how-packets-find-their-way" class="section level2">
+<h2><span class="header-section-number">4.1</span> TCP/IP: How packets find their way</h2>
+<p>TCP/IP is a set of protocols that collectively define how networked computers create and address packets, and how those packets are routed and reconstructed when they get where they’re going.</p>
+<p>You’ve probably heard of IP in the context of an IP address. When a computer joins a network, it is given an IP address. An IP address is a number, unique within any given network, that determines where a given computer is.</p>
+<p>As the internet has gotten more and more computers on it, it turns out that we’re running out of IP addresses. Currently, you will see both the old type of IP addresses, called IPv4 and the new type, IPv6, in use. There are <em>only</em> about 4.3 billion IPv4 addresses, which it turns out isn’t that much in the modern world, especially as large blocks of those addresses are reserved and are not available for public use. In constrast, the number of IPv6 addresses is 39 digits long.</p>
+<p>This is mostly just trivia, expect that in your every day life working with servers, you’ll see a lot of IP addresses, and it’s important to know what they look like. Each block has a particular meaning, which isn’t super important for our purposes.</p>
+<blockquote>
+<p>IPv4 address - four blocks of 8-bit fields (integers up to 256): 0.0.0.0 to 255.255.255.255</p>
+<p>IPV6 address example: eight blocks of hexadecimal (0-9 + a-f) digits separated by colons, with certain rules about dropping multiple zeroes and using colons to denote successive zeroes - <em>2001:0db8:85a3:0000:0000:8a2e:0370:7334</em> or <em>2001:db8::</em></p>
+</blockquote>
+<p>But for the most part, we don’t interact with IP addresses. We’re much more used to seeing the locations of web sites defined in terms of a URL like google.com. When you type a URL into your web browser, your computer sends a request off to a specialized phonebook server calls a DNS (Domain Name System) server. The DNS server translates the URL you typed into an IP address to actually locate the server.</p>
+<p>The way DNS actually works is complicated, but one of the most important things to know is that it’s kinda a pain. If you’re trying to set up a server at an actual URL, you’ll need to register a domain name and get it associated with your server. This takes time – they say as much as 24-48 hours for DNS changes to propagate through the public servers that every computer connected to the internet might reach.</p>
+<p>In order to avoid having to constantly reach out to DNS servers, your computer keeps a DNS cache locally. As you’re working on servers, you may find that something suddenly becomes unreachable. A great first troubleshooting step is always to try using an incognito window as it will ignore your DNS cache and reach out to the DNS server afresh.</p>
+</div>
+<div id="ports-the-last-mile" class="section level2">
+<h2><span class="header-section-number">4.2</span> Ports: The last mile</h2>
+<p>Once a packet gets to the right server, it needs to actually walk through the door. The doors on an individual server are called <em>ports</em>. Each IP address has over 65,000 ports available, but many of those are reserved for special purposes. There’s a cheatsheet of a few you’ll learn pretty quickly at the end of the chapter.</p>
+<p>Each port can be bound to exactly one running process and can be open or closed. That means that providing a service to other computers on a network is a three step process – get the service up and running, bind it to a particular port, and make sure the port is accepting incoming traffic.</p>
+<p>The last step – checking that the port is open – is a common time-waster for people new to DevOps. Checking that your port is listening is the unplug it and plug it back in of networking configuration.</p>
+<p>Note that outbound communication also requires using a port. This isn’t something you have to think about much because your computer will automatically choose a random available port and keep it open for the duration of the network traffic.</p>
+</div>
+<div id="application-protocols-reading-the-mail" class="section level2">
+<h2><span class="header-section-number">4.3</span> Application Protocols: Reading the mail</h2>
+<p>So, your packet request has made it to the server on the other end, found the right port, and made it to the listening service. Time to open the envelope. What’s inside?</p>
+<p>This is where the <em>application layer protocol</em> kicks in. The application layer protocol defines how the server should understand the request that was sent and what are legitimate things to send back. There are many application layer protocols for everything from file transfers to email traffic, checking user permissions to database access.</p>
+<p>There are a few particular application protocols that come up quite often for the working data scientist:</p>
 <ul>
-<li>Workbench</li>
-<li>Package Management</li>
-<li>Change Control (git)</li>
-<li>Deployment Environment</li>
-<li>Front End vs Back End</li>
-<li>Data Ingest/Access</li>
-<li>Determining Requirements for your platform</li>
-<li>Platform requirements combination of</li>
-<li>Work being done on the platform</li>
-<li>Data Science needs (i.e. horsepower)</li>
-<li>Existing state of org’s data</li>
-<li>Type of work data scientists might do</li>
-<li>Batch Jobs</li>
-<li>ETL</li>
-<li>Reports</li>
-<li>Data Generation</li>
-<li>Real-Time Interactive</li>
-<li>Models</li>
-<li>APIs</li>
-<li>Apps</li>
-<li>Data Science + IT Needs</li>
-<li>Languages (R, Python, SQL)</li>
-<li>Sharing – internal, external</li>
-<li>Online or offline?</li>
-<li>Data Security – row based access?</li>
-<li>Centralized workbench vs individual workstations</li>
-<li>Existing Assets</li>
-<li>BI/Analytics Platforms</li>
-<li>Data Connections</li>
+<li><p><strong>HTTP</strong> is how you look at websites in a web browser. To be slightly more technical, defines a client/server relationship where the client makes requests that the server fulfills.</p></li>
+<li><p><strong>FTP/SFTP</strong> is a protocol for transferring files directly from one computer to another.</p></li>
+<li><p><strong>SSH</strong> is a protocol for securely accessing a remote computer over a network. It’s important enough for data scientists that there’s a <a href="ssh.html#ssh">whole chapter</a> on it.</p></li>
+<li><p><strong>Websockets</strong> are a protocol for doing interactivity with a website. Many popular R and Python web frameworks use websockets, including the Shiny R package and the Streamlit Python package.</p></li>
 </ul>
+<div id="http-and-https" class="section level3">
+<h3><span class="header-section-number">4.3.1</span> HTTP and HTTPs</h3>
+<p>HTTP is a particularly important protocol to understand because it forms the basis for most of the way we interact with the internet. As a data scientist, you also may need to interact directly with HTTP traffic making API calls or writing your own API to serve data science results to others.</p>
+<ul>
+<li><p>Secured HTTP</p></li>
+<li><p>End-to-end encryption using Transport Layer Security (TLS) or Secure Sockets Layer (SSL) HTTP over TLS/SSL</p></li>
+<li><p>Getting and configuring an SSL certificate</p></li>
+</ul>
+</div>
+</div>
+<div id="networking-for-your-data-science-servers" class="section level2">
+<h2><span class="header-section-number">4.4</span> Networking for your data science servers</h2>
+<p><img src="images/VPN_proxy.jpeg" width="364" /></p>
+<p>The biggest and best known of computer networks is the internet. But at its core, the internet is just another computer network, so the same principles apply to both public and private networks.</p>
+<p>For the most part,</p>
+<p>[Diagram: Common Network Topology]</p>
+<ul>
+<li><p>Most work occurs inside a VPC</p></li>
+<li><p>IP addresses inside a VPC can be assigned as you wish</p>
+<ul>
+<li>Subject to CIDR block rules</li>
+</ul></li>
+<li><p>Need translation between inside and outside -&gt; proxy</p>
+<ul>
+<li>If being used for SSH access, usually called bastion</li>
+</ul></li>
+<li><p>Proxies commonly used to serve as firewalls, network address translators, load-balancers</p></li>
+<li><p>Forward (outbound) proxy vs reverse (inbound) proxy</p></li>
+<li><p>Private vs public subnets</p></li>
+<li><p>Particular ports being “open”</p></li>
+</ul>
+</div>
+<div id="special-ip-addresses-and-ports" class="section level2">
+<h2><span class="header-section-number">4.5</span> Special IP Addresses and Ports</h2>
+<p>127.0.0.1 - localhost</p>
+<p>0.0.0.0 - unspecified</p>
+<p>All ports below 1024 reserved.</p>
+<p>80 - HTTP default</p>
+<p>443 - HTTPS default</p>
+<p>22 - SSH default</p>
+</div>
+<div id="special-https-codes" class="section level2">
+<h2><span class="header-section-number">4.6</span> Special HTTP(S) Codes</h2>
+<p>200</p>
+<p>404</p>
+<p>403</p>
+</div>
+<div id="exercises-1" class="section level2">
+<h2><span class="header-section-number">4.7</span> Exercises</h2>
+<ol style="list-style-type: decimal">
+<li><p>Consider going to the website google.com. Draw a diagram of how the following are incorporated: TCP/IP, DNS, HTTP, HTTPS.</p></li>
+<li><p>Set up a free-tier EC2 instance and put an NGINX server up. Figure out how to allow your computer to access the server, but not your phone. Try accessing it on a non-default port.</p></li>
+<li><p>Try to HTTP into a fresh EC2 with the default security group. Take a look at the inbound security group rules. <em>Hint: is there an inbound rule on a default HTTP port?</em></p></li>
+<li><p>SSH into your EC2 instance and try to reach out to something on the internet (curl…). See if you can change security group rules to shut down access.</p>
+<ol style="list-style-type: decimal">
+<li><p>Can you do it by changing the IP address range it’s accepting connections from?</p></li>
+<li><p>Can you do it by changing the listening ports?</p></li>
+</ol></li>
+</ol>
 
 </div>
 </div>
@@ -330,8 +391,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           </div>
         </div>
       </div>
-<a href="about-the-author.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="command-line.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="computers-and-servers.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="the-cloud.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook/js/app.min.js"></script>
@@ -363,7 +424,7 @@ gitbook.start({
 "size": 2
 },
 "edit": {
-"link": "https://github.com/akgold/do4ds/edit/main/100-introduction.Rmd",
+"link": "https://github.com/akgold/do4ds/edit/main/201-networking.Rmd",
 "text": "Edit"
 },
 "history": {
