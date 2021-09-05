@@ -4,9 +4,7 @@ editor_options:
     wrap: 72
 ---
 
-# Authentication -- Making Login Possible {#auth}
-
-## Your Everyday Experience of Auth and How it Differs from Enterprise
+# How login works {#auth}
 
 -   You do auth all the time
 
@@ -22,90 +20,200 @@ editor_options:
     -   Spotify is a Service Provider and the other side an Identity
         Provider
 
-## What is Authentication?
+For the most part, this chapter is designed to help you talk to the
+folks who manage auth at your organization. Unless you've got a small
+organization with only a few data scientists, you probably won't have to
+manage this yourself. But it can be extremely helpful to understand how
+auth works when you're trying to ask for something from the
+organization's admins.
 
-1)  Check who you are - Authentication
-2)  Check whether you should have access - Authorization
+In order to talk concretely about logging into systems, it's helpful to
+clarify some terms. For the most part, these terms are industry
+standard, but I'm also going to generalize some terms because they're
+used for certain types of auth, and they're really useful.
 
-User goes to login:
+For the purposes of this document, we're going to be talking about
+trying to login to a **service**. A service is something you want to
+login to -- it could be your phone or your email, or a server, a
+database, or software like RStudio Server or JupyterHub.
+
+When you go to login to a service, there are two things that have to
+happen. First, you have to assert and verify who you are. This process
+is called **authentication**, and the assertion and proof of identity
+are your **credentials** or **creds**. The most common credentials are a
+username and password, but there are other options including SSH keys,
+multi-factor authentication, or biometrics.
+
+Once you've proven who you are, then the system needs to determine what
+you're supposed to have access to. This process is called
+**authorization.**
+
+Often, the authentication + authorization process is referred to
+collectively as **auth**.
+
+[\#TODO: Image of Auth
 
 1)  Make the user provide creds (username/password)
 2)  System checks credentials against store
 3)  (For SSO) Check if user is allowed to access resource
 4)  Send back *something*
-5)  User is authorized
+5)  User is authorized]
 
-## Experiences of Different Auth Systems
+So, to summarize when you go to login to a service, the service reaches
+out to some sort of system to verify your identity. Depending on the
+method, it may also check your authorization. The name of that system
+varies by the auth method, but for the purposes of this chapter, we'll
+refer to it generally as the identity store. Depending on the auth
+method, the identity store may store just authentication records, or
+both authentication and authorization.
 
--   For users
+## The many flavors of auth (or what does SSO mean?)
 
-    -   Do I have to authenticate to do X?
-    -   Where do I authenticate?
-    -   With which credentials?
+Single Sign On (SSO) is a slippery term, so it is almost always
+necessary to clarify what is meant by the term when you hear it. At some
+organizations, identity management isn't centralized at all. This means
+that usernames and passwords are unique to each service, onboarding and
+offboarding of users has to be handled independently for each service,
+and users have to login frequently. In short, it's often not a great
+system. This is never referred to as SSO.
 
--   For Admins
+![](images/206-auth/sso.jpeg){width="479"}
 
-    -   Am I transmitting user details, or just an authentication
-        token/ticket?
+Most organizations of a meaningful size have centralized identity
+management. This means that identities, credentials, authorization,
+onboarding, and offboarding are handled centrally. However, you may
+still need to independently login to each system. For example, in this
+system, every service might take the same username and password as your
+credentials, but if you go to RStudio Server followed by JupyterHub,
+you'll need to provide that username and password independently to each
+service. This system is often facilitated by PAM, and LDAP/AD. Some
+organizations call this SSO, because there's only one set of
+credentials.
 
-        -   Security
+In true SSO, users login once and are given a token or
+ticket.[^browser_auth-1] Then, when they go to the next service, they
+don't have to login again because that service can just look at the
+token or ticket to do auth for that user. For example, in this system, I
+could go to RStudio Server and login, and then go to JupyterHub and get
+in without being prompted again for my password. This type of auth is
+facilitated by Kerberos, SAML, or OAuth.
 
-    -   Can I easily manage access centrally?
-
-    -   Can I keep credential stores centralized?
-
-    -   How are users created (provisioned) and deprovisioned
-
-    -   Do we have to maintain our own auth server?
-
-Differences between auth types 1) How is the communication done?
-Transmit text vs token (type/encryption) 2) When is the identity
-checked? Once, every time 3) When is authorization checked? 4) How
-encrypted are things?
-
-What does SSO mean? \* Most commonly used to mean login once and then
-authentication happens automatically for duration of session \*
-Sometimes just used to mean that people use the same username and
-password across different systems
-
-## Types of Credentials
-
-### Usernames and Passwords
-
-### Keys
-
-### Tokens
-
-### More Factors
+[^browser_auth-1]: Depending on the system, this token or ticket can
+    live in various places.
 
 ## Auth Techniques
 
-There are two main cont
+If you have five data scientists in your group, and the only shared
+resource you have is an RStudio Server instance, you probably don't need
+to think terribly hard about auth. It's pretty straightforward to just
+make users on a server and give them access to everything.
 
--   How to manage large groups of users with different permissions
+But as organizations get larger with hundreds or thousands of users,
+there's constant churn of people joining and leaving. The number of
+services can creep into the dozens or hundreds and people may have very
+different authorization levels to different services. Trying to manage
+auth on the individual services is a nightmare -- as is trying to keep
+that many usernames and passwords straight for users. That is why almost
+all organizations with more than a few users have centrally managed
+auth.
 
-### Authorization: Groups, Roles, and Permissions
+### You get a permission and you get a permission!
 
--   Groups: sets of users (e.g. `data-science`)
--   Roles: Role a user should have in the system (e.g. `admin`)
--   Permissions: things someone can do -- can be granted on the basis of
-    membership in a group, role grants, or other attributes
--   Groups and roles are maintained in the central user store
+For the most part, we think of people being authenticated and authorized
+into services. However, it's sometimes useful to consider the broader
+class of entities that could do auth. There are two common non-human
+entities that are included in auth systems that are worth considering.
 
-### Service Accounts
+**Service Accounts** are accounts given to non-human entities when you
+want it to be able to do something on its own behalf. For example, maybe
+you've got a Shiny app that users use to visualize data that's in a
+database. Very often, you don't want the app to have the same permisions
+as the app's author, or to inherit the permissions of the people viewing
+the app. Instead, you want the app to be able to have permissions to do
+certain database operations. In that case, you would create a service
+account to give to the Shiny app that has exactly those permissions.
 
--   Often used in contexts where a service is accessing something on
-    behalf of itself
+There are also times where it's useful to go one level up and give
+permissions to an entire instance or service. In that case, you might
+assign permissions to an instance. For example, you could make it the
+case that anyone who is logged into the JupyterHub server is allowed to
+read from the database.
 
-    -   e.g. an app accessing a database on behalf of any user who can
-        access the app
+Instance permissions are rather broad, and so they are usually only
+applied when you've got multiple resources inside a private network. In
+that case, authentication and authorization are only done at a single
+point and authorization is pretty broad.
 
-### Instance Permissions
+### Authorization is kinda hard
 
--   Often done inside private networks -- instead of providing auth on a
-    per-user/session basis, just allow an entire server access to
-    another
--   e.g. any connection to the database by server A is allowed
+From a management perspective, authentication is pretty simple. A person
+is given a set of credentials, and they have to supply those credentials
+when prompted to prove they are who they say they are.
+
+Authorization is a whole other can of worms. There is a meaningful
+literature on varieties of authorization and how they work. We're not
+going to get too deep into the weeds, other than to define some common
+terms and how they're used.
+
+The atomic basis for authorization is a **permission**. Permissions are
+a binary switch that answers the question *is this person allowed to do
+the thing they are trying to do?*[^browser_auth-2]
+
+[^browser_auth-2]: As we'll see in a second, permissions can actually
+    belong to entities other than people...but that's a little
+    complicated for the moment.
+
+The simplest way of assigning permissions is called an **access control
+list** (ACL). In systems that use ACLs, each piece of content has a list
+of users who are allowed access. Sometimes, ACLs are also assigned to
+groups, which are simply sets of users -- think `data-scientists`.
+
+![](images/206-auth/acls.jpeg){width="572"}
+
+One ACL implementation with which you may be familiar is file
+permissions on a Linux server. For example, if you have a Mac or are on
+a Linux server, you can open your terminal, navigate to a directory and
+do the following:
+
+```{bash, eval = FALSE}
+$ ls -l
+-rwxr-xr-x   1 alexkgold  staff   2274 May 10 12:09 README.md
+```
+
+That first set of characters describes the ACL for the `README.md` file.
+The first character `-` indicates this is a file, as opposed to a
+directory of files (which would be `d`). Then there are three sets of 3
+characters, `rwx`, which are short for `read`, `write`, and `execute`,
+with the first group for the owner, `alexkgold`, the second group for
+anyone else in the group `staff`, and the third set for anyone else.
+
+So you can read `-rwxr-xr-x` as, *this is a file that `alexkgold` can
+read, write or execute, and anyone else can read or execute, but not
+edit*.
+
+ACLs are pretty intuitive, but it turns out that when you are managing a
+lot of users across a lot of files, directories, and services, they can
+get pretty difficult to manage, so many organizations use Role Based
+Access Control (RBAC).
+
+RBAC adds a layer of abstraction between users and permissions, which
+makes it a little harder to understand, but ultimately results in a much
+more flexible system. In RBAC, permissions are not assigned to
+individual pieces of content or to users or groups. Instead, permissions
+are assigned to *roles*, and roles are given to users or
+groups.[^browser_auth-3]
+
+[^browser_auth-3]: If you think about this for a minute, it may occur to
+    you "isn't RBAC basically the same as doing ACLs at the group
+    level?" Yes, yes it is, but it can be helpful to have groups and
+    roles be separated, even if there's a 1-1 mapping.
+
+![](images/206-auth/rbac.jpeg){width="562"}
+
+There are also further iterations on the RBAC model, like Attribute
+Based Access Control (ABAC) or Policy Based Access Control (PBAC) in
+which there's a long list of attributes that could be considered for a
+user to compute their permissions for a given service.
 
 ## Auth Technologies
 
@@ -128,6 +236,30 @@ For this reason, most IT/Admin organizations strongly prefer using some
 sort of centralized identity store.
 
 ### PAM
+
+Pluggable Authentication Modules (PAM) is a Linux system for doing
+authentication. As of this writing, PAM is the default authentication
+method for both RStudio Server and JupyterHub.
+
+![](images/206-auth/auth-pam.jpeg){width="539"}
+
+Conceptually PAM is pretty straightforward. You install a service on a
+Linux machine and configure it to use PAM authentication from the
+underlying host. By default, PAM just authenticates against the users
+configured on the Linux server, but it can also be configured to use
+other sorts of "modules" to authenticate against other systems -- most
+commonly LDAP/AD or Kerberos. PAM can also be used to do things when
+users login -- the most common being initializing tokens or tickets to
+other systems, like a database.
+
+PAM is often paired with **System Security Services Daemon (**SSSD),
+which is most commonly used to automatically create Linux users on a
+server based on the identities stored in an LDAP/AD instance.
+
+Though conceptually simple, reading, writing, and managing PAM modules
+is kinda painful.
+
+\#TODO: Add PAM example
 
 ### LDAP/AD
 
@@ -196,7 +328,7 @@ try to login to a service, the service collects your username and
 password, sends it off to the LDAP server, and checks that your username
 and password are valid.
 
-![](images/206-auth/ldap-diagram.jpeg){width="564"}
+![](images/206-auth/auth-ldap.jpeg){width="564"}
 
 Note that LDAP is purely for authentication. When you're using LDAP,
 authorization has to be handled separately, which is one of the
@@ -429,11 +561,43 @@ result: 0 Success
 
 ### Kerberos Tickets
 
--   An old technology, but still considered very secure - server to
-    server transit of token
--   Microsoft-based and integrates tightly with AD
--   Used frequently to make connections to databases
--   Can also be used to establish an SSO experience
+Kerberos is a relatively old ticket-based auth technology. In Kerberos,
+encrypted tickets are passed around between servers. Because these
+tickets live entirely on servers under the control of the organization,
+they are generally quite secure.
+
+Though Kerberos is freely available, it was widely adopted along with
+Active Directory, and it's used almost exclusively in places that are
+running a lot of Microsoft products. A frequent use of Kerberos tickets
+is to establish database connections.
+
+Because the tickets are passed around from server to server, Kerberos
+can be used to create a true SSO experience for users.
+
+#### How Kerberos Works
+
+All of Kerberos works by sending information to and from the central
+*Kerberos Domain Controller* (KDC)*.* In Kerberos, authentication and
+authorization are handled independently.
+
+When a Kerberos session is initialized, the service sends the users
+credentials off to the KDC and requests something called the Ticket
+Granting Ticket (TGT) from the KDC. TGTs have a set expiration period.
+When they expire, the client has to request an updated TGT. This is one
+reason why Kerberos is considered quite secure - even if someone managed
+to steal a TGT, they'd only be able to use it for a little while before
+it went stale and could be revoked.
+
+When the user wants to actually do something, they send the TGT back to
+the KDC again and get a *session key* (sometimes referred to as a
+*service ticket*) that allows access to the service, usually with a
+specified expiration period.
+
+![](images/206-auth/auth-kerberos.jpeg){width="553"}
+
+#### Try out Kerberos
+
+\#TODO
 
 ### SAML
 
@@ -446,6 +610,8 @@ result: 0 Success
 -   Relatively new -- many enterprises switching to this from LDAP/AD
     (Azure AD)
 
+![](images/206-auth/auth-saml.jpeg){width="551"}
+
 ### OIDC/OAuth2.0
 
 -   Based on JSON Web Tokens (JWT, often pronounced "Jot" b/c
@@ -456,6 +622,8 @@ result: 0 Success
 -   Very similar to SAML from the user perspective
 -   More common in external services, SAML often preferred inside
     enterprises
+
+![](images/206-auth/auth-oauth.jpeg)
 
 Resources: <https://www.okta.com/identity-101/saml-vs-oauth/>
 <https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/>
