@@ -465,7 +465,7 @@ docker run -p 6443:443 \
 
 dn for admin `cn=admin,dc=example,dc=org` pw: `admin`
 
-https://localhost:6443
+<https://localhost:6443>
 
 ```{bash, eval = FALSE}
 # Replace with valid license
@@ -601,29 +601,127 @@ specified expiration period.
 
 ### SAML
 
--   The most common type of true SSO for enterprises
--   Login once to a central IdP and an identity token gets stored in web
-    browser
--   Go to a new service, and the identity token requests a service token
-    to use the service
--   XML-based
--   Relatively new -- many enterprises switching to this from LDAP/AD
-    (Azure AD)
+These days Security Assertion Markup Language (SAML) is probably the
+most common system that provides true SSO -- including single login and
+centrally-managed permissions. SAML does this by passing around XML
+tokens.[^browser_auth-4]
+
+[^browser_auth-4]: XML is a markup language, much like HTML. The good
+    thing about XML is that it's very flexible. The bad thing is that
+    it's relatively hard for a human to easily read.
+
+The way this generally works is that a user attempts to login to a
+*Service Provider* (SP). The SP redirects the user to an Identity
+Provider (IdP), which checks either for a preexisting token in the users
+browser, or verifies the users credentials. The IdP checks for the
+user's authorization to access the SP in question, and sends an
+authorization token back to the SP.
 
 ![](images/206-auth/auth-saml.jpeg){width="551"}
 
+Relative to LDAP/AD, which is from the early 1990s, SAML is a new kid on
+the block. SAML 1.0 was introduced in 2002, and SAML 2.0, which is the
+current standard, came out in 2005. Many large enterprises are switching
+their systems over to use SAML or have already done so.
+
+One superpower of SAML IdPs is that many of them can *federate* identity
+management to other systems. So, it's pretty common for large
+enterprises to maintain their user base in one or more LDAP/AD system,
+but actually use a SAML IdP to do authentication and authorization. In
+fact, this is what Azure Active Directory (AAD), which is Microsoft
+Azure's hosted authentication offering does. It is possible to use
+LDAP/AD with AAD, but most organizations use it with SAML.
+
+One of the nice things about SAML is that credentials are never shared
+directly with the SP. This is one of the ways in which SAML is
+fundamentally more secure than LDAP/AD -- the users credentials are only
+ever shared with the IdP.
+
+There are two different ways logins can occur -- starting from the SP,
+or starting from the IdP.
+
+In SAML, the XML tokens that are passed back and forth are called
+assertions.
+
+#### Try SAML
+
+We're going to use a simple SAML IdP to try out SAML a bit. This
+container only supports a single SP. Any IdP that might be used in an
+enterprise environment is going to support many SPs simultaneously.
+
+Let's go through the environment variables we're providing to this
+`docker run` command. We're providing three different arguments:
+
+-   The `SP_ENTITY_ID` is the URL of the
+
+-   `SP_ASSERTION_CONSUMER_SERVICE` is the URL of the SP that is
+    prepared to receive the authorized responses coming back from the
+    SAML IdP.
+
+-   `SP_SINGLE_LOGOUT_SERVICE` is the URL where the SP will receive a
+    logout command once someone has been logged out at the IdP level.
+    Many SPs do not implement single logout.
+
+```{bash, eval=FALSE}
+docker run --name=saml_idp \
+-p 8080:8080 \
+-p 8443:8443 \
+-e SIMPLESAMLPHP_SP_ENTITY_ID=http://app.example.com \
+-e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp \
+-e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp \
+-d alexkgold/auth
+```
+
+<http://localhost:8080/simplesaml>
+
+admin/secret
+
 ### OIDC/OAuth2.0
 
--   Based on JSON Web Tokens (JWT, often pronounced "Jot" b/c
-    reasons...)
--   Technically OIDC is an authentication standard and OAuth an
-    authorization
--   You'll sometimes see e.g. SAML auth + OAuth being used for db access
--   Very similar to SAML from the user perspective
--   More common in external services, SAML often preferred inside
-    enterprises
+OIDC/OAuth is slightly newer than SAML, created in 2007 by engineers at
+Google and Twitter. OAuth 2.0 -- the current standard was released in
+2012. If you're being pedantic, OAuth is a authorization protocol, and
+OpenID Connect (OIDC) is an authorization protocol that uses OAuth. In
+most cases, people will just call it OAuth.
 
 ![](images/206-auth/auth-oauth.jpeg)
+
+\#TODO: this picture is bad
+
+In an enterprise context, OAuth/OIDC is conceptually very similar to
+SAML -- but instead of passing around XML tokens, it's based on JSON Web
+Tokens (JWT, usually pronounced "jot").
+
+<aside>
+
+The fact that JSON is much more human-readable than XML is one of the
+big advantages of OIDC/OAuth compared to SAML.
+
+</aside>
+
+\#TODO: try it out
+
+#### OAuth/OIDC vs SAML
+
+From a practical perspective, the biggest difference between OAuth/OIDC
+and SAML is that SAML is quite strict about what SPs are allowed. Each
+SP needs to be registered at a specific web address that the IdP knows
+it's allowed to receive requests from.
+
+In contrast, OAuth/OIDC was designed to be used to delegate
+authentication and authorization to different kinds of services that
+might be widely available on the internet. If you've ever allowed a
+website to *Login with Apple/Google/Facebook/Github*, that has been an
+application of OAuth/OIDC.
+
+Because the set of allowable SPs is fixed under SAML, it's more common
+in enterprise settings. Some admins consider SAML more secure for that
+reason as well.
+
+In some situations, SAML is used for authentication and OAuth is used
+for access to other services. Most commonly in the data science world,
+this can come up when a user logs into a service like RStudio Server and
+is then authorized to a database using an OAuth JWT.
 
 Resources: <https://www.okta.com/identity-101/saml-vs-oauth/>
 <https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/>

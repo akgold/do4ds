@@ -1,108 +1,42 @@
 # Computers and Servers
 
-Data Science is fundamentally a computational practice. While being a great data scientist doesn't rely on any deep understanding of computational theory, a mental model of what your computer is doing can be really helpful.
+Data Science is a delightful mashup of statistics and computer science. While you can be a great data scientists without a deep understanding of computational theory, a mental model of how your computer works is helpful, especially when you head to production.
 
-Moreover, as you start putting work into production more, your conversations will be less about the goodness-of-fit of models -- and more about how to make sure those models can run reliably.
+In this chapter, we'll develop a mental model for how computers work, and explore how well that mental model applies to both the familiar computers in your life, but also more remote servers.
 
-In this chapter, you'll learn about the important components inside your computer for data science work and the similarities and differences it has with a server-based environment. If you're near your computer and ready to try it out, you'll have stood up a server of your very own by the end of the chapter.
+If you're into pedantic nitpicking, you're going to love this chapter apart, as I've grossly oversimplified how computers work. On the other hand, this basic mental model has served me well across hundreds of interactions with data scientists and IT/DevOps professionals.
 
-## Background on what a computer is
+And by the end of the chapter, we'll get super practical -- giving you a how-to on getting a server of your very own to play with.
 
-As the saying goes, all models are wrong, but some are useful. I've found a helpful model is to think of your computer as a cookie-topping factory, with three important components.
+## Computers are addition factories
 
-\#TODO: Is this analogy helpful?
+As a data scientist, the amount of computational theory it's really helpful to understand in your day-to-day can be summarized in three sentences:
 
-If you're into pedantic nitpicking, you're going to love picking this chapter apart, as I grossly oversimplify how computers work. On the other hand, this basic mental model has served me well across hundreds of interactions with data scientists and IT/DevOps professionals.
-
-![](images/200-servers/data_science_machine.jpeg){width="526"}
-
-In my mental model, the three components of a computer are *compute*, *storage*, and *memory*. Let's get into all three below.
-
-### Input + Output
-
-I don't think of **Input and Output** as a part of the computer -- but information has to get in and out somehow. For the computer on your desk, you might provide input with your keyboard and mouse, or your microphone or camera. Output might come via your monitor or speakers. For servers, the input and output are usually just pure information, and we'll get more into that below.
-
-An important component of your mental model is the homogenization of input and output. While you might interpret it as the word *umbrella* or Mario running left, a bit of R code or a machine learning model -- it's all the same to your computer. So you can think of your computer as the thing operating on the homogenized data, with some translation layers back and forth into something you can interpret.
-
-### Compute (CPU + GPU)
-
-When you get right down to it, all a computer does is add some numbers. Once input and output has been homogenized, every input is a request to add some numbers, and every output is the result of an addition.[^servers-1] Your computer is very good at adding very, very fast.
+> Computers can only add.
+>
+> Modern ones do so very well and very fast.
+>
+> Everything a computer "does" is just adding two (usually very large) numbers, reinterpreted.[^servers-1]
 
 [^servers-1]: The reason why this is the case and how it works is fascinating. If you're interested, it comes back to Alan Turing's famous paper on computability. I recommend **The Annotated Turing: A Guided Tour Through Alan Turing's Historic Paper on Computability and the Turing Machine** for a surprisingly readable walkthrough of the paper.
 
-The **compute** is where the actual addition gets done. Within the compute, there are many individual *cores*, which can do one addition at a time. I think of each core as a single assembly line. you can consider as a single assembly line. Each core can do one addition at a time.
+I like to think of computers as factories for doing addition problems.
 
-All computers do much of their computation inside the the central processing unit (CPU) -- the main addition factory. These days, most consumer-grade laptops have between 4 and 16 pretty fast cores, and may have additional capabilities that effectively doubles that number. So your CPU can do somewhere between 4 and 32 simultaneous addition problems.
+![](images/200-servers/data_science_machine.jpeg){width="526"}
 
-The reason that compute isn't synonymous with CPU is that some computers offload some of their compute to a graphical processing unit (GPU). A GPU is a separate entity from the CPU that is used for certain tasks like editing photo or videos, rendering video game graphics, some kinds of machine learning, and (yes) Bitcoin mining.
+We see meaning in typing the word *umbrella* or jumping Mario over a Chomp Chain and we interpret something from the output of some R code or listening to Carly Rae Jepsen's newest bop, but to your computer it's all just addition.
 
-The GPU is part of your computer's compute as well, but it's differently specialized. Where the CPU has a few relatively fast cores, the GPU takes the opposite approach, with many weaker cores. Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000.
+Every bit of input you provide your computer is homogenized into addition problems. Once those problems are done, the results are reverted back into something we interpret as meaningful. Obviously the details of that conversion are complicated and important -- but for the purposes of understanding what your computer's doing when you clean some data or run a machine learning model, you don't have to understand much more than that.
 
-It turns out that for the kinds of tasks a GPU specializes in, the overwhelming parallelism of a GPU is more important than the speed of any individual core, and GPU computation can be dramatically quicker relative to CPU computation.
+### Compute
 
-While I'd encourage you to think of your CPU and GPU combined in one big adding factory, it's worth keeping in mind that using a CPU is completely automatic. On the other hand, many computers don't include dedicated GPUs, and using GPUs for machine learning can be a hassle -- though it's getting easier all the time.
+The addition assembly line itself -- where the work actually gets done -- is referred to as compute. It's where 2+2 gets turned into 4, and where 345619912 + 182347910 gets turned into 527967822. The heart of the factory in your computer is the central processing unit (CPU).
 
-### Memory (RAM)
+There are two elements to the total speed of your compute -- the total number of cores, which you can think of as an individual conveyor belt doing a single problem at a time, and the speed at which each belt is running.
 
-When a cookie-topping factory starts working in the morning, they take a bunch of stuff out of cold storage, warm it up to room temperature, and get it ready for the day. At the end of the day, when they close down, they clean up and put any leftovers back into the freezer for another time.
+These days, most consumer-grade laptops have between 4 and 16 cores, and may have additional capabilities that effectively doubles that number. So most laptop CPUs can do between 4 and 32 simultaneous addition problems.
 
-In your computer, that working inventory is the RAM (Random Access Memory).
-
-RAM is where your computer stores things it's actively using, or thinks it might need again soon. RAM is very fast to access, but is only temporary. When your computer turns off, the RAM gets wiped.
-
-Modern consumer-grade laptops come with somewhere between 4 and 16 Gb of memory, though not all of that can be devoted to your datasets.
-
-These days, you probably fully turn off your computer rarely, and your computer is pretty smart about saving the contents of your RAM into long-term storage when you turn off your computer, so you probably don't experience much of a disruption.
-
-### Storage (Hard Drive/Disk)
-
-Your computer's storage is like a freezer. It keeps things permanently, whether the factory is operating or not. The tradeoff is that things there are cold, and take some time to warm up before they can be used.
-
-<aside>
-
-You probably know this, but storage is measured in bytes. These days, most consumer hard drives are between 1/2 to a few terrabytes (trillion bytes). Some enterprise data stores run on the scales of thousands of terrabytes (pettabytes) or even thousands of pettabytes (yottabytes).
-
-</aside>
-
-A few years ago, all hard drives were (HDDs), and were basically the same. HDDs have a bunch of magnetic disks that spin very fast (5,400 and 7,200 RPM are common speeds). A magnetized read/write head move among the disks and save and read your data.
-
-In the last few years, solid-state drives (SSDs) have been taking over. SSDs, which are collections of flash memory chips are much faster than HDDs -- up to 15x or so. They also can take a wider variety of shapes and sizes, and are more reliable and durable because they have no moving parts. The main drawback is that you get much less storage for the price.
-
-Many consumer laptops have only an SSD at this point. Some desktops and high-end laptops combine a smaller SSD with a larger HDD.
-
-In your addition factory, the important thing to understand about storage is that it's cold storage. Everything has to move out of permanent storage before it can be used, which is a relatively slow operation, even on an SSD.
-
-## Choosing the right data science machine
-
-Now that you understand how compute, storage, and memory work together to execute your R or Python code, let's dig into the attributes you might care about when choosing a data science machine.
-
-The good news is that there are only three attributes (plus two) to really care about for your data science machine.
-
-> Data scientists always want more RAM.
-
-Most other issues with your machine are pretty quickly fixable or will just result in operations being somewhat slower than you'd ideally want. But if you don't have enough RAM, your R or Python session will just crash, and you won't be able to do your analysis.
-
-<aside>
-
-You can get around the in-memory limitation by using a [database](#database) or libraries that facilitate on-disk operations like Apache Arrow. Depending on the size of your data and how computationally intensive your work is, this can be a real limitation on where you can do your work.
-
-</aside>
-
-It's easy to say that you'll always want more RAM, but a rough rule of thumb for whether you've got enough is the following:
-
-> Amount of RAM = max amount of data \* 3
-
-Because you'll often be doing some sort of transformation that results in invisible data copies and your computer can't devote all of its memory, you'll want to leave plenty of room over your actual data size. I've never run into problems with a scaling factor of 3, but this is definitely only a rough rule-of-thumb.
-
-The other two attributes relate to your compute - the **number of cores** and **single-core speed**.
-
-As you've probably heard, **R and Python are single-threaded**. This means that, unless you're using special libraries for parallel processing, R and Python will just use a single core, which means that single core speed matters more than the number of cores, and fewer, faster cores are usually preferable to many slower ones.
-
-The exception being certain types of machine learning operations, especially training neural networks, which can be drastically sped up by GPU processing. However, you probably don't have a machine that's *just* for training neural networks, so combining and few fast cores in your CPU with many weaker cores in the GPU is a great strategy.
-
-Determining the number of cores in your computer is straightforward -- both Windows and Mac have *About this machine* information where you can see the number.
-
-The basic measure of single-core speed is its "clock speed" in hertz (hz) -- operations per second. Modern consumer-grade cores run on the order of 2-5 gigahertz (GHz): 2-5 billion operations per second.
+In your computer, the basic measure of conveyor belt speed is single-core "clock speed" in hertz (hz) -- operations per second. The cores in your laptop probably run between 2-5 gigahertz (GHz): 2-5 billion operations per second.
 
 <aside>
 
@@ -112,87 +46,95 @@ For example, in 2020, Apple released a series of Macs with its new M1 chip. Real
 
 </aside>
 
-When you're thinking about how to choose a CPU, fewer, faster cores are preferable to lots of cores. If you're buying a laptop or desktop, you probably don't need to think much about this, but if you're configuring a server, this is often a choice you're able to make quite directly.
+#### GPU Computing
 
-The other two configuration options you should consider -- but only briefly - are whether you need a GPU and how much storage to get. You probably want a GPU if you're doing substantial machine learning that can be improved by GPU-backed operations -- this is especially true for highly parallel machine learning problems like training a neural network or tree-based models.
+While compute usually just refers to the CPU, it's not completely synonymous. Computers can offload some problems to a graphical processing unit (GPU). GPUs are specialized chips used for tasks like editing photo or videos, rendering video game graphics, some kinds of machine learning, and (yes) Bitcoin mining.
 
-As for storage -- get a lot -- but don't think about it too hard, because it's cheap. Both a 1TB SSD and a 4TB HDD are around \$100. It's almost always cheaper to just get more storage relative to trying to figure out how to move things around.
+Where the CPU has a few fast cores, the GPU takes the opposite approach, with many slower cores. Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000, but each one runs between 1% and 10% the speed of a CPU core.
+
+For GPU-centric tasks, the overwhelming parallelism of a GPU is more important than the speed of any individual core, and GPU computation can be dramatically faster. For the purposes of data science, many popular machine learning techniques -- including neural networks, XGBoost, and other tree-based models -- potentially run much much faster on GPUs relative to CPUs.
+
+### Memory (RAM)
+
+Your computer's random access memory (RAM) is its short term storage. Your computer uses RAM to store addition problems it's going to tackle soon, and results it thinks it might need again in the near future.
+
+The benefit of RAM is that it's very fast to access. The downside is that it's temporary. When your computer turns off, the RAM gets wiped.[^servers-2]
+
+[^servers-2]: You probably don't experience this personally. Modern computers are pretty smart about dumping RAM onto the hard disk before shutting down, and bringing it back on startup, so you usually won't notice this happening.
 
 <aside>
+
+You probably know this, but memory and storage is measured in bytes. These days, most consumer hard drives are between 1/2 to a few terrabytes (trillion bytes). Some enterprise data stores run on the scales of thousands of terrabytes (pettabytes) or even thousands of pettabytes (yottabytes).
+
+</aside>
+
+Modern consumer-grade laptops come with somewhere between 4 and 16 Gb of memory.
+
+### Storage (Hard Drive/Disk)
+
+Your computer's storage is like a freezer. It keeps things permanently, whether the factory is operating or not. The tradeoff is that things there are cold, and take some time to warm up before they can be used.
+
+A few years ago, all hard drives were (HDDs), and were basically the same. HDDs have a bunch of magnetic disks that spin very fast (5,400 and 7,200 RPM are common speeds). Magnetized read/write heads move among the disks and save and read your data.
+
+In the last few years, solid-state drives (SSDs) have been taking over. SSDs, which are collections of flash memory chips, are up to 15x faster than HDDs. They also can take a wider variety of shapes and sizes, and are more reliable and durable because they have no moving parts. The main drawback is that they're usually more expensive per byte, but prices are still quite reasonable.
+
+Many consumer laptops have only an SSD at this point. Some desktops and high-end laptops combine a smaller SSD with a larger HDD.
+
+## Choosing the right data science machine
+
+In my experience as a data scientist and talking to IT/DevOps organizations trying to equip data scientists, the same questions about choosing a computer come up over and over again. Here are the guidelines I often share.
+
+### Get as much RAM as feasible
+
+In most cases, R and Python have to load all of your data into memory. Thus, the size of the data you can use is limited to the size of your machine's RAM. Most other limits of your machine will just result in things being slower than you'd really want, but trying to load too much data into memory will result in a session crash, and you won't be able to do your analysis.
+
+<aside>
+
+You can get around the in-memory limitation by using a [database](#database) or libraries that facilitate on-disk operations like [Apache Arrow](https://arrow.apache.org/) or [dask](https://docs.dask.org/en/latest/why.html).
+
+</aside>
+
+It's easy to say that you'll always want more RAM, but a rough rule of thumb for whether you've got enough is the following:
+
+> Amount of RAM = max amount of data \* 3
+
+Because you'll often be doing some sort of transformation that results in invisible data copies and your computer can't devote all of its memory, you'll want to leave plenty of room over your actual data size. I've never run into problems with a scaling factor of 3, but this is definitely only a rough rule-of-thumb.
+
+### Go for fewer, faster cores in the CPU
+
+R and Python are single-threaded. Unless you're using special libraries for parallel processing, you'll end up red-lining a single CPU core while the other just look on in silence. Therefore, single core clock speed matters more than the number of cores, and fewer, faster cores are usually preferable to many slower
+
+If you're buying a laptop or desktop, there usually aren't explicit choices between a few fast cores and more slow cores. Most modern CPUs are pretty darn good, and you should just get one that fits your budget. If you're standing up a server, you often have an explicit choice between more slower cores and fewer faster ones.
+
+### Get a GPU...maybe...
+
+If you're doing machine learning that can be improved by GPU-backed operations, you might want a GPU. In general, only highly parallel machine learning problems like training a neural network or tree-based models will benefit from GPU computation.
+
+On the other hand, GPUs are expensive, non-machine learning tasks like data processing don't benefit from GPU computation, and many machine learning tasks are amenable to linear models that run well CPU-only.
+
+### Get a lot of storage, it's cheap
+
+As for storage -- get a lot -- but don't think about it too hard, because it's cheap. Both a 1TB SSD and a 4TB HDD are around \$100. Storage is cheap enough these days that it is almost always more cost efficient to buy more storage rather than making a highly-paid professional spend their time trying to figure out how to move things around.
 
 One litmus test of an IT organization that is well-equipped to support data science is whether they understand this. Smart organizations know that just getting more storage is easily worth the cost in terms of the time of admins and data scientists.
 
-</aside>
+## Is a server different?
 
-## How is a server different?
+No.
 
-You now have a pretty keen understanding of how a computer works. So what is a server?
+But also yes.
 
-Before I was intimately acquainted with servers, they seemed mystical -- incredibly powerful, probably perched among the clouds on a misty mountainside. Turns out the reality is far more prosaic and closer to stripmall than shaolin temple.
-
-You already understand how a server works. It's as simple as taking the input streams you've conceptualized as coming from a keyboard, mouse, and microphone and thinking of them instead as requests from other computers, and taking the output going directly to your desktop and thinking of them as responses to those requests.
+At its core, a server is exactly the same sort of addition factory as your laptop, and the same mental model of what is happening under the hood will serve you well.
 
 ![](images/200-servers/desktop_v_server.jpeg){width="424"}
 
-While those input and output streams may change, what goes on in between is exactly the same. It's all just a bunch of addition in compute, with short term memory, and long-term storage.
+The big difference is in how the input and output is done. While you interact directly with a computer through keyboard and mouse/touchpad, servers generally don't have built in graphical interfaces -- by default all interaction occurs via command line tools.
 
-<aside>
+One of the reasons is that the overwhelming majority of the world's servers run the *Linux* operating system, as opposed to the Windows or Mac OS your laptop probably runs.[^servers-3] There are many different distributions (usually called "distros") of Linux. For day-to-day enterprise server use, the most common of these are Ubuntu, CentOS, Red Hat Enterprise Linux (RHEL), SUSE Enterprise Linux.
 
-That's not to say the input and output format don't matter. We'll spend a lot of this book reviewing how to make sure servers can get the input they need, can filter out bad input, and return output to the right place. It's just that your mental model of what the server does needn't incorporate this element.
-
-</aside>
-
-In terms of where these machines live, the most common answer is really boring-looking office parks. Most servers people use are rented from one of the big cloud providers (more on that in the next chapter).
-
-In the remainder of this book, you'll get really comfortable with servers. By the time you're done, you should have a pretty thorough understanding of what servers are, how to get and interact with one, and how to make sure the way you use them is secure.
-
-You already interact with servers constantly when you do everyday tasks like pull up something on your phone, navigate to a website, or use a credit card. Normally, you're interacting with the publicly-exposed application layer of a server. Throughout the rest of this book, we'll get comfortable interacting with servers you rent or own as an administrator.
-
-The biggest difference between interacting with your desktop and interacting with a server is that you'll do so over the command line, rather than clicking with a keyboard.
-
-### Most servers run Linux
-
-When you want to do something administrative on your laptop -- say install a new program, or change screen resolutions -- you probably just open a window on your machine. Those are features of your computer's operating system -- the most common being Mac OS or Windows.
-
-A computer's operating system forms the basic interface between the computer's hardware and the software you want to run to actually do things. It includes the software for how the computer boots up, the background services (audio, printing, etc), and the desktop you interact with when switching from one application to another.
-
-Most people think exclusively of Mac OS or Windows when thinking of operating systems, as they rule the desktop computing world. But those computers are vastly outnumbered by the number and variety of servers and other computing platforms that run *Linux*.[^servers-2]
-
-[^servers-2]: There are Windows Server versions that are reasonably popular in enterprises. There are no Mac servers. There is a product called *Mac Server*, but it's a product used to manage Mac desktops and iOS devices, not a real server.
+[^servers-3]: There are Windows Server versions that are reasonably popular in enterprises. There are no Mac servers. There is a product called *Mac Server*, but it's used to manage Mac desktops and iOS devices, not a real server.
 
 Along with most of the world's servers, almost all of the world's embedded computers -- in ATMs, cars and planes, TVs, and most other gadgets and gizmos -- run on Linux. If you have an Android phone or a Chromebook -- that's Linux. Basically all of the world's supercomputers use Linux.
-
-There are many different distributions (usually called "distros") of Linux. For day-to-day enterprise server use, the most common of these are Ubuntu, CentOS, Red Hat Enterprise Linux (RHEL), SUSE Enterprise Linux.
-
-Because of its ubiquity in the server world, we'll be using Linux servers and distributions for the rest of this book.
-
-## Moving Data Science to A Server
-
-Many organizations run their data science workloads on a server, as opposed to on each employee's laptop. In recent years, as data science has become more important, this has been happening more and more commonly. Depending on your organization, the centralization of data science operations can make your life way easier -- or it can be kinda a bummer.
-
-### Data Scientist-led server migration
-
-Often, migrations to a server are instigated by the data scientists themselves -- usually because they've run out of horsepower on their laptops. These migrations tend to be partial, temporary, and often kinda slapdash.
-
-They're configured for the purposes of a single project, and are managed by the data scientists themselves.
-
-If you, or one of your teammates, enjoys and is good as SysAdmin work, this can be a great situation! You get the hardware you need for your project quickly and with minimal interference.
-
-On the other hand, most data scientists don't really want to be SysAdmins, and these systems are often fragile, isolated from other corporate systems, and potentially susceptible to security vulnerabilities.
-
-### SysAdmin-led server migration
-
-Many other organizations are moving to servers as well, but led by the IT group. For many IT groups, it's way easier to maintain a centralized server environment, as opposed to helping each data scientist maintain their own environment on their laptop.
-
-Having just one platform makes it much easier to give shared access to more powerful computing platforms, to data sources that require some configuration, and to R and Python packages that wrap around system libraries and can be a pain to configure (looking at you, `rJava`).
-
-This can be a great situation for data scientists! If the platform is well-configured and scoped, you can get instant access through their web browser to more compute resources, and don't have to worry about maintaining local installations of data science tools like R, Python, RStudio, and Jupyter, and you don't need to worry about how to connect to important data sources -- those things are just available for use.
-
-But this can also be a bad experience. Long wait times for hardware or software updates, overly restrictive policies -- especially around package management -- and misunderstandings of what data scientists are trying to do on the platforms can lead to servers going largely unused.
-
-So much of whether the server-based experience is good or not depends on the relationship between the data science and IT/Admin group. In organizations where these groups work together smoothly, this can be a huge win for everyone involved. However, there are some organizations where IT/Admins are so concerned with stability and security that they make it impossible to do data science, and the data scientists spend all their time playing cat-and-mouse games to try to get work done behind IT/Admin's backs.
-
-If you work at such a place, it's frankly hard to get much done on the server. It's probably worth investing some time into improving your relationship with your favorite person on the IT/Admin team. Hopefully, this book will help you understand a little of what's on the minds of people in the IT group, and a sense of how to talk to them better.
 
 ## Getting a server of your own
 
@@ -274,7 +216,7 @@ $ sudo apt update
 $ sudo apt-get install nginx -y
 ```
 
-By default, our EC2 instance only allows SSH traffic. We need to open up HTTP traffic. Go back to your instance in the AWS console and scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
+By default, our EC2 instance only allows SSH traffic, which is on port `22` by default. We need to open up HTTP traffic. Go back to your instance in the AWS console and scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
 
 Click `Edit inbound rules` , then `Add rule`. Under `Type`, scroll down and select `HTTP`, and under `Source Type`, select `Anywhere-IPv4`. Scroll down and click `Save rules`.
 
