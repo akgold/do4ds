@@ -1,0 +1,73 @@
+# Moving Traffic to the right place with private networks, proxies, services, and ports
+
+In the previous chapter, we talked about how you'd set up a real URL for your data science server with a real URL and `https` for security. If you've done all that right, that will get internet traffic to your server's front door. In this chapter, we'll talk about how to get traffic from the front door to the right place.
+
+You might not have known it, but when you set up the server in the first chapter, you also actually created a private network for the server to live in called a *virtual private cloud (VPC)*.
+
+As your server configuration gets more complicated, you're going to put more different servers inside the virtual private cloud. So instead of thinking of your traffic as coming to the front door of your little server/cottage, I think it's a more helpful analogy to think of coming to the guard box at the front gate of a gated community.
+
+You're at the front gate, but still need to find your way to the right building and then to the right apartment inside that building.
+
+Up until now, we've been pretending like the server you put up in the first chapter was actually just on the public internet -- so it makes sense to ask why we wouldn't actually just do that.
+
+The two reasons are security and reducing administrative headaches.
+
+The other reason to make extensive use of private networks has to do with ease-of-configuration. Inside a private network, it's generally ok to say "accept connections from any server inside the network", and take care of security at the front gate of the network. Otherwise, you've got to be much more careful about how you configure each individual server, which is both more work and a potential security vulnerability if you don't do it right.
+
+In the case of a data science environment you may have a number of different servers you're setting up -- a server for doing data science work, a database, a package repository mirror, and a server for deploying your apps to others.
+
+Similarly, because there are single points of ingress and egress (sometimes), security is heightened by having only one way in or out, as opposed to opening the entire network or each server individually to the internet.
+
+Using public and private subnets is also really nice for server resiliency. Say your network was attacked with a DDOS attack, where someone tries to overwhelm your servers with junk attacks to take down your servers. It's way better if they manage to succeed at taking down your server, but it's just a proxy as opposed to your analytics workhorse server or a mission-critical database.
+
+When configuring servers this way, it's very common to configure an additional server called a bastion host or jumpbox that is used solely to pass SSH traffic from server administrators through to the hosts in the private network.
+
+## Finding the right server with hostnames
+
+Like we configured a URL to have an abstraction layer between our IP address and our server, we also will usually configure a *hostname* rather than using IP addresses.
+
+## The role of forward and reverse proxies
+
+## Using ports to get to the right service
+
+Let's say you want to run software on a server. One of the big differences between server software, and software on your laptop is that server software needs to be able to interact with the outside world to be useful.
+
+For example, when you want to use Microsoft Word on your computer, you just click on the button and then it's ready to go. But say I want to use RStudio Server. I don't have a desktop where I click to open RStudio Server. Instead, I go to a particular URL and I expect that RStudio will be there, ready to listen.
+
+## Configuring the private network
+
+A private network is defined by a range of IP addresses, called CIDR blocks. A CIDR block defines the sub-addresses available inside an IP address using a /n notation. So the CIDR block 10.0.0.0/16 is the largest possible CIDR block and includes all IP addresses from 10.0.0.0 to 10.255.255.255.
+
+The numbers after the / are related to powers of 2 (binary something blah), so you can fit 2 /x+1 CIDR blocks in a single /x block.
+
+So, for example, there are 128 IP addresses in a /25 CIDR block, and 256 in a /24 CIDR block, so 10.0.0.0/24 could have two subnets, 10.0.0.0/25 and 10.0.0.128/25.
+
+### Restricting Outbound Connections
+
+In AWS, you'll configure egress from private subnets using a NAT Gateway. Egress from the public subnets goes through the Internet Gateway. Egress is actually needed less than you might think - in our current setup, it's needed for package updates to RSPM (the RSPM service, not RSP to RSPM), to do google OAuth to the google servers (rstudioservices only), get stuff from github, update products, and get content from apt/yum repos.
+
+In Colorado, it's not needed for RSC because the SAML token is in the browser. It is needed for RSP because Onelogin is outside the VPC. This is generally not the case for customers, who are mostly using on-prem AD servers.
+
+## Special IP Addresses and Ports
+
+All ports below 1024 reserved.
+
+80 - HTTP default
+
+443 - HTTPS default
+
+22 - SSH default
+
+## Exercises
+
+Consider going to the website google.com. Draw a diagram of how the following are incorporated: TCP/IP, DNS, HTTP, HTTPS.
+
+Set up a free-tier EC2 instance and put an NGINX server up. Figure out how to allow your computer to access the server, but not your phone. Try accessing it on a non-default port.
+
+Try to HTTP into a fresh EC2 with the default security group. Take a look at the inbound security group rules. Hint: is there an inbound rule on a default HTTP port?
+
+SSH into your EC2 instance and try to reach out to something on the internet (curl...). See if you can change security group rules to shut down access.
+
+Can you do it by changing the IP address range it's accepting connections from?
+
+Can you do it by changing the listening ports?
