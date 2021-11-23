@@ -5,6 +5,11 @@ on:
 
 name: renderbook
 
+env:
+  RENV_PATHS_ROOT: ~/.local/share/renv
+
+steps:
+
 jobs:
   bookdown:
     name: Render-Book
@@ -13,10 +18,18 @@ jobs:
       - uses: actions/checkout@v1
       - uses: r-lib/actions/setup-r@v1
       - uses: r-lib/actions/setup-pandoc@v1
-      - name: Install renv
-        run: Rscript -e 'install.packages("renv")'
-      - name: Restore env
-        run: Rscript -e 'renv::restore()'
+      - name: Cache packages
+      - uses: actions/cache@v2
+        with:
+          path: ~/Library/Application Support/renv
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
+      - name: Restore packages
+        shell: Rscript {0}
+        run: |
+          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
+          renv::restore()
       - name: Render Book
         run: Rscript -e 'bookdown::render_book(output_format = "bookdown::bs4_book")'
       - uses: actions/upload-artifact@v1
