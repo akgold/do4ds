@@ -1,0 +1,125 @@
+# Understanding Network Traffic {#url}
+
+When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network.
+
+These days, people are generally familiar with the concept of computer networks because they know about the internet -- the biggest computer network of them all! But computer networks come in all sorts of sizes and shapes.
+
+The internet is the biggest computer network, and it's public. But there are also myriad smaller private computer networks that range from the very small, like the set of devices connected to your home wifi router, to the somewhat larger, like the VPN (it stands for virtual private network, after all) you might connect to for school or work.
+
+In general, a computer network is a set of computers that can communicate with each other to send data - network traffic -- back and forth to each other. An important fact about those networks is that they all share common structural elements -- if you understand the wifi network in your house, you've also got a reasonably good understanding of how the entire internet works!
+
+In this chapter, we'll get a bit into how computer networks work. In particular, we'll get into some of the layers of protocols that define how computers communicate with each other. This chapter is mostly going to be background for the next few chapters, where we'll get into the nitty gritty of how to configure both the public and private elements of networking for your data science workshop.
+
+## What is network traffic?
+
+Regardless of the contents of your network traffic, computers communicate with each other using a process called packet switching. In packet switching, your computer takes the data you want to send, chops it up into bite-size pieces called packets, addresses those packets to where they're going, sends them off, and awaits a response.
+
+One of the important aspects of packet switching is that at any given time, a packet knows two things -- its eventual end goal, and it's next stop to get there. One of the main principles of computer networks is that I don't need to know the whole path to where I'm going when I get started, I just jump from one *node* to another in the network. The protocol that defines this process of packet switching is called TCP/IP, which you may have heard of before.
+
+A node could be a server or computer, but in between there are usually many layers of switches, routers, and networking hardware that serve just to get the traffic from one place to another.
+
+When the packets arrive where they're going, they're received by a listening service, reassembled into the original message, and then something happens. A response might be sent, or it might provoke a server side action.
+
+### What's inside the packets?
+
+Once your packets get to where they're going, the service on the other side needs to know how to reassemble them into a coherent message. This definition of what constitutes a valid message to send is defined by the *application layer protocol*.
+
+There are numerous different kinds of application layer protocols that define how the server should understand the request that was sent and what are legitimate things to send back.
+
+Some protocols you will see in this book include `SSH` for direct server access, `(S)FTP` for file transfers, `SMTP` for email, `LDAP(S)` for authentication, and `websockets` for persistent bi-directional communication -- used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.
+
+The most common application layer protocol on the internet is `http`, the protocol that defines how to fetch documents across networks -- the most common types of documents on the internet being HTML web pages.
+
+### Understanding `http` traffic
+
+Since a huge proportion of network traffic is `http` traffic, it's worth taking a few moments to get a deeper understanding of how `http` traffic works.
+
+It's worth noting that these days, virtually all `http` traffic over the internet is in the form of secured `https` traffic. We'll get into what the `s` means and how it's secured in the next chapter.
+
+`http` traffic is a client-and-server protocol, meaning that the client -- often your web browser - sends requests of various kinds to the server, which sends things back. In the case of a web page, your browser requests the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.
+
+There are a few important elements to `http` requests and responses:
+
+-   Request Method -- getting deep into HTTP request methods is beyond the scope of this book, but there are a variety of different methods you might use to interact with things on the internet. The most common are `GET` to get a webpage, `POST` or `PUT` to change something, and `DELETE` to delete something.
+
+-   Status Code - each HTTP response includes a status code indicating the response category. Some special codes you'll quickly learn to recognize are below. The one you'll (hopefully) see the most is 200, which is a successful response.
+
+-   Response and Request Headers -- headers are metadata included with the request and response. These include things like the type of the request, the type of machine you're coming from, cookie-setting requests and more. In some cases, these headers include authentication credentials and tokens, and other things you might want to inspect.
+
+-   Body - this is the content of the request or response.
+
+    -   It's worth noting that `GET` requests for fetching something generally don't include a body. Instead, any specifics on what is to be fetched are specified through *query parameters*, the part of the URL that shows up after the `?`. They're often something like, `?first_name=alex&last_name=gold`
+
+### Directly Inspecting `http` traffic
+
+The best way to understand `http` traffic is to take a close look at some. Luckily, you've got an easy tool -- your web browser!
+
+Open a new tab in your browser and open your developer tools. How this works will depend on your browser. In Chrome, you'll go to View \> Developer \> Developer Tools and then make sure the Network tab is open.
+
+Now, navigate to a URL in your browser (say google.com).
+
+As you do this, you'll see the traffic pane fill up. These are the requests and responses going back and forth between your computer and the server.
+
+If you click on any of them, there are a few useful things you can learn.
+
+![](images/paste-4EA67624.png){width="267"}
+
+At the top, you can see the timing. This can be helpful in debugging things that take a long time to load. Sometimes it's helpful to see what stage in the process bogs down.
+
+In the pane below, you can inspect the actual content that is going back and forth between your computer and the server you're accessing including the request methods, status codes, headers, and bodies.
+
+#### Special HTTP Codes
+
+As you work more with `http` traffic, you'll learn some of the common codes. Here's a cheatshet for some of the most frequent you'll see.
+
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Code            | Meaning                                                                                                                                                    |
++=================+============================================================================================================================================================+
+| `200`           | Everyone's favorite, a successful response.                                                                                                                |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `4xx` and `5xx` | Errors with, respectively, the request itself and the server.                                                                                              |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|                 | Particular Error Codes                                                                                                                                     |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `400`           | Bad request. This isn't a request the server can understand.                                                                                               |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `401` and `403` | Unauthorized or forbidden. Often means required authentication hasn't been provided.                                                                       |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `404`           | Not found. There isn't any content at the address you're trying to access.                                                                                 |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| `504`           | gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+## How requests know where to go
+
+IP addresses are, indeed, addresses. They are how one computer or server finds another on a computer network, and they are unique within that network.
+
+But there's an important distinction between public and private IP addresses that's worth understanding. When you connect something to the internet -- a server, website, or your home router -- it is assigned a public IP address. In general, an
+
+As you start working more intimately with servers, you'll spend more time staring at IP addresses, so it's worth learning to recognize them.
+
+The IP addresses so far in this book are `IPv4` addresses. They're four blocks of 8-bit fields (integers up to 256), so they look like `0.0.0.0` to `255.255.255.255`. If you do the math, you'll realize there are *"only"* about 4 billion of these. It turns out that's not enough for the public internet and we're running out.
+
+In the last few years, adoption of the new standard, `IPv6`, has started. `IPv6` addresses are eight blocks of hexadecimal (`0-9` + `a-f`) digits separated by colons, with certain rules that allow them to be shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1` are both examples of valid `IPv6` addresses.
+
+`IPv6` will coexist with `IPv4` for a few decades, and we'll eventually switch entirely to `IPv6`. There's no worry about running out of `IPv6` addresses any time soon, because the total number of `IPv6` addresses is a number 39 digits long.
+
+There is one IP address you may frequently see, which is `127.0.0.1` or `localhost` -- sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it's originating. This is sometimes useful for testing, or to reach another service on the same machine.
+
+## Anatomy of a URL
+
+We could just go around visiting websites using their IP addresses, but addresses like `143.122.8.32` are pretty hard to remember.
+
+Even worse, IP addresses generally aren't permanent -- they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance -- see chapter XX).
+
+In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like `google.com`, rather than an IP address.
+
+Let's start with what a URL is.
+
+$$
+\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{blog}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
+$$
+
+In this chapter and the next, we'll get into how each of these components of the URL is created and assigned.

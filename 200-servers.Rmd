@@ -1,4 +1,4 @@
-# Computers and Servers
+# Computers, Computing, and Servers
 
 Data Science is a delightful mashup of statistics and computer science. While you can be a great data scientists without a deep understanding of computational theory, a mental model of how your computer works is helpful, especially when you head to production.
 
@@ -136,128 +136,6 @@ One of the reasons is that the overwhelming majority of the world's servers run 
 
 Along with most of the world's servers, almost all of the world's embedded computers -- in ATMs, cars and planes, TVs, and most other gadgets and gizmos -- run on Linux. If you have an Android phone or a Chromebook -- that's Linux. Basically all of the world's supercomputers use Linux.
 
-## Getting a server of your own
-
-For the rest of this chapter, we're going to walk through how to set up a server of your own. If you've never set up a server before, I'd strongly recommend you play along. I'm going to refer back to this server frequently in the rest of the book, and it'll be really helpful if you have a good feeling for how this works.
-
-In contrast to the computer sitting on your desk, you'll have to access it over the internet and you'll use a specialized access protocol called [SSH](#ssh). Those topics are important enough that there are standalone chapters on them. For now, we're going to gloss entirely over the how and why and just get you to running a server. If you follow along from this point, it'll probably take you 10-15 minutes to be running a server of your own.
-
-We're going to be standing up a server on Amazon Web Services (AWS). In particular, we'll be standing up a server in their *free tier* -- so there will be no cost involved as long as you haven't used up all your AWS free tier credits before now.
-
-If you follow these instructions, you'll get a server of your own up and running in less than 10 minutes, and you may even have gotten to a point where you could do data science on that server.
-
-While that's certainly exciting, calling that a data science-ready server is kinda like throwing a tarp over a tree branch in the forest and calling it a house. It might be a nice place to stay for a little, but you're going to need something more robust longer-term.
-
-### Login to the AWS Console
-
-We're going to start by logging into AWS. If you've done this before, just go ahead and log in.
-
-If not, go to aws.amazon.com and click `Sign In to the Console` .
-
-If you've never set up an AWS account before, click `Create a New AWS account` and follow the instructions to create an account. Note that even if you've got an Amazon account for ordering stuff online and watching movies, an AWS account is separate.
-
-\#TODO: Add link to cloud chapter
-
-Once you've logged in, you'll be confronted by the AWS console. There are a ton of things here, and it's rather overwhelming. There's a chapter on the business model behind this, so skip ahead if you want, or spend a minute poking around before continuing.
-
-### Stand up an instance
-
-In the next few paragraphs, I'm going to give you instructions to quickly get a server up -- with basically no explanation. If you read this whole book, you'll understand all of this, the alternatives you could take, and the reasons I'm going to strongly recommend you take this server back offline in just a few minutes.
-
-For now, click on the EC2 service (it's under `Launch a virtual machine` or `Compute` depending on where you landed). Scroll down the launch instance button. Here are all the different Quick Start Amazon Machine Images (AMIs). Find and click `Ubuntu Server 20.04 LTS` -- it'll be one of the first handful.
-
-Now you'll be seeing the instance size chooser. It should have auto-selected a server with the label `Free tier eligible`. Just stick with this for now.
-
-Scroll down and click `Review and Launch`, and `Launch` on the next page.
-
-When you click Launch, you'll be asked to use a key pair. Assuming you don't have an existing keypair, select `Create a new key pair`, name it `my_test_key`, and click `Download`.
-
-Keep track of the `my_test_key.pem` file your computer downloads.
-
-Click `Launch Instances`. AWS is now creating a virtual server *just for you*. If you click `View Instances` in the lower right, you'll see your instance. When the instance state switches to `Running`, it's up and running!
-
-### SSH into the server
-
-The `.pem` key you downloaded is the skeleton key to your server. If you were setting up a real server, you'd need to be extremely careful with this key, as it allows anyone who has it unrestricted access to the server. For the same reason, it's also great for playing around quickly with a server.
-
-Before we can use it to open the server, we'll need to make a quick change to the permissions on the key. More details on what that means in the [] chapter. \#TODO: which chapter?
-
-To take the next steps, you'll need to at least be able to open your computer's terminal and copy/paste some commands below. If that's new to you, feel free to check out the [chapter on using the command line](#command-line).
-
-If you're on a Mac or Linux system, you'll do the following:
-
-```{bash, eval = FALSE}
-$ cd ~/Downloads #or whatever directory the key is in
-$ chmod 600 my_test_key.pem
-```
-
-\#TODO: Windows?
-
-To access your server, click on the `Instance ID` link for your server, and copy the `Public IPv4 DNS`, which will start with `ec2-` and end with `amazonaws.com`.
-
-In your terminal type the following
-
-```{bash, eval = FALSE}
-$ ssh -i my_test_key.pem ubuntu@<Public IPv4 DNS you copied>
-```
-
-Type `yes` when prompted, and you're now logged in to your server!
-
-### Doing A Thing
-
-Before we log off and kill this server, let's do one little thing.
-
-We're going to stand up Nginx, which is a common webserver, and serve a little webpage to ourselves.
-
-Let's start by installing Nginx, copy and paste the command below.
-
-```{bash, eval = FALSE}
-$ sudo apt update
-$ sudo apt-get install nginx -y
-```
-
-By default, our EC2 instance only allows SSH traffic, which is on port `22` by default. We need to open up HTTP traffic. Go back to your instance in the AWS console and scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
-
-Click `Edit inbound rules` , then `Add rule`. Under `Type`, scroll down and select `HTTP`, and under `Source Type`, select `Anywhere-IPv4`. Scroll down and click `Save rules`.
-
-Go back to your instance page and copy the `Public IPv4 DNS` again. Paste this into your browser's navigation bar, and add `http://` right before. When you navigate to the page, you'll see the default Nginx home page.
-
-Let's make a quick change to the page, just for fun.
-
-Back in your terminal that's still SSH-ed into the instance, navigate to where that page is located:
-
-```{bash, eval = FALSE}
-$ cd /var/www/html
-```
-
-You can edit the page by typing
-
-```{bash, eval = FALSE}
-$ sudo vi index.nginx-debian.html
-```
-
-If you don't recall how to use `vi`, check out the [command line]() tutorial, but for now, you can enter edit mode by pressing `i`, navigating around with the arrow keys, and typing.
-
-Edit something -- say change this line
-
-    <h1>Welcome to nginx!</h1 >
-
-to something a little more personalized.
-
-When you're done, hit `esc` followed by `:wq`.
-
-Now, when you re-load the page in your browser, you should be able to see your changes reflected there.
-
-\#TODO: consider using a container to get shiny server up quickly.
-
-### Burn it all down
-
-One of the best things about cloud infrastructure is that it can go away as easily as it came up. We made a number of choices here that are fine for ephemeral infrastructure for playing around. But this server should not be used for anything real.
-
-When you've had your fill of playing, let's take the server down.
-
-Go back to the EC2 page for your server. Under the `Instance State` drop down in the upper right, choose `Terminate Instance`. If you go to the `Instances` page, it'll take just a minute for the instance to go away.
-
 ## Exercises
 
 1.  Think about the scenarios below -- which part of your computer would you want to upgrade to solve the problem?
@@ -267,11 +145,3 @@ Go back to the EC2 page for your server. Under the `Instance State` drop down in
     2.  You go to build a new ML model on your data. You'd like to re-train the model once a day, but it turns out training this model takes 26 hours on your laptop.
 
     3.  You design an visualization `Matplotlib` , and create a whole bunch in a loop/
-
-2.  Try standing up a new server and installing R and RStudio Server Open Source, or Python and JupyterHub.
-
-    -   Hint 1: Remember that your instance only allows traffic to SSH in on port `22` by default. You access RStudio on port `8787` by default and JupyterHub on port `8000`. You control what ports are open via the Security Group.
-
-    -   Hint 2: You'll need to create a user on the server. The `adduser` command is your friend.
-
-    \#TODO: test out JupyterHub

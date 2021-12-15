@@ -1,86 +1,12 @@
-# Getting Traffic Across the Internet -- URLs and `https` {#networking}
+# Getting a real URL
 
-Collectively, the topic of the next two chapters -- getting traffic across the public internet and to a listening service is called *networking*. I've broken it down into two chapters. This first chapter will discuss how traffic gets across the public internet and to the server you've configured, and in the next chapter, we'll get into how to configure a private network to make sure your traffic can get where it needs to go.
+Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own.
 
-When you go to a website, that website address starts with `https://` . We'll get into the `s` more later in this chapter. For now, we'll just focus on the `http` part. Most modern browsers automatically add the `http` for you, so you can, for example, type `google.com`, and your browser will automatically know that you intend to go to [`https://www.google.com`](https://www.google.com).
+This is where the **domain name system (DNS)** comes in. DNS is the decentralized internet phonebook that translates back and forth between URLs and IP addresses. There are many layers of DNS servers, so pointing your browser at `example.com` starts with a query to a DNS server asking, "Where is the DNS server for `.com` websites?"
 
-In this chapter, we'll pull apart the components of this URL and how you can get one of your very own.
+Eventually, a query for your website will lead to the DNS server of your domain name registrar. You'll have to configure your domain name registrar to send traffic on to the right place.
 
-## Anatomy of a URL
-
-You probably use URLs every day, but let's take just a minute and break down the components of a URL.
-
-![](images/201-networking/domain.jpeg){width="423"}
-
-In this chapter and the next, we'll get into how each of these components of the URL is created and assigned.
-
-## Application Layer Protocols: `http(s)`
-
-The very first part of a URL is the *application layer protocol*. Application layer protocols define how the server should understand the request that was sent and what are legitimate things to send back. `http` is the protocol that is used when you go to a webpage on the internet. It defines how to fetch documents across networks -- the most common types of documents on the internet being HTML web pages.
-
-There are many other application layer protocols that are used for a variety of purposes. Some you'll see in this book include `SSH` for direct server access, `(S)FTP` for file transfers, `LDAP(S)` for authentication, and `websockets` for persistent bi-directional communication -- used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.
-
-### What really is `http` traffic?
-
-The best way to understand http traffic is to inspect it directly. Luckily, you've got an easy tool to do that -- your browser!
-
-Open a new tab in your browser and open your developer tools. How this works will depend on your browser. In Chrome, you'll go to View \> Developer \> Developer Tools and then make sure the Network tab is open.
-
-Now, navigate to a URL in your browser (say google.com).
-
-As you do this, you'll see the traffic pane fill up. These are the requests and responses going back and forth between your computer and the server.
-
-If you click on any of them, there are a few useful things you can learn.
-
-![](images/paste-4EA67624.png){width="267"}
-
-At the top, you can see the timing. This can be helpful in debugging things that take a long time to load. Sometimes it's helpful to see what stage in the process bogs down.
-
-In this pane, you can inspect the actual content that is going back and forth between your computer and the server you're accessing. What's often more useful is being able to inspect the metadata on the requests and responses. Here are a few of the most important fields:
-
--   Request Method -- getting deep into HTTP request methods is beyond the scope of this book, but there are a variety of different methods you might use to interact with things on the internet. The most common are `GET` to get a webpage, `POST` or `PUT` to change something, and `DELETE` to delete something.
-
--   Status Code - each HTTP response includes a status code indicating the response category. Some special codes you'll quickly learn to recognize are below. The one you'll (hopefully) see the most is 200, which is a successful response.
-
--   Response and Request Headers -- headers are metadata included with the request and response. These include things like the type of the request, the type of machine you're coming from, cookie-setting requests and more. In some cases, these headers include authentication credentials and tokens, and other things you might want to inspect.
-
-#### Special HTTP Codes
-
-`200` - everyone's favorite, a successful response.
-
-`3xx` - Your query was redirected somewhere else.
-
-`4xx` - are errors with the requests. There are a few you'll probably see particularly often:
-
-`400` - bad request. This isn't a request the server can understand.
-
-`401` and `403` - unauthorized or forbidden. Often means required authentication hasn't been provided.
-
-`404` - Not found. There isn't any content at the address you're trying to access.
-
-`5xx` - server-side errors. Some kind of error occurred as the server was trying to process your request.
-
-`504` - gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server.
-
-## Getting a real URL
-
-We accessed our basic server on the public IP address provided to us by AWS. But that was very likely the first time you'd accessed something on the internet directly using an IP address -- for good reason.
-
-IP addresses are how entities are actually identified in computer network, but the IP address `143.122.8.32` is pretty hard to remember. Even worse, IP addresses generally aren't permanent -- they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance -- see chapter XX).
-
-In order to have something human-friendly and permanent, we generally access network resources at a URL, like `google.com`, rather than an IP address.
-
-### An aside about IP addresses...
-
-As you start working more intimately with servers, you'll spend more time staring at IP addresses, so it's worth taking a moment to talk about how to recognize them.
-
-The IP addresses so far in this book are IPv4 addresses. They're four blocks of 8-bit fields (integers up to 256), so they look like `0.0.0.0` to `255.255.255.255`. If you do the math, you'll realize there are *"only"* a little more than 4 billion of these, which it turns out is not enough and we're running out.
-
-In the last few years, adoption of the new standard, IPv6, has started. IPv6 addresses are eight blocks of hexadecimal (`0-9` + `a-f`) digits separated by colons, with certain rules that allow them to be shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1` are both examples of valid IPv6 addresses.
-
-IPv6 will coexist with IPv4 for a few decades, and we'll eventually switch entirely to IPv6. There's no worry about running out of IPv6 addresses any time soon, because the total number of IPv6 addresses is a number 39 digits long.
-
-There is one IP address you may frequently see, which is `127.0.0.1` or `localhost` -- sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it's originating. This is sometimes useful for testing, or to reach another service on the same machine.
+/todo: dig google.com and go straught to the IP
 
 ### Getting a Domain
 
@@ -89,10 +15,6 @@ The first step to getting a real URL is buying a domain from a *domain name regi
 The cost of a domain name varies widely. Buying a meaningless domain in a less popular top-level domain, say `ladskfmlsdf.me` can cost as little as \$3 per year. On the other hand, buying a `.com` domain that's a real word or phrase can be a few thousand dollars.
 
 Once you've got an IP address and a domain, you've got to connect the two.
-
-This is where the **domain name system (DNS)** comes in. DNS is the decentralized internet phonebook that translates back and forth between URLs and IP addresses. There are many layers of DNS servers, so pointing your browser at `example.com` starts with a query to a DNS server asking, "Where is the DNS server for `.com` websites?"
-
-Eventually, a query for your website will lead to the DNS server of your domain name registrar. You'll have to configure your domain name registrar to send traffic on to the right place.
 
 Configuration of DNS is done by way of *records*, of which there are a menagerie of types you *can* configure. Luckily, most simple configurations only need *CNAME* and *A* records.
 
@@ -122,7 +44,7 @@ If you're setting up your own server, this probably isn't the case, but some lar
 
 You should always configure your domain provider as narrowly as possible -- and you should configure your website or server *first*.
 
-\#TODO: why?
+#TODO: why?
 
 </aside>
 
@@ -142,7 +64,17 @@ To add an additional layer of complexity, DNS lookups are slow, so your browser 
 
 Go through hosting this book somewhere.
 
-## Securing your traffic with SSL/TLS
+## Exercises
+
+1.  Find a cheap domain you like and buy it.
+
+2.  Put an EC2 server back up with the Nginx `hello-world` example.
+
+3.  Configure your server to be available at your new domain.
+
+    1.  Hint: In AWS, Route 53 is the service that handles incoming networking. They can serve as a domain name registrar, or you can buy a domain elsewhere and just configure the DNS using Route 53.
+
+## Securing Traffic with `https`
 
 When you go to a website on the internet, you'll see the URL prefixed by the `https` (though it's sometimes hidden by your browser because it's assumed). `https` is actually a mashup that is short for `http` with secure sockets layer (SSL).
 
@@ -160,13 +92,13 @@ SSL accomplishes two things for you -- identity validation and traffic encryptio
 
 When you go to a website, SSL/TLS is the technology that verifies that you're actually reaching the website you think you're reaching. This prevents something called a man-in-the-middle attack where a malicious actor manages to get in between the server and the client of network traffic. So, for example, you might think you're putting your bank login information into your normal bank website, but there's a hacker sitting in the middle, reading all of the traffic back and forth.
 
-[TODO: Image of man-in-the-middle]
+\[TODO: Image of man-in-the-middle\]
 
 You can see this in action in your web browser. When you go to a website protected by `https`, you'll see a little lock icon to the left of the URL. That means that this website's SSL certificate matches the website and therefore your computer can verify you're actually at the website you mean to be at.
 
 But how does your computer know what a valid SSL certificate is? Your computer has a list of trusted Certificate Authorities (CAs) who create, sell, and validate SSL/TLS certificates. So when you navigate to a website, the website sends back a digital signature. Your computer checks the signature against the indicated CA to verify that it was issued to the site in question.
 
-[TODO: image of SSL validation]
+\[TODO: image of SSL validation\]
 
 The second type of scary scenario SSL prevents is a snooping/sniffing attack. Even if you're getting to the right place, your traffic travels through many different channels along the way -- routers, network switches, and more. This means that someone could theoretically look at all your traffic along the way to its meaningful destination.
 
@@ -203,25 +135,3 @@ A warning: it is deceptively easy to generate and configure a self-signed SSL ce
 However, it's pretty common to run into problems with self-signed certs or private CAs. Making sure the certificate chain is correct, or running into a piece of software that doesn't ignore the identity validation piece right is pretty common. This shouldn't dissuade you from using SSL/TLS. It's an essential, and basic, component of any security plan -- but using a self-signed cert probably isn't as easy as it seems.
 
 When you configure your site or server, there will likely be an option to redirect all `http` traffic to `https` traffic. If your server or site is open to the internet, you should set this option.
-
-## Exercises
-
-1.  Find a cheap domain you like and buy it.
-
-2.  Put an EC2 server back up with the Nginx `hello-world` example.
-
-3.  Configure your server to be available at your new domain.
-
-    1.  Hint: In AWS, Route 53 is the service that handles incoming networking. They can serve as a domain name registrar, or you can buy a domain elsewhere and just configure the DNS using Route 53.
-
-4.  Create or buy an SSL certificate.
-
-    1.  Hint: AWS Certificate Manager is AWS's SSL/TLS certificate issuer, but you can also bring-your-own certificate.
-
-5.  Add your certificate to Nginx and redirect all http traffic to https.
-
-    1.  Hint: `http` traffic comes in on port 80 by default.
-
-    2.  Hint: Return code `301` is for a permanent redirect.
-
-6.  What happens when you try to go to that URL.

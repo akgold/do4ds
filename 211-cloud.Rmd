@@ -1,59 +1,109 @@
-# The Cloud 
+# The Cloud and Cloud Providers
 
-Learning Objectives:
+Like so many tech buzzwords, it's pretty hard to get a sense for what the cloud *actually is* beneath all the hype.
 
-* Understand what the cloud is and why it's so hype
-* Demystify general cloud offerings
+::: {.rmdinfo}
+The Cloud is a description for servers you rent instead of buy.
+:::
 
----
+Back in the day -- and still in some heavily-regulated industries -- getting a new server involved buying a physical piece of hardware, installing it in a server room, getting it configured and up and running, installing the software you want on the server, and configuring access to the server.
 
-* General description for servers that you rent instead of buy
+The Cloud provides layers of "as a service" on top of this former world where someone at your organization would be responsible for buying and maintaining actual hardware.
 
-* 3 major cloud providers
-  * AWS = Amazon
-  * Azure = Microsoft
-  * GCP = Google
-  
+In this chapter, you'll learn a little bit about how The Cloud works, and how to demystify cloud offerings.
+
 ## The Rise of Services
 
-* Server/Cloud usage has gone the way of the rest of the economy -- services
-* The "rent me a server + connectors" model is generally called IaaS
-* Layers of abstraction on top of that -- PaaS, Saas
-  * Metaphor: Cake shop
-  [Diagram: Cake Shop]
-  * These metaphors are helpful for general understanding...actually applying them gets really fuzzy in data science land, because something that is SaaS from IT perspective is PaaS from data scientist perspective.
-    * Often find it more helpful to just categorize as IaaS/"something more abstracted".
-  * These services are generally surrounded my marketing jargon -- rarely do they just explain this is ___ as a service.
+Like much of the rest of the economy, server provisioning and use has gone the way of services. Instead of buying, owning, and maintaining a physical object, a huge proportion of the world's server hardware is rented.
 
-https://stackoverflow.com/questions/16820336/what-is-saas-paas-and-iaas-with-examples
-  
+In the US, a huge fraction runs on servers rented from one of three organizations (in order of how significant they are) -- Amazon Web Services (AWS), Microsoft Azure, and Google Cloud Platform (GCP). These three companies account for a huge proportion of what we think of as "The Cloud". There are other smaller players, and also companies that are popular for particular tasks, like Netlify for hosting static websites.
+
+However, in many cases, the cloud doesn't just refer to renting a server itself. There are also layers and layers of services on top of the "rent me a server" business.
+
+In general, the "rent me a server" model is called Infrastructure as a Service (IaaS - pronounced *eye-az*). So when you stood up an EC2 instance from AWS in the first chapter, you were using AWS's IaaS offering.
+
+In general, people split the layers on top of IaaS into two categories -- Platform as a Service (PaaS -- pronounced *pass*), and Software as a Service (SaaS pronounced *sass*).
+
+PaaS is where you rent an environment in which to do development. On the other hand, SaaS is renting software as an end user.
+
+One common way to explain the difference is using a baking metaphor. Consider making a cake. An on-prem install would be where you make the cake completely from scratch. A IaaS experience would be buying cake mix and baking at home. PaaS would be buying a premade blank cake that you decorate yourself, and SaaS would be just buying a store-bought cake.
+
+I find these categories and this metaphor sorta helpful in the abstract, but when getting down to concrete real-world examples, the distinctions get fuzzier, and you have to be careful which perspective you're talking about.
+
+For example, RStudio Cloud is a service where you can get an environment with RStudio preconfigured and ready to use. From the perspective of a data scientist, this is clearly a PaaS offering. RStudio is providing a platform where you can learn or do work as a data scientist.
+
+But from the perspective of an IT/Admin considering how to set up a server-based data science environment inside their company, RStudio Cloud is clearly a SaaS offering -- you just getting the software configured and ready to use.
+
+Making the issue even more difficult, many companies go out of their way to make their services sound grand and important and don't just say, "this is \_\_\_ as a service". Moreover, it's very common (especially in AWS) to have many different services that fulfill similar needs, and it can be really hard to concretely tell the difference.
+
+For example, if you go to AWS's database offerings for a "database as a service", your options include Redshift, RDS, Aurora, DynamoDB, ElastiCache, MemoryDB for Redis, DocumentDB, Keyspaces, Neptune, Timestream, and more.
+
+There's a reason why there's a meaningful industry of people whose full time job is to consult on which AWS service your company needs and how to take advantage of the pricing rules to make sure you get a good deal.
+
+There are a few reasons why organizations are moving to the cloud. Primary among them is that maintaining physical servers is often not the core competency of IT/Admin organizations. They'd rather manage higher-level abstractions than physical servers -- or increasingly even virtual servers.
+
+One reason that people cite, but very rarely comes to pass, is cost. In theory, the flexibility of the cloud should allow organizations to stand up servers as needed and spin them down when they're not needed. This flexibility is real, there are times when it's super useful to be able to bring up a server for a particular project -- it's often far quicker and easier than buying and installing a server of your own.
+
+In reality, the engineering needed to stand up and spin down these servers at the right time is really difficult and costly -- enough so that most organizations could probably substantailly *save* money if they repatriated their cloud workloads.
+
+For more established organizations, running workloads in the cloud may, in fact, be substantially *more* costly than just bringing those workloads on prem.
+
+## Serverless Computing
+
+In the past few years, there has been a rise in interest in "serverless" computing. This is a buzzword and there's no one shared definition of what serverless means. It's worth making clear that there is no such thing as truly serverless computing. Every bit of cloud computation runs on a server - the question is whether you have to deal with the server or if someone else is doing it for you.
+
+However, there are two distinct things happening that can meaningfully be described as serverless...but they're completely different.
+
+One is the rise of containerization. In chapter XXXX, we'll get deep into the weeds on using docker yourself. Docker is a very cool tool that makes software much more portable, because you can bring the environment -- all the way down to the operating system -- around with you very easily. This is kinda a superpower, and many organizations are moving towards using docker containers as the atomic units of their IT infrastructure, so the IT organization doesn't manage any servers directly, and instead just manages docker containers.
+
+In some sense, this is meaningfully serverless. You've moved the level of abstraction up a layer from servers and virtual machines to docker containers. And managing docker containers is often meaningfully easier than managing virtual machines directly. However, you still face a lot of the same problems like versioning operating systems, dealing with storage and networking yourself, and more.
+
+There is another, stronger, use of serverless that is rising and is also pretty cool, but is super different. In these services, you just hand off a function, written in soem programming langauge to a cloud provider, and they run that function as a service. In a trivial example, imagine a service that adds two numbers together. You could write a Python or R function that does this addition and returns it.
+
+It is possible to just deploy this function to a Cloud provider's environment and then only pay for the actual compute time needed to complete your function calls. This is obviously very appealing because you really don't have to manage anything at the server level. The disadvantage is that this works only for certain types of operations.
+
 ## Common Services That will be helpful to know offhand
 
-Amazon's names aren't completely obvious. They're usually referred to by their 3-letter acronyms. Azure and Google's offerings tend to be named more literally.
+Luckily, if you're thinking about setting up and running a standard data science platform in one of the major cloud providers, you're likely to use one of a few reasonably standard tools.
 
-## Cloud Tooling
-  * Identity MGMT - IAM, Azure AD
-  * Billing Mgmt
+It's helpful to keep in mind that at the very bottom, there are four basic cloud services: renting servers, configuring networking, identity management, and renting storage. All the other services are recombinations and software installed on top of that.[^cloud-1]
+
+[^cloud-1]: There are also some really wacky services you can get if you wanted to, like AWS Ground Station, which allows you to rent satellite ground station infrastructure. That's cool...but I'm not sure why you're reading this book if you need that.
+
+Azure and GCP tend to name their offerings pretty literally. AWS, on the other hand, uses names that have little relationship to the actual task at hand, and you'll just need to learn them.
 
 ### IaaS
-  * Compute - AWS EC2, Azure VMs, Google Compute Engine
-  * Storage
-    * file - EBS, Azure managed disk, Google Persistent Disk
-    * Network drives - EFS, Azure Files, Google Filestore
-    * block/blob - S3, Azure Blob Storage, Google Cloud Storage
-  * Networking:
-    * Private Clouds: VPC, Virtual Network, Google Virtual Private Cloud
-    * DNS - Route53, Azure DNS + Traffic Manager, Google Cloud DNS
+
+-   Compute - AWS EC2, Azure VMs, Google Compute Engine
+
+-   Storage
+
+    -   file - EBS, Azure managed disk, Google Persistent Disk
+    -   Network drives - EFS, Azure Files, Google Filestore
+    -   block/blob - S3, Azure Blob Storage, Google Cloud Storage
+
+-   Networking:
+
+    -   Private Clouds: VPC, Virtual Network, Google Virtual Private Cloud
+    -   DNS - Route53, Azure DNS + Traffic Manager, Google Cloud DNS
 
 ### Not IaaS
-  * Container Hosting - ECS, Azure Container Instances + Container Registry
-  * K8S cluster as a service - EKS, AKS, GKE
-  * Run a function as a service - Lambda, Azure Functions, Google Cloud Functions
-  * Database - RDS/Redshift, Azure Database, Google Cloud SQL
-  * SageMaker - ML platform as a service, Azure ML, Google Notebooks
 
-https://docs.microsoft.com/en-us/azure/architecture/aws-professional/services#networking
-https://cloud.google.com/free/docs/aws-azure-gcp-service-comparison
+-   Container Hosting - ECS, Azure Container Instances + Container Registry
+-   K8S cluster as a service - EKS, AKS, GKE
+-   Run a function as a service - Lambda, Azure Functions, Google Cloud Functions
+-   Database - RDS/Redshift, Azure Database, Google Cloud SQL
+-   SageMaker - ML platform as a service, Azure ML, Google Notebooks
+
+<https://docs.microsoft.com/en-us/azure/architecture/aws-professional/services#networking> <https://cloud.google.com/free/docs/aws-azure-gcp-service-comparison>
+
+## Cloud Tooling
+
+-   Identity MGMT - IAM, Azure AD
+-   Billing Mgmt
+
+IaaC tooling
 
 ## Exercises
-* Example of something you'd want to build -- for each of the 3 providers, which services would you use if you wanted an IaaS solution, a PaaS solution?
+
+-   Example of something you'd want to build -- for each of the 3 providers, which services would you use if you wanted an IaaS solution, a PaaS solution?
