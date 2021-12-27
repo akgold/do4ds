@@ -4,16 +4,16 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Chapter 6 Understanding Network Traffic | DevOps for Data Science (working title)</title>
+<title>Chapter 6 Computer Networks and the Internet | DevOps for Data Science (working title)</title>
 <meta name="author" content="Alex Gold">
-<meta name="description" content="When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network. These days, people are generally familiar with the...">
+<meta name="description" content="In chapter 1, we got into how the computer on your desk, on your lap, or in your hand works. These days, many or even most of the things we want to do involve sending data across computer...">
 <meta name="generator" content="bookdown 0.24.4 with bs4_book()">
-<meta property="og:title" content="Chapter 6 Understanding Network Traffic | DevOps for Data Science (working title)">
+<meta property="og:title" content="Chapter 6 Computer Networks and the Internet | DevOps for Data Science (working title)">
 <meta property="og:type" content="book">
-<meta property="og:description" content="When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network. These days, people are generally familiar with the...">
+<meta property="og:description" content="In chapter 1, we got into how the computer on your desk, on your lap, or in your hand works. These days, many or even most of the things we want to do involve sending data across computer...">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Chapter 6 Understanding Network Traffic | DevOps for Data Science (working title)">
-<meta name="twitter:description" content="When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network. These days, people are generally familiar with the...">
+<meta name="twitter:title" content="Chapter 6 Computer Networks and the Internet | DevOps for Data Science (working title)">
+<meta name="twitter:description" content="In chapter 1, we got into how the computer on your desk, on your lap, or in your hand works. These days, many or even most of the things we want to do involve sending data across computer...">
 <!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery/jquery-3.5.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap/bootstrap.bundle.min.js"></script><script src="libs/bs3compat/transition.js"></script><script src="libs/bs3compat/tabs.js"></script><script src="libs/bs3compat/bs3compat.js"></script><link href="libs/bs4_book/bs4_book.css" rel="stylesheet">
@@ -46,7 +46,7 @@
 <li><a class="" href="ssh.html"><span class="header-section-number">3</span> Accessing Servers via SSH</a></li>
 <li><a class="" href="computers-computing-and-servers.html"><span class="header-section-number">4</span> Computers, Computing, and Servers</a></li>
 <li><a class="" href="lab-1-get-your-own-server.html"><span class="header-section-number">5</span> Lab 1: Get your own server</a></li>
-<li><a class="active" href="url.html"><span class="header-section-number">6</span> Understanding Network Traffic</a></li>
+<li><a class="active" href="url.html"><span class="header-section-number">6</span> Computer Networks and the Internet</a></li>
 <li><a class="" href="getting-a-real-url.html"><span class="header-section-number">7</span> Getting a real URL</a></li>
 <li><a class="" href="private-networking-configuration.html"><span class="header-section-number">8</span> Private Networking Configuration</a></li>
 <li><a class="" href="auth.html"><span class="header-section-number">9</span> How login works</a></li>
@@ -74,37 +74,95 @@
 </div>
   </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="url" class="section level1">
 <h1>
-<span class="header-section-number">6</span> Understanding Network Traffic<a class="anchor" aria-label="anchor" href="#url"><i class="fas fa-link"></i></a>
+<span class="header-section-number">6</span> Computer Networks and the Internet<a class="anchor" aria-label="anchor" href="#url"><i class="fas fa-link"></i></a>
 </h1>
-<p>When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network.</p>
-<p>These days, people are generally familiar with the concept of computer networks because they know about the internet – the biggest computer network of them all! But computer networks come in all sorts of sizes and shapes.</p>
-<p>The internet is the biggest computer network, and it’s public. But there are also myriad smaller private computer networks that range from the very small, like the set of devices connected to your home wifi router, to the somewhat larger, like the VPN (it stands for virtual private network, after all) you might connect to for school or work.</p>
-<p>In general, a computer network is a set of computers that can communicate with each other to send data - network traffic – back and forth to each other. An important fact about those networks is that they all share common structural elements – if you understand the wifi network in your house, you’ve also got a reasonably good understanding of how the entire internet works!</p>
-<p>In this chapter, we’ll get a bit into how computer networks work. In particular, we’ll get into some of the layers of protocols that define how computers communicate with each other. This chapter is mostly going to be background for the next few chapters, where we’ll get into the nitty gritty of how to configure both the public and private elements of networking for your data science workshop.</p>
-<div id="what-is-network-traffic" class="section level2">
+<p>In <a href="#servers">chapter 1</a>, we got into how the computer on your desk, on your lap, or in your hand works. These days, many or even most of the things we want to do involve sending data across computer networks. When you visit a website, wirelessly print a document, or login to your email, you are making use of a computer network.</p>
+<p>The computer network we’re all most familiar with is the biggest of them all – The Internet. But there are myriad other networks, like the very small private network of the devices (phones, computers, TVs, etc) connected to your home wifi router, to the somewhat larger VPN (it stands for virtual private network, after all) you might connect to for school or work.</p>
+<p>A computer network is a set of computers that can communicate with each other to send data in the form of network traffic back and forth to each other. These networks are basically self-similar – once you understand the wifi network in your house, you’ve also got a reasonably good understanding of how the entire internet works, which is great if you’re an author trying to explain how this all works.</p>
+<p>In this chapter, you’ll learn the basics of how computer networks work. In particular, we’ll get into some of the layers of protocols that define how computers communicate with each other. This chapter is mostly going to be background for the next few chapters, where we’ll get into the nitty gritty of how to configure both the public and private elements of networking for your data science workshop.</p>
+<div id="computer-communication-packets-traversing-networks" class="section level2">
 <h2>
-<span class="header-section-number">6.1</span> What is network traffic?<a class="anchor" aria-label="anchor" href="#what-is-network-traffic"><i class="fas fa-link"></i></a>
+<span class="header-section-number">6.1</span> Computer communication = packets traversing networks<a class="anchor" aria-label="anchor" href="#computer-communication-packets-traversing-networks"><i class="fas fa-link"></i></a>
 </h2>
-<p>Regardless of the contents of your network traffic, computers communicate with each other using a process called packet switching. In packet switching, your computer takes the data you want to send, chops it up into bite-size pieces called packets, addresses those packets to where they’re going, sends them off, and awaits a response.</p>
-<p>One of the important aspects of packet switching is that at any given time, a packet knows two things – its eventual end goal, and it’s next stop to get there. One of the main principles of computer networks is that I don’t need to know the whole path to where I’m going when I get started, I just jump from one <em>node</em> to another in the network. The protocol that defines this process of packet switching is called TCP/IP, which you may have heard of before.</p>
-<p>A node could be a server or computer, but in between there are usually many layers of switches, routers, and networking hardware that serve just to get the traffic from one place to another.</p>
-<p>When the packets arrive where they’re going, they’re received by a listening service, reassembled into the original message, and then something happens. A response might be sent, or it might provoke a server side action.</p>
-<div id="whats-inside-the-packets" class="section level3">
-<h3>
-<span class="header-section-number">6.1.1</span> What’s inside the packets?<a class="anchor" aria-label="anchor" href="#whats-inside-the-packets"><i class="fas fa-link"></i></a>
-</h3>
-<p>Once your packets get to where they’re going, the service on the other side needs to know how to reassemble them into a coherent message. This definition of what constitutes a valid message to send is defined by the <em>application layer protocol</em>.</p>
-<p>There are numerous different kinds of application layer protocols that define how the server should understand the request that was sent and what are legitimate things to send back.</p>
-<p>Some protocols you will see in this book include <code>SSH</code> for direct server access, <code>(S)FTP</code> for file transfers, <code>SMTP</code> for email, <code>LDAP(S)</code> for authentication, and <code>websockets</code> for persistent bi-directional communication – used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.</p>
-<p>The most common application layer protocol on the internet is <code>http</code>, the protocol that defines how to fetch documents across networks – the most common types of documents on the internet being HTML web pages.</p>
+<p>The virtual version of the processes that get your letter from your house to your penpal’s is called <em>packet switching</em>, and it’s really not a bad analogy. Like the physical mail, your computer dresses up a message with an address and some other details, sends it on its way, and waits for a response.<a class="footnote-ref" tabindex="0" data-toggle="popover" data-content="&lt;p&gt;One of the biggest ways the mail &lt;em&gt;is not&lt;/em&gt; like packet switching is that your message gets chopped up among lots of different packets, which are routed independently, and are reassembled when they get where they’re going. Works well for computers, not so well for real-world mail. It’s also pretty much an irrelevant detail, since this whole process works quite invisibly.&lt;/p&gt;"><sup>5</sup></a> The set of rules – called a <em>protocol</em> – that defines a valid address, envelope type, and more is called <em>TCP/IP</em>.</p>
+<p>Underneath these protocols is a bunch of hardware, which we’re basically going to ignore.</p>
+<p>Each computer network is governed by a router. For the purposes of your mental model, you can basically think of your router as doing two things – maintaining a table of the IP addresses it knows, and following this algorithm over and over again.</p>
+<p>#TODO: Turn into visual tree – also visual of networks and sub-networks</p>
+<ol style="list-style-type: decimal">
+<li>
+<p>Do I know where this address is?</p>
+<ol style="list-style-type: decimal">
+<li><p>Yes: Send the packet there.</p></li>
+<li><p>No: Send the packet to the default address and cross fingers.</p></li>
+</ol>
+</li>
+</ol>
+<p>In general, routers only know about the IP addresses of sub-networks and devices, so if you’re printing something from your laptop to the computer in the next room, the packet just goes to your router and then straight to the printer.</p>
+<blockquote>
+<p>In your home’s local area network (LAN), your router does one additional thing – as devices like your phone, laptop, or printer attach to the network, it assigns them IP addresses based on the addresses available in a process called Dynamic Host Configuration Protocol (DHCP).</p>
+</blockquote>
+<p>On the other hand, if you’re sending something to a website or server that’s far away, your computer has no idea where that IP address is. Clever people have solved this problem by setting the default address in each router to be an “upstream” router that is a level more general.</p>
+<p>So immediately upstream of your router is probably a router specific to your ISP for a relatively small geographic area. Upstream of that is probably a router for a broader geographic area. So your packet will get passed upstream to a sufficiently general network and then back downstream to the actual IP address you’re trying to reach.</p>
+<p>#TODO: Image of computer network w/ upstream and downstream networks</p>
+<p>When the packets are received and read – something happens. Maybe you get to watch your show on Netflix, or your document gets printed – or maybe you get an error message back. In any event, the return message will be transmitted exactly the same way as your initial message, though it might follow a different path.</p>
 </div>
-<div id="understanding-http-traffic" class="section level3">
+<div id="more-details-about-ip-addresses" class="section level2">
+<h2>
+<span class="header-section-number">6.2</span> More details about IP Addresses<a class="anchor" aria-label="anchor" href="#more-details-about-ip-addresses"><i class="fas fa-link"></i></a>
+</h2>
+<p>IP addresses are, indeed, addresses. They are how one computer or server finds another on a computer network, and they are unique within that network.</p>
+<p>Most IP addresses you’ve probably seen before are IPv4 addresses. They’re four blocks of 8-bit fields, so they look something like 65.77.154.233, where each of the four numbers is something between 0 and 255.</p>
+<p>Since these addresses are unique, each server and website on the internet needs a unique IP address. If you do the math, you’ll realize there are “only” about 4 billion of these. It turns out that’s not enough for the public internet and we’re running out.</p>
+<p>In the last few years, adoption of the new standard, IPv6, has started. IPv6 addresses are eight blocks of hexadecimal (0-9 + a-f) digits separated by colons, with certain rules that allow them to be shortened, so 4b01:0db8:85a3:0000:0000:8a2e:0370:7334 or 3da4:66a::1 are both examples of valid IPv6 addresses.</p>
+<p>IPv6 will coexist with IPv4 for a few decades, and we’ll eventually switch entirely to IPv6. There’s no worry about running out of IPv6 addresses any time soon, because the total number of IPv6 addresses is a number 39 digits long.</p>
+<div id="special-ip-addresses" class="section level4">
+<h4>
+<span class="header-section-number">6.2.0.1</span> Special IP Addresses<a class="anchor" aria-label="anchor" href="#special-ip-addresses"><i class="fas fa-link"></i></a>
+</h4>
+<p>As you work more with IP addresses, there are a few you’ll see over and over. Here’s a quick cheatsheet:</p>
+<div class="inline-table"><table class="table table-sm">
+<colgroup>
+<col width="21%">
+<col width="78%">
+</colgroup>
+<thead><tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>127.0.0.1</td>
+<td>
+<code>localhost</code> or loopback – the machine that originated the request</td>
+</tr>
+<tr class="even">
+<td>
+<p>192.168.x.x, 172.16.x.x.x,</p>
+<p>10.x.x.x</p>
+</td>
+<td>Protected address blocks used for private IP addresses. More on public vs private addresses in chapter XX.</td>
+</tr>
+</tbody>
+</table></div>
+<p>There is one IP address you may frequently see, which is 127.0.0.1 or localhost – sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it’s originating. This is sometimes useful for testing, or to reach another service on the same machine.</p>
+</div>
+</div>
+<div id="application-layer-protocols-define-valid-messages" class="section level2">
+<h2>
+<span class="header-section-number">6.3</span> Application Layer Protocols define valid messages<a class="anchor" aria-label="anchor" href="#application-layer-protocols-define-valid-messages"><i class="fas fa-link"></i></a>
+</h2>
+<p>The TCP/IP protocol defines how the packets are created, addressed, and routed. <em>Application layer protocols</em> define what are sensible and valid messages to send.</p>
+<p>There are numerous application layer protocols. Some you will see in this book include <code>SSH</code> for direct server access, <code>(S)FTP</code> for file transfers, <code>SMTP</code> for email, <code>LDAP(S)</code> for authentication and authorization, and <code>websockets</code> for persistent bi-directional communication – used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.</p>
+<p>We’ll talk more about some of those other protocols later in the book. For now, let’s focus on the one you’ll spend most of your time thinking about – <code>http</code>.</p>
+<div id="http-is-the-most-common-application-layer-protocol" class="section level3">
 <h3>
-<span class="header-section-number">6.1.2</span> Understanding <code>http</code> traffic<a class="anchor" aria-label="anchor" href="#understanding-http-traffic"><i class="fas fa-link"></i></a>
+<span class="header-section-number">6.3.1</span> <code>http</code> is the most common application layer protocol<a class="anchor" aria-label="anchor" href="#http-is-the-most-common-application-layer-protocol"><i class="fas fa-link"></i></a>
 </h3>
-<p>Since a huge proportion of network traffic is <code>http</code> traffic, it’s worth taking a few moments to get a deeper understanding of how <code>http</code> traffic works.</p>
+<p>Hyptertext transfer protocol (<code>http</code>) is the protocol that underlies a huge fraction of internet traffic. <code>http</code> defines how a computer can initiate a session with a server, request the server do something, and await a response.</p>
+<p>So whenever you go to a website, <code>http</code> is the protocol that defines how the underlying interactions that happen as your computer requests the website and the server sends back the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.</p>
+<blockquote>
 <p>It’s worth noting that these days, virtually all <code>http</code> traffic over the internet is in the form of secured <code>https</code> traffic. We’ll get into what the <code>s</code> means and how it’s secured in the next chapter.</p>
-<p><code>http</code> traffic is a client-and-server protocol, meaning that the client – often your web browser - sends requests of various kinds to the server, which sends things back. In the case of a web page, your browser requests the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.</p>
+</blockquote>
 <p>There are a few important elements to <code>http</code> requests and responses:</p>
 <ul>
 <li><p>Request Method – getting deep into HTTP request methods is beyond the scope of this book, but there are a variety of different methods you might use to interact with things on the internet. The most common are <code>GET</code> to get a webpage, <code>POST</code> or <code>PUT</code> to change something, and <code>DELETE</code> to delete something.</p></li>
@@ -119,9 +177,9 @@
 </li>
 </ul>
 </div>
-<div id="directly-inspecting-http-traffic" class="section level3">
+<div id="understand-http-traffic-by-inspecting-it" class="section level3">
 <h3>
-<span class="header-section-number">6.1.3</span> Directly Inspecting <code>http</code> traffic<a class="anchor" aria-label="anchor" href="#directly-inspecting-http-traffic"><i class="fas fa-link"></i></a>
+<span class="header-section-number">6.3.2</span> Understand <code>http</code> traffic by inspecting it<a class="anchor" aria-label="anchor" href="#understand-http-traffic-by-inspecting-it"><i class="fas fa-link"></i></a>
 </h3>
 <p>The best way to understand <code>http</code> traffic is to take a close look at some. Luckily, you’ve got an easy tool – your web browser!</p>
 <p>Open a new tab in your browser and open your developer tools. How this works will depend on your browser. In Chrome, you’ll go to View &gt; Developer &gt; Developer Tools and then make sure the Network tab is open.</p>
@@ -133,7 +191,7 @@
 <p>In the pane below, you can inspect the actual content that is going back and forth between your computer and the server you’re accessing including the request methods, status codes, headers, and bodies.</p>
 <div id="special-http-codes" class="section level4">
 <h4>
-<span class="header-section-number">6.1.3.1</span> Special HTTP Codes<a class="anchor" aria-label="anchor" href="#special-http-codes"><i class="fas fa-link"></i></a>
+<span class="header-section-number">6.3.2.1</span> Special HTTP Codes<a class="anchor" aria-label="anchor" href="#special-http-codes"><i class="fas fa-link"></i></a>
 </h4>
 <p>As you work more with <code>http</code> traffic, you’ll learn some of the common codes. Here’s a cheatshet for some of the most frequent you’ll see.</p>
 <div class="inline-table"><table class="table table-sm">
@@ -187,49 +245,23 @@
 </div>
 </div>
 </div>
-<div id="how-requests-know-where-to-go" class="section level2">
-<h2>
-<span class="header-section-number">6.2</span> How requests know where to go<a class="anchor" aria-label="anchor" href="#how-requests-know-where-to-go"><i class="fas fa-link"></i></a>
-</h2>
-<p>IP addresses are, indeed, addresses. They are how one computer or server finds another on a computer network, and they are unique within that network.</p>
-<p>But there’s an important distinction between public and private IP addresses that’s worth understanding. When you connect something to the internet – a server, website, or your home router – it is assigned a public IP address. In general, an</p>
-<p>As you start working more intimately with servers, you’ll spend more time staring at IP addresses, so it’s worth learning to recognize them.</p>
-<p>The IP addresses so far in this book are <code>IPv4</code> addresses. They’re four blocks of 8-bit fields (integers up to 256), so they look like <code>0.0.0.0</code> to <code>255.255.255.255</code>. If you do the math, you’ll realize there are <em>“only”</em> about 4 billion of these. It turns out that’s not enough for the public internet and we’re running out.</p>
-<p>In the last few years, adoption of the new standard, <code>IPv6</code>, has started. <code>IPv6</code> addresses are eight blocks of hexadecimal (<code>0-9</code> + <code>a-f</code>) digits separated by colons, with certain rules that allow them to be shortened, so <code>4b01:0db8:85a3:0000:0000:8a2e:0370:7334</code> or <code>3da4:66a::1</code> are both examples of valid <code>IPv6</code> addresses.</p>
-<p><code>IPv6</code> will coexist with <code>IPv4</code> for a few decades, and we’ll eventually switch entirely to <code>IPv6</code>. There’s no worry about running out of <code>IPv6</code> addresses any time soon, because the total number of <code>IPv6</code> addresses is a number 39 digits long.</p>
-<p>There is one IP address you may frequently see, which is <code>127.0.0.1</code> or <code>localhost</code> – sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it’s originating. This is sometimes useful for testing, or to reach another service on the same machine.</p>
 </div>
-<div id="anatomy-of-a-url" class="section level2">
-<h2>
-<span class="header-section-number">6.3</span> Anatomy of a URL<a class="anchor" aria-label="anchor" href="#anatomy-of-a-url"><i class="fas fa-link"></i></a>
-</h2>
-<p>We could just go around visiting websites using their IP addresses, but addresses like <code>143.122.8.32</code> are pretty hard to remember.</p>
-<p>Even worse, IP addresses generally aren’t permanent – they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance – see chapter XX).</p>
-<p>In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like <code>google.com</code>, rather than an IP address.</p>
-<p>Let’s start with what a URL is.</p>
-<p><span class="math display">\[
-\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{blog}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
-\]</span></p>
-<p>In this chapter and the next, we’ll get into how each of these components of the URL is created and assigned.</p>
 
-</div>
-</div>
   <div class="chapter-nav">
 <div class="prev"><a href="lab-1-get-your-own-server.html"><span class="header-section-number">5</span> Lab 1: Get your own server</a></div>
 <div class="next"><a href="getting-a-real-url.html"><span class="header-section-number">7</span> Getting a real URL</a></div>
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
     <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
       <ul class="nav navbar-nav">
-<li><a class="nav-link" href="#url"><span class="header-section-number">6</span> Understanding Network Traffic</a></li>
+<li><a class="nav-link" href="#url"><span class="header-section-number">6</span> Computer Networks and the Internet</a></li>
+<li><a class="nav-link" href="#computer-communication-packets-traversing-networks"><span class="header-section-number">6.1</span> Computer communication = packets traversing networks</a></li>
+<li><a class="nav-link" href="#more-details-about-ip-addresses"><span class="header-section-number">6.2</span> More details about IP Addresses</a></li>
 <li>
-<a class="nav-link" href="#what-is-network-traffic"><span class="header-section-number">6.1</span> What is network traffic?</a><ul class="nav navbar-nav">
-<li><a class="nav-link" href="#whats-inside-the-packets"><span class="header-section-number">6.1.1</span> What’s inside the packets?</a></li>
-<li><a class="nav-link" href="#understanding-http-traffic"><span class="header-section-number">6.1.2</span> Understanding http traffic</a></li>
-<li><a class="nav-link" href="#directly-inspecting-http-traffic"><span class="header-section-number">6.1.3</span> Directly Inspecting http traffic</a></li>
+<a class="nav-link" href="#application-layer-protocols-define-valid-messages"><span class="header-section-number">6.3</span> Application Layer Protocols define valid messages</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#http-is-the-most-common-application-layer-protocol"><span class="header-section-number">6.3.1</span> http is the most common application layer protocol</a></li>
+<li><a class="nav-link" href="#understand-http-traffic-by-inspecting-it"><span class="header-section-number">6.3.2</span> Understand http traffic by inspecting it</a></li>
 </ul>
 </li>
-<li><a class="nav-link" href="#how-requests-know-where-to-go"><span class="header-section-number">6.2</span> How requests know where to go</a></li>
-<li><a class="nav-link" href="#anatomy-of-a-url"><span class="header-section-number">6.3</span> Anatomy of a URL</a></li>
 </ul>
 
       <div class="book-extra">
@@ -246,7 +278,7 @@
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>DevOps for Data Science (working title)</strong>" was written by Alex Gold. It was last built on 2021-12-15.</p>
+    <p>"<strong>DevOps for Data Science (working title)</strong>" was written by Alex Gold. It was last built on 2021-12-27.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
