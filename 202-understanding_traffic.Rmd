@@ -1,42 +1,86 @@
-# Understanding Network Traffic {#url}
+# Computer Networks and the Internet {#url}
 
-When you load a website, print a document, or login to your email, your computer is sending information back and forth across a computer network.
+In [chapter 1](#servers), we got into how the computer on your desk, on your lap, or in your hand works. These days, many or even most of the things we want to do involve sending data across computer networks. When you visit a website, wirelessly print a document, or login to your email, you are making use of a computer network.
 
-These days, people are generally familiar with the concept of computer networks because they know about the internet -- the biggest computer network of them all! But computer networks come in all sorts of sizes and shapes.
+The computer network we're all most familiar with is the biggest of them all -- The Internet. But there are myriad other networks, like the very small private network of the devices (phones, computers, TVs, etc) connected to your home wifi router, to the somewhat larger VPN (it stands for virtual private network, after all) you might connect to for school or work.
 
-The internet is the biggest computer network, and it's public. But there are also myriad smaller private computer networks that range from the very small, like the set of devices connected to your home wifi router, to the somewhat larger, like the VPN (it stands for virtual private network, after all) you might connect to for school or work.
+A computer network is a set of computers that can communicate with each other to send data in the form of network traffic back and forth to each other. These networks are basically self-similar -- once you understand the wifi network in your house, you've also got a reasonably good understanding of how the entire internet works, which is great if you're an author trying to explain how this all works.
 
-In general, a computer network is a set of computers that can communicate with each other to send data - network traffic -- back and forth to each other. An important fact about those networks is that they all share common structural elements -- if you understand the wifi network in your house, you've also got a reasonably good understanding of how the entire internet works!
+In this chapter, you'll learn the basics of how computer networks work. In particular, we'll get into some of the layers of protocols that define how computers communicate with each other. This chapter is mostly going to be background for the next few chapters, where we'll get into the nitty gritty of how to configure both the public and private elements of networking for your data science workshop.
 
-In this chapter, we'll get a bit into how computer networks work. In particular, we'll get into some of the layers of protocols that define how computers communicate with each other. This chapter is mostly going to be background for the next few chapters, where we'll get into the nitty gritty of how to configure both the public and private elements of networking for your data science workshop.
+## Computer communication = packets traversing networks
 
-## What is network traffic?
+The virtual version of the processes that get your letter from your house to your penpal's is called *packet switching*, and it's really not a bad analogy. Like the physical mail, your computer dresses up a message with an address and some other details, sends it on its way, and waits for a response.[^understanding_traffic-1] The set of rules -- called a *protocol* -- that defines a valid address, envelope type, and more is called *TCP/IP*.
 
-Regardless of the contents of your network traffic, computers communicate with each other using a process called packet switching. In packet switching, your computer takes the data you want to send, chops it up into bite-size pieces called packets, addresses those packets to where they're going, sends them off, and awaits a response.
+[^understanding_traffic-1]: One of the biggest ways the mail *is not* like packet switching is that your message gets chopped up among lots of different packets, which are routed independently, and are reassembled when they get where they're going. Works well for computers, not so well for real-world mail. It's also pretty much an irrelevant detail, since this whole process works quite invisibly.
 
-One of the important aspects of packet switching is that at any given time, a packet knows two things -- its eventual end goal, and it's next stop to get there. One of the main principles of computer networks is that I don't need to know the whole path to where I'm going when I get started, I just jump from one *node* to another in the network. The protocol that defines this process of packet switching is called TCP/IP, which you may have heard of before.
+Underneath these protocols is a bunch of hardware, which we're basically going to ignore.
 
-A node could be a server or computer, but in between there are usually many layers of switches, routers, and networking hardware that serve just to get the traffic from one place to another.
+Each computer network is governed by a router. For the purposes of your mental model, you can basically think of your router as doing two things -- maintaining a table of the IP addresses it knows, and following this algorithm over and over again.
 
-When the packets arrive where they're going, they're received by a listening service, reassembled into the original message, and then something happens. A response might be sent, or it might provoke a server side action.
+#TODO: Turn into visual tree -- also visual of networks and sub-networks
 
-### What's inside the packets?
+1.  Do I know where this address is?
 
-Once your packets get to where they're going, the service on the other side needs to know how to reassemble them into a coherent message. This definition of what constitutes a valid message to send is defined by the *application layer protocol*.
+    1.  Yes: Send the packet there.
 
-There are numerous different kinds of application layer protocols that define how the server should understand the request that was sent and what are legitimate things to send back.
+    2.  No: Send the packet to the default address and cross fingers.
 
-Some protocols you will see in this book include `SSH` for direct server access, `(S)FTP` for file transfers, `SMTP` for email, `LDAP(S)` for authentication, and `websockets` for persistent bi-directional communication -- used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.
+In general, routers only know about the IP addresses of sub-networks and devices, so if you're printing something from your laptop to the computer in the next room, the packet just goes to your router and then straight to the printer.
 
-The most common application layer protocol on the internet is `http`, the protocol that defines how to fetch documents across networks -- the most common types of documents on the internet being HTML web pages.
+> In your home's local area network (LAN), your router does one additional thing -- as devices like your phone, laptop, or printer attach to the network, it assigns them IP addresses based on the addresses available in a process called Dynamic Host Configuration Protocol (DHCP).
 
-### Understanding `http` traffic
+On the other hand, if you're sending something to a website or server that's far away, your computer has no idea where that IP address is. Clever people have solved this problem by setting the default address in each router to be an "upstream" router that is a level more general.
 
-Since a huge proportion of network traffic is `http` traffic, it's worth taking a few moments to get a deeper understanding of how `http` traffic works.
+So immediately upstream of your router is probably a router specific to your ISP for a relatively small geographic area. Upstream of that is probably a router for a broader geographic area. So your packet will get passed upstream to a sufficiently general network and then back downstream to the actual IP address you're trying to reach.
 
-It's worth noting that these days, virtually all `http` traffic over the internet is in the form of secured `https` traffic. We'll get into what the `s` means and how it's secured in the next chapter.
+#TODO: Image of computer network w/ upstream and downstream networks
 
-`http` traffic is a client-and-server protocol, meaning that the client -- often your web browser - sends requests of various kinds to the server, which sends things back. In the case of a web page, your browser requests the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.
+When the packets are received and read -- something happens. Maybe you get to watch your show on Netflix, or your document gets printed -- or maybe you get an error message back. In any event, the return message will be transmitted exactly the same way as your initial message, though it might follow a different path.
+
+## More details about IP Addresses
+
+IP addresses are, indeed, addresses. They are how one computer or server finds another on a computer network, and they are unique within that network.
+
+Most IP addresses you've probably seen before are IPv4 addresses. They're four blocks of 8-bit fields, so they look something like 65.77.154.233, where each of the four numbers is something between 0 and 255.
+
+Since these addresses are unique, each server and website on the internet needs a unique IP address. If you do the math, you'll realize there are "only" about 4 billion of these. It turns out that's not enough for the public internet and we're running out.
+
+In the last few years, adoption of the new standard, IPv6, has started. IPv6 addresses are eight blocks of hexadecimal (0-9 + a-f) digits separated by colons, with certain rules that allow them to be shortened, so 4b01:0db8:85a3:0000:0000:8a2e:0370:7334 or 3da4:66a::1 are both examples of valid IPv6 addresses.
+
+IPv6 will coexist with IPv4 for a few decades, and we'll eventually switch entirely to IPv6. There's no worry about running out of IPv6 addresses any time soon, because the total number of IPv6 addresses is a number 39 digits long.
+
+#### Special IP Addresses
+
+As you work more with IP addresses, there are a few you'll see over and over. Here's a quick cheatsheet:
+
++----------------------------+------------------------------------------------------------------------------------------------------------+
+| Code                       | Meaning                                                                                                    |
++============================+============================================================================================================+
+| 127.0.0.1                  | `localhost` or loopback -- the machine that originated the request                                         |
++----------------------------+------------------------------------------------------------------------------------------------------------+
+| 192.168.x.x, 172.16.x.x.x, | Protected address blocks used for private IP addresses. More on public vs private addresses in chapter XX. |
+|                            |                                                                                                            |
+| 10.x.x.x                   |                                                                                                            |
++----------------------------+------------------------------------------------------------------------------------------------------------+
+
+There is one IP address you may frequently see, which is 127.0.0.1 or localhost -- sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it's originating. This is sometimes useful for testing, or to reach another service on the same machine.
+
+## Application Layer Protocols define valid messages
+
+The TCP/IP protocol defines how the packets are created, addressed, and routed. *Application layer protocols* define what are sensible and valid messages to send.
+
+There are numerous application layer protocols. Some you will see in this book include `SSH` for direct server access, `(S)FTP` for file transfers, `SMTP` for email, `LDAP(S)` for authentication and authorization, and `websockets` for persistent bi-directional communication -- used for interactive webapps created by the Shiny package in R and the Streamlit package in Python.
+
+We'll talk more about some of those other protocols later in the book. For now, let's focus on the one you'll spend most of your time thinking about -- `http`.
+
+### `http` is the most common application layer protocol
+
+Hyptertext transfer protocol (`http`) is the protocol that underlies a huge fraction of internet traffic. `http` defines how a computer can initiate a session with a server, request the server do something, and await a response.
+
+So whenever you go to a website, `http` is the protocol that defines how the underlying interactions that happen as your computer requests the website and the server sends back the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.
+
+> It's worth noting that these days, virtually all `http` traffic over the internet is in the form of secured `https` traffic. We'll get into what the `s` means and how it's secured in the next chapter.
 
 There are a few important elements to `http` requests and responses:
 
@@ -50,7 +94,7 @@ There are a few important elements to `http` requests and responses:
 
     -   It's worth noting that `GET` requests for fetching something generally don't include a body. Instead, any specifics on what is to be fetched are specified through *query parameters*, the part of the URL that shows up after the `?`. They're often something like, `?first_name=alex&last_name=gold`
 
-### Directly Inspecting `http` traffic
+### Understand `http` traffic by inspecting it
 
 The best way to understand `http` traffic is to take a close look at some. Luckily, you've got an easy tool -- your web browser!
 
@@ -91,35 +135,3 @@ As you work more with `http` traffic, you'll learn some of the common codes. Her
 +-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `504`           | gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
 +-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-## How requests know where to go
-
-IP addresses are, indeed, addresses. They are how one computer or server finds another on a computer network, and they are unique within that network.
-
-But there's an important distinction between public and private IP addresses that's worth understanding. When you connect something to the internet -- a server, website, or your home router -- it is assigned a public IP address. In general, an
-
-As you start working more intimately with servers, you'll spend more time staring at IP addresses, so it's worth learning to recognize them.
-
-The IP addresses so far in this book are `IPv4` addresses. They're four blocks of 8-bit fields (integers up to 256), so they look like `0.0.0.0` to `255.255.255.255`. If you do the math, you'll realize there are *"only"* about 4 billion of these. It turns out that's not enough for the public internet and we're running out.
-
-In the last few years, adoption of the new standard, `IPv6`, has started. `IPv6` addresses are eight blocks of hexadecimal (`0-9` + `a-f`) digits separated by colons, with certain rules that allow them to be shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1` are both examples of valid `IPv6` addresses.
-
-`IPv6` will coexist with `IPv4` for a few decades, and we'll eventually switch entirely to `IPv6`. There's no worry about running out of `IPv6` addresses any time soon, because the total number of `IPv6` addresses is a number 39 digits long.
-
-There is one IP address you may frequently see, which is `127.0.0.1` or `localhost` -- sometimes called the loopback address. When you see this, it means that the traffic is being directed back to the same machine where it's originating. This is sometimes useful for testing, or to reach another service on the same machine.
-
-## Anatomy of a URL
-
-We could just go around visiting websites using their IP addresses, but addresses like `143.122.8.32` are pretty hard to remember.
-
-Even worse, IP addresses generally aren't permanent -- they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance -- see chapter XX).
-
-In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like `google.com`, rather than an IP address.
-
-Let's start with what a URL is.
-
-$$
-\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{blog}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
-$$
-
-In this chapter and the next, we'll get into how each of these components of the URL is created and assigned.
