@@ -1,20 +1,83 @@
 # Getting a real URL
 
-Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own.
+\`\`\`
 
-This is where the **domain name system (DNS)** comes in. DNS is the decentralized internet phonebook that translates back and forth between URLs and IP addresses. There are many layers of DNS servers, so pointing your browser at `example.com` starts with a query to a DNS server asking, "Where is the DNS server for `.com` websites?"
+1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource\
+2.URL requires a DNS [server](http://www.differencebetween.net/technology/software-technology/difference-between-application-server-and-web-server/ "APPLICATION VS WEB") while an IP address doesn't\
+3.URLs are unlimited while IP addresses are limited\
+4.IP addresses and URLs have a one to many relationship\
+\
+Read more: [Difference Between URL and IP Address \| Difference Between](http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6) <http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6>
 
-Eventually, a query for your website will lead to the DNS server of your domain name registrar. You'll have to configure your domain name registrar to send traffic on to the right place.
+\`\`\`
 
-/todo: dig google.com and go straught to the IP
+In the last chapter, we talked about how network traffic knows where to go and what to do when it gets there. That's all fine and dandy, but you noticed that we spoke almost entirely in terms of IP addresses. You probably almost never work with IP addresses. Instead, we're used to visiting websites at universal resource locators (URLs), like google.com. What gives?
 
-### Getting a Domain
+A URL is a more complete description of how to get to a website and what do to with the traffic than just an IP address. In this chapter, we'll discuss what a URL is and how each of the components is determined.
 
-The first step to getting a real URL is buying a domain from a *domain name registrar*. There are many different registrars that will sell you domain names on the internet. In general, the process of buying one is super easy. Usually, you'll just need to search for the domain you want, say you want it, and pull out a credit card.
+A URL looks like this:
 
-The cost of a domain name varies widely. Buying a meaningless domain in a less popular top-level domain, say `ladskfmlsdf.me` can cost as little as \$3 per year. On the other hand, buying a `.com` domain that's a real word or phrase can be a few thousand dollars.
+$$
+\overbrace{\text{http://}}^\text{protocol}\overbrace{\text{example.com}}^\text{server location}\overbrace{\text{:80}}^\text{port}\overbrace{\text{/}}^\text{resource}
+$$
 
-Once you've got an IP address and a domain, you've got to connect the two.
+Now, this probably isn't what you type into your address bar in your browser. That's because modern browsers do most of this for you by default. So if you type $google.com$ into your browser's address bar, your browser will automatically assume the correct defaults for the rest. Try going to `https://google.com:443/`. What do you get?
+
+## Using ports to get to the right service
+
+Let's say you want to run software on a server. One of the big differences between server software, and software on your laptop is that server software needs to be able to interact with the outside world to be useful.
+
+For example, when you want to use Microsoft Word on your computer, you just click on the button and then it's ready to go. But say I want to use RStudio Server. I don't have a desktop where I click to open RStudio Server. Instead, I go to a particular URL and I expect that RStudio will be there, ready to listen.
+
+## Special IP Addresses and Ports
+
+All ports below 1024 reserved.
+
+80 - HTTP default
+
+443 - HTTPS default
+
+22 - SSH default
+
+Normally, you'll see a URL written something like this:
+
+$$
+example.com
+$$
+
+It doesn't seem like this little sni
+
+$$
+\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{www}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
+$$
+
+Even worse, IP addresses generally aren't permanent -- they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance -- see chapter XX).
+
+Anatomy of a URL
+
+In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like google.com, rather than an IP address.
+
+## Getting your own domain
+
+In the last chapter, we spent most of the time talking about server locations in terms of IP addresses. And it's true -- the "real" address of any server is its IP address. But we generally don't access websites or other resources at IP addresses -- they're hard to remember, and they can also change over time.
+
+Instead, we generally use domains for websites, and hostnames for individual servers. We'll get into hostnames later on -- for now we're going to focus on domains.
+
+A domain is simply a convenient alias for an IP address. The **domain name system (DNS)** is the decentralized internet phonebook that translates back and forth between domains and IP addresses. The details of how DNS resolution works are quite intricate -- but the important thing to know is that there are layers of DNS servers that eventually return an IP address to your computer for where to find your website.
+
+From the perspective of someone trying to set up their own website, there's only one DNS server that matters to you personally -- the DNS server for your *domain name registrar*.
+
+Domain name registrars are the companies that actually own domains. You can buy or rent one from them in order to have a domain on the internet. So let's say you take the data science server you set up in lab 1 and decide that you want to host it at a real domain.
+
+Your first stop would be a domain name registrar where you'd find an available domain you like and pull out your credit card.
+
+Costs for domain names vary widely. Buying a meaningless domain in a less popular top-level domain, say `ladskfmlsdf.me` can cost as little as \$3 per year. On the other hand, buying a `.com` domain that's a real word or phrase can be a few thousand dollars -- and there are articles every few years about some major company accidentally allowing their domain name to lapse and ransoming it back for stupid amounts of money.
+
+So, conceptually, it's easy to understand how a domain comes to stand in for an IP address, with DNS being the directory that ties the two together.
+
+### Configuring DNS to connect IP addresses and Domains
+
+The harder part is the nitty gritty of how you accomplish that mapping yourself, which we'll get into now.
 
 Configuration of DNS is done by way of *records*, of which there are a menagerie of types you *can* configure. Luckily, most simple configurations only need *CNAME* and *A* records.
 
