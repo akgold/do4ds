@@ -6,14 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Chapter 7 Getting a real URL | DevOps for Data Science (working title)</title>
 <meta name="author" content="Alex Gold">
-<meta name="description" content="Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own. This is where the domain name system (DNS) comes in. DNS...">
+<meta name="description" content="``` 1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource 2.URL requires a DNS server while an IP address doesn’t 3.URLs are unlimited while...">
 <meta name="generator" content="bookdown 0.24.4 with bs4_book()">
 <meta property="og:title" content="Chapter 7 Getting a real URL | DevOps for Data Science (working title)">
 <meta property="og:type" content="book">
-<meta property="og:description" content="Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own. This is where the domain name system (DNS) comes in. DNS...">
+<meta property="og:description" content="``` 1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource 2.URL requires a DNS server while an IP address doesn’t 3.URLs are unlimited while...">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Chapter 7 Getting a real URL | DevOps for Data Science (working title)">
-<meta name="twitter:description" content="Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own. This is where the domain name system (DNS) comes in. DNS...">
+<meta name="twitter:description" content="``` 1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource 2.URL requires a DNS server while an IP address doesn’t 3.URLs are unlimited while...">
 <!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery/jquery-3.5.1.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="libs/bootstrap/bootstrap.min.css" rel="stylesheet">
 <script src="libs/bootstrap/bootstrap.bundle.min.js"></script><script src="libs/bs3compat/transition.js"></script><script src="libs/bs3compat/tabs.js"></script><script src="libs/bs3compat/bs3compat.js"></script><link href="libs/bs4_book/bs4_book.css" rel="stylesheet">
@@ -76,17 +76,64 @@
 <h1>
 <span class="header-section-number">7</span> Getting a real URL<a class="anchor" aria-label="anchor" href="#getting-a-real-url"><i class="fas fa-link"></i></a>
 </h1>
-<p>Now that you understand what IP addresses and URLs are and how they work, we can get into how you get and use a URL for a site of your own.</p>
-<p>This is where the <strong>domain name system (DNS)</strong> comes in. DNS is the decentralized internet phonebook that translates back and forth between URLs and IP addresses. There are many layers of DNS servers, so pointing your browser at <code>example.com</code> starts with a query to a DNS server asking, “Where is the DNS server for <code>.com</code> websites?”</p>
-<p>Eventually, a query for your website will lead to the DNS server of your domain name registrar. You’ll have to configure your domain name registrar to send traffic on to the right place.</p>
-<p>/todo: dig google.com and go straught to the IP</p>
-<div id="getting-a-domain" class="section level3">
+<p>```</p>
+<p>1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource<br>
+2.URL requires a DNS <a href="http://www.differencebetween.net/technology/software-technology/difference-between-application-server-and-web-server/" title="APPLICATION VS WEB">server</a> while an IP address doesn’t<br>
+3.URLs are unlimited while IP addresses are limited<br>
+4.IP addresses and URLs have a one to many relationship<br><br>
+Read more: <a href="http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6">Difference Between URL and IP Address | Difference Between</a> <a href="http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6" class="uri">http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6</a></p>
+<p>```</p>
+<p>In the last chapter, we talked about how network traffic knows where to go and what to do when it gets there. That’s all fine and dandy, but you noticed that we spoke almost entirely in terms of IP addresses. You probably almost never work with IP addresses. Instead, we’re used to visiting websites at universal resource locators (URLs), like google.com. What gives?</p>
+<p>A URL is a more complete description of how to get to a website and what do to with the traffic than just an IP address. In this chapter, we’ll discuss what a URL is and how each of the components is determined.</p>
+<p>A URL looks like this:</p>
+<p><span class="math display">\[
+\overbrace{\text{http://}}^\text{protocol}\overbrace{\text{example.com}}^\text{server location}\overbrace{\text{:80}}^\text{port}\overbrace{\text{/}}^\text{resource}
+\]</span></p>
+<p>Now, this probably isn’t what you type into your address bar in your browser. That’s because modern browsers do most of this for you by default. So if you type <span class="math inline">\(google.com\)</span> into your browser’s address bar, your browser will automatically assume the correct defaults for the rest. Try going to <code>https://google.com:443/</code>. What do you get?</p>
+<div id="using-ports-to-get-to-the-right-service" class="section level2">
+<h2>
+<span class="header-section-number">7.1</span> Using ports to get to the right service<a class="anchor" aria-label="anchor" href="#using-ports-to-get-to-the-right-service"><i class="fas fa-link"></i></a>
+</h2>
+<p>Let’s say you want to run software on a server. One of the big differences between server software, and software on your laptop is that server software needs to be able to interact with the outside world to be useful.</p>
+<p>For example, when you want to use Microsoft Word on your computer, you just click on the button and then it’s ready to go. But say I want to use RStudio Server. I don’t have a desktop where I click to open RStudio Server. Instead, I go to a particular URL and I expect that RStudio will be there, ready to listen.</p>
+</div>
+<div id="special-ip-addresses-and-ports" class="section level2">
+<h2>
+<span class="header-section-number">7.2</span> Special IP Addresses and Ports<a class="anchor" aria-label="anchor" href="#special-ip-addresses-and-ports"><i class="fas fa-link"></i></a>
+</h2>
+<p>All ports below 1024 reserved.</p>
+<p>80 - HTTP default</p>
+<p>443 - HTTPS default</p>
+<p>22 - SSH default</p>
+<p>Normally, you’ll see a URL written something like this:</p>
+<p><span class="math display">\[
+example.com
+\]</span></p>
+<p>It doesn’t seem like this little sni</p>
+<p><span class="math display">\[
+\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{www}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
+\]</span></p>
+<p>Even worse, IP addresses generally aren’t permanent – they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance – see chapter XX).</p>
+<p>Anatomy of a URL</p>
+<p>In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like google.com, rather than an IP address.</p>
+</div>
+<div id="getting-your-own-domain" class="section level2">
+<h2>
+<span class="header-section-number">7.3</span> Getting your own domain<a class="anchor" aria-label="anchor" href="#getting-your-own-domain"><i class="fas fa-link"></i></a>
+</h2>
+<p>In the last chapter, we spent most of the time talking about server locations in terms of IP addresses. And it’s true – the “real” address of any server is its IP address. But we generally don’t access websites or other resources at IP addresses – they’re hard to remember, and they can also change over time.</p>
+<p>Instead, we generally use domains for websites, and hostnames for individual servers. We’ll get into hostnames later on – for now we’re going to focus on domains.</p>
+<p>A domain is simply a convenient alias for an IP address. The <strong>domain name system (DNS)</strong> is the decentralized internet phonebook that translates back and forth between domains and IP addresses. The details of how DNS resolution works are quite intricate – but the important thing to know is that there are layers of DNS servers that eventually return an IP address to your computer for where to find your website.</p>
+<p>From the perspective of someone trying to set up their own website, there’s only one DNS server that matters to you personally – the DNS server for your <em>domain name registrar</em>.</p>
+<p>Domain name registrars are the companies that actually own domains. You can buy or rent one from them in order to have a domain on the internet. So let’s say you take the data science server you set up in lab 1 and decide that you want to host it at a real domain.</p>
+<p>Your first stop would be a domain name registrar where you’d find an available domain you like and pull out your credit card.</p>
+<p>Costs for domain names vary widely. Buying a meaningless domain in a less popular top-level domain, say <code>ladskfmlsdf.me</code> can cost as little as $3 per year. On the other hand, buying a <code>.com</code> domain that’s a real word or phrase can be a few thousand dollars – and there are articles every few years about some major company accidentally allowing their domain name to lapse and ransoming it back for stupid amounts of money.</p>
+<p>So, conceptually, it’s easy to understand how a domain comes to stand in for an IP address, with DNS being the directory that ties the two together.</p>
+<div id="configuring-dns-to-connect-ip-addresses-and-domains" class="section level3">
 <h3>
-<span class="header-section-number">7.0.1</span> Getting a Domain<a class="anchor" aria-label="anchor" href="#getting-a-domain"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.3.1</span> Configuring DNS to connect IP addresses and Domains<a class="anchor" aria-label="anchor" href="#configuring-dns-to-connect-ip-addresses-and-domains"><i class="fas fa-link"></i></a>
 </h3>
-<p>The first step to getting a real URL is buying a domain from a <em>domain name registrar</em>. There are many different registrars that will sell you domain names on the internet. In general, the process of buying one is super easy. Usually, you’ll just need to search for the domain you want, say you want it, and pull out a credit card.</p>
-<p>The cost of a domain name varies widely. Buying a meaningless domain in a less popular top-level domain, say <code>ladskfmlsdf.me</code> can cost as little as $3 per year. On the other hand, buying a <code>.com</code> domain that’s a real word or phrase can be a few thousand dollars.</p>
-<p>Once you’ve got an IP address and a domain, you’ve got to connect the two.</p>
+<p>The harder part is the nitty gritty of how you accomplish that mapping yourself, which we’ll get into now.</p>
 <p>Configuration of DNS is done by way of <em>records</em>, of which there are a menagerie of types you <em>can</em> configure. Luckily, most simple configurations only need <em>CNAME</em> and <em>A</em> records.</p>
 <p>Here’s an imaginary DNS record table for the domain <code>example.com</code>:</p>
 <div class="inline-table"><table class="table table-sm">
@@ -126,7 +173,7 @@
 </div>
 <div id="learning-to-hate-dns" class="section level3">
 <h3>
-<span class="header-section-number">7.0.2</span> Learning to Hate DNS<a class="anchor" aria-label="anchor" href="#learning-to-hate-dns"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.3.2</span> Learning to Hate DNS<a class="anchor" aria-label="anchor" href="#learning-to-hate-dns"><i class="fas fa-link"></i></a>
 </h3>
 <p>As you get deeper into using servers, you will learn to hate DNS with a fiery passion. While it’s necessary so we’re not running around trying to remember incomprehensible IP addresses, it’s also very hard to debug as a server admin.</p>
 <p>Let’s say I’ve got the public domain <code>example.com</code>, and I’m taking down the server and putting up a new one. I’ve got to alter the public DNS record so that everyone going to <code>example.com</code> gets routed to the new IP address, and not the old one.</p>
@@ -136,13 +183,14 @@
 </div>
 <div id="trying-it-out" class="section level3">
 <h3>
-<span class="header-section-number">7.0.3</span> Trying it out<a class="anchor" aria-label="anchor" href="#trying-it-out"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.3.3</span> Trying it out<a class="anchor" aria-label="anchor" href="#trying-it-out"><i class="fas fa-link"></i></a>
 </h3>
 <p>Go through hosting this book somewhere.</p>
 </div>
+</div>
 <div id="exercises-4" class="section level2">
 <h2>
-<span class="header-section-number">7.1</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises-4"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.4</span> Exercises<a class="anchor" aria-label="anchor" href="#exercises-4"><i class="fas fa-link"></i></a>
 </h2>
 <ol style="list-style-type: decimal">
 <li><p>Find a cheap domain you like and buy it.</p></li>
@@ -157,7 +205,7 @@
 </div>
 <div id="securing-traffic-with-https" class="section level2">
 <h2>
-<span class="header-section-number">7.2</span> Securing Traffic with <code>https</code><a class="anchor" aria-label="anchor" href="#securing-traffic-with-https"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.5</span> Securing Traffic with <code>https</code><a class="anchor" aria-label="anchor" href="#securing-traffic-with-https"><i class="fas fa-link"></i></a>
 </h2>
 <p>When you go to a website on the internet, you’ll see the URL prefixed by the <code>https</code> (though it’s sometimes hidden by your browser because it’s assumed). <code>https</code> is actually a mashup that is short for <code>http</code> with secure sockets layer (SSL).</p>
 <p>These days, almost everyone actually uses the successor to SSL, transport layer security (TLS). However, because the experience of configuring TLS is identical to SSL, admins usually just talk about configuring SSL even when they mean TLS.</p>
@@ -166,7 +214,7 @@
 <p>SSL/TLS security is accomplished by configuring your site or server to use a SSL certificate (often abbreviated to cert). We’ll go through the details of how to get and configure an SSL certificate in this chapter – but first a little background on how SSL/TLS works.</p>
 <div id="how-ssltls-enhances-security" class="section level3">
 <h3>
-<span class="header-section-number">7.2.1</span> How SSL/TLS Enhances Security<a class="anchor" aria-label="anchor" href="#how-ssltls-enhances-security"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.5.1</span> How SSL/TLS Enhances Security<a class="anchor" aria-label="anchor" href="#how-ssltls-enhances-security"><i class="fas fa-link"></i></a>
 </h3>
 <p>SSL accomplishes two things for you – identity validation and traffic encryption.</p>
 <p>When you go to a website, SSL/TLS is the technology that verifies that you’re actually reaching the website you think you’re reaching. This prevents something called a man-in-the-middle attack where a malicious actor manages to get in between the server and the client of network traffic. So, for example, you might think you’re putting your bank login information into your normal bank website, but there’s a hacker sitting in the middle, reading all of the traffic back and forth.</p>
@@ -179,7 +227,7 @@
 </div>
 <div id="getting-a-cert-of-your-own" class="section level3">
 <h3>
-<span class="header-section-number">7.2.2</span> Getting a cert of your own<a class="anchor" aria-label="anchor" href="#getting-a-cert-of-your-own"><i class="fas fa-link"></i></a>
+<span class="header-section-number">7.5.2</span> Getting a cert of your own<a class="anchor" aria-label="anchor" href="#getting-a-cert-of-your-own"><i class="fas fa-link"></i></a>
 </h3>
 <p>In order to configure your site or server with SSL, there are three steps you’ll want to take: getting an SSL certificate, putting the certificate on the server, and making sure the server <em>only</em> accepts <code>https</code> traffic.</p>
 <p>You can either buy an SSL certificate or make one yourself, using what’s called a <em>self-signed cert</em>.</p>
@@ -204,18 +252,21 @@
 </div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
     <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
       <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#getting-a-real-url"><span class="header-section-number">7</span> Getting a real URL</a></li>
+<li><a class="nav-link" href="#using-ports-to-get-to-the-right-service"><span class="header-section-number">7.1</span> Using ports to get to the right service</a></li>
+<li><a class="nav-link" href="#special-ip-addresses-and-ports"><span class="header-section-number">7.2</span> Special IP Addresses and Ports</a></li>
 <li>
-<a class="nav-link" href="#getting-a-real-url"><span class="header-section-number">7</span> Getting a real URL</a><ul class="nav navbar-nav">
-<li><a class="nav-link" href="#getting-a-domain"><span class="header-section-number">7.0.1</span> Getting a Domain</a></li>
-<li><a class="nav-link" href="#learning-to-hate-dns"><span class="header-section-number">7.0.2</span> Learning to Hate DNS</a></li>
-<li><a class="nav-link" href="#trying-it-out"><span class="header-section-number">7.0.3</span> Trying it out</a></li>
+<a class="nav-link" href="#getting-your-own-domain"><span class="header-section-number">7.3</span> Getting your own domain</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#configuring-dns-to-connect-ip-addresses-and-domains"><span class="header-section-number">7.3.1</span> Configuring DNS to connect IP addresses and Domains</a></li>
+<li><a class="nav-link" href="#learning-to-hate-dns"><span class="header-section-number">7.3.2</span> Learning to Hate DNS</a></li>
+<li><a class="nav-link" href="#trying-it-out"><span class="header-section-number">7.3.3</span> Trying it out</a></li>
 </ul>
 </li>
-<li><a class="nav-link" href="#exercises-4"><span class="header-section-number">7.1</span> Exercises</a></li>
+<li><a class="nav-link" href="#exercises-4"><span class="header-section-number">7.4</span> Exercises</a></li>
 <li>
-<a class="nav-link" href="#securing-traffic-with-https"><span class="header-section-number">7.2</span> Securing Traffic with https</a><ul class="nav navbar-nav">
-<li><a class="nav-link" href="#how-ssltls-enhances-security"><span class="header-section-number">7.2.1</span> How SSL/TLS Enhances Security</a></li>
-<li><a class="nav-link" href="#getting-a-cert-of-your-own"><span class="header-section-number">7.2.2</span> Getting a cert of your own</a></li>
+<a class="nav-link" href="#securing-traffic-with-https"><span class="header-section-number">7.5</span> Securing Traffic with https</a><ul class="nav navbar-nav">
+<li><a class="nav-link" href="#how-ssltls-enhances-security"><span class="header-section-number">7.5.1</span> How SSL/TLS Enhances Security</a></li>
+<li><a class="nav-link" href="#getting-a-cert-of-your-own"><span class="header-section-number">7.5.2</span> Getting a cert of your own</a></li>
 </ul>
 </li>
 </ul>
@@ -234,7 +285,7 @@
 <footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
 
   <div class="col-12 col-md-6 mt-3">
-    <p>"<strong>DevOps for Data Science (working title)</strong>" was written by Alex Gold. It was last built on 2021-12-27.</p>
+    <p>"<strong>DevOps for Data Science (working title)</strong>" was written by Alex Gold. It was last built on 2022-01-28.</p>
   </div>
 
   <div class="col-12 col-md-6 mt-3">
