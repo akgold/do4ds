@@ -23,17 +23,25 @@ jobs:
         shell: bash
         run: |
           echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
-      - name: Cache packages
-        uses: actions/cache@v1
+      - name: Install and activate renv
+        run: |
+          install.packages("renv")
+          renv::activate()
+        shell: Rscript {0}
+      - name: Get R version
+        id: get-version
+        run: |
+          cat("##[set-output name=r-version;]", R.Version()$version.string, sep = "")
+        shell: Rscript {0}
+      - name: Restore Renv package cache
+        uses: actions/cache@v2
         with:
           path: ${{ env.RENV_PATHS_ROOT }}
-          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-renv-
+          key: ${{ runner.os }}-${{ steps.get-version.outputs.r-version }}-${{ inputs.cache-version }}-${{ hashFiles('renv.lock') }}
+          restore-keys: ${{ runner.os }}-${{ steps.get-version.outputs.r-version }}-${{inputs.cache-version }}-
       - name: Restore packages
         shell: Rscript {0}
         run: |
-          if (!requireNamespace("renv", quietly = TRUE)) install.packages("renv")
           renv::restore()
       - name: Render Book
         run: Rscript -e 'bookdown::render_book(output_format = "bookdown::bs4_book")'
