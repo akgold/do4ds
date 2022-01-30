@@ -7,6 +7,7 @@ name: renderbook
 
 env:
   RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
+  RENV_PATHS_ROOT: ~/.local/share/renv
 
 jobs:
   bookdown:
@@ -15,11 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: r-lib/actions/setup-r@v1
-      - uses: r-lib/actions/setup-pandoc@v1
-      - name: Cache packages
-        uses: actions/cache@v2
         with:
-          path: ~/.local/share/renv
+          r-version: '4.0.2'
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Set RENV_PATHS_ROOT
+        shell: bash
+        run: |
+          echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
+      - name: Cache packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.RENV_PATHS_ROOT }}
           key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
           restore-keys: |
             ${{ runner.os }}-renv-
