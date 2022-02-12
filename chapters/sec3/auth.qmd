@@ -51,13 +51,7 @@ you're supposed to have access to. This process is called
 Often, the authentication + authorization process is referred to
 collectively as **auth**.
 
-[\#TODO: Image of Auth
-
-1)  Make the user provide creds (username/password)
-2)  System checks credentials against store
-3)  (For SSO) Check if user is allowed to access resource
-4)  Send back *something*
-5)  User is authorized]
+\[#TODO: Image of Auth\]
 
 So, to summarize when you go to login to a service, the service reaches
 out to some sort of system to verify your identity. Depending on the
@@ -90,16 +84,16 @@ service. This system is often facilitated by PAM, and LDAP/AD. Some
 organizations call this SSO, because there's only one set of
 credentials.
 
-In true SSO, users login once and are given a token or
-ticket.[^browser_auth-1] Then, when they go to the next service, they
-don't have to login again because that service can just look at the
-token or ticket to do auth for that user. For example, in this system, I
-could go to RStudio Server and login, and then go to JupyterHub and get
-in without being prompted again for my password. This type of auth is
-facilitated by Kerberos, SAML, or OAuth.
+In true SSO, users login once and are given a token or ticket.[^auth-1]
+Then, when they go to the next service, they don't have to login again
+because that service can just look at the token or ticket to do auth for
+that user. For example, in this system, I could go to RStudio Server and
+login, and then go to JupyterHub and get in without being prompted again
+for my password. This type of auth is facilitated by Kerberos, SAML, or
+OAuth.
 
-[^browser_auth-1]: Depending on the system, this token or ticket can
-    live in various places.
+[^auth-1]: Depending on the system, this token or ticket can live in
+    various places.
 
 ## Auth Techniques
 
@@ -157,11 +151,11 @@ terms and how they're used.
 
 The atomic basis for authorization is a **permission**. Permissions are
 a binary switch that answers the question *is this person allowed to do
-the thing they are trying to do?*[^browser_auth-2]
+the thing they are trying to do?*[^auth-2]
 
-[^browser_auth-2]: As we'll see in a second, permissions can actually
-    belong to entities other than people...but that's a little
-    complicated for the moment.
+[^auth-2]: As we'll see in a second, permissions can actually belong to
+    entities other than people...but that's a little complicated for the
+    moment.
 
 The simplest way of assigning permissions is called an **access control
 list** (ACL). In systems that use ACLs, each piece of content has a list
@@ -175,7 +169,7 @@ permissions on a Linux server. For example, if you have a Mac or are on
 a Linux server, you can open your terminal, navigate to a directory and
 do the following:
 
-```{bash, eval = FALSE}
+```bash
 $ ls -l
 -rwxr-xr-x   1 alexkgold  staff   2274 May 10 12:09 README.md
 ```
@@ -201,12 +195,12 @@ makes it a little harder to understand, but ultimately results in a much
 more flexible system. In RBAC, permissions are not assigned to
 individual pieces of content or to users or groups. Instead, permissions
 are assigned to *roles*, and roles are given to users or
-groups.[^browser_auth-3]
+groups.[^auth-3]
 
-[^browser_auth-3]: If you think about this for a minute, it may occur to
-    you "isn't RBAC basically the same as doing ACLs at the group
-    level?" Yes, yes it is, but it can be helpful to have groups and
-    roles be separated, even if there's a 1-1 mapping.
+[^auth-3]: If you think about this for a minute, it may occur to you
+    "isn't RBAC basically the same as doing ACLs at the group level?"
+    Yes, yes it is, but it can be helpful to have groups and roles be
+    separated, even if there's a 1-1 mapping.
 
 ![](images/206-auth/rbac.jpeg){width="562"}
 
@@ -259,7 +253,7 @@ server based on the identities stored in an LDAP/AD instance.
 Though conceptually simple, reading, writing, and managing PAM modules
 is kinda painful.
 
-\#TODO: Add PAM example
+#TODO: Add PAM example
 
 ### LDAP/AD
 
@@ -359,7 +353,7 @@ Let's say that your corporate LDAP looks like the tree below:
 
 ![](images/206-auth/ldap-tree.jpeg){width="503"}
 
-\#TODO: make solutions an OU in final
+#TODO: make solutions an OU in final
 
 The most common way to look up LDAP entities is with their
 *distinguished name (DN)*, which is the path of names from the point
@@ -377,9 +371,9 @@ example.
 
 To start, let's stand up LDAP in a docker container:
 
-\#TODO: update ldif
+#TODO: update ldif
 
-```{bash, eval = FALSE}
+```bash
 docker network create ldap-net
 docker run -p 6389:389 \
   --name ldap-service \
@@ -406,7 +400,7 @@ Since we're testing, we're also going to provide the flag `-x` to use
 whatever certificate is present on the server. Putting it altogether,
 along with the commands to reach the docker container, let's try:
 
-```{bash, eval = FALSE}
+```bash
 ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 
 # extended LDIF
@@ -455,7 +449,7 @@ using LDAPS, but others do require it.
 
 Running the ldapadmin
 
-```{bash, eval = FALSE}
+```bash
 docker run -p 6443:443 \
         --name ldap-admin \
         --env PHPLDAPADMIN_LDAP_HOSTS=ldap-service \
@@ -467,7 +461,7 @@ dn for admin `cn=admin,dc=example,dc=org` pw: `admin`
 
 <https://localhost:6443>
 
-```{bash, eval = FALSE}
+```bash
 # Replace with valid license
 export RSC_LICENSE=XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
 
@@ -505,7 +499,7 @@ double bind by supplying admin credentials to LDAP. Let's say instead,
 you just provide a single user's credentials. In that case, I don't get
 anything back if I just do a general search.
 
-```{bash, eval = FALSE}
+```bash
 ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                                       
 # extended LDIF
 #
@@ -525,7 +519,7 @@ result: 32 No such object
 But just searching for information about Joe does return his own
 information.
 
-```{bash, eval = FALSE}
+```bash
 ldapsearch -x -H ldap://localhost:6389 -b cn=joe,dc=engineering,dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                    32 ✘
 # extended LDIF
 #
@@ -597,18 +591,18 @@ specified expiration period.
 
 #### Try out Kerberos
 
-\#TODO
+#TODO
 
 ### SAML
 
 These days Security Assertion Markup Language (SAML) is probably the
 most common system that provides true SSO -- including single login and
 centrally-managed permissions. SAML does this by passing around XML
-tokens.[^browser_auth-4]
+tokens.[^auth-4]
 
-[^browser_auth-4]: XML is a markup language, much like HTML. The good
-    thing about XML is that it's very flexible. The bad thing is that
-    it's relatively hard for a human to easily read.
+[^auth-4]: XML is a markup language, much like HTML. The good thing
+    about XML is that it's very flexible. The bad thing is that it's
+    relatively hard for a human to easily read.
 
 The way this generally works is that a user attempts to login to a
 *Service Provider* (SP). The SP redirects the user to an Identity
@@ -662,7 +656,7 @@ Let's go through the environment variables we're providing to this
     logout command once someone has been logged out at the IdP level.
     Many SPs do not implement single logout.
 
-```{bash, eval=FALSE}
+```bash
 docker run --name=saml_idp \
 -p 8080:8080 \
 -p 8443:8443 \
@@ -686,7 +680,7 @@ most cases, people will just call it OAuth.
 
 ![](images/206-auth/auth-oauth.jpeg)
 
-\#TODO: this picture is bad
+#TODO: this picture is bad
 
 In an enterprise context, OAuth/OIDC is conceptually very similar to
 SAML -- but instead of passing around XML tokens, it's based on JSON Web
@@ -699,7 +693,7 @@ big advantages of OIDC/OAuth compared to SAML.
 
 </aside>
 
-\#TODO: try it out
+#TODO: try it out
 
 #### OAuth/OIDC vs SAML
 
