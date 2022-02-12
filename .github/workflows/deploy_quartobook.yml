@@ -47,9 +47,9 @@ jobs:
           renv::restore()
       - name: Render Book
         run: Rscript -e 'quarto::quarto_render()'
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
-          name: _book
+          name: _site
           path: _book/
 
 # gh-action from Cecilapp/GitHub-Pages-deploy
@@ -62,16 +62,12 @@ jobs:
      - name: Download artifact
        uses: actions/download-artifact@v1.0.0
        with:
-         # Artifact name
-         name: _book # optional
-         # Destination path
-         path: _book # optional
+         name: _site
      - name: Deploy to GitHub Pages
        uses: Cecilapp/GitHub-Pages-deploy@master
        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
        with:
           email: alexkgold@gmail.com
-          build_dir: _book/ # defaults to _site
 
 
