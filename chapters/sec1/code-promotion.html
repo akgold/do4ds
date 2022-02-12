@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="generator" content="quarto-0.9.9">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DevOps for Data Science - 2&nbsp; Code Promotion Workflows</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+
+  <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+  <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+  <script src="../../site_libs/clipboard/clipboard.min.js"></script>
+  <meta name="quarto:offset" content="../../">
+  <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+  <script src="../../site_libs/quarto-search/fuse.min.js"></script>
+  <script src="../../site_libs/quarto-search/quarto-search.js"></script>
+  <link href="../../chapters/sec1/repro-pkgs.html" rel="next">
+  <link href="../../chapters/sec1/cmd-line.html" rel="prev">
+  <script src="../../site_libs/quarto-html/quarto.js"></script>
+  <script src="../../site_libs/quarto-html/popper.min.js"></script>
+  <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+  <script src="../../site_libs/quarto-html/anchor.min.js"></script>
+  <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+  <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet">
+  <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+  <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <script id="quarto-search-options" type="application/json">{
+    "location": "sidebar",
+    "copy-button": false,
+    "collapse-after": 2,
+    "panel-placement": "start",
+    "type": "textbox",
+    "limit": 20,
+    "language": {
+      "search-no-results-text": "No results",
+      "search-matching-documents-text": "matching documents",
+      "search-copy-link-title": "Copy link to search",
+      "search-hide-matches-text": "Hide additional matches",
+      "search-more-match-text": "more match in this document",
+      "search-more-matches-text": "more matches in this document",
+      "search-clear-button-title": "Clear",
+      "search-detached-cancel-button-title": "Cancel",
+      "search-submit-button-title": "Submit"
+    }
+  }</script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body class="floating">
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></h1>
+      <button type="button" class="quarto-btn-toggle btn">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">DevOps Lessons for Data Science</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-devops-lessons-for-data-science" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/code-promotion.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/repro-pkgs.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Containers, Docker, and Orchestration</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Choosing and Using A Data Architecture</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Cloud and Cloud Providers</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">Your Own Data Science Workbench</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-your-own-data-science-workbench" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Computers, Computing, and Servers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/aws-walkthrough.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Lab 1: Get your own server</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/understanding-traffic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Computer Networks and the Internet</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/using-urls.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting a real URL</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/private-network-config.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Private Networking Configuration</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">Working with Enterprise IT</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-working-with-enterprise-it" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/offline.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Offline</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/data-access.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Accessing Data</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">Appendices</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-appendices" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/env-req.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Determining What You Need</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Getting Started with Terminal</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/linux-cmd.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Useful Shell Commands</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Table of contents</h2>
+<ul>
+<li><a href="#devtestprod" class="nav-link active" data-scroll-target="#devtestprod"> <span class="header-section-number">2.1</span> Dev/Test/Prod</a></li>
+<li><a href="#cattle-not-pets" class="nav-link" data-scroll-target="#cattle-not-pets"> <span class="header-section-number">2.2</span> Cattle, Not Pets</a>
+<ul class="collapse">
+<li><a href="#infrastructure-as-code-tooling" class="nav-link" data-scroll-target="#infrastructure-as-code-tooling"> <span class="header-section-number">2.2.1</span> Infrastructure As Code Tooling</a></li>
+</ul></li>
+<li><a href="#cicd-and-the-mechanics-of-code-promotion" class="nav-link" data-scroll-target="#cicd-and-the-mechanics-of-code-promotion"> <span class="header-section-number">2.3</span> CI/CD and The mechanics of code promotion</a>
+<ul class="collapse">
+<li><a href="#using-cicd-to-deploy-data-science-assets" class="nav-link" data-scroll-target="#using-cicd-to-deploy-data-science-assets"> <span class="header-section-number">2.3.1</span> Using CI/CD to deploy data science assets</a></li>
+</ul></li>
+<li><a href="#exercises" class="nav-link" data-scroll-target="#exercises"> <span class="header-section-number">2.4</span> Exercises</a></li>
+</ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/code-promotion.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<header id="title-block-header">
+<h1 class="title d-none d-lg-block display-7"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></h1>
+</header>
+
+<p>As a field, IT/Admin/DevOps/SysAdmin has been around for much longer than data science. And while the topics they’re addressing are different than data science, there are some workflows that translate nicely into the data science world.</p>
+<p>One of those is code and environment promotion.</p>
+<p>Over time, smart SysAdmins realized that it’s better not to make changes for the first time in production systems people depend on for various reasons. And so they’ve developed patterns for putting things into production.</p>
+<p>Generally, this workflow involves three or four (nearly) identical environments. Most often the workflow is dev/test/prod, though sometimes there are separate test and user acceptance testing (UAT) environments.</p>
+<section id="devtestprod" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="devtestprod"><span class="header-section-number">2.1</span> Dev/Test/Prod</h2>
+<p>Conceptually, the use of each environment is quite straightforward. Dev is a development environment – a sandbox where new things can be developed freely with no risk. In a data science context, this generally means that dev and test environments may need to be connected to input data, but that output needs to be somehow mocked or redirected so it doesn’t leak back into prod.</p>
+<p>The test environment is for (shocker) testing. This likely includes functional testing that things work as intended, but also might include UAT. In the context of data science assets, UAT usually answers questions like whether labels and buttons are clear and whether plots and graphs answer exactly the intended questions.</p>
+<p>The production environment is for production – meaning use by people and machines outside the development process. Changes are never made in prod, except when they’ve already been validated in the test environment, and then the only thing that happens in prod is a quick update to the newest testing version.</p>
+<p>This obviously requires that the dev, test, and prod environments be very close mirrors of each other. For example, doing test on a Windows laptop and then going to prod on a Linux server introduces a potential that things that worked in test suddenly don’t when going to prod. For that reason, making all three (or at least test and prod) match as precisely as possible is essential (more in chapter 1.3). The need to match these three environments so precisely is one reason for data science workloads moving onto servers.</p>
+<p>In a data science context, the dev/test/prod sequence looks a little different from in an IT context. In an IT context, dev/test/prod means three identical environments. This is generally not the case in a data science context.</p>
+<p>For a data scientist, dev is often a different environment than test or prod. For example, it’s likely that you would do your development of your asset in your favorite R or Python data science IDE – perhaps RStudio, JupyterHub, Spyder, or PyCharm. This environment might be server-based, or it might be on your laptop.</p>
+<p>The biggest reason for this difference is that pure DevOps involves building a known product according to an identified need. Data science is different. The early parts of a data science project are about discovery and iteration – that means that you can’t start “development” right off the bat. There’s first some research and discovery that happens in an environment well-suited to such things before promotion happens into a “deployment” environment.</p>
+<p>In contrast, traditional software development rarely starts with discovery. Instead, it starts with producing a minimal set of features that has been identified ahead of time. This difference causes much friction and misunderstanding between data science and IT/Admin/DevOps teams.</p>
+<p>At that point, you’ll promote your asset into test, which might be a docker container, straight onto a server, or a deployment platform like RStudio Connect. Then, once everything is ready to go, you’d promote it into prod. This is somewhat different than a traditional dev/test/prod setup where all three environments are very precise mirrors of each other. In some cases, like if you’re using a product that hosts your apps for you, test and prod may even be on the same physical server, which would be very unusual in the software development world.</p>
+<p>Depending on how dependable your prod environment has to be, it can be useful to maintain a “two dimensional” dev/test/prod setup as in the graphic below.</p>
+<p><img src="images/102-code-promotion/code-promotion.jpeg" title="Code + Server Promotion Patterns" class="img-fluid" width="467"></p>
+<p>In this setup, you would select the IT configuration that works for your organization and maintain one or two copies of the entire environment. I often call this a staging environment to differentiate it from the dev/test/prod environments for the data science assets.</p>
+<p>So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that’s purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use – dev, test, and prod.</p>
+<p>Then, data science code promotion through dev/test/prod would be distinct from how server changes get made.</p>
+</section>
+<section id="cattle-not-pets" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="cattle-not-pets"><span class="header-section-number">2.2</span> Cattle, Not Pets</h2>
+<p>In the IT world, there’s a phrase that servers should be cattle, not pets. The idea here is that servers should be unremarkable and that each one should be more-or-less interchangeable. This matters, for example, in making sure your test and prod environments look exactly the same.</p>
+<p>A bad pattern then would look like this – I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server. At that point, the app doesn’t quite work and I make a bunch of manual changes to the environment – say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.</p>
+<p>The main way to combat this kind of state drift is to religiously use state-maintaining infrastructure as code (IaC) tooling. That means that all changes to the state of your servers ends up in your IaC tooling and no “just login and make it work” shenanigans are allowed in prod.</p>
+<p>If something breaks, you reproduce the error in staging, muck around until it works, update your IaC tooling to fix the broken thing, test that the thing is fixed, and then (and only then) push the updated infrastructure into prod directly from your IaC tooling.</p>
+<section id="infrastructure-as-code-tooling" class="level3" data-iac="" data-number="2.2.1">
+<h3 data-iac="" data-number="2.2.1" class="anchored" data-anchor-id="infrastructure-as-code-tooling"><span class="header-section-number">2.2.1</span> Infrastructure As Code Tooling</h3>
+<p>There are many, many different varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won’t be covering them in any depth here. Instead, I’ll share a few of the different “categories” (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.</p>
+<p>To get from “nothing” to a usable server state, there are (at minimum) two things you need to do – provision the infrastructure you need, and configure that infrastructure to do what you want.</p>
+<p>For example, let’s say I’m standing up a server to deploy a simple shiny app. In order to get that server up, I’ll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I’ll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.</p>
+<p>So, for example, you might use AWS’s CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>In infrastructure as code tooling, there generally isn’t a clear dividing line between tools that do provisioning and tools that do configuration…but most tools lean one way or the other.</p>
+<p>Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).</p>
+<p>The other important division in IaC tools is declarative vs imperative. In declarative tooling, you simply enumerate the things you want, and the tool makes sure they get done in the right order. In contrast, an imperative tool requires that you provide actual instructions to get to where you want to go.</p>
+<p>In many cases, it’s easy to be declarative with provisioning servers, but it’s often useful to have a way to fall back to an imperative mode when configuring them because there may be dependencies that aren’t obvious to the provisioning tool, but are easy to put down in code. If the tool does have an imperative mode, it’s also nice if it’s compatible with a language you’d be comfortable with.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>One somewhat complicated addition to the IaC lineup is Docker and related orchestration tools. There’s a whole chapter on <a href="docker">containerization and docker</a>, so check that out if you want more details. The short answer is that docker can’t really do provisioning, but that you can definitely use docker as a configuration management IaC tool, as long as you’re disciplined about updating your Dockerfiles and redeployment when you want to make changes to the contents.</p>
+<p>Basically none of these tools will save you from your own bad habits, but they can give you alternatives.</p>
+<p>In short, exactly which tool you’ll need will depend a lot on what you’re trying to do. Probably the most important question in choosing a tool is whether you’ll be able to get help from other people at your organization on it. So if you’re thinking about heading into IaC tooling, I’d suggest doing a quick survey of some folks in DevOps and choosing something they already know and like.</p>
+</section>
+</section>
+<section id="cicd-and-the-mechanics-of-code-promotion" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="cicd-and-the-mechanics-of-code-promotion"><span class="header-section-number">2.3</span> CI/CD and The mechanics of code promotion</h2>
+<p>The common term for the mechanics of code promotion are Continuous Integration/Continuous Deployment (CI/CD). The actual practice of CI/CD relates deeply to the philosophy of DevOps and agile software development in ways that are beyond the scope of this book.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>In this book I’m mainly going to focus on a few workflows and a few tools that I’ve found particularly useful in a data science context.</p>
+<p>The most concrete way that CI/CD practices get expressed is through integrations into source control software – usually Git. If you’re not already familiar, I’d suggest spending some time learning git. I will admit that learning git is nontrivial. People who say git is easy are either lying to look smarter or learned so long ago that they have forgotten the early-to-git sense that you’re likely to mess up your entire workflow at any moment.</p>
+<div class="rmdinfo">
+<p>If you don’t already know git and want to learn, I’d recommend <a href="https://happygitwithr.com/index.html">HappyGitWithR</a> by Jenny Bryan. It’s a great on-ramp to learn git.</p>
+<p>Even if you’re a Python user, the sections on getting started with git, on basic git concepts, and on workflows will be useful since they approach git from a data science perspective.</p>
+</div>
+<p>For the purposes of this section, I’m going to assume you at least conceptually understand what git branches are and what a merge is – as much of your CI/CD pipeline will be based on what happens when you merge.</p>
+<p>For production data science assets, I generally recommend long-running dev (or test) and prod branches, with feature branches for developing new things. The way this works is that new features are developed in a feature branch, merged into dev for testing, and then promoted to prod when you’re confident it’s ready.</p>
+<p>For example, if you had two new plots you were adding to an existing dashboard, your git commit graph might look like this:</p>
+<p><img src="images/102-code-promotion/git_branches.jpeg" class="img-fluid" width="474"></p>
+<p><span class="math display">\[TODO: change dev to test to match above, label merges\]</span></p>
+<p>CI/CD adds a layer on top of this. CI/CD allows you to integrate functional testing by automatically running those tests whenever you do something in git. These jobs can run when a merge request is made, and are useful for tasks like spellchecking, linting, and running tests.</p>
+<p>For the purposes of CI/CD, the most interesting jobs are those that do something after there’s a commit or a completed merge, often deploying the relevant asset to its designated location.</p>
+<p>So a CI/CD integration using the same git graph as above would have released 3 new test versions of the app and 2 new prod versions. Note that in this case, the second test release revealed a bug, which was fixed and tested in the test version of the app before a prod release was completed.</p>
+<p>In years past, the two most popular CI/CD tools were called Travis and Jenkins. By all accounts, these tools were somewhat unwieldy and difficult to get set up. More recently, GitHub – the foremost git server – released GitHub Actions (GHA), which is CI/CD tooling directly integrated into GitHub that’s free for public repositories and free up to some limits for private ones.</p>
+<p>It’s safe to say GHA is eating the world of CI/CD.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>For example, if you’re reading this book online, it was deployed to the website you’re currently viewing using GHA. I’m not going to get deep into the guts of GHA, but instead talk generally about the pattern for deploying data science assets, and then go through how I set up getting this book to run on GHA.</p>
+<section id="using-cicd-to-deploy-data-science-assets" class="level3" data-number="2.3.1">
+<h3 data-number="2.3.1" class="anchored" data-anchor-id="using-cicd-to-deploy-data-science-assets"><span class="header-section-number">2.3.1</span> Using CI/CD to deploy data science assets</h3>
+<p>In general, using a CI/CD tool to deploy a data science asset is pretty straightforward. The mental model to have is that the CI/CD tool stands up a completely empty server for you, and runs some code on it.</p>
+<p>That means that you’re just doing something simple like spellchecking, you can probably just specify to run spellcheck. If you’re doing something more complicated, like rendering an R Markdown document or Jupyter Notebook and then pushing it to a server, you’ll have to take a few extra steps to be sure the right version of R or Python is on the CI/CD server, that your package environment is properly reproduced, and that you have the right code to render your document.</p>
+<p>Feel free to take a look through the <a href="https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_bookdown.yml">code for the GitHub Action for this book</a>. It’s all YAML, so it’s pretty human-readable.</p>
+<p>Here’s what happens every time I make a push to the <code>main</code> branch of the repository for this book:<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<ol type="1">
+<li>Checkout the current <code>main</code> branch of the book.</li>
+<li>Use the <code>r-lib</code> action to install R.</li>
+<li>Use the <code>r-lib</code> action to setup pandoc (a required system library for R Markdown to work).</li>
+<li>Get the cached <code>renv</code> library for the book.</li>
+<li>Render the book.</li>
+<li>Push the book to GitHub Pages, where this website serves from.</li>
+</ol>
+<p>You’ll see that it uses a mixture of pre-defined actions created for general use, pre-defined actions created by people in the R community, and custom R code I insert to restore an <code>renv</code> library and render the book itself.</p>
+</section>
+</section>
+<section id="exercises" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="exercises"><span class="header-section-number">2.4</span> Exercises</h2>
+<ol type="1">
+<li>Create something and add GHA integration <span class="math display">\[TODO: What to use as example?\]</span></li>
+<li>Stand up some virtual environments using ___ <span class="math display">\[TODO: Which ones to try?\]</span></li>
+</ol>
+
+
+</section>
+<section class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2>Footnotes</h2>
+
+<ol>
+<li id="fn1" role="doc-endnote"><p>This is the combination we used internally at RStudio when I started. I do not miss it. In particular, the Chef team “cleverly” named much of their tooling after kitchen related things, making it quite difficult to google.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>For example, conditional logic in Chef code mostly relies on the Ruby language, which you’re unlikely to know if you’re a data scientist. In contrast, Pulumi (a relative newcomer currently popular among many RStudio engineers) uses Python, which way more people know.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>I strongly recommend <em>The Phoenix Project</em> by Gene Kim, Kevin Behr, and George Spafford as a fun way to get acquainted if you’re even remotely interested.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>It’s worth remarking that GitLab has long offered a very good CI/CD integration inside GitLab. It’s called GitLab CI/CD. I’m going to talk about GHA, since it’s what I’m familiar with, but you can accomplish these same things with GitLab CI/CD.</p>
+<p>Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so I’d expect Azure DevOps and GitHub to converge somewhat…but who knows?<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Recall that a finished merge request into the <code>main</code> branch is equivalent to a push to <code>main</code> .<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</main> <!-- /main -->
+<script type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    setTimeout(function() {
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec1/cmd-line.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec1/repro-pkgs.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2021, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+</body></html>

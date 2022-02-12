@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="generator" content="quarto-0.9.9">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DevOps for Data Science - 10&nbsp; Getting a real URL</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+
+  <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+  <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+  <script src="../../site_libs/clipboard/clipboard.min.js"></script>
+  <meta name="quarto:offset" content="../../">
+  <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+  <script src="../../site_libs/quarto-search/fuse.min.js"></script>
+  <script src="../../site_libs/quarto-search/quarto-search.js"></script>
+  <link href="../../chapters/sec2/private-network-config.html" rel="next">
+  <link href="../../chapters/sec2/understanding-traffic.html" rel="prev">
+  <script src="../../site_libs/quarto-html/quarto.js"></script>
+  <script src="../../site_libs/quarto-html/popper.min.js"></script>
+  <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+  <script src="../../site_libs/quarto-html/anchor.min.js"></script>
+  <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+  <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet">
+  <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+  <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <script id="quarto-search-options" type="application/json">{
+    "location": "sidebar",
+    "copy-button": false,
+    "collapse-after": 2,
+    "panel-placement": "start",
+    "type": "textbox",
+    "limit": 20,
+    "language": {
+      "search-no-results-text": "No results",
+      "search-matching-documents-text": "matching documents",
+      "search-copy-link-title": "Copy link to search",
+      "search-hide-matches-text": "Hide additional matches",
+      "search-more-match-text": "more match in this document",
+      "search-more-matches-text": "more matches in this document",
+      "search-clear-button-title": "Clear",
+      "search-detached-cancel-button-title": "Cancel",
+      "search-submit-button-title": "Submit"
+    }
+  }</script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body class="floating">
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting a real URL</span></h1>
+      <button type="button" class="quarto-btn-toggle btn">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">DevOps Lessons for Data Science</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-devops-lessons-for-data-science" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/repro-pkgs.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Containers, Docker, and Orchestration</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Choosing and Using A Data Architecture</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Cloud and Cloud Providers</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">Your Own Data Science Workbench</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-your-own-data-science-workbench" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Computers, Computing, and Servers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/aws-walkthrough.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Lab 1: Get your own server</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/understanding-traffic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Computer Networks and the Internet</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/using-urls.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting a real URL</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/private-network-config.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Private Networking Configuration</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">Working with Enterprise IT</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-working-with-enterprise-it" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/offline.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Offline</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/data-access.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Accessing Data</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">Appendices</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-appendices" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/env-req.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Determining What You Need</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Getting Started with Terminal</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/linux-cmd.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Useful Shell Commands</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Table of contents</h2>
+<ul>
+<li><a href="#using-ports-to-get-to-the-right-service" class="nav-link active" data-scroll-target="#using-ports-to-get-to-the-right-service"> <span class="header-section-number">10.1</span> Using ports to get to the right service</a></li>
+<li><a href="#special-ip-addresses-and-ports" class="nav-link" data-scroll-target="#special-ip-addresses-and-ports"> <span class="header-section-number">10.2</span> Special IP Addresses and Ports</a></li>
+<li><a href="#getting-your-own-domain" class="nav-link" data-scroll-target="#getting-your-own-domain"> <span class="header-section-number">10.3</span> Getting your own domain</a>
+<ul class="collapse">
+<li><a href="#configuring-dns-to-connect-ip-addresses-and-domains" class="nav-link" data-scroll-target="#configuring-dns-to-connect-ip-addresses-and-domains"> <span class="header-section-number">10.3.1</span> Configuring DNS to connect IP addresses and Domains</a></li>
+<li><a href="#learning-to-hate-dns" class="nav-link" data-scroll-target="#learning-to-hate-dns"> <span class="header-section-number">10.3.2</span> Learning to Hate DNS</a></li>
+<li><a href="#trying-it-out" class="nav-link" data-scroll-target="#trying-it-out"> <span class="header-section-number">10.3.3</span> Trying it out</a></li>
+</ul></li>
+<li><a href="#exercises" class="nav-link" data-scroll-target="#exercises"> <span class="header-section-number">10.4</span> Exercises</a></li>
+<li><a href="#securing-traffic-with-https" class="nav-link" data-scroll-target="#securing-traffic-with-https"> <span class="header-section-number">10.5</span> Securing Traffic with <code>https</code></a>
+<ul class="collapse">
+<li><a href="#how-ssltls-enhances-security" class="nav-link" data-scroll-target="#how-ssltls-enhances-security"> <span class="header-section-number">10.5.1</span> How SSL/TLS Enhances Security</a></li>
+<li><a href="#getting-a-cert-of-your-own" class="nav-link" data-scroll-target="#getting-a-cert-of-your-own"> <span class="header-section-number">10.5.2</span> Getting a cert of your own</a></li>
+</ul></li>
+</ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/using-urls.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+<header id="title-block-header">
+<h1 class="title d-none d-lg-block display-7"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting a real URL</span></h1>
+</header>
+
+<p>```</p>
+<p>1.An IP address just specifies the location while a URL specifies location, protocol, and specific resource<br>
+2.URL requires a DNS <a href="http://www.differencebetween.net/technology/software-technology/difference-between-application-server-and-web-server/" title="APPLICATION VS WEB">server</a> while an IP address doesn’t<br>
+3.URLs are unlimited while IP addresses are limited<br>
+4.IP addresses and URLs have a one to many relationship<br>
+<br>
+Read more: <a href="http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6">Difference Between URL and IP Address | Difference Between</a> <a href="http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6" class="uri">http://www.differencebetween.net/technology/internet/difference-between-url-and-ip-address/#ixzz7GHcaYyk6</a></p>
+<p>```</p>
+<p>In the last chapter, we talked about how network traffic knows where to go and what to do when it gets there. That’s all fine and dandy, but you noticed that we spoke almost entirely in terms of IP addresses. You probably almost never work with IP addresses. Instead, we’re used to visiting websites at universal resource locators (URLs), like google.com. What gives?</p>
+<p>A URL is a more complete description of how to get to a website and what do to with the traffic than just an IP address. In this chapter, we’ll discuss what a URL is and how each of the components is determined.</p>
+<p>A URL looks like this:</p>
+<p><span class="math display">\[
+\overbrace{\text{http://}}^\text{protocol}\overbrace{\text{example.com}}^\text{server location}\overbrace{\text{:80}}^\text{port}\overbrace{\text{/}}^\text{resource}
+\]</span></p>
+<p>Now, this probably isn’t what you type into your address bar in your browser. That’s because modern browsers do most of this for you by default. So if you type <span class="math inline">\(google.com\)</span> into your browser’s address bar, your browser will automatically assume the correct defaults for the rest. Try going to <code>https://google.com:443/</code>. What do you get?</p>
+<section id="using-ports-to-get-to-the-right-service" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="using-ports-to-get-to-the-right-service"><span class="header-section-number">10.1</span> Using ports to get to the right service</h2>
+<p>Let’s say you want to run software on a server. One of the big differences between server software, and software on your laptop is that server software needs to be able to interact with the outside world to be useful.</p>
+<p>For example, when you want to use Microsoft Word on your computer, you just click on the button and then it’s ready to go. But say I want to use RStudio Server. I don’t have a desktop where I click to open RStudio Server. Instead, I go to a particular URL and I expect that RStudio will be there, ready to listen.</p>
+</section>
+<section id="special-ip-addresses-and-ports" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="special-ip-addresses-and-ports"><span class="header-section-number">10.2</span> Special IP Addresses and Ports</h2>
+<p>All ports below 1024 reserved.</p>
+<p>80 - HTTP default</p>
+<p>443 - HTTPS default</p>
+<p>22 - SSH default</p>
+<p>Normally, you’ll see a URL written something like this:</p>
+<p><span class="math display">\[
+example.com
+\]</span></p>
+<p>It doesn’t seem like this little sni</p>
+<p><span class="math display">\[
+\overbrace{https://}^{\text{Protocol}}\overbrace{\underbrace{www}_{\text{Subdomain}}.\underbrace{example}_{\text{Primary Domain}}.\underbrace{com}_{\text{Top-Level Domain}}}^{\text{Domain}}/\overbrace{engineering}^{\text{Path}}
+\]</span></p>
+<p>Even worse, IP addresses generally aren’t permanent – they can change when individual servers are replaced, or if you were to change the server architecture (say by adding and load-balancing a second instance – see chapter XX).</p>
+<p>Anatomy of a URL</p>
+<p>In order to have something human-friendly and permanent, we access internet resources at uniform resource locators (URLs), like google.com, rather than an IP address.</p>
+</section>
+<section id="getting-your-own-domain" class="level2 page-columns page-full" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="getting-your-own-domain"><span class="header-section-number">10.3</span> Getting your own domain</h2>
+<p>In the last chapter, we spent most of the time talking about server locations in terms of IP addresses. And it’s true – the “real” address of any server is its IP address. But we generally don’t access websites or other resources at IP addresses – they’re hard to remember, and they can also change over time.</p>
+<p>Instead, we generally use domains for websites, and hostnames for individual servers. We’ll get into hostnames later on – for now we’re going to focus on domains.</p>
+<p>A domain is simply a convenient alias for an IP address. The <strong>domain name system (DNS)</strong> is the decentralized internet phonebook that translates back and forth between domains and IP addresses. The details of how DNS resolution works are quite intricate – but the important thing to know is that there are layers of DNS servers that eventually return an IP address to your computer for where to find your website.</p>
+<p>From the perspective of someone trying to set up their own website, there’s only one DNS server that matters to you personally – the DNS server for your <em>domain name registrar</em>.</p>
+<p>Domain name registrars are the companies that actually own domains. You can buy or rent one from them in order to have a domain on the internet. So let’s say you take the data science server you set up in lab 1 and decide that you want to host it at a real domain.</p>
+<p>Your first stop would be a domain name registrar where you’d find an available domain you like and pull out your credit card.</p>
+<p>Costs for domain names vary widely. Buying a meaningless domain in a less popular top-level domain, say <code>ladskfmlsdf.me</code> can cost as little as $3 per year. On the other hand, buying a <code>.com</code> domain that’s a real word or phrase can be a few thousand dollars – and there are articles every few years about some major company accidentally allowing their domain name to lapse and ransoming it back for stupid amounts of money.</p>
+<p>So, conceptually, it’s easy to understand how a domain comes to stand in for an IP address, with DNS being the directory that ties the two together.</p>
+<section id="configuring-dns-to-connect-ip-addresses-and-domains" class="level3 page-columns page-full" data-number="10.3.1">
+<h3 data-number="10.3.1" class="anchored" data-anchor-id="configuring-dns-to-connect-ip-addresses-and-domains"><span class="header-section-number">10.3.1</span> Configuring DNS to connect IP addresses and Domains</h3>
+<p>The harder part is the nitty gritty of how you accomplish that mapping yourself, which we’ll get into now.</p>
+<p>Configuration of DNS is done by way of <em>records</em>, of which there are a menagerie of types you <em>can</em> configure. Luckily, most simple configurations only need <em>CNAME</em> and <em>A</em> records.</p>
+<p>Here’s an imaginary DNS record table for the domain <code>example.com</code>:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Path/Host</th>
+<th>Type</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@</code></td>
+<td>A</td>
+<td><code>143.122.8.32</code></td>
+</tr>
+<tr class="even">
+<td><code>www</code></td>
+<td>CNAME</td>
+<td>example.com</td>
+</tr>
+<tr class="odd">
+<td><code>*</code></td>
+<td>A</td>
+<td><code>143.122.8.33</code></td>
+</tr>
+</tbody>
+</table>
+<p>Let’s go through how to read this table.</p>
+<p>Since we’re configuring <code>example.com</code>, the paths/hosts in this table are relative to <code>example.com</code>.</p>
+<p>In the first row we’re configuring an A record to go to the target IP address. <em>A records</em> (or their IPv6 cousin <em>AAAA records</em>) map a domain to an actual IP address. The path <code>@</code> is a special symbol meaning exact match. So by this configuration, any traffic to <code>example.com</code> will be passed straight through to the specified IP address.</p>
+<p>The second row deals with traffic to the <code>www</code> subdomain. <em>CNAME records</em> alias sub-domains. They’re most frequently used to map sub-domains to the main domain. Since this is a <code>CNAME</code> record for example.com, this record indicates that traffic to www.example.com should be treated exactly like traffic to <code>example.com</code>. Some domain providers do automatic redirection of <code>www</code> traffic, and so this row may not be necessary in some configurations.</p>
+<p>The last record uses the wildcard symbol <code>*</code> to send all subdomain traffic that’s not already spoken for – say <code>blog.example.com</code> or <code>info.example.com</code> directly to the IP address specified.</p>
+<p>So what happens is that your query goes through several layers of public DNS servers to get to the DNS entry for your domain name registrar. In many cases, you’ll directly configure your domain name registrar to point to your website or server – but you also can configure the domain name registrar to point at another set of DNS servers you actually control with an <em>NS record</em>.</p>
+<p>If you’re setting up your own server, this probably isn’t the case, but some large enterprises do run their own private DNS servers.</p>
+<aside>
+<p>You should always configure your domain provider as narrowly as possible – and you should configure your website or server <em>first</em>.</p>
+<p>#TODO: why?</p>
+</aside>
+</section>
+<section id="learning-to-hate-dns" class="level3" data-number="10.3.2">
+<h3 data-number="10.3.2" class="anchored" data-anchor-id="learning-to-hate-dns"><span class="header-section-number">10.3.2</span> Learning to Hate DNS</h3>
+<p>As you get deeper into using servers, you will learn to hate DNS with a fiery passion. While it’s necessary so we’re not running around trying to remember incomprehensible IP addresses, it’s also very hard to debug as a server admin.</p>
+<p>Let’s say I’ve got the public domain <code>example.com</code>, and I’m taking down the server and putting up a new one. I’ve got to alter the public DNS record so that everyone going to <code>example.com</code> gets routed to the new IP address, and not the old one.</p>
+<p>The thing that makes it particularly challenging is that the DNS system is decentralized. There are thousands of public DNS servers that a request could get routed to, and many of them may need updating.</p>
+<p>Obviously, this is a difficult problem to solve, and it can take up to 24 hours for DNS changes to propagate across the network. So making changes to DNS records and checking if they’ve worked is kinda a guessing game of whether enough time has passed that you can conclude that your change didn’t work right, or if you should just wait longer.</p>
+<p>To add an additional layer of complexity, DNS lookups are slow, so your browser caches the results of DNS lookups it has done before. That means that it’s possible you’ll still get an old website even once the public DNS record has been updated. If a website has ever not worked for you and then worked when you tried a private browser, DNS caching is likely the culprit. Using a private browsing window sidesteps your main DNS cache and forces lookups to happen afresh.</p>
+</section>
+<section id="trying-it-out" class="level3" data-number="10.3.3">
+<h3 data-number="10.3.3" class="anchored" data-anchor-id="trying-it-out"><span class="header-section-number">10.3.3</span> Trying it out</h3>
+<p>Go through hosting this book somewhere.</p>
+</section>
+</section>
+<section id="exercises" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="exercises"><span class="header-section-number">10.4</span> Exercises</h2>
+<ol type="1">
+<li><p>Find a cheap domain you like and buy it.</p></li>
+<li><p>Put an EC2 server back up with the Nginx <code>hello-world</code> example.</p></li>
+<li><p>Configure your server to be available at your new domain.</p>
+<ol type="1">
+<li>Hint: In AWS, Route 53 is the service that handles incoming networking. They can serve as a domain name registrar, or you can buy a domain elsewhere and just configure the DNS using Route 53.</li>
+</ol></li>
+</ol>
+</section>
+<section id="securing-traffic-with-https" class="level2 page-columns page-full" data-number="10.5">
+<h2 data-number="10.5" class="anchored" data-anchor-id="securing-traffic-with-https"><span class="header-section-number">10.5</span> Securing Traffic with <code>https</code></h2>
+<p>When you go to a website on the internet, you’ll see the URL prefixed by the <code>https</code> (though it’s sometimes hidden by your browser because it’s assumed). <code>https</code> is actually a mashup that is short for <code>http</code> with secure sockets layer (SSL).</p>
+<p>These days, almost everyone actually uses the successor to SSL, transport layer security (TLS). However, because the experience of configuring TLS is identical to SSL, admins usually just talk about configuring SSL even when they mean TLS.</p>
+<p>These days, almost every bit of internet traffic is actually <code>https</code> traffic. You will occasionally see <code>http</code> traffic inside private networks where encryption might not be as important – but more and more organizations are requiring end-to-end use of SSL.</p>
+<p>Securing your website or server using SSL/TLS is one of the most basic things you can do to make sure your website traffic is safe. You should always configure <code>https</code> – full stop.</p>
+<p>SSL/TLS security is accomplished by configuring your site or server to use a SSL certificate (often abbreviated to cert). We’ll go through the details of how to get and configure an SSL certificate in this chapter – but first a little background on how SSL/TLS works.</p>
+<section id="how-ssltls-enhances-security" class="level3" data-number="10.5.1">
+<h3 data-number="10.5.1" class="anchored" data-anchor-id="how-ssltls-enhances-security"><span class="header-section-number">10.5.1</span> How SSL/TLS Enhances Security</h3>
+<p>SSL accomplishes two things for you – identity validation and traffic encryption.</p>
+<p>When you go to a website, SSL/TLS is the technology that verifies that you’re actually reaching the website you think you’re reaching. This prevents something called a man-in-the-middle attack where a malicious actor manages to get in between the server and the client of network traffic. So, for example, you might think you’re putting your bank login information into your normal bank website, but there’s a hacker sitting in the middle, reading all of the traffic back and forth.</p>
+<p>[TODO: Image of man-in-the-middle]</p>
+<p>You can see this in action in your web browser. When you go to a website protected by <code>https</code>, you’ll see a little lock icon to the left of the URL. That means that this website’s SSL certificate matches the website and therefore your computer can verify you’re actually at the website you mean to be at.</p>
+<p>But how does your computer know what a valid SSL certificate is? Your computer has a list of trusted Certificate Authorities (CAs) who create, sell, and validate SSL/TLS certificates. So when you navigate to a website, the website sends back a digital signature. Your computer checks the signature against the indicated CA to verify that it was issued to the site in question.</p>
+<p>[TODO: image of SSL validation]</p>
+<p>The second type of scary scenario SSL prevents is a snooping/sniffing attack. Even if you’re getting to the right place, your traffic travels through many different channels along the way – routers, network switches, and more. This means that someone could theoretically look at all your traffic along the way to its meaningful destination.</p>
+<p>When your computer gets back the digital signature to verify the site’s identity, it also prompts an exchange of encryption keys. These keys are used to encrypt traffic back and forth between you and the server so anyone snooping on your message will just see garbled nonsense and not your actual content. You can think of the SSL/TLS encryption as the equivalent of writing a message on a note inside an envelope, rather than on a postcard anyone could read along the way.</p>
+</section>
+<section id="getting-a-cert-of-your-own" class="level3 page-columns page-full" data-number="10.5.2">
+<h3 data-number="10.5.2" class="anchored" data-anchor-id="getting-a-cert-of-your-own"><span class="header-section-number">10.5.2</span> Getting a cert of your own</h3>
+<p>In order to configure your site or server with SSL, there are three steps you’ll want to take: getting an SSL certificate, putting the certificate on the server, and making sure the server <em>only</em> accepts <code>https</code> traffic.</p>
+<p>You can either buy an SSL certificate or make one yourself, using what’s called a <em>self-signed cert</em>.</p>
+<p>There are a variety of places you can buy an SSL/TLS certificate, in many cases, your domain name registrar can issue you one when you buy your domain.</p>
+<p>When you create or buy your cert, you’ll have to choose the scope. A basic SSL certificate covers just the domain itself, formally known as a fully qualified domain name (FQDN). So if you get a basic SSL certificate for <code>www.example.com</code>, <code>www.blog.example.com</code> will not be covered. You can get a <em>wildcard certificate</em> that would cover every subdomain of <code>*.example.com</code>.</p>
+<aside>
+<p>Note that basic SSL/TLS certification only validates that when you type <code>example.com</code> in your browser, that you’ve gotten the real <code>example.com</code>. It doesn’t in any way validate who owns <code>example.com</code>, whether they’re reputable, or whether you should trust them.</p>
+<p>There are higher levels of SSL certification that do validate that, for example, the company that owns <code>google.com</code> is actually the company Google.</p>
+</aside>
+<p>But sometimes it’s not feasible to buy certificates. While a basic SSL certificate for a single domain can cost $10 per year or less, wildcard certificates will all the bells and whistles can cost thousands per year. This can get particularly expensive if you’ve got a lot of domains for some reason.</p>
+<p>Moreover, there are times when you <em>can’t</em> buy a certificate. If you’re encrypting traffic inside a private network, you will need certificates for hosts or IP addresses that are only valid inside the private network, so there’s no public CA to validate them.</p>
+<p>There are two potential avenues to follow. In some cases, like inside a private network, you want SSL/TLS for the encryption, but don’t really care about the identity validation part. In this case, it’s usually possible to skip that identity validation part and automatically trust the certificate for encryption purposes.</p>
+<p>It’s also possible to create your own private CA, which would verify all your SSL certificates. This is pretty common in large organizations. At some point, every server and laptop needs to have the private CA added to its set of trusted certificate validators.</p>
+<p>A warning: it is deceptively easy to generate and configure a self-signed SSL certificate. It’s usually just a few lines of shell commands to create a certificate, and adding the certificate to your server or website is usually just a copy/paste affair.</p>
+<p>However, it’s pretty common to run into problems with self-signed certs or private CAs. Making sure the certificate chain is correct, or running into a piece of software that doesn’t ignore the identity validation piece right is pretty common. This shouldn’t dissuade you from using SSL/TLS. It’s an essential, and basic, component of any security plan – but using a self-signed cert probably isn’t as easy as it seems.</p>
+<p>When you configure your site or server, there will likely be an option to redirect all <code>http</code> traffic to <code>https</code> traffic. If your server or site is open to the internet, you should set this option.</p>
+
+
+</section>
+</section>
+</main> <!-- /main -->
+<script type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    setTimeout(function() {
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec2/understanding-traffic.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Computer Networks and the Internet</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec2/private-network-config.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Private Networking Configuration</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2021, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+</body></html>

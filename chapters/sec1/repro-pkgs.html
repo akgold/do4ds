@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="generator" content="quarto-0.9.9">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>DevOps for Data Science - 3&nbsp; Environments and Reproducibility</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+  </style>
+
+  <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+  <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+  <script src="../../site_libs/clipboard/clipboard.min.js"></script>
+  <meta name="quarto:offset" content="../../">
+  <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+  <script src="../../site_libs/quarto-search/fuse.min.js"></script>
+  <script src="../../site_libs/quarto-search/quarto-search.js"></script>
+  <link href="../../chapters/sec1/docker.html" rel="next">
+  <link href="../../chapters/sec1/code-promotion.html" rel="prev">
+  <script src="../../site_libs/quarto-html/quarto.js"></script>
+  <script src="../../site_libs/quarto-html/popper.min.js"></script>
+  <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+  <script src="../../site_libs/quarto-html/anchor.min.js"></script>
+  <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+  <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet">
+  <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+  <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+  <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <script id="quarto-search-options" type="application/json">{
+    "location": "sidebar",
+    "copy-button": false,
+    "collapse-after": 2,
+    "panel-placement": "start",
+    "type": "textbox",
+    "limit": 20,
+    "language": {
+      "search-no-results-text": "No results",
+      "search-matching-documents-text": "matching documents",
+      "search-copy-link-title": "Copy link to search",
+      "search-hide-matches-text": "Hide additional matches",
+      "search-more-match-text": "more match in this document",
+      "search-more-matches-text": "more matches in this document",
+      "search-clear-button-title": "Clear",
+      "search-detached-cancel-button-title": "Cancel",
+      "search-submit-button-title": "Submit"
+    }
+  }</script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body class="floating">
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></h1>
+      <button type="button" class="quarto-btn-toggle btn">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Preface</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">DevOps Lessons for Data Science</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-devops-lessons-for-data-science" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/repro-pkgs.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Containers, Docker, and Orchestration</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Choosing and Using A Data Architecture</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Cloud and Cloud Providers</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">Your Own Data Science Workbench</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-your-own-data-science-workbench" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Computers, Computing, and Servers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/aws-walkthrough.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Lab 1: Get your own server</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/understanding-traffic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Computer Networks and the Internet</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/using-urls.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting a real URL</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/private-network-config.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Private Networking Configuration</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">Working with Enterprise IT</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-working-with-enterprise-it" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/offline.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Offline</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/data-access.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Accessing Data</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">Appendices</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-appendices" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/env-req.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Determining What You Need</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Getting Started with Terminal</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/linux-cmd.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Useful Shell Commands</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Table of contents</h2>
+<ul>
+<li><a href="#the-environment" class="nav-link active" data-scroll-target="#the-environment"> <span class="header-section-number">3.1</span> The Environment</a></li>
+<li><a href="#two-layers-of-environment-management" class="nav-link" data-scroll-target="#two-layers-of-environment-management"> <span class="header-section-number">3.2</span> Two Layers of Environment Management</a>
+<ul class="collapse">
+<li><a href="#reproducing-package-environments" class="nav-link" data-scroll-target="#reproducing-package-environments"> <span class="header-section-number">3.2.1</span> Reproducing Package Environments</a></li>
+<li><a href="#reproducing-the-rest-of-the-stack" class="nav-link" data-scroll-target="#reproducing-the-rest-of-the-stack"> <span class="header-section-number">3.2.2</span> Reproducing the rest of the stack</a></li>
+</ul></li>
+</ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/repro-pkgs.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<header id="title-block-header">
+<h1 class="title d-none d-lg-block display-7"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Environments and Reproducibility</span></h1>
+</header>
+
+<p>Reproducibility in data science is hard.</p>
+<p>But it’s also important.</p>
+<p>In data science, we’re usually either trying to discover something new about the world, or to make a prediction that will prove useful in the future. Our results being reproducible is an important part of assuring that’s the case.</p>
+<p>There are lots of code-based strategies – like literate programming – that ensure the reproducibility of our code, and various tools to make sure we can reproduce the dataset we ran the code on. Those tools and techniques are outside the scope of this book. In this book, we’re going to talk about how to make an environment that is reproducible.</p>
+<p>It’s worth saying that reproducibility isn’t binary – it’s a spectrum. There are things that are fully irreproducible, like an analysis that relies on a random number generator with no seed set. In that case, you will never be able to reproduce your earlier results. Going from that to setting a seed is the very lowest level of reproducibility.</p>
+<p>And while it might be tempting to say that you should always maximize reproducibility, there’s generally a tradeoff – making things more reproducible is also generally more work.</p>
+<p><img src="images/paste-FB4C5613.png" class="img-fluid" width="429"></p>
+<p>Depending on your organization, you may have reproducibility requirements. In highly-regulated industries, these may actually be legal or regulatory requirements you have to meet and it might be worth it for your organization to undertake a significant hassle or cost to ensure reproducibility.</p>
+<p>In other cases, you’re just trying to make sure you can be confident in and verify your results later. In that case, there’s probably a lower amount of resources available – and lower requirements – in terms of how reproducible it’s worth making things.</p>
+<section id="the-environment" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="the-environment"><span class="header-section-number">3.1</span> The Environment</h2>
+<p>The example above talked about reproducibility as a function of what you did in your code – did you bother to set a seed for your random number generator or not?</p>
+<p>But for the purpose of this chapter, that’s the last we’re going to talk about code reproducibility. Instead, we’re going to discuss re-creating the environment. You might well ask: well, what is the environment?</p>
+<p>For the purposes of data science, I think of everything that isn’t code you’ve written or the data you’re using. The environment is the mixing bowl where those two things meet to do your work. In a lot of cases, data scientists can get away without thinking about the environment…at least for a while.</p>
+<p><img src="images/103-repro/env.jpeg" class="img-fluid" width="413"></p>
+<p>Often, you’ve got an environment, probably on your laptop, where things work well enough. The problem comes later. Sometimes this comes up when collaborating on a piece of work – how many times have you told a collaborator, “Well, it works on my machine…” Other times it comes up when you get to think about taking an app or report into production – thinking about how to make sure your app or report will reliably run for an extended period of time. And sometimes it comes up in the context of archiving what you’re doing - if you need to re-run this later to verify results, are you confident that it will run cleanly and return the same results.</p>
+<p>As I said above, there is no perfect answer to reproducing an environment, but there are some general considerations to keep in mind, and a few tools and strategies I’ve found that are useful.</p>
+<p>In computational terms, the environment is everything that isn’t the code or data themselves. There are layers of environment, one atop the other, right down to the physical hardware.</p>
+<p>[TODO: redo graphic as layers, add hardware]</p>
+<p><img src="images/paste-4272C723.png" class="img-fluid" width="348"></p>
+<p>Again, depending on your requirements, there may be different answers to your reproducibility issues. In almost all cases, it’s worthwhile to make sure you can easily reproduce your language and package environments. This can solve a lot of headaches down the road, and I recommend it in almost all cases that aren’t just a one-off quick analysis (and sometimes even then!).</p>
+<p>But there are also highly-regulated industries where you have to ensure the reproducibility of results down to the level of hardware-specific machine instructions and your version of reproducibility might involve just keeping hardware running for a decade to make sure the environment is truly and completely reproducible.</p>
+</section>
+<section id="two-layers-of-environment-management" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="two-layers-of-environment-management"><span class="header-section-number">3.2</span> Two Layers of Environment Management</h2>
+<p>In most cases, you won’t have to persist your physical hardware – and if you’re in the cloud that’s not really even an option. In that case, I generally recommend two “layers” of tooling to ensure environmental reproducibility.</p>
+<p><img src="images/103-repro/repro-layers.jpeg" class="img-fluid" width="298"></p>
+<p>If you need to maintain your hardware, that’s beyond the scope of this book. But I am going to suggest two sets of tools for managing the R and Python package environments you might have, as well as the underlying versions of R and Python, the system libraries, and the operating system.</p>
+<section id="reproducing-package-environments" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="reproducing-package-environments"><span class="header-section-number">3.2.1</span> Reproducing Package Environments</h3>
+<p>For data science projects, it’s generally worth using a language-specific tool to manage the set of packages you want in your environment. In R, <code>{renv}</code> is the standard on this front. In Python, there are many different options. In the context of production data science, I recommend <code>{virtualenv}/{venv}</code> and related tools.</p>
+<div class="rmdinfo">
+<p>A sidebar on Conda</p>
+<p>Many data scientists love Conda for managing their Python environments.</p>
+<p>Conda is a great tool for its main purpose – allowing you to create a data science environment on your local laptop, especially when you don’t have root access to your laptop because it’s a work machine that’s locked down by the admins.</p>
+<p>In the context of a production environment, Conda smashes together the language version, the package management, and (sometimes) the system library management. This has the benefit of being conceptually simple and easy-to-use. But I’ve often seen it go awry in production environments, and I generally recommend people use a tool that’s just for package management, like <code>{virtualenv}</code>, as opposed to an all-in-one tool like Conda.</p>
+</div>
+<p>In both R and Python, these tools accomplish two main tasks for you:</p>
+<ol type="1">
+<li><p>They create a standalone package environment that’s independent of anything else you do on your computer. That means that you can have another project with different package requirements that won’t mess up this one.</p></li>
+<li><p>They make it easy to record the exact package requirements for your project.</p></li>
+</ol>
+<p>On a high level, the workflows for these tasks are similar between R and Python. However, there are some meaningful differences in tooling – especially because virtually every computer arrives with a system version of Python installed, while R is only ever installed by a user trying to do data science tasks. At the end of the day, this actually makes it <em>harder</em> to use Python because you do not want to use your system Python for your data science work…but sometimes it accidentally gets into the mix.</p>
+<p>A general suggestion of workflows for data science package management, whether in R or Python – this should be independently done for <em>every</em> project:</p>
+<ol type="1">
+<li><p>Create a new directory for the project.</p></li>
+<li><p>If you’re in R, make sure you’ve got renv <code>install.packages("renv")</code></p></li>
+<li><p>Create a standalone library for the project.</p>
+<ol type="1">
+<li><p>renv::init()</p></li>
+<li><p>python -m venv .venv</p></li>
+</ol></li>
+<li><p>Install packages into your project</p>
+<ol type="1">
+<li><p>(note R done from inside a session, python done from command line)</p></li>
+<li><p>Renv does some clever caching so if you use the same package in multiple projects, installs will be fast</p></li>
+<li><p>TODO: does venv do the same?</p>
+<ol type="1">
+<li><p>install.packages(…)</p></li>
+<li><p>python -m pip install …</p></li>
+</ol></li>
+</ol></li>
+<li><p>Snapshot your package state</p>
+<ol type="1">
+<li><p>renv::snapshot()</p></li>
+<li><p>pip freeze &gt; requirements.txt</p></li>
+</ol></li>
+</ol>
+<p>When you come back to your project later, you just reactivate these environment, and you’re back into your isolated project environment.</p>
+<ol type="1">
+<li><p>Run the appropriate activation command.</p>
+<ol type="1">
+<li><p>renv::activate() (automatically in project-level .Rprofile)</p></li>
+<li><p>source .venv/bin/activate</p></li>
+</ol></li>
+</ol>
+<p>Then, when you want to collaborate or move this project to a different machine, you just move the renv lockfile or the requirements.txt. In general, these tools come with default <code>.gitignore</code>s that move <em>just</em> the file that describes the package set and not the packages themselves. This is a good thing!</p>
+<p>In general, packages are specific to the underlying machine – in particular to the operating system and language version, so the optimal thing is to move just the file recording the required versions and then restore those versions wherever you end up, as opposed to moving live package binaries that may or may not work in a new location.</p>
+<ol type="1">
+<li><p>Move your renv lockfile or requirements.txt into place.</p></li>
+<li><p>Create an renv or virtual env</p>
+<ol type="1">
+<li><p>renv::init()</p></li>
+<li><p>python -m venv .venv</p></li>
+</ol></li>
+<li><p>Restore the captured set of packages from the lockfile/requirements</p>
+<ol type="1">
+<li><p>renv::restore()</p></li>
+<li><p>pip install -r requirements.txt</p></li>
+</ol></li>
+</ol>
+<p>TODO: add section on inspecting lockfiles to understand</p>
+</section>
+<section id="reproducing-the-rest-of-the-stack" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="reproducing-the-rest-of-the-stack"><span class="header-section-number">3.2.2</span> Reproducing the rest of the stack</h3>
+<p>Sometimes, just recording the package environment and moving that around is sufficient. In many cases, old versions of R and Python are retained in the environment, and that’s sufficient.</p>
+<p>There are times where you need to reproduce elements further down the stack. In some highly-regulated industries, you’ll need to go further down the stack because of requirements for numeric reproducibility. Numeric routines in both R and Python call on system-level libraries, often written in C++ for speed. While it’s unlikely that upgrades to these libraries would cause changes to the numeric results you get, it can happen, and it may be worth maintaining parts of the stack.</p>
+<p>In other cases, your R or Python library might basically just be a wrapper for system libraries. For example, many popular packages for geospatial analysis are just thin language wrappers that call out to the system libraries. In this case, it might be important to be able to maintain a particular version of the underlying system library to ensure that your code runs at all in the future.</p>
+<p>There are many tools you can use to record and reproduce the R and Python versions you’re using, the system libraries, and the operating system itself. Many of these fall into the category of <a href="iac">Infrastructure-as-Code configuration tools</a>.</p>
+<p>These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments – and for good reason! In fact, the next chapter is going to be all about the use of Docker in data science. However, it’s worth keeping in mind that if you’re working in the context of a formally-supported IT organization, they may have other tooling they prefer to create and maintain environments, and they can be equally valid.</p>
+
+
+</section>
+</section>
+</main> <!-- /main -->
+<script type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    setTimeout(function() {
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec1/code-promotion.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Code Promotion Workflows</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec1/docker.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Containers, Docker, and Orchestration</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2021, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+</body></html>
