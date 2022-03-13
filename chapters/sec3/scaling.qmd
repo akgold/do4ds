@@ -1,32 +1,56 @@
-# Scaling 
+# Scaling
 
 ## Types of Scaling
 
-* Vertical Scaling -- just make the server bigger
-* Horizontal -- add more parallel servers
-  * Sometimes called load-balancing
-* Reliability - or high-availability (HA)
-  * Make sure the service doesn't go down (or less often)
-  * Eliminate single-points-of-failure
-  * Really hard to do all the way -- spectrum of completeness + difficulty
-* Health Checks/Heartbeats -- periodic checkins to ensure server/service healthy
-  
+-   Vertical Scaling -- just make the server bigger
+-   Horizontal -- add more parallel servers
+    -   Sometimes called load-balancing
+-   Reliability - or high-availability (HA)
+    -   Make sure the service doesn't go down (or less often)
+    -   Eliminate single-points-of-failure
+    -   Really hard to do all the way -- spectrum of completeness + difficulty
+-   Health Checks/Heartbeats -- periodic checkins to ensure server/service healthy
+
 ## Load-Balancing configurations
 
-[Graphic: network diagram of lb-config]
+\[Graphic: network diagram of lb-config\]
 
-* Active/Active - all servers accept traffic
-  * Single vs multiple masters
+-   Active/Active - all servers accept traffic
 
-* Active/Passive (fallover/failover) - secondary server, remains inert until 2nd one fails
+    -   Single vs multiple masters
 
-* Disaster Recovery - backup data to another disk -- somewhat slower resumption of service
+-   Active/Passive (fallover/failover) - secondary server, remains inert until 2nd one fails
+
+-   Disaster Recovery - backup data to another disk -- somewhat slower resumption of service
 
 ## Adding servers in real time
 
-* If you find yourself under heavy load, you'll want to add more servers
-* If you're using infrastructure as code tooling, this is easy
-* It's also easy if using some sort of docker orchestration, as the underlying hosts are all the same from the perspective of docker/K8S
-
+-   If you find yourself under heavy load, you'll want to add more servers
+-   If you're using infrastructure as code tooling, this is easy
+-   It's also easy if using some sort of docker orchestration, as the underlying hosts are all the same from the perspective of docker/K8S
 
 Spannning Multiplee AZs
+
+## Container Deployment + Orchestration
+
+So far, we've been talking about having individual containers in which you might develop an individual app, or use as a way to do infrastructure as code for a server-based installation of a product. However, when things go to production, you often need a more complicated set of servers. For example, maybe you need a front end app plus a back-end database that will run separately. Or maybe you need to run several instances of your app and provide network routing to all of the instances.
+
+In this case, most people turn to Kubernetes (sometimes written K8S).
+
+Kubernetes is an open-source platform to orchestrate the deployment of containers. That's a very high level statement, so here's a more helpful definition -- Kubernetes is the way to launch and maintain Docker containers when you want more than one container to interact.[^scaling-1]
+
+[^scaling-1]: Pedants will be delighted in all the ways this is technically incorrect. There are other ways to orchestrate Docker containers, and Kubernetes is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
+
+For individual data scientists, Kubernetes is usually overkill for the type of work you're doing. If you find yourself in this territory, it's likely you should try to work with you organization's IT/Admin
+
+Kubernetes (K8S) -- software for deploying and managing containers
+
+*Helm* is the standard tool for defining kubernetes deployments.
+
+*Helmfile* is a templating system for helm.
+
+There are other competitors, most notably docker swarm, but K8S is by far the biggest
+
+The line is fuzzy though -- there are container orchestration services that aren't K8S or even abstract a level up from K8S.
+
+\[TODO: Graphic of K8S/Docker\]
