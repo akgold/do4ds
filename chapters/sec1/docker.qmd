@@ -1,30 +1,50 @@
-# Containers, Docker, and Orchestration {docker=""}
+# Docker for Data Science {docker=""}
 
-If you're in the data science world, especially the world of "production data science", you've probably heard of Docker and Kubernetes. But you might not really be sure what they are or whether you need them.
+If you're in the data science world, especially the world of "production data science", you've probably heard of Docker -- but you might not really be sure what it is or whether you need it.
 
-This chapter is designed to clarify what these tools are and whether you need it as a data scientist. We'll play around with Docker and Kubernetes a little, but Docker and Kubernetes are some of the hottest things out there right now, so there are a huge variety of resources for learning. I'd recommend you'd check them out if you're interested.
+This chapter is designed to clarify what Docker is and how it might help you. We'll start with a general intro to Docker, proceed with some discussion of data science-relevant Docker workflows, and then dive in to a hands-on lab that will be just the thing to get you started if you're not sure where to go.
 
-The last few years have seen the rise of containerization as a strategy for managing applications in enterprise software deployments. The main benefit of containerization is it allows you to create a container that includes both an application you want to run, as well as all its dependencies.
+## What is Docker anyway?
 
-Let's talk through a simple example to make this clearer.
+Here's an unhelpful definition -- Docker is an open-source containerization platform.
+
+To get away from unhelpful definitions, let's talk a little about why you might want to use Docker.
 
 Let's say you've got a Shiny app you want to share with your colleagues. Before you can share that app, you've got to make sure that your colleagues have the right set of R packages, a compatible version of R, and a compatible operating system. In contrast to the difficulty of making sure all those things match, a container allows you to simply share the entire container and go!
 
-\[TODO: Find a good example to have them run\]
+Let's say you're developing an app. If you read the [chapter on reproducibility](#repro), you understand that there are layers of dependencies you're accumulating, including your code, the R and Python packages your code needs, the versions of the langauges themselves, and right down to the operating system.
+
+![](images/paste-4272C723.png){width="348"}
+
+It would be very useful to be able to take all these things, package them up, and ship them off somewhere -- maybe you want to share all of this with a collaborator or ship your app to production and be pretty confident the app will run without a lot of work to re-create the environment.
+
+In the last 5-10 years, containers have become the primary way people package up their apps with their dependencies to share them like this.
 
 When you pull and load this image, you'll find it takes a long time. The real power of Docker becomes apparent the *second* time you start this image. Once you've got the image downloaded locally, the container comes alive in a fraction of a second. This is in stark contrast to other sorts of local segregated environments that allow you to have a computer in a computer like VirtualBox -- there are real benefits to having a full reproduction of another computer, rather than just a hypervisor-based container -- but they also take seconds or minutes to stand up.
 
-In the [reproducibility chapter](#repro), you learned about the layers of reproducibility for an app. Docker takes care of everything at or above the operating system level. It doesn't completely negate the need for other sorts of IT tooling, because you still have to provision the physical hardware somehow, but it does make everything much more self-contained.
+Relative to earlier technologies like virtual machines, containers are much more lightweight. In fact, Docker containers can start up in a fraction of a second and be ready to go. This means that putting your app in a container adds very little overhead in terms of performance, which is great!
+
+IT/Admins tend to love Docker because apps show up pre-packaged, because Docker makes it really easy to scale up apps in a "microservices architecture", and because you can tightly control the resources available to a Docker container, making it more secure and easier to ensure system stability.
+
+To a first approximation, discussions about containers are discussions about Docker. There are other containers that exist, and some people use them for particular use cases. But for general purpose, if you're using containers, they're Docker conatiners.
+
+The key word in that sentence is containerization. For most purposes these days, Docker and containers are synonymous since Docker was the first containerization platform to hit the mainstream, and is still by far the most popular.[^docker-1]
+
+[^docker-1]: As much as any esoteric code-development and deployment tool can be said to "hit the mainstream".
 
 \[Graphic: Docker on underlying host\]
 
-In the last 5-10 years, containers have exploded in popularity. The first containerization platform to make it big was Docker, and it's still the biggest. Docker is an open-source containerization platform. Depending on who you are, you might like Docker for different reasons -- developers and data scientists tend to love Docker because it allows them to ship all their app dependencies with their app. IT/Admins tend to love Docker because apps show up pre-packaged, because Docker makes it really easy to scale up apps in a "microservices architecture", and because you can tightly control the resources available to a Docker container, making it more secure and easier to ensure system stability.
+Let's talk through a simple example to make this clearer.
+
+In the [reproducibility chapter](#repro), you learned about the layers of reproducibility for an app. Docker takes care of everything at or above the operating system level. It doesn't completely negate the need for other sorts of IT tooling, because you still have to provision the physical hardware somehow, but it does make everything much more self-contained.
 
 You can think of containers in two different ways -- as encapsulations of a development environment, or as a mobile encapsulation of an app that can be deployed. In fact, the same container can be this for different people. Assume for a second, you're an IT/Admin responsibile for making JupyterHub available to your organization. You can pull and run the JupyterHub Docker image and have an initial installation of JupyterHub up and running in seconds. From the Data Scientist's perspective, this is now a development environment for them.
 
     docker run --rm -p 8787:8787 -e PASSWORD=rs_pass rocker/rstudio
 
-## Container Lifecycle
+The last few years have seen the rise of containerization as a strategy for managing applications in enterprise software deployments. The main benefit of containerization is it allows you to create a container that includes both an application you want to run, as well as all its dependencies.
+
+### Container Lifecycle
 
 One of the hardest parts of understanding Docker is the language around how you are interacting with Docker and *what exactly it is* you've got.
 
@@ -44,7 +64,7 @@ Docker images can be shared directly like any other file, or via pushing and pul
 
 It is possible to interactively build a container as you go and create an image, but for the purposes of reproducibility, it's generally preferable to build the image from a Dockerfile, and adjust the Dockerfile if you need to adjust the image.
 
-## Using Containers as a Data Scientist
+## Docker for the Data Scientist
 
 If you've read this far into the chapter, you might be about ready to go put every project you've got into a docker container, ask your colleagues to do the same, and plan to share Shiny apps by making everyone download Docker Desktop and give them a `docker run` command.
 
