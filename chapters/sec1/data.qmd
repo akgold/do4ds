@@ -1,59 +1,212 @@
-# Choosing and Using A Data Architecture
+# Taking Data to Production
 
-Learning Objectives
+I frequently speak to data scientists who are responsible for taking an insight they've discovered or a report they've built and moving that insight to a server where the report can run on a schedule, or the dashboard can live on. While most data scientists have spent a lot of time thinking about the contents of their data, they've probably spent less time thinking about how their data is stored, or how it moves around.
 
--   Understand options for data architectures
--   Understand interactions between data and auth
+When you start taking apps to production, these things start to matter. Depending on the security requirements of your app and the underlying data, you may also have to spend a good bit of time thinking about how your app connects to your data, and how you make sure only the right people have access.
 
-------------------------------------------------------------------------
+In this chapter, we'll walk through the decision-making process you can follow to figure out how to architect the data inside your app, API, or report. Going to use the word app throughout this doc, but applies equally to an API.
 
--   DataOps is a huge field -- a lot of it touches data science
--   Some of the biggest consideration when you're thinking about data science
+## Options for storing app data
 
-## Options for Data Storage
+In this chapter, we're going to explore how you decide how to store the data for your app. But first, let's just talk through what the options are so it makes sense as we talk about why you might choose one over the other in the rest of the chapter.
 
--   3 basic types of data stores: flat file (csv, pickle/rds), flat file w/ interactive read (arrow), database
+### Storage Format
 
--   Implications how to configure access
+The first question of how to store the data is the storage format. There are really three distinct options for storage format.
 
--   Database is standalone option, usually requires configuring separate server
+**Flat file** storage describes writing the data out into a simple file. The canonical example of a flat file is a `csv` file. However, there are also other formats that may make data storage smaller because of compression, make reads faster, and/or allow you to save arbitrary objects rather than just rectangular data. In R, the `rds` format is the generic binary format, while `pickle` is the generic binary format in python.
 
--   Other two can be configured two main ways:
+Flat files can be moved around just like any other file on your computer. You can put them on your computer, share them through tools like dropbox, google drive, scp, or more.
 
-    -   File system
-    -   Bucket Storage
+The biggest disadvantage of flat file data storage is twofold -- and is related to their indivisibility. In order to use a flat file in R or Python, you'll need to load it into your R or Python session. For small data files, this isn't a big deal. But if you've got a large file, it can take a long time to read, which you may not want to wait for. Also, if your file has to go over a network, that can be a very slow operation. Or having to load it into an app at startup. Also, there's generally no way to version data, or just update part, so if you're saving archival versions, they can take up a lot of space very quickly.
 
--   Data Lake -- usually for raw data, basically bucket storage writ large, sometimes include interacticve read capabilities
+At the other extreme end from a flat file format is a **database**. A database is a standalone server with its own storage, memory, and compute. In general, you'll recall things from a database using some sort of query language. Most databases you'll interact with in a data science context are designed around storing rectangular data structures and use Structured Query Language (SQL) to get at the data inside.
 
--   Data Warehouse -- usually a database
+There are other sorts of databases that store other kinds of objects -- you may need these depending on the kind of objects you're working with. Often the IT/Admin group will have standard databases they work with or use, and you can just piggyback on their decisions. Sometimes you'll also have choices to make about what database to use, which are beyond the scope of this book.
 
-## How to pick
+The big advantage of a database is that the data is stored and managed by an independent process. This means that accessing data from your app is often a matter of just connecting to the database, as opposed to having to move files around.
 
--   Flat files are simplest
--   Flat files w/ interactive read are great for med-large data
--   Databases often already exist
--   If not, a few tips:
-    -   SQL-based databases are the backbone of analytics work
-    -   Database as a service is a basic cloud provider
-    -   There are SO many options TODO: How much more in depth am I going here?
+Working with databases can also be frought -- you usually end up in one of two situations -- either the database isn't really for the data science team, in which case you can probably get read access, but not write. So you'll be able to use the database as your source of truth, but you won't be able to write there for intermediate tables and other things you might need. Or you'll have freedom to set up your own database, in which case you'll have to own it -- and that comes with its own set of headaches.
 
-## Working with File Systems
+There's a third option for data storage that is quickly rising in popularity for medium size data. These options are ones that allow you to store data in a flat file, but access it in a smarter way than "just load all the data into memory". SQLite is a classic on this front that gives you SQL access to what is basically just a flat file. There are also newer entrants into this place that are better from an analytics perspective, like combining Apache Arrow with feather and parquet files and the dask project in Python.
 
--   Working on your laptop file system isn't great
--   Working in a cloud provider is different than on your laptop
-    -   Volumes are separate from compute
-    -   Often have automated snapshots/backups
-    -   Volumes can also be shared across multiple servers
--   Process of putting a volume on a server is called mounting
+These tools can give you the best of both worlds -- you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you'll still have to keep track of where the actual files are and make them accessible to your app.
 
-## Working with Databases {#database}
+### Storage Location
 
--   Two main ways to work with databases from R/Python - direct connection or w/ connector/driver (JDBC/ODBC)
--   https://docs.google.com/presentation/d/1wJ3YnB4ob3AkNRDLpvYy3B-JMUaVsPjl3AA5QkN7fII/edit
+The second question after *what* you're storing is *where*. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access -- as well as making sure you can authenticate into it (more on that below).
 
-### Security
+If you're not using a database, then you'll have to decide where to store the data for your app. Most apps that aren't using a database start off rather naively with the data in the app bundle.
 
-Row-level security Kerberos JWT IAM roles
+\<TODO: Image of data in app bundle\>
+
+This works really well during development and is an easy pattern to get started with. The problem is that this pattern generally falls apart when it goes to production. Usually this pattern works fine for a while. Problems start to arise when the data needs updating, and most data needs updating. Usually, you'll be ready to update the data in the app long before you're ready to update the app itself.
+
+At this point, you'll be kicking yourself that you now have to update the data inside the app every time you want to want to make a data update. It's generally a better idea to have the data live outside the app bundle. Then you can update the data without mucking around with the app itself.
+
+A few options for this include just putting a flat file (or flat with differential read) into a directory near the app bundle. The `pins` package is also a great option here
+
+## Choosing your storage solution
+
+### How frequently are the data updated relative to the code?
+
+Many data apps have different update requirements for different data in the app.
+
+For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves, perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.
+
+On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. \<TODO: change to hospital example?\>
+
+If your data is updated only very infrequently, it might make sense to just bundle it up with the app code and update it on a similar cadence to the app itself.
+
+\<TODO: Picture data in app bundle\>
+
+On the other hand, the more frequently updated data probably doesn't make sense to update at the same cadence as the app code. You probably want to access that data in some sort of external location, perhaps on a mounted drive outside the app bundle, in a pin or bucket, or in a database.
+
+In my experience, you almost never want to actually bundle data into the app. You almost always want to allow for the app data ("state") to live outside the app and for the app to read it at runtime. Even data that you *think* will be updated infrequently, is unlikely to be updated as infrequently as your app code. Animals move on and off the endangered list, ingredient substitutions are made, and hospitals open and close and change their names in memoriam of someone.
+
+It's also worth considering whether your app needs a live data connection to do processing, or whether looking up values in a pre-processed table will suffice. The more complex the logic inside your app, the less likely you'll be able to anticipate what users need, and the more likely you'll have to do a live lookup.
+
+### Is your app read-only, or does it have to write?
+
+Many data apps are read-only. This is nice. If you're going to allow your app to write, you'll need to be careful about permissions, protecting from data loss via SQL injection or other things, and have to be careful to check data quality.
+
+If you want to save the data, you'll also need a solution for that. There's no one-size-fits-all answer here as it really depends on the sort of data you're using. The main thing to keep in mind is that if you're using a database, you'll have to make sure you have write permissions.
+
+## When does the app fetch its data?
+
+At app open or throughout runtime?
+
+The first important question you'll have to figure out is what the requirements are for the code you're trying to put into production.
+
+### How big are the data in the app?
+
+When I ask this question, people often jump to the size of the raw data they're using -- but that's often a completely irrelevant metric. You're starting backwards if you start from the size of the raw data. Instead, you should figure out what's the size of data you actually need inside the app.
+
+To make this a little more concrete, let's imagine you work for a large retailer and are responsible for creating a dashboard that will allow people to visualize the last week's worth of sales for a variety of products. With this vague prompt, you could end up needing to load a huge amount of data into your app -- or very little at all.
+
+One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to
+
+-\> data granularity -\> does it even need to be an app, or will a report do?
+
+### What are the performance requirements for the app?
+
+One crucial question for your app is how much wait time is acceptable for people wanting to see the app -- and when is that waiting ok? For example, if people need to be able to make selections and see the results in realtime, then you probably need a snappy database, or all the data preloaded into memory when they show up.
+
+For some apps, you want the data to be snappy throughout runtime, but it's ok to have a lengthy startup process (perhaps because it can happen before the user actually arrives) and you want to load a lot of data as the app is starting and do much less throughout the app runtime.=
+
+### Creating Performant Database Queries
+
+If you are using a database, you'll want to be careful about how you construct your queries to make sure they perform well. The main way to think about this is whether your queries will be *eager* or *lazy*.
+
+In an eager app, you'll pull basically all of the data for the app as it starts up, while a lazy app will pull data only as it is need.
+
+\<TODO: Diagram of eager vs lazy data pulling\>
+
+Making your app eager is usually much simpler -- you just read in all the data at the beginning. This is often a good first cut at writing an app, as you're not sure exactly what requirements your app has. For relatively small datasets, this is often good enough.
+
+If it seems like your app is starting up slowly -- or your data's too big to all pull in, you may want to pull data more lazily.
+
+::: callout-tip
+Before you start converting queries to speed up your app, it's always worthwhile to profile your app and actually check that the data pulling is the slow step. I've often been wrong in my intuitions about what the slow step of the app is.
+
+There's nothing more annoying than spending hours refactoring your app to pull data more lazily only to realize that pulling the data was never the slow step to begin with.
+:::
+
+It's also worth considering how to make your queries perform better, regardless of when they occur in your code. Obviously you want to pull the minimum amount of data possible, so making data less granular, pulling in a smaller window of data, or pre-computing summaries is great when possible (though again, it's worth profiling before you take on a lot of work that might result in minimal performance improvements).
+
+Once you've decided whether to make your app eager or lazy, you can think about whether to make the query eager or lazy. In most cases, when you're working with a database, the slowest part of the process is the actual process of pulling the data. That means that it's generally worth it to be lazy with your query. And if you're using `dplyr` from R, being eager vs lazy is simply a matter of where in the chain you put the `collect` statement.
+
+So you're better off sending a query off to the database, letting the database do a bunch of computations, and pulling a small results set back rather than pulling in a whole data set and doing computations in R.
+
+### How to connect to databases?
+
+In R, there are two answers to how to connect to a database. You can either use a direct connector to connect to the database, this generally will provide a driver to the DBI package. There are other database alternatives, but they're pretty rare.
+
+\<TODO: image of direct connection vs through driver\>
+
+You can also use an ODBC/JDBC driver to connect to the database. In this case, you'll use something inside your R or Python session to use an database driver that has nothing to do with R or Python. Many organizations like these because IT/Admins can configure them on behalf of users and can be agnostic about whether users are using them from R, Python, or something else entirely.
+
+If you're in R, the `odbc` package gives you a way to interface with ODBC drivers. I'm unaware of a general solution for conencting to odbc drivers in Python.
+
+A DSN is a particular way to configure an ODBC driver. They are nice because it means that the Admin can fill in the connection details ahead of time, and you don't need to know any details of the connection, other than your username and password.
+
+\<TODO: image of how DSN works\>
+
+In R, writing a package that creates database connections for users is also a very popular way to provide database connections to the group.
+
+## How do I do data authorization?
+
+This is a question you probably don't think about much as you're puttering around inside RStudio or in a Jupyter Notebook. But when you take an app to production, this becomes a crucial question.
+
+The best and easiest case here is that everyone who views the app has the same permissions to see the data. In that case, you can just allow the app access to the data, and you can check whether someone is authorized to view the app as a whole, rather than at the data access layer.
+
+In some cases, you might need to provide differential data access to different users. Sometimes this can be accomplished in the app itself. For example, if you can identify the user, you can gate access to certain tabs or features of your app. Many popular app hosting options for R and Python data science apps pass the username into the app as an environment variable.
+
+Sometimes you might also have a column in a table that allows you to filter by who's allowed to view, so you might just be able to filter to allowable rows in your database query.
+
+Sometimes though, you'll actually have to pass database credentials along to the database, which will do the authorization for you. This is nice, because then all you have to do is pass along the correct credntial, but it's also a pain because you have to somehow get the credential and send it along with the query.
+
+\<TODO: Image of how a kinit/JWT flow work\>
+
+Most commonly, kerberos tickets or JWTs are used for this task. Usually your options for this depend on the database itself, and the ticket/JWT granting process will likely have to be handled by the database admin.
+
+### Securely Managing Credentials
+
+The single most important thing you can do to secure your credentials for your outside services is to avoid ever putting credentials in plaintext. The simplest alternative is to do a lookup from environment variables in either R or Python. There are many more secure things you can do, but it's pretty trivial to put `Sys.getenv("my_db_password")` into an app rather than actually typing the value. In that case, you'd set the variable in a `.Rprofile` or `.Renviron` .
+
+Similarly, in Python, you can get and set environment variables using the `os` module. `os.environ['DB_PASSWORD'] = 'my-pass'` and `os.getenv('DB_PASSWORD')`, `os.environ.get('DB_PASSWORD')` or `os.environ('DB_PASSWORD')`. If you want to set environment variables from a file, generally people in Python use the`dotenv` package along with a `.env` file.
+
+You should not commit these files to git, but should manually move them across environments, so they never appear anywhere centrally accessible.
+
+In some organizations, this will still not be perceived secure enough, because the credentials are not encrypted at rest. Any of the aforementioned files are just plain text files -- so if someone unauthorized were to get access to your machine, they'd be able to grab all of the goodies in your `.Rprofile` and use them themselves.
+
+Some hosting software, like RStudio Connect, can take care of this problem, as they store your environment variables inside the software in an encrypted fashion and inject them into the R runtime.
+
+There are a number of more secure alternatives -- but they generally require a little more work.
+
+There are packages in both R and Python called `keyring` that allow you to use the system keyring to securely store environment variables and recall them at runtime. These can be good in a development environment, but run into trouble in a production environment because they generally rely on a user actually inputting a password for the system keyring.
+
+One popular alternative is to use credentials pre-loaded on the system to enable using a ticket or token -- often a Kerberos token or a JWT. This is generally quite do-able, but often requires some system-level configuration.
+
+\<TODO: image of kerberos\>
+
+You may need to enable running as particular Linux users if you don't want to do all of the authentication interactively in the browser. You usually cannot just recycle login tokens, because they are service authorization tokens, not token-granting tokens.[^data-1]
+
+[^data-1]: I believe that it is theoretically possible to create a token that grants access to multiple services. For example, you could have a token that grants access to both RStudio Server and a database. I've never seen this implemented.
+
+## Some notes if you're administering the service
+
+This chapter has mostly been intended for consumption by app authors who will be creating data science assets. But in some cases, you might also have to administer the service yourself. Here are a few tips and thoughts.
+
+Choosing which database to use in a given case is very complicated. There are dozens and dozens of different kinds of databases, and many different vendors, all trying to convince you that theirs is superior.
+
+If you're doing certain kinds of bespoke analytics, then it might really matter. In my experience, using postgres is good enough for most things involving rectangular data of moderate size, and a storage bucket is often good enough for things you might be tempted to put in a NoSQL database until the complexity of the data gets very large.
+
+Either way, a database as a service is a pretty basic cloud service. For example, AWS's RDS is their simplest database service, and you can get a PostgreSQL, MySQL, MariaDB, or SQL Server database for very reasonable pricing.[^data-2] It works well for reasonably sized data loads (up to 64Tb).
+
+[^data-2]: You can also do an Oracle database if you have a license, but if you're reading this, you almost certainly don't have an Oracle license you have to use. Consider yourself lucky.
+
+RDS is optimized for individual transactions. In some cases, you might want to consider a full data warehouse. AWS's is called Redshift and it runs a flavor of PostgreSQL. In general it's better when you have a lot of data (goes up to several petabytes) or are doing demanding queries a lot more often that you're querying for individual rows. Redshift is a good bit more expensive, so it's worth keeping that in mind.
+
+If you're storing data on a share drive, you'll have to make sure that it's available in your prod environment. This process is called mounting a drive or volume onto a server. It's quite a straightforward process, but needing to mount a drive into two different servers places some constraints on where those servers have to be.
+
+\<TODO: picture of mounting a drive\>
+
+When you're working in the cloud, you'll get compute separate from volumes. This works nicely, because you can get the compute you need and separately choose a volume size that works for you. There are many nice tools around volumes that often include automated backups, and the ability to easily move snapshots from place to place -- including just moving the same data onto a larger drive in just a few minutes.
+
+EBS is AWS's name for their standard storage volumes. You get one whenever you've got an EC2 instance.
+
+In some cases, you'll need to have a drive that's mounted to multiple machines at once, then you'll need some sort of network drive.
+
+The mounting process works exactly the same, but the underlying technology needs to be a little more complex to accommodate how it works. Depending on whether you're talking about connecting multiple Linux hosts, you might use NFS (Network File Share), or SMB/CIFS (Windows only), or some combination of the two might use Samba. If you're getting to this level, it's probably a good idea to involve a professional IT/Admin.
+
+https://www.varonis.com/blog/cifs-vs-smb
+
+https://www.reddit.com/r/sysadmin/comments/1ei3ht/the_difference_between_nfs_cifs_smb_samba/
+
+https://cloudinfrastructureservices.co.uk/nfs-vs-smb/
+
+https://cloudinfrastructureservices.co.uk/nfs-vs-cifs/
 
 ## Exercises
 
@@ -61,3 +214,4 @@ Row-level security Kerberos JWT IAM roles
 2.  Stand up a container with Postgres in it, connect using isql, then from R/Python using ODBC/JDBC.
 3.  Stand up an EC2 instance w/ EBS volume, change EBS to different instances.
 4.  Stand up an NFS instance and mount onto a server.
+

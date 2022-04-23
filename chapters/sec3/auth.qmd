@@ -71,7 +71,7 @@ offboarding of users has to be handled independently for each service,
 and users have to login frequently. In short, it's often not a great
 system. This is never referred to as SSO.
 
-![](images/206-auth/sso.jpeg){width="479"}
+![](images-auth/sso.jpeg)
 
 Most organizations of a meaningful size have centralized identity
 management. This means that identities, credentials, authorization,
@@ -162,14 +162,14 @@ list** (ACL). In systems that use ACLs, each piece of content has a list
 of users who are allowed access. Sometimes, ACLs are also assigned to
 groups, which are simply sets of users -- think `data-scientists`.
 
-![](images/206-auth/acls.jpeg){width="572"}
+![](images-auth/acls.jpeg){width="572"}
 
 One ACL implementation with which you may be familiar is file
 permissions on a Linux server. For example, if you have a Mac or are on
 a Linux server, you can open your terminal, navigate to a directory and
 do the following:
 
-```bash
+``` bash
 $ ls -l
 -rwxr-xr-x   1 alexkgold  staff   2274 May 10 12:09 README.md
 ```
@@ -202,7 +202,7 @@ groups.[^auth-3]
     Yes, yes it is, but it can be helpful to have groups and roles be
     separated, even if there's a 1-1 mapping.
 
-![](images/206-auth/rbac.jpeg){width="562"}
+![](images-auth/rbac.jpeg){width="562"}
 
 There are also further iterations on the RBAC model, like Attribute
 Based Access Control (ABAC) or Policy Based Access Control (PBAC) in
@@ -235,7 +235,7 @@ Pluggable Authentication Modules (PAM) is a Linux system for doing
 authentication. As of this writing, PAM is the default authentication
 method for both RStudio Server and JupyterHub.
 
-![](images/206-auth/auth-pam.jpeg){width="539"}
+![](images-auth/auth-pam.jpeg){width="539"}
 
 Conceptually PAM is pretty straightforward. You install a service on a
 Linux machine and configure it to use PAM authentication from the
@@ -322,7 +322,7 @@ try to login to a service, the service collects your username and
 password, sends it off to the LDAP server, and checks that your username
 and password are valid.
 
-![](images/206-auth/auth-ldap.jpeg){width="564"}
+![](images-auth/auth-ldap.jpeg){width="564"}
 
 Note that LDAP is purely for authentication. When you're using LDAP,
 authorization has to be handled separately, which is one of the
@@ -351,7 +351,7 @@ which are standard `objectClass`es.
 
 Let's say that your corporate LDAP looks like the tree below:
 
-![](images/206-auth/ldap-tree.jpeg){width="503"}
+![](images-auth/ldap-tree.jpeg){width="503"}
 
 #TODO: make solutions an OU in final
 
@@ -373,7 +373,7 @@ To start, let's stand up LDAP in a docker container:
 
 #TODO: update ldif
 
-```bash
+``` bash
 docker network create ldap-net
 docker run -p 6389:389 \
   --name ldap-service \
@@ -400,7 +400,7 @@ Since we're testing, we're also going to provide the flag `-x` to use
 whatever certificate is present on the server. Putting it altogether,
 along with the commands to reach the docker container, let's try:
 
-```bash
+``` bash
 ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 
 # extended LDIF
@@ -449,7 +449,7 @@ using LDAPS, but others do require it.
 
 Running the ldapadmin
 
-```bash
+``` bash
 docker run -p 6443:443 \
         --name ldap-admin \
         --env PHPLDAPADMIN_LDAP_HOSTS=ldap-service \
@@ -461,7 +461,7 @@ dn for admin `cn=admin,dc=example,dc=org` pw: `admin`
 
 <https://localhost:6443>
 
-```bash
+``` bash
 # Replace with valid license
 export RSC_LICENSE=XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
 
@@ -473,7 +473,6 @@ docker run -it --privileged \
     -e RSC_LICENSE=$RSC_LICENSE \
     --network ldap-net \
     rstudio/rstudio-connect:latest
-
 ```
 
 #### Single vs Double Bind
@@ -499,7 +498,7 @@ double bind by supplying admin credentials to LDAP. Let's say instead,
 you just provide a single user's credentials. In that case, I don't get
 anything back if I just do a general search.
 
-```bash
+``` bash
 ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                                       
 # extended LDIF
 #
@@ -519,7 +518,7 @@ result: 32 No such object
 But just searching for information about Joe does return his own
 information.
 
-```bash
+``` bash
 ldapsearch -x -H ldap://localhost:6389 -b cn=joe,dc=engineering,dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                    32 ✘
 # extended LDIF
 #
@@ -587,7 +586,7 @@ the KDC again and get a *session key* (sometimes referred to as a
 *service ticket*) that allows access to the service, usually with a
 specified expiration period.
 
-![](images/206-auth/auth-kerberos.jpeg){width="553"}
+![](images-auth/auth-kerberos.jpeg){width="553"}
 
 #### Try out Kerberos
 
@@ -611,7 +610,7 @@ browser, or verifies the users credentials. The IdP checks for the
 user's authorization to access the SP in question, and sends an
 authorization token back to the SP.
 
-![](images/206-auth/auth-saml.jpeg){width="551"}
+![](images-auth/auth-saml.jpeg){width="551"}
 
 Relative to LDAP/AD, which is from the early 1990s, SAML is a new kid on
 the block. SAML 1.0 was introduced in 2002, and SAML 2.0, which is the
@@ -656,7 +655,7 @@ Let's go through the environment variables we're providing to this
     logout command once someone has been logged out at the IdP level.
     Many SPs do not implement single logout.
 
-```bash
+``` bash
 docker run --name=saml_idp \
 -p 8080:8080 \
 -p 8443:8443 \
@@ -678,7 +677,7 @@ Google and Twitter. OAuth 2.0 -- the current standard was released in
 OpenID Connect (OIDC) is an authorization protocol that uses OAuth. In
 most cases, people will just call it OAuth.
 
-![](images/206-auth/auth-oauth.jpeg)
+![](images-auth/auth-oauth.jpeg)
 
 #TODO: this picture is bad
 
