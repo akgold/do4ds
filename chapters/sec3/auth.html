@@ -1,129 +1,134 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
-  <meta charset="utf-8">
-  <meta name="generator" content="quarto-0.9.120">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>DevOps for Data Science - 12&nbsp; How login works</title>
-  <style>
-    code{white-space: pre-wrap;}
-    span.smallcaps{font-variant: small-caps;}
-    span.underline{text-decoration: underline;}
-    div.column{display: inline-block; vertical-align: top; width: 50%;}
-    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-    ul.task-list{list-style: none;}
-    pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-    pre > code.sourceCode > span:empty { height: 1.2em; }
-    .sourceCode { overflow: visible; }
-    code.sourceCode > span { color: inherit; text-decoration: inherit; }
-    div.sourceCode { margin: 1em 0; }
-    pre.sourceCode { margin: 0; }
-    @media screen {
-    div.sourceCode { overflow: auto; }
-    }
-    @media print {
-    pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-    }
-    pre.numberSource code
-      { counter-reset: source-line 0; }
-    pre.numberSource code > span
-      { position: relative; left: -4em; counter-increment: source-line; }
-    pre.numberSource code > span > a:first-child::before
-      { content: counter(source-line);
-        position: relative; left: -1em; text-align: right; vertical-align: baseline;
-        border: none; display: inline-block;
-        -webkit-touch-callout: none; -webkit-user-select: none;
-        -khtml-user-select: none; -moz-user-select: none;
-        -ms-user-select: none; user-select: none;
-        padding: 0 4px; width: 4em;
-        color: #aaaaaa;
-      }
-    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-    div.sourceCode
-      {   }
-    @media screen {
-    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-    }
-    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-    code span.at { color: #7d9029; } /* Attribute */
-    code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { } /* BuiltIn */
-    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-    code span.ch { color: #4070a0; } /* Char */
-    code span.cn { color: #880000; } /* Constant */
-    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-    code span.dt { color: #902000; } /* DataType */
-    code span.dv { color: #40a070; } /* DecVal */
-    code span.er { color: #ff0000; font-weight: bold; } /* Error */
-    code span.ex { } /* Extension */
-    code span.fl { color: #40a070; } /* Float */
-    code span.fu { color: #06287e; } /* Function */
-    code span.im { } /* Import */
-    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-    code span.op { color: #666666; } /* Operator */
-    code span.ot { color: #007020; } /* Other */
-    code span.pp { color: #bc7a00; } /* Preprocessor */
-    code span.sc { color: #4070a0; } /* SpecialChar */
-    code span.ss { color: #bb6688; } /* SpecialString */
-    code span.st { color: #4070a0; } /* String */
-    code span.va { color: #19177c; } /* Variable */
-    code span.vs { color: #4070a0; } /* VerbatimString */
-    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-  </style>
 
-  <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
-  <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
-  <script src="../../site_libs/clipboard/clipboard.min.js"></script>
-  <meta name="quarto:offset" content="../../">
-  <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
-  <script src="../../site_libs/quarto-search/fuse.min.js"></script>
-  <script src="../../site_libs/quarto-search/quarto-search.js"></script>
-  <link href="../../chapters/sec3/offline.html" rel="next">
-  <link href="../../chapters/sec2/private-network-config.html" rel="prev">
-  <script src="../../site_libs/quarto-html/quarto.js"></script>
-  <script src="../../site_libs/quarto-html/popper.min.js"></script>
-  <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
-  <script src="../../site_libs/quarto-html/anchor.min.js"></script>
-  <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-  <link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet">
-  <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
-  <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-  <link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
-  <script id="quarto-search-options" type="application/json">{
-    "location": "sidebar",
-    "copy-button": false,
-    "collapse-after": 3,
-    "panel-placement": "start",
-    "type": "textbox",
-    "limit": 20,
-    "language": {
-      "search-no-results-text": "No results",
-      "search-matching-documents-text": "matching documents",
-      "search-copy-link-title": "Copy link to search",
-      "search-hide-matches-text": "Hide additional matches",
-      "search-more-match-text": "more match in this document",
-      "search-more-matches-text": "more matches in this document",
-      "search-clear-button-title": "Clear",
-      "search-detached-cancel-button-title": "Cancel",
-      "search-submit-button-title": "Submit"
-    }
-  }</script>
-  <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
+<meta charset="utf-8">
+<meta name="generator" content="quarto-0.9.299">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 12&nbsp; How login works</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<link href="../../chapters/sec3/offline.html" rel="next">
+<link href="../../chapters/sec2/private-network-config.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link id="quarto-text-highlighting-styles" href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
 </head>
+
 <body class="floating">
+
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
       <h1 class="quarto-secondary-nav-title"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></h1>
-      <button type="button" class="quarto-btn-toggle btn">
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
     </div>
@@ -175,12 +180,12 @@
 </li>
         <li class="sidebar-item sidebar-item-section">
     <div class="sidebar-item-container"> 
-        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">DevOps Lessons for Data Science</a>
-      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-devops-lessons-for-data-science" aria-expanded="true">
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">DevOps Lessons for Data Science</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
         <i class="bi bi-chevron-right ms-2"></i>
       </a>
     </div>
-    <ul id="quarto-sidebar-section-devops-lessons-for-data-science" class="collapse list-unstyled sidebar-section depth1 show">  
+    <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/sec1/cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></a>
@@ -203,7 +208,7 @@
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/sec1/data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Choosing and Using A Data Architecture</span></a>
+  <a href="../../chapters/sec1/data.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Taking Data to Production</span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -215,12 +220,12 @@
   </li>
         <li class="sidebar-item sidebar-item-section">
     <div class="sidebar-item-container"> 
-        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">Your Own Data Science Workbench</a>
-      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-your-own-data-science-workbench" aria-expanded="true">
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">Your Own Data Science Workbench</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
         <i class="bi bi-chevron-right ms-2"></i>
       </a>
     </div>
-    <ul id="quarto-sidebar-section-your-own-data-science-workbench" class="collapse list-unstyled sidebar-section depth1 show">  
+    <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/sec2/servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Computers, Computing, and Servers</span></a>
@@ -250,12 +255,12 @@
   </li>
         <li class="sidebar-item sidebar-item-section">
     <div class="sidebar-item-container"> 
-        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">Working with Enterprise IT</a>
-      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-working-with-enterprise-it" aria-expanded="true">
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">Working with Enterprise IT</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
         <i class="bi bi-chevron-right ms-2"></i>
       </a>
     </div>
-    <ul id="quarto-sidebar-section-working-with-enterprise-it" class="collapse list-unstyled sidebar-section depth1 show">  
+    <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/sec3/auth.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></a>
@@ -271,21 +276,16 @@
   <a href="../../chapters/sec3/scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Scaling</span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../../chapters/sec3/data-access.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Accessing Data</span></a>
-  </div>
-</li>
     </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
     <div class="sidebar-item-container"> 
-        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">Appendices</a>
-      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-appendices" aria-expanded="true">
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Appendices</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
         <i class="bi bi-chevron-right ms-2"></i>
       </a>
     </div>
-    <ul id="quarto-sidebar-section-appendices" class="collapse list-unstyled sidebar-section depth1 show">  
+    <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/env-req.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Determining What You Need</span></a>
@@ -309,31 +309,47 @@
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc">
-<h2 id="toc-title">Table of contents</h2>
-<ul>
-<li><a href="#the-many-flavors-of-auth-or-what-does-sso-mean" class="nav-link active" data-scroll-target="#the-many-flavors-of-auth-or-what-does-sso-mean"> <span class="header-section-number">12.1</span> The many flavors of auth (or what does SSO mean?)</a></li>
-<li><a href="#auth-techniques" class="nav-link" data-scroll-target="#auth-techniques"> <span class="header-section-number">12.2</span> Auth Techniques</a>
-<ul class="collapse">
-<li><a href="#you-get-a-permission-and-you-get-a-permission" class="nav-link" data-scroll-target="#you-get-a-permission-and-you-get-a-permission"> <span class="header-section-number">12.2.1</span> You get a permission and you get a permission!</a></li>
-<li><a href="#authorization-is-kinda-hard" class="nav-link" data-scroll-target="#authorization-is-kinda-hard"> <span class="header-section-number">12.2.2</span> Authorization is kinda hard</a></li>
-</ul></li>
-<li><a href="#auth-technologies" class="nav-link" data-scroll-target="#auth-technologies"> <span class="header-section-number">12.3</span> Auth Technologies</a>
-<ul class="collapse">
-<li><a href="#username-password" class="nav-link" data-scroll-target="#username-password"> <span class="header-section-number">12.3.1</span> Username + Password</a></li>
-<li><a href="#pam" class="nav-link" data-scroll-target="#pam"> <span class="header-section-number">12.3.2</span> PAM</a></li>
-<li><a href="#ldapad" class="nav-link" data-scroll-target="#ldapad"> <span class="header-section-number">12.3.3</span> LDAP/AD</a></li>
-<li><a href="#kerberos-tickets" class="nav-link" data-scroll-target="#kerberos-tickets"> <span class="header-section-number">12.3.4</span> Kerberos Tickets</a></li>
-<li><a href="#saml" class="nav-link" data-scroll-target="#saml"> <span class="header-section-number">12.3.5</span> SAML</a></li>
-<li><a href="#oidcoauth2.0" class="nav-link" data-scroll-target="#oidcoauth2.0"> <span class="header-section-number">12.3.6</span> OIDC/OAuth2.0</a></li>
-</ul></li>
-</ul>
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-many-flavors-of-auth-or-what-does-sso-mean" id="toc-the-many-flavors-of-auth-or-what-does-sso-mean" class="nav-link active" data-scroll-target="#the-many-flavors-of-auth-or-what-does-sso-mean"> <span class="header-section-number">12.1</span> The many flavors of auth (or what does SSO mean?)</a></li>
+  <li><a href="#auth-techniques" id="toc-auth-techniques" class="nav-link" data-scroll-target="#auth-techniques"> <span class="header-section-number">12.2</span> Auth Techniques</a>
+  <ul class="collapse">
+  <li><a href="#you-get-a-permission-and-you-get-a-permission" id="toc-you-get-a-permission-and-you-get-a-permission" class="nav-link" data-scroll-target="#you-get-a-permission-and-you-get-a-permission"> <span class="header-section-number">12.2.1</span> You get a permission and you get a permission!</a></li>
+  <li><a href="#authorization-is-kinda-hard" id="toc-authorization-is-kinda-hard" class="nav-link" data-scroll-target="#authorization-is-kinda-hard"> <span class="header-section-number">12.2.2</span> Authorization is kinda hard</a></li>
+  </ul></li>
+  <li><a href="#auth-technologies" id="toc-auth-technologies" class="nav-link" data-scroll-target="#auth-technologies"> <span class="header-section-number">12.3</span> Auth Technologies</a>
+  <ul class="collapse">
+  <li><a href="#username-password" id="toc-username-password" class="nav-link" data-scroll-target="#username-password"> <span class="header-section-number">12.3.1</span> Username + Password</a></li>
+  <li><a href="#pam" id="toc-pam" class="nav-link" data-scroll-target="#pam"> <span class="header-section-number">12.3.2</span> PAM</a></li>
+  <li><a href="#ldapad" id="toc-ldapad" class="nav-link" data-scroll-target="#ldapad"> <span class="header-section-number">12.3.3</span> LDAP/AD</a></li>
+  <li><a href="#kerberos-tickets" id="toc-kerberos-tickets" class="nav-link" data-scroll-target="#kerberos-tickets"> <span class="header-section-number">12.3.4</span> Kerberos Tickets</a></li>
+  <li><a href="#saml" id="toc-saml" class="nav-link" data-scroll-target="#saml"> <span class="header-section-number">12.3.5</span> SAML</a></li>
+  <li><a href="#oidcoauth2.0" id="toc-oidcoauth2.0" class="nav-link" data-scroll-target="#oidcoauth2.0"> <span class="header-section-number">12.3.6</span> OIDC/OAuth2.0</a></li>
+  </ul></li>
+  </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/auth.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
-<header id="title-block-header" class="quarto-title-block default">
 
-<div class="quarto-title"><h1 class="title display-7"><span id="auth" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></span></h1></div></header>
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="auth" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">How login works</span></span></h1>
+</div>
+
+
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header>
 
 <ul>
 <li><p>You do auth all the time</p></li>
@@ -358,7 +374,7 @@
 <section id="the-many-flavors-of-auth-or-what-does-sso-mean" class="level2" data-number="12.1">
 <h2 data-number="12.1" class="anchored" data-anchor-id="the-many-flavors-of-auth-or-what-does-sso-mean"><span class="header-section-number">12.1</span> The many flavors of auth (or what does SSO mean?)</h2>
 <p>Single Sign On (SSO) is a slippery term, so it is almost always necessary to clarify what is meant by the term when you hear it. At some organizations, identity management isn’t centralized at all. This means that usernames and passwords are unique to each service, onboarding and offboarding of users has to be handled independently for each service, and users have to login frequently. In short, it’s often not a great system. This is never referred to as SSO.</p>
-<p><img src="images/206-auth/sso.jpeg" class="img-fluid" width="479"></p>
+<p><img src="images-auth/sso.jpeg" class="img-fluid"></p>
 <p>Most organizations of a meaningful size have centralized identity management. This means that identities, credentials, authorization, onboarding, and offboarding are handled centrally. However, you may still need to independently login to each system. For example, in this system, every service might take the same username and password as your credentials, but if you go to RStudio Server followed by JupyterHub, you’ll need to provide that username and password independently to each service. This system is often facilitated by PAM, and LDAP/AD. Some organizations call this SSO, because there’s only one set of credentials.</p>
 <p>In true SSO, users login once and are given a token or ticket.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Then, when they go to the next service, they don’t have to login again because that service can just look at the token or ticket to do auth for that user. For example, in this system, I could go to RStudio Server and login, and then go to JupyterHub and get in without being prompted again for my password. This type of auth is facilitated by Kerberos, SAML, or OAuth.</p>
 </section>
@@ -379,7 +395,7 @@
 <p>Authorization is a whole other can of worms. There is a meaningful literature on varieties of authorization and how they work. We’re not going to get too deep into the weeds, other than to define some common terms and how they’re used.</p>
 <p>The atomic basis for authorization is a <strong>permission</strong>. Permissions are a binary switch that answers the question <em>is this person allowed to do the thing they are trying to do?</em><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>The simplest way of assigning permissions is called an <strong>access control list</strong> (ACL). In systems that use ACLs, each piece of content has a list of users who are allowed access. Sometimes, ACLs are also assigned to groups, which are simply sets of users – think <code>data-scientists</code>.</p>
-<p><img src="images/206-auth/acls.jpeg" class="img-fluid" width="572"></p>
+<p><img src="images-auth/acls.jpeg" class="img-fluid" width="572"></p>
 <p>One ACL implementation with which you may be familiar is file permissions on a Linux server. For example, if you have a Mac or are on a Linux server, you can open your terminal, navigate to a directory and do the following:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="at">-l</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">-rwxr-xr-x</span>   1 alexkgold  staff   2274 May 10 12:09 README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -387,7 +403,7 @@
 <p>So you can read <code>-rwxr-xr-x</code> as, <em>this is a file that <code>alexkgold</code> can read, write or execute, and anyone else can read or execute, but not edit</em>.</p>
 <p>ACLs are pretty intuitive, but it turns out that when you are managing a lot of users across a lot of files, directories, and services, they can get pretty difficult to manage, so many organizations use Role Based Access Control (RBAC).</p>
 <p>RBAC adds a layer of abstraction between users and permissions, which makes it a little harder to understand, but ultimately results in a much more flexible system. In RBAC, permissions are not assigned to individual pieces of content or to users or groups. Instead, permissions are assigned to <em>roles</em>, and roles are given to users or groups.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<p><img src="images/206-auth/rbac.jpeg" class="img-fluid" width="562"></p>
+<p><img src="images-auth/rbac.jpeg" class="img-fluid" width="562"></p>
 <p>There are also further iterations on the RBAC model, like Attribute Based Access Control (ABAC) or Policy Based Access Control (PBAC) in which there’s a long list of attributes that could be considered for a user to compute their permissions for a given service.</p>
 </section>
 </section>
@@ -402,7 +418,7 @@
 <section id="pam" class="level3" data-number="12.3.2">
 <h3 data-number="12.3.2" class="anchored" data-anchor-id="pam"><span class="header-section-number">12.3.2</span> PAM</h3>
 <p>Pluggable Authentication Modules (PAM) is a Linux system for doing authentication. As of this writing, PAM is the default authentication method for both RStudio Server and JupyterHub.</p>
-<p><img src="images/206-auth/auth-pam.jpeg" class="img-fluid" width="539"></p>
+<p><img src="images-auth/auth-pam.jpeg" class="img-fluid" width="539"></p>
 <p>Conceptually PAM is pretty straightforward. You install a service on a Linux machine and configure it to use PAM authentication from the underlying host. By default, PAM just authenticates against the users configured on the Linux server, but it can also be configured to use other sorts of “modules” to authenticate against other systems – most commonly LDAP/AD or Kerberos. PAM can also be used to do things when users login – the most common being initializing tokens or tickets to other systems, like a database.</p>
 <p>PAM is often paired with <strong>System Security Services Daemon (</strong>SSSD), which is most commonly used to automatically create Linux users on a server based on the identities stored in an LDAP/AD instance.</p>
 <p>Though conceptually simple, reading, writing, and managing PAM modules is kinda painful.</p>
@@ -423,7 +439,7 @@
 <section id="how-ldap-works" class="level4" data-number="12.3.3.1">
 <h4 data-number="12.3.3.1" class="anchored" data-anchor-id="how-ldap-works"><span class="header-section-number">12.3.3.1</span> How LDAP Works</h4>
 <p>While the technical downsides of LDAP are real, the tradeoff is that the technical operations of LDAP are pretty straightforward. In short, you try to login to a service, the service collects your username and password, sends it off to the LDAP server, and checks that your username and password are valid.</p>
-<p><img src="images/206-auth/auth-ldap.jpeg" class="img-fluid" width="564"></p>
+<p><img src="images-auth/auth-ldap.jpeg" class="img-fluid" width="564"></p>
 <p>Note that LDAP is purely for authentication. When you’re using LDAP, authorization has to be handled separately, which is one of the disadvantages.</p>
 </section>
 <section id="deeper-than-you-need-on-ldap" class="level4" data-number="12.3.3.2">
@@ -437,7 +453,7 @@ mobile: 555-555-5555
 objectClass = Person</code></pre>
 <p>Most of these attributes should be pretty straightforward. <code>cn</code> is short for common name, and is part of the way you look up an entity in LDAP (more on that below). Each entity in LDAP must have an <code>objectClass</code>, which determines the type of entity it is. In this case, I am a <code>Person</code> , as opposed to a device, domain, organizationalRole, or room – all of which are standard <code>objectClass</code>es.</p>
 <p>Let’s say that your corporate LDAP looks like the tree below:</p>
-<p><img src="images/206-auth/ldap-tree.jpeg" class="img-fluid" width="503"></p>
+<p><img src="images-auth/ldap-tree.jpeg" class="img-fluid" width="503"></p>
 <p>#TODO: make solutions an OU in final</p>
 <p>The most common way to look up LDAP entities is with their <em>distinguished name (DN)</em>, which is the path of names from the point you’re starting all the way back to the root of the tree. In the tree above, my DN would be <code>cn=alex,ou=solutions,dc=example,dc=com</code>.</p>
 <p>Note that you read the DN from right to left to work your way down the tree. Aside from <code>cn</code> for common name, other common fields include <code>ou</code> for organizational unit, and <code>dc</code> for domain component.</p>
@@ -578,7 +594,7 @@ objectClass = Person</code></pre>
 <p>All of Kerberos works by sending information to and from the central <em>Kerberos Domain Controller</em> (KDC)<em>.</em> In Kerberos, authentication and authorization are handled independently.</p>
 <p>When a Kerberos session is initialized, the service sends the users credentials off to the KDC and requests something called the Ticket Granting Ticket (TGT) from the KDC. TGTs have a set expiration period. When they expire, the client has to request an updated TGT. This is one reason why Kerberos is considered quite secure - even if someone managed to steal a TGT, they’d only be able to use it for a little while before it went stale and could be revoked.</p>
 <p>When the user wants to actually do something, they send the TGT back to the KDC again and get a <em>session key</em> (sometimes referred to as a <em>service ticket</em>) that allows access to the service, usually with a specified expiration period.</p>
-<p><img src="images/206-auth/auth-kerberos.jpeg" class="img-fluid" width="553"></p>
+<p><img src="images-auth/auth-kerberos.jpeg" class="img-fluid" width="553"></p>
 </section>
 <section id="try-out-kerberos" class="level4" data-number="12.3.4.2">
 <h4 data-number="12.3.4.2" class="anchored" data-anchor-id="try-out-kerberos"><span class="header-section-number">12.3.4.2</span> Try out Kerberos</h4>
@@ -589,7 +605,7 @@ objectClass = Person</code></pre>
 <h3 data-number="12.3.5" class="anchored" data-anchor-id="saml"><span class="header-section-number">12.3.5</span> SAML</h3>
 <p>These days Security Assertion Markup Language (SAML) is probably the most common system that provides true SSO – including single login and centrally-managed permissions. SAML does this by passing around XML tokens.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <p>The way this generally works is that a user attempts to login to a <em>Service Provider</em> (SP). The SP redirects the user to an Identity Provider (IdP), which checks either for a preexisting token in the users browser, or verifies the users credentials. The IdP checks for the user’s authorization to access the SP in question, and sends an authorization token back to the SP.</p>
-<p><img src="images/206-auth/auth-saml.jpeg" class="img-fluid" width="551"></p>
+<p><img src="images-auth/auth-saml.jpeg" class="img-fluid" width="551"></p>
 <p>Relative to LDAP/AD, which is from the early 1990s, SAML is a new kid on the block. SAML 1.0 was introduced in 2002, and SAML 2.0, which is the current standard, came out in 2005. Many large enterprises are switching their systems over to use SAML or have already done so.</p>
 <p>One superpower of SAML IdPs is that many of them can <em>federate</em> identity management to other systems. So, it’s pretty common for large enterprises to maintain their user base in one or more LDAP/AD system, but actually use a SAML IdP to do authentication and authorization. In fact, this is what Azure Active Directory (AAD), which is Microsoft Azure’s hosted authentication offering does. It is possible to use LDAP/AD with AAD, but most organizations use it with SAML.</p>
 <p>One of the nice things about SAML is that credentials are never shared directly with the SP. This is one of the ways in which SAML is fundamentally more secure than LDAP/AD – the users credentials are only ever shared with the IdP.</p>
@@ -618,7 +634,7 @@ objectClass = Person</code></pre>
 <section id="oidcoauth2.0" class="level3 page-columns page-full" data-number="12.3.6">
 <h3 data-number="12.3.6" class="anchored" data-anchor-id="oidcoauth2.0"><span class="header-section-number">12.3.6</span> OIDC/OAuth2.0</h3>
 <p>OIDC/OAuth is slightly newer than SAML, created in 2007 by engineers at Google and Twitter. OAuth 2.0 – the current standard was released in 2012. If you’re being pedantic, OAuth is a authorization protocol, and OpenID Connect (OIDC) is an authorization protocol that uses OAuth. In most cases, people will just call it OAuth.</p>
-<p><img src="images/206-auth/auth-oauth.jpeg" class="img-fluid"></p>
+<p><img src="images-auth/auth-oauth.jpeg" class="img-fluid"></p>
 <p>#TODO: this picture is bad</p>
 <p>In an enterprise context, OAuth/OIDC is conceptually very similar to SAML – but instead of passing around XML tokens, it’s based on JSON Web Tokens (JWT, usually pronounced “jot”).</p>
 <aside>
@@ -634,7 +650,6 @@ objectClass = Person</code></pre>
 <p>Resources: <a href="https://www.okta.com/identity-101/saml-vs-oauth/" class="uri">https://www.okta.com/identity-101/saml-vs-oauth/</a> <a href="https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/" class="uri">https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/</a> <a href="https://phoenixnap.com/blog/kerberos-authentication" class="uri">https://phoenixnap.com/blog/kerberos-authentication</a> <a href="https://www.dnsstuff.com/rbac-vs-abac-access-control" class="uri">https://www.dnsstuff.com/rbac-vs-abac-access-control</a></p>
 
 
-
 </section>
 </section>
 </section>
@@ -647,6 +662,7 @@ objectClass = Person</code></pre>
 <li id="fn4" role="doc-endnote"><p>XML is a markup language, much like HTML. The good thing about XML is that it’s very flexible. The bad thing is that it’s relatively hard for a human to easily read.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
+
 </main> <!-- /main -->
 <script type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
@@ -669,7 +685,10 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     button.blur();
     // flash "checked"
     button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
     setTimeout(function() {
+      button.setAttribute("title", currentTitle);
       button.classList.remove('code-copy-button-checked');
     }, 1000);
     // clear code selection
@@ -758,6 +777,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>
   </div>
 </footer>
+
 
 
 </body></html>
