@@ -15,36 +15,9 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
-      - uses: r-lib/actions/setup-r@v1
-        with:
-          r-version: '4.0.2'
       - uses: quarto-dev/quarto-actions/install-quarto@v1
       - run: |
           quarto --version
-      - name: Set RENV_PATHS_ROOT
-        shell: bash
-        run: |
-          echo "RENV_PATHS_ROOT=${{ runner.temp }}/renv" >> $GITHUB_ENV
-      - name: Install and activate renv
-        run: |
-          install.packages("renv")
-          renv::activate()
-        shell: Rscript {0}
-      - name: Get R version
-        id: get-version
-        run: |
-          cat("##[set-output name=r-version;]", R.Version()$version.string, sep = "")
-        shell: Rscript {0}
-      - name: Restore Renv package cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ env.RENV_PATHS_ROOT }}
-          key: ${{ runner.os }}-${{ steps.get-version.outputs.r-version }}-${{ inputs.cache-version }}-${{ hashFiles('renv.lock') }}
-          restore-keys: ${{ runner.os }}-${{ steps.get-version.outputs.r-version }}-${{inputs.cache-version }}-
-      - name: Restore packages
-        shell: Rscript {0}
-        run: |
-          renv::restore()
       - name: Render Book
         run: Rscript -e 'quarto::quarto_render()'
       - uses: actions/upload-artifact@v2
