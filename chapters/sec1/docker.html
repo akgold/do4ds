@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-0.9.305">
+<meta name="generator" content="quarto-0.9.327">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -401,12 +401,9 @@ Note
 <p>If you’ve read this far into the chapter, you might be about ready to go put every project you’ve got into a docker container, ask your colleagues to do the same, and plan to share Shiny apps by making everyone download Docker Desktop and give them a <code>docker run</code> command.</p>
 <p>Slow down.</p>
 <p>Docker is a great solution for some problems, but it’s not a perfect fit for many of the issues data scientists face, and there are better tools for many of them. In particular, one pattern that feels appealing, but I would describe as an anti-pattern is the temptation to just take a Docker container, start installing packages, and then save the image. Even in some cases, you’ll see a Dockerfile that looks like</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>...</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"shiny"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"dplyr"</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<pre class="{...}"><code>install.packages("shiny")
+install.packages("dplyr")
+...</code></pre>
 <p>Building a Dockerfile like this into an image provides a reasonable level of reproducibility, but it still is quite fragile if you ever find reason to rebuild this Dockerfile. For that reason, the best move is to combine the ability of R and Python-specific libraries for capturing package state – like <code>renv</code> and <code>virtualenv</code> with Docker’s ability to save the state of the underlying operating system and any system packages you’ve got.</p>
 <p>There are a few particularities of Docker containers that can make operating inside them a little difficult. The first is the tradeoff of Docker’s strength – a container only gets access to the resources it has specifically been allowed to access. This is a great feature for security and process isolation, but it means you may run into some issues with networking and access to system resources, like your files.</p>
 <p>You’ll have to develop a reasonably good mental model of the relationship of the Docker container to the rest of your machine in order to be able to develop effectively. For many data scientists, this isn’t a primary concern of theirs.</p>
