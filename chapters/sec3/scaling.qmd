@@ -20,7 +20,7 @@ For example, in one organization, high availability might just mean that there's
 
 [^scaling-1]: Often called nines of uptime, referring to the proportion of the time that the service is guaranteed to be online out of a year. So a one-nine service is up 90% of the time, allowing for 36 days of downtime a year. a five-nine service is up for 99.999% of the time, allowing for only about 5 1/4 minutes of downtime a year.
 
-Spannning Multiplee AZs
+Spannning Multiple AZs
 
 As the requirements for high availability get steeper, the engineering cost to make sure the service really is that resilient rise exponentially...so be careful how much uptime you're trying to achieve.
 
@@ -66,24 +66,44 @@ Disaster recovery is not really a load-balancing method, but it's closely relate
 
 ## Container Deployment + Orchestration
 
-So far, we've been talking about having individual containers in which you might develop an individual app, or use as a way to do infrastructure as code for a server-based installation of a product. However, when things go to production, you often need a more complicated set of servers. For example, maybe you need a front end app plus a back-end database that will run separately. Or maybe you need to run several instances of your app and provide network routing to all of the instances.
+One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).[^scaling-44] Kubernetes is the way people orchestrate Docker containers in production settings.[^scaling-4] So basically that it's the way to put containers into production when you want more than one to interact -- say you've got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.
 
-In this case, most people turn to Kubernetes (sometimes written K8S).
+[^scaling-44]: Apparently, Kubernetes is an ancient Greek word for "helmsman", so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.
 
-Kubernetes is an open-source platform to orchestrate the deployment of containers. That's a very high level statement, so here's a more helpful definition -- Kubernetes is the way to launch and maintain Docker containers when you want more than one container to interact.[^scaling-4]
+ While the operational details of Kubernetes are very different from the horizontal scaling patterns we've discussed so far in this chapter, the conceptual requirements are the same.
+ 
+ TODO: Diagram of K8S
 
-[^scaling-4]: Pedants will be delighted in all the ways this is technically incorrect. There are other ways to orchestrate Docker containers, and Kubernetes is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
+[^scaling-4]: Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but *rarely* in production. Kubernetes also is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
 
-For individual data scientists, Kubernetes is usually overkill for the type of work you're doing. If you find yourself in this territory, it's likely you should try to work with you organization's IT/Admin
+Many people like Kubernetes because of its declarative nature. If you recall from the section on [Infrastructure as Code](), declarative code allows you to make a statement about what the thing is you want and just get it, instead of specifying the details of how to get there.
 
-Kubernetes (K8S) -- software for deploying and managing containers
+Of course, in operation this all can get much more complicated, but once you've got the right containers, Kubernetes makes it easy to say, "Ok, I want one instance of my load balancer container connected to three instances of my compute container with the same volume connected to all three." 
 
-*Helm* is the standard tool for defining kubernetes deployments.
+::: callout-warning
+## Kubernetes Tripwire!
 
-*Helmfile* is a templating system for helm.
+If you're reading this and are extremely excited about Kubernetes -- that's great! Kubernetes does make a lot of things easy that used to be hard. Just know, networking configuration is the place you're likely to get tripped up. You've got to deal with networking into the cluster, networking among the containers inside the cluster, and then networking within each container. 
 
-There are other competitors, most notably docker swarm, but K8S is by far the biggest
+Complicated kubernetes networking configurations are not for the faint of heart.
 
-The line is fuzzy though -- there are container orchestration services that aren't K8S or even abstract a level up from K8S.
+::: 
 
-\[TODO: Graphic of K8S/Docker\]
+
+For individual data scientists, Kubernetes is usually overkill for the type of work you're doing. If you find yourself in this territory, it's likely you should try to work with you organization's IT/Admin group.
+
+One of the nice abstraction layers Kubernetes provides is that in Kubernetes, you provide declarative statements of the containers you want to run, and any requirements you have. You separately register actual hardware with the cluster, and Kubernetes takes care of placing the conatiners onto the hardware depending on what you've got available.
+
+In practice, unless you're part of a very sophisticated IT organization, you'll almost certainly use Kubernetes via one of the cloud providers' *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes Service (EKS).[^scaling-5]
+
+[^scaling-5]: If you aren't using EKS, Azures AKS, or Google's GKE, the main other competitor is Oracle's OpenShift, which some organizations have running in on-prem Kubernetes clusters.
+
+One really nice thing about using these Kubernetes clusters as a service is that adding more compute power to your cluster is generally as easy as a few button clicks. On the other hand, that also makes it dangerous from a cost perspective.
+
+It is possible to define a Kubernetes cluster "on the fly" and deploy things to a cluster in an ad hoc way. I wouldn't recommend this for any production system. *Helm* is the standard tool for defining kubernetes deployments in code, and *Helmfile* is a templating system for Helm. 
+
+So, for example, if you had a standard "Shiny Server" that was one load balancer containers, two containers each running a Shiny app, and a volume mounted to both, you would define that cluster in Helm. If you wanted to be able to template that Helm code for different clusters, you'd use Helmfile.
+
+## Exercises
+
+TODO
