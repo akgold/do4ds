@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-0.9.327">
+<meta name="generator" content="quarto-0.9.339">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -58,7 +58,7 @@ ul.task-list{list-style: none;}
 
 </head>
 
-<body class="floating">
+<body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -252,6 +252,7 @@ ul.task-list{list-style: none;}
   <li><a href="#how-horizontal-scaling-works" id="toc-how-horizontal-scaling-works" class="nav-link active" data-scroll-target="#how-horizontal-scaling-works"> <span class="header-section-number">14.0.1</span> How Horizontal Scaling Works</a></li>
   <li><a href="#load-balancing-configurations" id="toc-load-balancing-configurations" class="nav-link" data-scroll-target="#load-balancing-configurations"> <span class="header-section-number">14.0.2</span> Load-Balancing configurations</a></li>
   <li><a href="#container-deployment-orchestration" id="toc-container-deployment-orchestration" class="nav-link" data-scroll-target="#container-deployment-orchestration"> <span class="header-section-number">14.1</span> Container Deployment + Orchestration</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"> <span class="header-section-number">14.2</span> Exercises</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/scaling.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -285,7 +286,7 @@ ul.task-list{list-style: none;}
 <p>TODO: Image of vertical + horizontal scaling</p>
 <p>Sometimes horizontal scaling is undertaken for pure scaling purposes, but sometimes it’s undertaken for cluster resilience purposes. For example, you might want the cluster to be resilient to a node randomly failing, or being taken down for maintenance. In this context, horizontal scaling is often called <em>high availability</em>. Like many other things, high availability is a squishy term, and different organizations have very different definitions of what it means.</p>
 <p>For example, in one organization, high availability might just mean that there’s a robust disaster recovery plan so servers can be brought back online with little data loss. In another organization, high availability might mean having duplicate servers that aren’t physically colocated to avoid potential outages due to server issues or natural disasters. In other contexts, it might be a commitment to a particular amount of uptime.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>Spannning Multiplee AZs</p>
+<p>Spannning Multiple AZs</p>
 <p>As the requirements for high availability get steeper, the engineering cost to make sure the service really is that resilient rise exponentially…so be careful how much uptime you’re trying to achieve.</p>
 <section id="how-horizontal-scaling-works" class="level3" data-number="14.0.1">
 <h3 data-number="14.0.1" class="anchored" data-anchor-id="how-horizontal-scaling-works"><span class="header-section-number">14.0.1</span> How Horizontal Scaling Works</h3>
@@ -321,16 +322,35 @@ AWS Load Balancer Types
 </section>
 <section id="container-deployment-orchestration" class="level2" data-number="14.1">
 <h2 data-number="14.1" class="anchored" data-anchor-id="container-deployment-orchestration"><span class="header-section-number">14.1</span> Container Deployment + Orchestration</h2>
-<p>So far, we’ve been talking about having individual containers in which you might develop an individual app, or use as a way to do infrastructure as code for a server-based installation of a product. However, when things go to production, you often need a more complicated set of servers. For example, maybe you need a front end app plus a back-end database that will run separately. Or maybe you need to run several instances of your app and provide network routing to all of the instances.</p>
-<p>In this case, most people turn to Kubernetes (sometimes written K8S).</p>
-<p>Kubernetes is an open-source platform to orchestrate the deployment of containers. That’s a very high level statement, so here’s a more helpful definition – Kubernetes is the way to launch and maintain Docker containers when you want more than one container to interact.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
-<p>For individual data scientists, Kubernetes is usually overkill for the type of work you’re doing. If you find yourself in this territory, it’s likely you should try to work with you organization’s IT/Admin</p>
-<p>Kubernetes (K8S) – software for deploying and managing containers</p>
-<p><em>Helm</em> is the standard tool for defining kubernetes deployments.</p>
-<p><em>Helmfile</em> is a templating system for helm.</p>
-<p>There are other competitors, most notably docker swarm, but K8S is by far the biggest</p>
-<p>The line is fuzzy though – there are container orchestration services that aren’t K8S or even abstract a level up from K8S.</p>
-<p>[TODO: Graphic of K8S/Docker]</p>
+<p>One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> Kubernetes is the way people orchestrate Docker containers in production settings.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> So basically that it’s the way to put containers into production when you want more than one to interact – say you’ve got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.</p>
+<p>While the operational details of Kubernetes are very different from the horizontal scaling patterns we’ve discussed so far in this chapter, the conceptual requirements are the same.</p>
+<p>TODO: Diagram of K8S</p>
+<p>Many people like Kubernetes because of its declarative nature. If you recall from the section on <a href="">Infrastructure as Code</a>, declarative code allows you to make a statement about what the thing is you want and just get it, instead of specifying the details of how to get there.</p>
+<p>Of course, in operation this all can get much more complicated, but once you’ve got the right containers, Kubernetes makes it easy to say, “Ok, I want one instance of my load balancer container connected to three instances of my compute container with the same volume connected to all three.”</p>
+<div class="callout-warning callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Kubernetes Tripwire!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you’re reading this and are extremely excited about Kubernetes – that’s great! Kubernetes does make a lot of things easy that used to be hard. Just know, networking configuration is the place you’re likely to get tripped up. You’ve got to deal with networking into the cluster, networking among the containers inside the cluster, and then networking within each container.</p>
+<p>Complicated kubernetes networking configurations are not for the faint of heart.</p>
+</div>
+</div>
+<p>For individual data scientists, Kubernetes is usually overkill for the type of work you’re doing. If you find yourself in this territory, it’s likely you should try to work with you organization’s IT/Admin group.</p>
+<p>One of the nice abstraction layers Kubernetes provides is that in Kubernetes, you provide declarative statements of the containers you want to run, and any requirements you have. You separately register actual hardware with the cluster, and Kubernetes takes care of placing the conatiners onto the hardware depending on what you’ve got available.</p>
+<p>In practice, unless you’re part of a very sophisticated IT organization, you’ll almost certainly use Kubernetes via one of the cloud providers’ <em>Kubernetes clusters as a service</em>. AWS’s is called Elastic Kubernetes Service (EKS).<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>One really nice thing about using these Kubernetes clusters as a service is that adding more compute power to your cluster is generally as easy as a few button clicks. On the other hand, that also makes it dangerous from a cost perspective.</p>
+<p>It is possible to define a Kubernetes cluster “on the fly” and deploy things to a cluster in an ad hoc way. I wouldn’t recommend this for any production system. <em>Helm</em> is the standard tool for defining kubernetes deployments in code, and <em>Helmfile</em> is a templating system for Helm.</p>
+<p>So, for example, if you had a standard “Shiny Server” that was one load balancer containers, two containers each running a Shiny app, and a volume mounted to both, you would define that cluster in Helm. If you wanted to be able to template that Helm code for different clusters, you’d use Helmfile.</p>
+</section>
+<section id="exercises" class="level2" data-number="14.2">
+<h2 data-number="14.2" class="anchored" data-anchor-id="exercises"><span class="header-section-number">14.2</span> Exercises</h2>
+<p>TODO</p>
 
 
 </section>
@@ -340,12 +360,14 @@ AWS Load Balancer Types
 <li id="fn1" role="doc-endnote"><p>Often called nines of uptime, referring to the proportion of the time that the service is guaranteed to be online out of a year. So a one-nine service is up 90% of the time, allowing for 36 days of downtime a year. a five-nine service is up for 99.999% of the time, allowing for only about 5 1/4 minutes of downtime a year.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2" role="doc-endnote"><p>If the service you’re configuring does internal routing, like RStudio Workbench, you also may need to select whether you have one or several primary nodes. A primary node is one that accepts traffic from the load balancer and routes it internally. You could have just one node in the cluster serve as primary or several. Unless there’s a good reason to prefer one, it’s usually advantageous to do several, because it adds one layer of resilience to your cluster.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3" role="doc-endnote"><p>Blue/Green and Red/Black aren’t the same things, but the differences are deep in the weeds…and not even consistently used.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4" role="doc-endnote"><p>Pedants will be delighted in all the ways this is technically incorrect. There are other ways to orchestrate Docker containers, and Kubernetes is not limited to <em>Docker</em> containers. As of this writing in 2022, those are irrelevant details for most people.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Apparently, Kubernetes is an ancient Greek word for “helmsman”, so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but <em>rarely</em> in production. Kubernetes also is not limited to <em>Docker</em> containers. As of this writing in 2022, those are irrelevant details for most people.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>If you aren’t using EKS, Azures AKS, or Google’s GKE, the main other competitor is Oracle’s OpenShift, which some organizations have running in on-prem Kubernetes clusters.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
 </main> <!-- /main -->
-<script type="application/javascript">
+<script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const icon = "";
   const anchorJS = new window.AnchorJS();
