@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-0.9.341">
+<meta name="generator" content="quarto-0.9.370">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -301,7 +301,7 @@ ul.task-list{list-style: none;}
 <p>In contrast, traditional software development rarely starts with discovery. Instead, it starts with producing a minimal set of features that has been identified ahead of time. This difference causes much friction and misunderstanding between data science and IT/Admin/DevOps teams.</p>
 <p>At that point, you’ll promote your asset into test, which might be a docker container, straight onto a server, or a deployment platform like RStudio Connect. Then, once everything is ready to go, you’d promote it into prod. This is somewhat different than a traditional dev/test/prod setup where all three environments are very precise mirrors of each other. In some cases, like if you’re using a product that hosts your apps for you, test and prod may even be on the same physical server, which would be very unusual in the software development world.</p>
 <p>Depending on how dependable your prod environment has to be, it can be useful to maintain a “two dimensional” dev/test/prod setup as in the graphic below.</p>
-<p><img src="images-code-promotion/code-promotion.jpeg" title="Code + Server Promotion Patterns" class="img-fluid" width="467"></p>
+<p><img src="images-code-promotion/code-promotion.png" title="Code + Server Promotion Patterns" class="img-fluid"></p>
 <p>In this setup, you would select the IT configuration that works for your organization and maintain one or two copies of the entire environment. I often call this a staging environment to differentiate it from the dev/test/prod environments for the data science assets.</p>
 <p>So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that’s purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use – dev, test, and prod.</p>
 <p>Then, data science code promotion through dev/test/prod would be distinct from how server changes get made.</p>
@@ -339,8 +339,7 @@ ul.task-list{list-style: none;}
 <p>For the purposes of this section, I’m going to assume you at least conceptually understand what git branches are and what a merge is – as much of your CI/CD pipeline will be based on what happens when you merge.</p>
 <p>For production data science assets, I generally recommend long-running dev (or test) and prod branches, with feature branches for developing new things. The way this works is that new features are developed in a feature branch, merged into dev for testing, and then promoted to prod when you’re confident it’s ready.</p>
 <p>For example, if you had two new plots you were adding to an existing dashboard, your git commit graph might look like this:</p>
-<p><img src="images-code-promotion/git_branches.jpeg" class="img-fluid" width="474"></p>
-<p><span class="math display">\[TODO: change dev to test to match above, label merges\]</span></p>
+<p><img src="images-code-promotion/git-branches.png" class="img-fluid" width="474"></p>
 <p>CI/CD adds a layer on top of this. CI/CD allows you to integrate functional testing by automatically running those tests whenever you do something in git. These jobs can run when a merge request is made, and are useful for tasks like spellchecking, linting, and running tests.</p>
 <p>For the purposes of CI/CD, the most interesting jobs are those that do something after there’s a commit or a completed merge, often deploying the relevant asset to its designated location.</p>
 <p>So a CI/CD integration using the same git graph as above would have released 3 new test versions of the app and 2 new prod versions. Note that in this case, the second test release revealed a bug, which was fixed and tested in the test version of the app before a prod release was completed.</p>
