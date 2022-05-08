@@ -1,4 +1,4 @@
-# Scaling 
+# Scaling
 
 At some point, your data science environment may reach the stage where you need to start thinking about how you're going to scale your environment out to accommodate more users -- or sometimes this will come up in the context of disaster recovery or maintaining service uptime.
 
@@ -66,41 +66,39 @@ Disaster recovery is not really a load-balancing method, but it's closely relate
 
 ## Container Deployment + Orchestration
 
-One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).[^scaling-44] Kubernetes is the way people orchestrate Docker containers in production settings.[^scaling-4] So basically that it's the way to put containers into production when you want more than one to interact -- say you've got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.
+One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).[^scaling-4] Kubernetes is the way people orchestrate Docker containers in production settings.[^scaling-5] So basically that it's the way to put containers into production when you want more than one to interact -- say you've got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.
 
-[^scaling-44]: Apparently, Kubernetes is an ancient Greek word for "helmsman", so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.
+[^scaling-4]: Apparently, Kubernetes is an ancient Greek word for "helmsman", so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.
 
- While the operational details of Kubernetes are very different from the horizontal scaling patterns we've discussed so far in this chapter, the conceptual requirements are the same.
- 
- TODO: Diagram of K8S
+[^scaling-5]: Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but *rarely* in production. Kubernetes also is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
 
-[^scaling-4]: Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but *rarely* in production. Kubernetes also is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
+While the operational details of Kubernetes are very different from the horizontal scaling patterns we've discussed so far in this chapter, the conceptual requirements are the same.
+
+TODO: Diagram of K8S
 
 Many people like Kubernetes because of its declarative nature. If you recall from the section on [Infrastructure as Code](), declarative code allows you to make a statement about what the thing is you want and just get it, instead of specifying the details of how to get there.
 
-Of course, in operation this all can get much more complicated, but once you've got the right containers, Kubernetes makes it easy to say, "Ok, I want one instance of my load balancer container connected to three instances of my compute container with the same volume connected to all three." 
+Of course, in operation this all can get much more complicated, but once you've got the right containers, Kubernetes makes it easy to say, "Ok, I want one instance of my load balancer container connected to three instances of my compute container with the same volume connected to all three."
 
 ::: callout-warning
 ## Kubernetes Tripwire!
 
-If you're reading this and are extremely excited about Kubernetes -- that's great! Kubernetes does make a lot of things easy that used to be hard. Just know, networking configuration is the place you're likely to get tripped up. You've got to deal with networking into the cluster, networking among the containers inside the cluster, and then networking within each container. 
+If you're reading this and are extremely excited about Kubernetes -- that's great! Kubernetes does make a lot of things easy that used to be hard. Just know, networking configuration is the place you're likely to get tripped up. You've got to deal with networking into the cluster, networking among the containers inside the cluster, and then networking within each container.
 
 Complicated kubernetes networking configurations are not for the faint of heart.
-
-::: 
-
+:::
 
 For individual data scientists, Kubernetes is usually overkill for the type of work you're doing. If you find yourself in this territory, it's likely you should try to work with you organization's IT/Admin group.
 
 One of the nice abstraction layers Kubernetes provides is that in Kubernetes, you provide declarative statements of the containers you want to run, and any requirements you have. You separately register actual hardware with the cluster, and Kubernetes takes care of placing the conatiners onto the hardware depending on what you've got available.
 
-In practice, unless you're part of a very sophisticated IT organization, you'll almost certainly use Kubernetes via one of the cloud providers' *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes Service (EKS).[^scaling-5]
+In practice, unless you're part of a very sophisticated IT organization, you'll almost certainly use Kubernetes via one of the cloud providers' *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes Service (EKS).[^scaling-6]
 
-[^scaling-5]: If you aren't using EKS, Azures AKS, or Google's GKE, the main other competitor is Oracle's OpenShift, which some organizations have running in on-prem Kubernetes clusters.
+[^scaling-6]: If you aren't using EKS, Azures AKS, or Google's GKE, the main other competitor is Oracle's OpenShift, which some organizations have running in on-prem Kubernetes clusters.
 
 One really nice thing about using these Kubernetes clusters as a service is that adding more compute power to your cluster is generally as easy as a few button clicks. On the other hand, that also makes it dangerous from a cost perspective.
 
-It is possible to define a Kubernetes cluster "on the fly" and deploy things to a cluster in an ad hoc way. I wouldn't recommend this for any production system. *Helm* is the standard tool for defining kubernetes deployments in code, and *Helmfile* is a templating system for Helm. 
+It is possible to define a Kubernetes cluster "on the fly" and deploy things to a cluster in an ad hoc way. I wouldn't recommend this for any production system. *Helm* is the standard tool for defining kubernetes deployments in code, and *Helmfile* is a templating system for Helm.
 
 So, for example, if you had a standard "Shiny Server" that was one load balancer containers, two containers each running a Shiny app, and a volume mounted to both, you would define that cluster in Helm. If you wanted to be able to template that Helm code for different clusters, you'd use Helmfile.
 
