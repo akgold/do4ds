@@ -1,0 +1,80 @@
+# The Command Line + SSH {#command-line}
+
+Using can also be super useful in day-to-day data science work. It also is required for most any work administering servers. Indeed, in most server environments, the command line is the only access you'll have.
+
+Additionally, as you go through this book, you'll be doing most of your work from the command line. This chapter will give you the background necessary to effectively use the command line and get you set up on your own machine.
+
+## Step 1: Accessing the Command Line
+
+The way you access the command line varies depending on your operating system.
+
+### If you use a Mac
+
+There is a built in terminal app that comes packaged with your computer. It's fine.
+
+I'd recommend downloading the free [iTerm2](https://iterm2.com/), which is a terminal replacement app that adds a bunch of niceties like better theming and multiple tabs.
+
+Many people also like replacing the default `bash` shell with more advanced shells like `zsh` or `fish` that allow for things like better auto completion, spellchecking, and a huge variety of plugins. Most people manage their `zsh` install with a tool like `prezto` or `oh-my-zsh`.
+
+::: callout-tip
+I personally use iTerm2 with zsh and prezto.
+:::
+
+I'm not going to go through the steps of installing and configuring these tools -- there are numerous online walkthroughs and guides.
+
+### If you use a PC
+
+#TODO
+
+### If you use Linux
+
+Get out of here. You already know way too much about using the command line. You've probably already got a way more complicated setup than I do.
+
+# Accessing Servers via SSH {#ssh}
+
+Now that you're set up and comfortable using the command line, let's spend some time exploring SSH.
+
+SSH -- short for Secure (Socket) Shell -- is the standard way of accessing servers for the purpose of administering them using command line tools. By using SSH, you can have a terminal open on your laptop, but instead of interacting with your local machine, you'll be interacting with a remote server.
+
+Note that SSH is generally the backdoor into the server for administration. If you're using a tool like RStudio Server or Jupyter, there'll usually be a front door as well -- a web interface to use for actual data science work. The SSH access is for administration.
+
+TODO: Image of SSH backdoor, web interface front door
+
+SSH works via public key encryption, which means that you'll create a pair of keys -- one public, one private. You keep the private key only on the machine where it was created and put the public key wherever you'd like it to be used.
+
+::: callout-note
+## How public key encryption works
+
+Like most cryptography, public key encryption relies on mathematical operations that are easy in one direction, but hard in the other. For example, it's easy to multiply two large prime numbers and check if they equal a third, but it's very hard to find prime factors of a large number.
+
+In an oversimplified (but useful) mental model, you can think about the public key as just being a large number, and the private key being the two primes. If you're given the private key, it's easy to multiply and compare to see if it's valid. But if you're just given the public key, it's very hard to reverse-engineer the public key if it's large enough. That's why it's safe to share your public key widely, but your private key should be a closely-held secret.
+:::
+
+By default, SSH operates over port 22.
+
+## Let's try it
+
+-   The terminal
+-   3 step process
+    1.  generate public/private keys `ssh-keygen`
+    2.  place keys in appropriate place
+    3.  use ssh to do work
+-   Permissions on key
+
+## Getting Comfortable in your own setup
+
+-   Using ssh-config
+
+## Advanced SSH Tips + Tricks
+
+-   SSH Tunneling/Port Forwarding
+-   -vvvv, -i, -p \[Diagram: Port Forwarding\]
+
+## Exercises
+
+1.  Draw your own diagram of the sequence of things that occur when you execute `ssh user@server.company.com` in the terminal.
+2.  Stand up a new server on one of the major cloud providers. Try logging in using the provided key file. Create a new user on the server.
+3.  Generate a new SSH key locally and copy the correct key onto the server (think for a moment about which key is the correct one -- consult your diagram from step 1 if necessary).
+4.  Set up an SSH alias so you can SSH into your server using just `ssh testserver` (hint: look at your SSH config).
+5.  Create a local text file and SFTP it to the server. SSH in, edit the file, and SFTP it back.
+6.  \[Advanced\] Stand up a nginx server on your remote instance. Don't open the port to the world, but SSH port forward the server page to your local browser.

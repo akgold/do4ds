@@ -1,33 +1,53 @@
 # Introduction {.unnumbered}
 
-At some point, most data scientists reach the point where they want to show their work to others. But the skills and tools to deploy data science are completely different from the skills and tools needed to do data science.
+At some point, most data scientists reach the point where they want to show their work to others. But the skills and tools to *deploy* data science are completely different from the skills and tools needed to *do* data science.
 
-\> If you're a data scientist who wants to get your work in front of the right people, this book aims to equip you with \*\*all the technical things you need to know that aren't data science.\*\*
+You've spent your time thinking about data cleaning, building great dashboards and visualizations, and (perhaps) gradient boosted trees. Now you've got to think about app performance, deployments, and Docker.
 
-Hopefully, once you've read this book, you'll understand how to deploy your data science, whether you're building a DIY deployment system or trying to work with your organization's IT/DevOps/SysAdmin/SRE group to make that happen.
+\> If you're a data scientist who wants to put your work in front of other people, this book aims to equip you with \*\*the technical things you need to know that aren't data science.\*\*
 
-## Moving Data Science to A Server
+This is what it means to put data science into production. It's easy to underestimate whether what you're doing counts as putting data science into production. But it does. If you're trying to show other people your work, you're in production.
 
-In recent years, as data science has become more central to organizations, many have been moving their operations off of individual contributors' laptops and onto centralized servers. Depending on your organization, the centralization of data science operations can make your life way easier -- or it can be kinda a bummer.
+Innumerable pixels have already been spent on explaining and exploring DevOps in a pure software engineering context. And the burgeoning field of DataOps is about applying DevOps and agile principles where the context is enterprise data flows, rather than software deployments.
 
-Server migrations can work well regardless of whether they're instigated by the data science or the IT organization. The biggest determinant is how well the data science and IT/DevOps teams can collaborate.
+::: callout-note
+## DevOps vs IT/Admin
 
-Data scientists are good at manipulating and using data, but most have little expertise in SysAdmin work, and aren't really that interested. On the flip side, IT/DevOps organizations usually don't really understand data science workflows, the data science development process, or how data scientists use R and Python.
+***DevOps*** refers to the *knowledge, practices, and tools* that can help you put your work into production. It's what this book is about.
 
-Often, migrations to a server are instigated by the data scientists themselves -- usually because they've run out of horsepower on their laptops. If you, or one of your teammates, enjoys and is good as SysAdmin work, this can be a great situation! You get the hardware you need for your project quickly and with minimal interference.
+***IT/Admin*** describes a set of *people and roles* who have the permission and responsibility for managing the computers at your organization.
 
-On the other hand, most data scientists don't really want to be SysAdmins, and these systems are often fragile, isolated from other corporate systems, and potentially susceptible to security vulnerabilities.
+Depending on your organization, the people and team with IT/Admin team might have a different name like SysAdmin, Site Reliability Engineering (SRE), or (yes) DevOps.[^intro-1] In large organizations, IT/Admin functions may be split among many different standalone groups including security, databases, networking, storage, procurement, cloud, and more.
 
-Other organizations are moving to servers as well, but led by the IT group. For many IT groups, it's way easier to maintain a centralized server environment, as opposed to helping each data scientist maintain their own environment on their laptop.
+In small organizations, there may be no named IT/Admin group, which means it's you!
 
-Having just one platform makes it much easier to give shared access to more powerful computing platforms, to data sources that require some configuration, and to R and Python packages that wrap around system libraries and can be a pain to configure (looking at you, rJava).
+Either way, that's how I'll be using these terms throughout the book.
+:::
 
-This can be a great situation for data scientists! If the platform is well-configured and scoped, you can get instant access through their web browser to more compute resources, and don't have to worry about maintaining local installations of data science tools like R, Python, RStudio, and Jupyter, and you don't need to worry about how to connect to important data sources -- those things are just available for use.
+[^intro-1]: I think a lot of DevOps experts would argue that you'r doing DevOps wrong if you have a standalone DevOps team.
 
-But this can also be a bad experience. Long wait times for hardware or software updates, overly restrictive policies -- especially around package management -- and misunderstandings of what data scientists are trying to do on the platforms can lead to servers going largely unused.
+DevOps is a slippery concept, because it's not a specific set of technologies -- it's a set of norms, practices, and tools that help make the path from development to deployment easier. If you, like me, have a data science background, this can be a somewhat incomprehensible statement. What does it really mean?
 
-So much of whether the server-based experience is good or not depends on the relationship between the data science and IT/Admin group. In organizations where these groups work together smoothly, this can be a huge win for everyone involved. However, there are some organizations where IT/Admins are so concerned with stability and security that they make it impossible to do data science, and the data scientists spend all their time playing cat-and-mouse games to try to get work done behind IT/Admin's backs.
+Some organizations end up essentializing DevOps as IT/Admin, but make it Docker. It basically boils down to closing the gap between the development teams and the IT/Admin teams.
 
-If you work at such a place, it's frankly hard to get much done on the server. It's probably worth investing some time into improving your relationship with your favorite person on the IT/Admin team. Hopefully, this book will help you understand a little of what's on the minds of people in the IT group, and a sense of how to talk to them better.
+Part of the reason that DevOps is such a slippery concept is that deployment targets vary widely, and so getting concrete about DevOps is highly dependent on your context.
 
-As data science increasingly moves to the cloud, it's helpful to have specific cloud recommendations. That's why this book will go pretty deep into how to configure the things we're discussing inside AWS. You always have the option of using other clouds, and any conceptual information you learn in this book will 100% apply, but trying to provide detailed directions across more than 1 cloud provider is just too difficult.
+-   You work for an auto parts supplier and are responsible for the inventory software. This is in-house software that runs live on your organization's servers. This software has to know how many of any given part are on the shelf at any given time, help managers know when to order more, and integrate with the online ordering system, allowing users to confidently order and show up at the store knowing their order will be there. Perhaps there's a new module to the software that integrates with the website for a new 2-hour pickup from store option. After developing this module and testing it on your local machine, you have to get it running on your organization's servers and integrated into the existing system, with a minimum of downtime. How you do this with a minimum of effort and downtime of the existing system is a problem DevOps aims to solve.
+
+-   Perhaps you work for a company that produces data analysis software...maybe it's called RStudio. In this case, you're mostly producing software that someone else will download and run, so the DevOps challenge is different. Instead of putting the software live "into production", your main tasks are getting the software turned from a bunch of code into a built product, making sure the documentation is up to date, and ensuring that the process of QA-ing, testing, and putting the new version up live on the website is as smooth as possible.
+
+-   In another case, you might work for a large organization that has an online document writing software, say called Gooble Docs. You're in charge of the new markdown editing system for Gooble Docs. You've got to work with your developers and with the IT folks who run the servers where Gooble Docs runs to ensure you can release the new markdown editor without interrupting services for your users.
+
+If you're a data scientist, how does DevOps apply to you? There are two main ways. The first is that you are probably responsible for a variety of different activities relating to developing your analyses and apps. Since data science is fundamentally a computational practice, you're going to need to use computers, and if you're going to production, you're probably using servers.
+
+In some cases, you'll have to manage those servers yourself. Hopefully this book will help you learn how to do that. In other cases, your team is supported by an IT/Admin group who will help you host your apps once they're finished. This book can help you learn how to work with them.
+
+This book is aimed at data scientists at varying levels of technical sophistication and is designed to help you understand what are the patterns, tools, and processes you can adopt to make it easier to take your data science work into production.
+
+In the first section, you'll learn about patterns, tools, and processes that will make it easier for you to develop and deploy your code, even if you are never directly responsible for managing the underlying server infrastructure. This section should be useful for any data scientist who is putting work "into production".
+
+Section two is about knowledge that will help you interact with more formal IT resources. So if you have to talk to the IT/Admins at your organization and just feel like you're speaking different languages, this section will help you out.
+
+Section three is about DIY-ing your own servers. This section is really for people who are at small organizations where you have to be your own IT/Admin, or where the data science team is on their own to manage their servers.
+
+Hopefully, once you've read this book, you'll understand how to deploy your data science, whether you're building a DIY deployment system or trying to work with your organization's IT/Admin group to make that happen.
