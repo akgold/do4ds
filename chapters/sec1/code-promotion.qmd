@@ -1,86 +1,60 @@
 # Code Promotion Workflows
 
-As a field, IT/Admin/DevOps/SysAdmin has been around for much longer than data science. And while the topics they're addressing are different than data science, there are some workflows that translate nicely into the data science world.
+If you've ever taken an app or report into production, you know the moment. You get a call, a text, a slack -- "the app is down". A bead of cold sweat runs down your back. Your world narrows to you and your agonizingly nonfunctional app that the CEO, of course, needs *right now*.
 
-One of those is code and environment promotion.
+Basically all of DevOps is designed around preventing this moment.
 
-Over time, smart SysAdmins realized that it's better not to make changes for the first time in production systems people depend on for various reasons. And so they've developed patterns for putting things into production.
+Promotion workflows are the core of DevOps practices.
 
-Generally, this workflow involves three or four (nearly) identical environments. Most often the workflow is dev/test/prod, though sometimes there are separate test and user acceptance testing (UAT) environments.
+In this chapter in particular, we'll be thinking about *deployments* -- the moment something goes into production, whether that's a new app entirely or an update to an existing app. You want this moment to be as smooth as possible. Thus, you want to ensure that deployments don't happen unless they're supposed to and that when a deployment happens, it is as seamless as possible, with minimal downtime in the live production system.
 
-## Dev/Test/Prod
+In this chapter, we'll explore how to set up multiple environments so you can safely develop and test your app before going to production and how to design and execute a promotion workflow that makes your deployment completely seamless.
 
-Conceptually, the use of each environment is quite straightforward. Dev is a development environment -- a sandbox where new things can be developed freely with no risk. In a data science context, this generally means that dev and test environments may need to be connected to input data, but that output needs to be somehow mocked or redirected so it doesn't leak back into prod.
+## The Three Environments
 
-The test environment is for (shocker) testing. This likely includes functional testing that things work as intended, but also might include UAT. In the context of data science assets, UAT usually answers questions like whether labels and buttons are clear and whether plots and graphs answer exactly the intended questions.
+The best way to ensure that things only get deployed when you mean them to -- and sleep securely knowing that it won't be disturbed -- is to have standalone environments for development, testing, and production. Having separate environments and a plan for promoting content from one to the other is the core of workflows that de-risk pushing to production.
 
-The production environment is for production -- meaning use by people and machines outside the development process. Changes are never made in prod, except when they've already been validated in the test environment, and then the only thing that happens in prod is a quick update to the newest testing version.
+Usually, these environments are referred to as Dev, Test, and Prod.
 
-This obviously requires that the dev, test, and prod environments be very close mirrors of each other. For example, doing test on a Windows laptop and then going to prod on a Linux server introduces a potential that things that worked in test suddenly don't when going to prod. For that reason, making all three (or at least test and prod) match as precisely as possible is essential (more in chapter 1.3). The need to match these three environments so precisely is one reason for data science workloads moving onto servers.
+TODO: Picture of asset promotion Dev/Test/Prod
 
-In a data science context, the dev/test/prod sequence looks a little different from in an IT context. In an IT context, dev/test/prod means three identical environments. This is generally not the case in a data science context.
+The best way to ensure that deployments go smoothly is to make them as minimal and predictable as possible. This requires that the dev, test, and prod environments be very close mirrors of each other. We'll get into how to accomplish that at the end of this chapter.
 
-For a data scientist, dev is often a different environment than test or prod. For example, it's likely that you would do your development of your asset in your favorite R or Python data science IDE -- perhaps RStudio, JupyterHub, Spyder, or PyCharm. This environment might be server-based, or it might be on your laptop.
+### Dev for Data Science
 
-The biggest reason for this difference is that pure DevOps involves building a known product according to an identified need. Data science is different. The early parts of a data science project are about discovery and iteration -- that means that you can't start "development" right off the bat. There's first some research and discovery that happens in an environment well-suited to such things before promotion happens into a "deployment" environment.
+**Dev** is a sandbox where people can install packages and try new things with no risk of breaking anything in production.
 
-In contrast, traditional software development rarely starts with discovery. Instead, it starts with producing a minimal set of features that has been identified ahead of time. This difference causes much friction and misunderstanding between data science and IT/Admin/DevOps teams.
+If you're a data scientist, you probably have a really good idea what your Dev environment looks like. It's probably a Jupyter Notebook or an IDE with data science capabilities like RStudio, Spyder, or PyCharm. You use this environment to do exploratory data analysis, try out new types of charts and graphs, and test model performance against new features that you might design. This is really different than what most IT/Admins imagine is happening in Dev.
 
-At that point, you'll promote your asset into test, which might be a docker container, straight onto a server, or a deployment platform like RStudio Connect. Then, once everything is ready to go, you'd promote it into prod. This is somewhat different than a traditional dev/test/prod setup where all three environments are very precise mirrors of each other. In some cases, like if you're using a product that hosts your apps for you, test and prod may even be on the same physical server, which would be very unusual in the software development world.
+For a pure software engineering project, the Dev environment isn't about exploration and experimentation -- it's about building. The relationship between data science and software engineering is akin to the difference between archaeology and architecture. Data science is about exploring existing relationships and sharing them with others once they've been discovered. The path is often meandering -- and it's usually not clear whether it's even a possible one when you start. In contrast, pure software engineering is like designing a building. You know from the beginning that you're designing a building for a particular purpose -- you might need a little exploration to ensure you've thought through all of the nooks and crannies -- or that you've chosen the right materials or that you're going to stay on budget, but you'll have a pretty good idea up front whether it's possible to design the building you want.
 
-Depending on how dependable your prod environment has to be, it can be useful to maintain a "two dimensional" dev/test/prod setup as in the graphic below.
+This means that Dev environments look really different for a data scientist vs a software engineer.
 
-![](images-code-promotion/code-promotion.png "Code + Server Promotion Patterns")
+The biggest difference is that most IT/Admins are going to think of Dev, Test, and Prod being three identical copies of the same environment. That's close to what you need as a data scientist, but really it's more like you need a sandbox, a test environment, and prod. That means that if you're using a deployment platform like RStudio Connect or Dash Enterprise, you probably don't need it in your Dev environment, and that you don't need your development tool in Test or Prod (any changes should go back through the deployment pipeline).
 
-In this setup, you would select the IT configuration that works for your organization and maintain one or two copies of the entire environment. I often call this a staging environment to differentiate it from the dev/test/prod environments for the data science assets.
+### Test and Prod
 
-So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that's purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use -- dev, test, and prod.
+**Test** is (shockingly) an environment for testing. Depending on the type of asset you're developing, the test environment might incorporate testing that you do, testing by outside entities like security, and/or performance testing. Generally, the test environment facilitates User Acceptance Testing (UAT) where you can investigate whether labels and buttons are clear or whether plots and graphs meet the need. Depending on your organization, test might be collapsed with dev, it might be a single environment, or it could be multiple for the different types of testing.
 
-Then, data science code promotion through dev/test/prod would be distinct from how server changes get made.
+**Prod** is the gold standard environment where things run without any manual human intervention. Usually the only way to get things into prod is through some type of formalized process -- sometimes backed by a computer process like a git merge or push from a Continuous Integration/Continuous Deployment (CI/CD) platform (more on that below). One of the most important ways to keep prod stable is that nothing changes in prod other than via a simple promotion from the test environment.
 
-## Cattle, Not Pets
+### Protecting Prod Data
 
-In the IT world, there's a phrase that servers should be cattle, not pets. The idea here is that servers should be unremarkable and that each one should be more-or-less interchangeable. This matters, for example, in making sure your test and prod environments look exactly the same.
+One of the biggest risks during the dev and test parts of an assets lifecycle is that you might mess up real data during your work. In a software engineering context, it's common to use completely fake data or for the app to be the data generation tool.
 
-A bad pattern then would look like this -- I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server. At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.
+In contrast, data science is all about using and learning from your organization's actual data. So a dev environment that doesn't include access to your organization's real data is going to be completely useless if it doesn't have real data in it. This is often a difficult thing to convince an IT/Admin of.
 
-The main way to combat this kind of state drift is to religiously use state-maintaining infrastructure as code (IaC) tooling. That means that all changes to the state of your servers ends up in your IaC tooling and no "just login and make it work" shenanigans are allowed in prod.
+In many cases, data science assets and reports are read-only so if you're mostly building visualizations or dashboards that just consume the business data, perhaps clean it for analytics purposes, you can happily accept a read-only connection to your organization's data.[^code-promotion-1] In this case, it works just fine to connect to your real data from your Dev and Test environments and create graphs, models, and dashboards based on the real data, testing out new visualizations and model features in a safe sandbox while the existing version of your app or report runs smoothly in prod.
 
-If something breaks, you reproduce the error in staging, muck around until it works, update your IaC tooling to fix the broken thing, test that the thing is fixed, and then (and only then) push the updated infrastructure into prod directly from your IaC tooling.
+[^code-promotion-1]: In fact, you should probably feel grateful! It's nice to know you can mess around as much as you want without risking any damage to real data.
 
-### Infrastructure As Code Tooling {iac=""}
-
-There are many, many different varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won't be covering them in any depth here. Instead, I'll share a few of the different "categories" (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.
-
-To get from "nothing" to a usable server state, there are (at minimum) two things you need to do -- provision the infrastructure you need, and configure that infrastructure to do what you want.
-
-For example, let's say I'm standing up a server to deploy a simple shiny app. In order to get that server up, I'll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I'll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.
-
-So, for example, you might use AWS's CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.[^code-promotion-1]
-
-[^code-promotion-1]: This is the combination we used internally at RStudio when I started. I do not miss it. In particular, the Chef team "cleverly" named much of their tooling after kitchen related things, making it quite difficult to google.
-
-In infrastructure as code tooling, there generally isn't a clear dividing line between tools that do provisioning and tools that do configuration...but most tools lean one way or the other.
-
-Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).
-
-The other important division in IaC tools is declarative vs imperative. In declarative tooling, you simply enumerate the things you want, and the tool makes sure they get done in the right order. In contrast, an imperative tool requires that you provide actual instructions to get to where you want to go.
-
-In many cases, it's easy to be declarative with provisioning servers, but it's often useful to have a way to fall back to an imperative mode when configuring them because there may be dependencies that aren't obvious to the provisioning tool, but are easy to put down in code. If the tool does have an imperative mode, it's also nice if it's compatible with a language you'd be comfortable with.[^code-promotion-2]
-
-[^code-promotion-2]: For example, conditional logic in Chef code mostly relies on the Ruby language, which you're unlikely to know if you're a data scientist. In contrast, Pulumi (a relative newcomer currently popular among many RStudio engineers) uses Python, which way more people know.
-
-One somewhat complicated addition to the IaC lineup is Docker and related orchestration tools. There's a whole chapter on [containerization and docker](docker), so check that out if you want more details. The short answer is that docker can't really do provisioning, but that you can definitely use docker as a configuration management IaC tool, as long as you're disciplined about updating your Dockerfiles and redeployment when you want to make changes to the contents.
-
-Basically none of these tools will save you from your own bad habits, but they can give you alternatives.
-
-In short, exactly which tool you'll need will depend a lot on what you're trying to do. Probably the most important question in choosing a tool is whether you'll be able to get help from other people at your organization on it. So if you're thinking about heading into IaC tooling, I'd suggest doing a quick survey of some folks in DevOps and choosing something they already know and like.
+On the other hand, if your app or report actually writes data, you'll have to be a little more clever. In general, you'll have to figure out how to redirect your apps output into a test data store, or to mock responses from the real services you're interacting with. The easiest way to do this is by including your output locations as variables inside your code and then setting them at runtime based on an environment variable. See [below](#config-swap) for an example of how to do this.
 
 ## CI/CD and The mechanics of code promotion
 
-The common term for the mechanics of code promotion are Continuous Integration/Continuous Deployment (CI/CD). The actual practice of CI/CD relates deeply to the philosophy of DevOps and agile software development in ways that are beyond the scope of this book.[^code-promotion-3]
+The common term for the mechanics of code promotion are Continuous Integration/Continuous Deployment (CI/CD). The actual practice of CI/CD relates deeply to the philosophy of DevOps and agile software development in ways that are beyond the scope of this book.[^code-promotion-2]
 
-[^code-promotion-3]: I strongly recommend *The Phoenix Project* by Gene Kim, Kevin Behr, and George Spafford as a fun way to get acquainted if you're even remotely interested.
+[^code-promotion-2]: I strongly recommend *The Phoenix Project* by Gene Kim, Kevin Behr, and George Spafford as a fun way to get acquainted if you're even remotely interested.
 
 In this book I'm mainly going to focus on a few workflows and a few tools that I've found particularly useful in a data science context.
 
@@ -108,9 +82,9 @@ So a CI/CD integration using the same git graph as above would have released 3 n
 
 In years past, the two most popular CI/CD tools were called Travis and Jenkins. By all accounts, these tools were somewhat unwieldy and difficult to get set up. More recently, GitHub -- the foremost git server -- released GitHub Actions (GHA), which is CI/CD tooling directly integrated into GitHub that's free for public repositories and free up to some limits for private ones.
 
-It's safe to say GHA is eating the world of CI/CD.[^code-promotion-4]
+It's safe to say GHA is eating the world of CI/CD.[^code-promotion-3]
 
-[^code-promotion-4]: It's worth remarking that GitLab has long offered a very good CI/CD integration inside GitLab. It's called GitLab CI/CD. I'm going to talk about GHA, since it's what I'm familiar with, but you can accomplish these same things with GitLab CI/CD.
+[^code-promotion-3]: It's worth remarking that GitLab has long offered a very good CI/CD integration inside GitLab. It's called GitLab CI/CD. I'm going to talk about GHA, since it's what I'm familiar with, but you can accomplish these same things with GitLab CI/CD.
 
     Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so I'd expect Azure DevOps and GitHub to converge somewhat...but who knows?
 
@@ -124,9 +98,9 @@ That means that you're just doing something simple like spellchecking, you can p
 
 Feel free to take a look through the [code for the GitHub Action for this book](https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_bookdown.yml). It's all YAML, so it's pretty human-readable.
 
-Here's what happens every time I make a push to the `main` branch of the repository for this book:[^code-promotion-5]
+Here's what happens every time I make a push to the `main` branch of the repository for this book:[^code-promotion-4]
 
-[^code-promotion-5]: Recall that a finished merge request into the `main` branch is equivalent to a push to `main` .
+[^code-promotion-4]: Recall that a finished merge request into the `main` branch is equivalent to a push to `main` .
 
 1.  Checkout the current `main` branch of the book.
 2.  Use the `r-lib` action to install R.
@@ -137,9 +111,96 @@ Here's what happens every time I make a push to the `main` branch of the reposit
 
 You'll see that it uses a mixture of pre-defined actions created for general use, pre-defined actions created by people in the R community, and custom R code I insert to restore an `renv` library and render the book itself.
 
-## Swapping Configurations
+## Per-Environment Configuration {config-swap=""}
 
-Sometimes you want a little more flexibility -- for example the option to switch many the environment variables depending on the environment. In R, the standard way to do this is using the [`config`](https://cran.r-project.org/web/packages/config/index.html) package. There are many options for managing runtime configuration in Python.
+Sometimes you want a little more flexibility -- for example the option to switch many the environment variables depending on the environment.
+
+In R, the standard way to do this is using the [`config`](https://cran.r-project.org/web/packages/config/index.html) package. There are many options for managing runtime configuration in Python, including a package called config.
+
+For example, let's consider this shiny app. In this app, every time I press the button, the app sends a `POST` request to an external service indicating that the button has been pressed.
+
+```{r}
+#| eval: false
+
+library(shiny)
+
+# UI that's just a button
+ui <- fluidPage(
+  actionButton("button", "Press Me!")
+)
+
+# Do something on button press
+server <- function(input, output) {
+  observeEvent(
+    input$button, 
+    httr::POST(
+      "www.my-external-system.com", 
+      body = list(button_pressed = TRUE)
+    )
+  )
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+With the URL hardcoded like this, it's really hard to imagine doing this in a Dev or Test environment.
+
+However, with R's config package, you can create a config.yml file that looks like this:
+
+```{default}
+dev:
+  url: "www.test-system.com"
+  
+prod:
+  url: "www.my-external-system.com"
+```
+
+Then you can use an environment variable to the correct config and apply that configuration inside the app.[^code-promotion-5]
+
+[^code-promotion-5]: By default, the `R_CONFIG_ACTIVE` variable is used to determine which config to get. If you're deploying to RStudio Connect, this value is locked to equal `rsconnect` , and you may want to use a different value, which you can do like `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
+
+```{r}
+#| eval: false
+
+library(shiny)
+config <- config::get()
+
+# UI that's just a button
+ui <- fluidPage(
+  actionButton("button", "Press Me!")
+)
+
+# Do something on button press
+server <- function(input, output) {
+  observeEvent(
+    input$button, 
+    httr::POST(
+      config$url, 
+      body = list(button_pressed = TRUE)
+    )
+  )
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+## Creating and Maintaining Identical Environments
+
+In the IT world, there's a phrase that servers should be cattle, not pets. The idea here is that servers should be unremarkable and that each one should be more-or-less interchangeable. This matters, for example, in making sure your test and prod environments look exactly the same.
+
+TODO: Notes on using virtual environments + Docker.
+
+For example, doing test on a Windows laptop and then going to prod on a Linux server introduces a potential that things that worked in test suddenly don't when going to prod. For that reason, making all three (or at least test and prod) match as precisely as possible is essential. The need to match these three environments so precisely is one reason for data science workloads moving onto servers.
+
+A bad pattern then would look like this -- I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server. At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.
+
+The main way to combat this kind of state drift is to religiously use state-maintaining infrastructure as code (IaC) tooling. That means that all changes to the state of your servers ends up in your IaC tooling and no "just login and make it work" shenanigans are allowed in prod.
+
+TODO: Graphic - fixing problems using IaC tooling
+
+If something breaks, you reproduce the error in staging, muck around until it works, update your IaC tooling to fix the broken thing, test that the thing is fixed, and then (and only then) push the updated infrastructure into prod directly from your IaC tooling.
 
 ## Exercises
 

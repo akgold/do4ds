@@ -1,0 +1,41 @@
+# DevOps for DevOps
+
+If you're reading this section and trying it out, you've moved past DevOps for Data Science. This is just plain 'ol DevOps. In this chapter, you'll learn about some standard DevOps tooling you might want to use, and some ways to think about how to divide your work as a data scientist from your (forced) moonlighting as a DevOps engineer.
+
+## Infrastructure As Code Tooling
+
+There are many, many varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won't be covering them in any depth here. Instead, I'll share a few of the different "categories" (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.
+
+To get from "nothing" to a usable server state, there are (at minimum) two things you need to do – provision the infrastructure you need, and configure that infrastructure to do what you want.
+
+For example, let's say I'm standing up a server to deploy a simple shiny app. In order to get that server up, I'll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I'll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.
+
+So, for example, you might use AWS's CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.
+
+In infrastructure as code tooling, there generally isn't a clear dividing line between tools that do provisioning and tools that do configuration…but most tools lean one way or the other.
+
+Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).
+
+The other important division in IaC tools is declarative vs imperative. In declarative tooling, you simply enumerate the things you want, and the tool makes sure they get done in the right order. In contrast, an imperative tool requires that you provide actual instructions to get to where you want to go.
+
+In many cases, it's easy to be declarative with provisioning servers, but it's often useful to have a way to fall back to an imperative mode when configuring them because there may be dependencies that aren't obvious to the provisioning tool, but are easy to put down in code. If the tool does have an imperative mode, it's also nice if it's compatible with a language you'd be comfortable with.
+
+One somewhat complicated addition to the IaC lineup is Docker and related orchestration tools. There's a whole chapter on containerization and docker, so check that out if you want more details. The short answer is that docker can't really do provisioning, but that you can definitely use docker as a configuration management IaC tool, as long as you're disciplined about updating your Dockerfiles and redeployment when you want to make changes to the contents.
+
+Basically none of these tools will save you from your own bad habits, but they can give you alternatives.
+
+In short, exactly which tool you'll need will depend a lot on what you're trying to do. Probably the most important question in choosing a tool is whether you'll be able to get help from other people at your organization on it. So if you're thinking about heading into IaC tooling, I'd suggest doing a quick survey of some folks in DevOps and choosing something they already know and like.
+
+## Dev/Test/Prod for IT/Admin
+
+In many organizations, the entire data science stack is supported by the IT/Admin group. In this case, you probably want a two-dimensional Dev/Test/Prod setup. The IT/Admin group maintains their own Dev/Test/Prod configuration.
+
+Dev and Test are where they try out and test new hardware configurations – the data scientists doing their work only have access to the Prod environment. They have their own Dev/Test/Prod setup within the IT/Admin prod environment.
+
+For simplicity of terminology, I often refer to the IT/Admin Dev + Test environments as staging to differentiate from the Data Science Dev/Test/Prod environments.
+
+In this setup, you would select the IT configuration that works for your organization and maintain one or two copies of the entire environment. I often call this a staging environment to differentiate it from the dev/test/prod environments for the data science assets.
+
+So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that's purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use – dev, test, and prod.
+
+Then, data science code promotion through dev/test/prod would be distinct from how server changes get made.

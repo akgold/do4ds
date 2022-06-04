@@ -5,10 +5,6 @@ on:
 
 name: renderbook
 
-env:
-  RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
-  RENV_PATHS_ROOT: ~/.local/share/renv
-
 jobs:
   render-book:
     name: Render-Book
@@ -16,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: quarto-dev/quarto-actions/install-quarto@v1
+       - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-renv@v2
+
       - run: |
           quarto --version
       - name: Render Book
