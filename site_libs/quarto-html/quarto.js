@@ -22,6 +22,17 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
     }
   };
 
+  // fire slideEnter for bootstrap tab activations (for htmlwidget resize behavior)
+  function fireSlideEnter(e) {
+    const event = window.document.createEvent("Event");
+    event.initEvent("slideenter", true, true);
+    window.document.dispatchEvent(event);
+  }
+  const tabs = window.document.querySelectorAll('a[data-bs-toggle="tab"]');
+  tabs.forEach((tab) => {
+    tab.addEventListener("shown.bs.tab", fireSlideEnter);
+  });
+
   // Track scrolling and mark TOC links as active
   // get table of contents and sidebar (bail if we don't have at least one)
   const tocLinks = tocEl
@@ -264,6 +275,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
         const convertToMenu = () => {
           for (const child of el.children) {
             child.style.opacity = 0;
+            child.style.display = "none";
           }
 
           const toggleContainer = window.document.createElement("div");
@@ -301,6 +313,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
 
             const clone = child.cloneNode(true);
             clone.style.opacity = 1;
+            clone.style.display = null;
             toggleContents.append(clone);
           }
           toggleContents.style.height = "0px";
@@ -365,6 +378,7 @@ window.document.addEventListener("DOMContentLoaded", function (_event) {
         const convertToSidebar = () => {
           for (const child of el.children) {
             child.style.opacity = 1;
+            clone.style.display = null;
           }
 
           const placeholderEl = window.document.getElementById(
