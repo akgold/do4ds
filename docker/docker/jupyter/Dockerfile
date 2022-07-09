@@ -6,8 +6,6 @@ RUN mkdir -p /project/
 RUN mkdir -p /project/out/
 
 COPY ./requirements.txt /project/
-COPY ./hello.ipynb /project/
-COPY ./_quarto.yml /project/
 
 # Install system packages
 RUN apt-get update && apt-get install -y \
@@ -20,6 +18,10 @@ RUN rm -f ./quarto-0.9.83-linux-amd64.deb
 
 # Install Python requirements
 RUN pip3 install -r /project/requirements.txt
+
+# Copy project files -- might change frequently so do late
+COPY ./hello.ipynb /project/
+COPY ./_quarto.yml /project/
 
 # Render notebook
 CMD cd /project && \
