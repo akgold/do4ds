@@ -1,10 +1,232 @@
-# Taking Data to Production
+# Data Science Microservices
 
-I frequently speak to data scientists who are responsible for taking an insight they've discovered or a report they've built and moving that insight to a server where the report can run on a schedule, or the dashboard can live on. While most data scientists have spent a lot of time thinking about the contents of their data, they've probably spent less time thinking about how their data is stored, or how it moves around.
+One of the fundamental building blocks of good DevOps practices is microservices. The idea of microservices is that you want to build each application as a collection of smaller, separable components. These components interact via well-defined interfaces so that it's easy to change the internal workings of each component without messing up the system as whole. It also allows you to make these changes with a much higher degree of confidence that changes to one component can be integrated and deployed without unanticipated downstream consequences.
 
-When you start taking apps to production, these things start to matter. Depending on the security requirements of your app and the underlying data, you may also have to spend a good bit of time thinking about how your app connects to your data, and how you make sure only the right people have access.
+You can think of microservices as the idea of writing functions in your code (you are writing functions, right?), but one level up. Instead of thinking of a single function, you're thinking at the level of an entire component of your analysis, report, app, or pipeline.
 
-In this chapter, we'll walk through the decision-making process you can follow to figure out how to architect the data inside your app, API, or report. Going to use the word app throughout this doc, but applies equally to an API.
+The idea of microservices for a general software engineering project is pretty straightforward, you have services that interact with each other over APIs -- RESTful ones where possible. Honestly, this isn't a terrible idea for data scientists, and we'll get a little bit into what RESTful APIs are in this chapter and how to use them.
+
+But a data science app stack is actually much more complicated than a generic three-tier web app architecture.
+
+In software engineering, there's the notion of a three-tier app. It's helpful to be acquainted with this model as a data scientist, but I find it's woefully insufficient for data science purposes.
+
+The three-tier app architecture is
+
+-   Presentation/Interaction tier -- the actual interactions the user has with the app.
+
+-   Application tier -- where data is processed.
+
+-   Data tier -- where data associated with the application is stored and managed.
+
+In general, the presentation tier is the front-end, while the other two are the back-end. Usually, the application tier will be one or more APIs and the data tier is some sort of database storage.
+
+To think of a simple webapp, say that allows someone to buy a copy of a book online, a user visits the website, picks out a book, puts in their credit card, and clicks a button to purchase.
+
+In the application layer, an API receives their order, pushes that order into the "orders to be shipped" queue in the warehouse, and adds the user's contact info and order history to the database, which is the data tier.
+
+The big difference between many software engineering projects and data science is the direction of the data flow. This is what makes it hard to take software engineering workflows and simply adapt them to data science.
+
+TODO - image of software engineering data flowing front to back, and data science flowing back to front
+
+In most software engineering workflows, the user interactions are what **create** the data. A user interacts with a webpage and creates an order or history that needs to be captured or used somehow. The software engineer, by circumscribing the ways the user interacts with the app actually defines the data flowing through the app.
+
+In contrast, most data science apps are designed to give the user a view or a way to interact with an existing bunch of data -- and that initial data flow is usually real-world data. It takes work to reshape that data into something useful to the end user -- that's in fact the entire practice of data science.
+
+So in data science, the set of microservices you'll want to consider is pretty broad, and they each look pretty different. I've come up with seven reasonably distinct components that make up most data science projects. Some may not have all these components, but most data science processes fit somewhere into these seven services:
+
+1.  Data Ingestion
+
+2.  Data Refining
+
+3.  Model training
+
+4.  Model predictions and or business logic
+
+5.  App Data
+
+6.  App Operations
+
+Beyond this taxonomy, I don't have much to say about each of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.
+
+I don't have anything particularly special to say about data ingestion + refining, except that you should almost certainly keep these processes separate. It's tempting not to save original data (if you're respoonsible for ingesting) and to just keep refined data. This is almost always a mistake. I can't tell you how many times I've gone back later and realized that I wanted to update my refining process in a way that relied on still having the source data. Save your source data.
+
+Similarly, I have nothing of interest to say about model training, except that this step is by far the most over-hyped part of the data science process. If you're a young data scientist, you'll almost surely get more success out of getting really good at any other step of this process rather than focusing on model training. It's the most crowded and the most automate-able.
+
+Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham's [Mastering Shiny](https://mastering-shiny.org/) book is the go-to reference if you want to...well, you know.
+
+BUT, I've got a lot to say about steps 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic and app logic. Or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.
+
+And then there's the question of how to serve your data into the running app. That's what I'll spend much of the rest of this chapter on.
+
+## You should use APIs more
+
+You are a data scientist. I don't know you. I've almost certainly never looked at your code. But I can tell you, that in very high likelihood, you should be writing more APIs.
+
+APIs can seem intimidating if you've never written one before. Writing an API seems like crossing the rubicon between data scientist and software engineer.
+
+I'm here to tell you that if you know how to write a function in R or Python, you can write an API. For all intents and purposes, an API is just a function that is ready for you to run outside your console.
+
+While the concept of APIs can be extremely intimidating, the actual process of writing an API is no more complicated that writing and documenting a function in R or Python. There are a variety of API frameworks in both R and Python. As of this writing, the ones I'd recommend the most are FastAPI in Python and Plumber in R.
+
+To demystify an API, let's start with a use case.
+
+Let's say I've got a shiny app that visualizes certain data points from the palmer penguins data set.
+
+TODO -- see if I can deploy to shinyapps and iframe in
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(palmerpenguins)
+library(shiny)
+
+# Define UI
+ui <- fluidPage(
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        inputId = "species", 
+        label = "Species", 
+        choices = c("Adelie", "Chinstrap", "Gentoo"), 
+        selected = c("Adelie", "Chinstrap", "Gentoo"),
+        multiple = TRUE
+      )
+    ),
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("penguinPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  output$penguinPlot <- renderPlot({
+    # Filter data
+    dat <- palmerpenguins::penguins %>%
+      dplyr::filter(
+        species %in% input$species
+      )
+    
+    # Render Plot
+    dat %>%
+      ggplot(
+        aes(
+          x = flipper_length_mm,
+          y = body_mass_g,
+          color = sex
+        )
+      ) +
+      geom_point()
+  })
+  
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+The structure of this Shiny app is bad. Now, it's not a huge deal, because this is a simple shiny app that's pretty easy to parse, but I've seen many much larger apps with this same structure. Why is this bad? Because *all* of the app's logic is contained inside a plotRender-er.
+
+In this case, I've combined *business logic* and *app logic*. As your apps get more complicated, you'll want to keep the app itself strictly for the logic of the app -- what selections has the user made and what needs to be displayed to them as a result.
+
+The business logic -- what those decisions mean, and the resulting calculations should -- at minimum -- be moved into standalone functions.
+
+Rewriting this app to make better use of functions, it looks something like this:
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(palmerpenguins)
+library(shiny)
+
+# Define UI
+ui <- fluidPage(
+  # Sidebar with a slider input for number of bins 
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        inputId = "species", 
+        label = "Species", 
+        choices = c("Adelie", "Chinstrap", "Gentoo"), 
+        selected = c("Adelie", "Chinstrap", "Gentoo"),
+        multiple = TRUE
+      )
+    ),
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("penguinPlot")
+    )
+  )
+)
+
+filter_data <- function(species) {
+  palmerpenguins::penguins %>%
+    dplyr::filter(
+      species %in% !!species
+    )
+}
+
+server <- function(input, output) {
+  
+  # Filter data
+  dat <- reactive(filter_data(input$species))
+  
+  # Render Plot
+  output$penguinPlot <- renderPlot({
+    dat() %>%
+    ggplot(
+      aes(
+        x = flipper_length_mm,
+        y = body_mass_g,
+        color = sex
+      )
+    ) +
+    geom_point()
+  })
+  
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+Now, I've separated the user interaction and visualization layer from the business logic, which is pretty trivial in this case.
+
+Here's what a plumber API version of my business logic looks like:
+
+```{r}
+
+library(plumber)
+
+#* @apiTitle Penguin Explorer
+#* @apiDescription An API for exploring palmer penguins.
+
+#* Get data set based on parameters
+#* @param species which penguin species to include
+#* @get /data
+function(species = c("Adelie", "Chinstrap", "Gentoo")) {
+  palmerpenguins::penguins %>%
+    dplyr::filter(
+      species %in% !!species
+    )
+}
+```
+
+I'll need to change my function in the app somewhat to actually call the API, but it's pretty easy.
+
+```{r}
+filter_data <- function(species) {
+  httr::GET(
+    url = "http://127.0.0.1:9046", 
+    path = "data", 
+    query = list(species = species)
+  ) 
+}
+```
+
+I can now host this plumber API somewhere, and everyone I've allowed to have access can access the data just as easily as the app can. This is a really powerful ability for you.
 
 ## Options for storing app data
 
@@ -34,7 +256,7 @@ These tools can give you the best of both worlds -- you get away from the R and 
 
 ### Storage Location
 
-The second question after *what* you're storing is *where*. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access -- as well as making sure you can authenticate into it (more on that below).
+The second question after what you're storing is where. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access -- as well as making sure you can authenticate into it (more on that below).
 
 If you're not using a database, then you'll have to decide where to store the data for your app. Most apps that aren't using a database start off rather naively with the data in the app bundle.
 
@@ -62,7 +284,7 @@ If your data is updated only very infrequently, it might make sense to just bund
 
 On the other hand, the more frequently updated data probably doesn't make sense to update at the same cadence as the app code. You probably want to access that data in some sort of external location, perhaps on a mounted drive outside the app bundle, in a pin or bucket, or in a database.
 
-In my experience, you almost never want to actually bundle data into the app. You almost always want to allow for the app data ("state") to live outside the app and for the app to read it at runtime. Even data that you *think* will be updated infrequently, is unlikely to be updated as infrequently as your app code. Animals move on and off the endangered list, ingredient substitutions are made, and hospitals open and close and change their names in memoriam of someone.
+In my experience, you almost never want to actually bundle data into the app. You almost always want to allow for the app data ("state") to live outside the app and for the app to read it at runtime. Even data that you think will be updated infrequently, is unlikely to be updated as infrequently as your app code. Animals move on and off the endangered list, ingredient substitutions are made, and hospitals open and close and change their names in memoriam of someone.
 
 It's also worth considering whether your app needs a live data connection to do processing, or whether looking up values in a pre-processed table will suffice. The more complex the logic inside your app, the less likely you'll be able to anticipate what users need, and the more likely you'll have to do a live lookup.
 
@@ -96,7 +318,7 @@ For some apps, you want the data to be snappy throughout runtime, but it's ok to
 
 ### Creating Performant Database Queries
 
-If you are using a database, you'll want to be careful about how you construct your queries to make sure they perform well. The main way to think about this is whether your queries will be *eager* or *lazy*.
+If you are using a database, you'll want to be careful about how you construct your queries to make sure they perform well. The main way to think about this is whether your queries will be eager or lazy.
 
 In an eager app, you'll pull basically all of the data for the app as it starts up, while a lazy app will pull data only as it is need.
 
@@ -170,9 +392,9 @@ One popular alternative is to use credentials pre-loaded on the system to enable
 
 \<TODO: image of kerberos\>
 
-You may need to enable running as particular Linux users if you don't want to do all of the authentication interactively in the browser. You usually cannot just recycle login tokens, because they are service authorization tokens, not token-granting tokens.[^data-1]
+You may need to enable running as particular Linux users if you don't want to do all of the authentication interactively in the browser. You usually cannot just recycle login tokens, because they are service authorization tokens, not token-granting tokens.[^microservices-1]
 
-[^data-1]: I believe that it is theoretically possible to create a token that grants access to multiple services. For example, you could have a token that grants access to both RStudio Server and a database. I've never seen this implemented.
+[^microservices-1]: I believe that it is theoretically possible to create a token that grants access to multiple services. For example, you could have a token that grants access to both RStudio Server and a database. I've never seen this implemented.
 
 ## Some notes if you're administering the service
 
@@ -182,9 +404,9 @@ Choosing which database to use in a given case is very complicated. There are do
 
 If you're doing certain kinds of bespoke analytics, then it might really matter. In my experience, using postgres is good enough for most things involving rectangular data of moderate size, and a storage bucket is often good enough for things you might be tempted to put in a NoSQL database until the complexity of the data gets very large.
 
-Either way, a database as a service is a pretty basic cloud service. For example, AWS's RDS is their simplest database service, and you can get a PostgreSQL, MySQL, MariaDB, or SQL Server database for very reasonable pricing.[^data-2] It works well for reasonably sized data loads (up to 64Tb).
+Either way, a database as a service is a pretty basic cloud service. For example, AWS's RDS is their simplest database service, and you can get a PostgreSQL, MySQL, MariaDB, or SQL Server database for very reasonable pricing.[^microservices-2] It works well for reasonably sized data loads (up to 64Tb).
 
-[^data-2]: You can also do an Oracle database if you have a license, but if you're reading this, you almost certainly don't have an Oracle license you have to use. Consider yourself lucky.
+[^microservices-2]: You can also do an Oracle database if you have a license, but if you're reading this, you almost certainly don't have an Oracle license you have to use. Consider yourself lucky.
 
 RDS is optimized for individual transactions. In some cases, you might want to consider a full data warehouse. AWS's is called Redshift and it runs a flavor of PostgreSQL. In general it's better when you have a lot of data (goes up to several petabytes) or are doing demanding queries a lot more often that you're querying for individual rows. Redshift is a good bit more expensive, so it's worth keeping that in mind.
 
