@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 4&nbsp; Data Science Microservices</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec2/sec-intro.html" rel="next">
+<link href="../../chapters/sec1/docker.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Science Microservices</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a href="../../chapters/sec1/sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Continuous Integration and Delivery</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/repro-pkgs.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/microservices.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Science Microservices</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a href="../../chapters/sec2/sec-intro.html" class="sidebar-item-text sidebar-link">Working with IT</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Computers, Computing, and Servers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Logging in with auth</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a href="../../chapters/sec3/sec-intro.html" class="sidebar-item-text sidebar-link">DevOps for DevOps</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">The Cloud and Cloud Providers</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">The Command Line + SSH</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/aws-walkthrough.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Lab 1: Get your own server</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/understanding-traffic.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Computer Networks and the Internet</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/using-urls.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Getting a real URL</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/tooling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DevOps for DevOps</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+    <div class="sidebar-item-container"> 
+        <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">Appendices</a>
+      <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+        <i class="bi bi-chevron-right ms-2"></i>
+      </a>
+    </div>
+    <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/linux-cmd.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Useful Shell Commands</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+    </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#you-should-use-apis-more" id="toc-you-should-use-apis-more" class="nav-link active" data-scroll-target="#you-should-use-apis-more"> <span class="header-section-number">4.1</span> You should use APIs more</a></li>
+  <li><a href="#separate-updating-data-from-code" id="toc-separate-updating-data-from-code" class="nav-link" data-scroll-target="#separate-updating-data-from-code"> <span class="header-section-number">4.2</span> Separate updating data from code</a>
+  <ul class="collapse">
+  <li><a href="#storage-format" id="toc-storage-format" class="nav-link" data-scroll-target="#storage-format"> <span class="header-section-number">4.2.1</span> Storage Format</a></li>
+  <li><a href="#storage-location" id="toc-storage-location" class="nav-link" data-scroll-target="#storage-location"> <span class="header-section-number">4.2.2</span> Storage Location</a></li>
+  </ul></li>
+  <li><a href="#choosing-your-storage-solution" id="toc-choosing-your-storage-solution" class="nav-link" data-scroll-target="#choosing-your-storage-solution"> <span class="header-section-number">4.3</span> Choosing your storage solution</a>
+  <ul class="collapse">
+  <li><a href="#how-frequently-are-the-data-updated-relative-to-the-code" id="toc-how-frequently-are-the-data-updated-relative-to-the-code" class="nav-link" data-scroll-target="#how-frequently-are-the-data-updated-relative-to-the-code"> <span class="header-section-number">4.3.1</span> How frequently are the data updated relative to the code?</a></li>
+  <li><a href="#is-your-app-read-only-or-does-it-have-to-write" id="toc-is-your-app-read-only-or-does-it-have-to-write" class="nav-link" data-scroll-target="#is-your-app-read-only-or-does-it-have-to-write"> <span class="header-section-number">4.3.2</span> Is your app read-only, or does it have to write?</a></li>
+  </ul></li>
+  <li><a href="#when-does-the-app-fetch-its-data" id="toc-when-does-the-app-fetch-its-data" class="nav-link" data-scroll-target="#when-does-the-app-fetch-its-data"> <span class="header-section-number">4.4</span> When does the app fetch its data?</a>
+  <ul class="collapse">
+  <li><a href="#how-big-are-the-data-in-the-app" id="toc-how-big-are-the-data-in-the-app" class="nav-link" data-scroll-target="#how-big-are-the-data-in-the-app"> <span class="header-section-number">4.4.1</span> How big are the data in the app?</a></li>
+  <li><a href="#what-are-the-performance-requirements-for-the-app" id="toc-what-are-the-performance-requirements-for-the-app" class="nav-link" data-scroll-target="#what-are-the-performance-requirements-for-the-app"> <span class="header-section-number">4.4.2</span> What are the performance requirements for the app?</a></li>
+  <li><a href="#creating-performant-database-queries" id="toc-creating-performant-database-queries" class="nav-link" data-scroll-target="#creating-performant-database-queries"> <span class="header-section-number">4.4.3</span> Creating Performant Database Queries</a></li>
+  <li><a href="#how-to-connect-to-databases" id="toc-how-to-connect-to-databases" class="nav-link" data-scroll-target="#how-to-connect-to-databases"> <span class="header-section-number">4.4.4</span> How to connect to databases?</a></li>
+  </ul></li>
+  <li><a href="#how-do-i-do-data-authorization" id="toc-how-do-i-do-data-authorization" class="nav-link" data-scroll-target="#how-do-i-do-data-authorization"> <span class="header-section-number">4.5</span> How do I do data authorization?</a>
+  <ul class="collapse">
+  <li><a href="#securely-managing-credentials" id="toc-securely-managing-credentials" class="nav-link" data-scroll-target="#securely-managing-credentials"> <span class="header-section-number">4.5.1</span> Securely Managing Credentials</a></li>
+  </ul></li>
+  <li><a href="#some-notes-if-youre-administering-the-service" id="toc-some-notes-if-youre-administering-the-service" class="nav-link" data-scroll-target="#some-notes-if-youre-administering-the-service"> <span class="header-section-number">4.6</span> Some notes if you’re administering the service</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"> <span class="header-section-number">4.7</span> Exercises</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/microservices.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title d-none d-lg-block"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Data Science Microservices</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+    
+  </div>
+  
+
+</header>
+
+<p>One of the fundamental building blocks of good DevOps practices is microservices. The idea of microservices is that you want to build each application as a collection of smaller, separable components. These components interact via well-defined interfaces so that it’s easy to change the internal workings of each component without messing up the system as whole. It also allows you to make these changes with a much higher degree of confidence that changes to one component can be integrated and deployed without unanticipated downstream consequences.</p>
+<p>You can think of microservices as the idea of writing functions in your code (you are writing functions, right?), but one level up. Instead of thinking of a single function, you’re thinking at the level of an entire component of your analysis, report, app, or pipeline.</p>
+<p>The idea of microservices for a general software engineering project is pretty straightforward, you have services that interact with each other over APIs – RESTful ones where possible. Honestly, this isn’t a terrible idea for data scientists, and we’ll get a little bit into what RESTful APIs are in this chapter and how to use them.</p>
+<p>But a data science app stack is actually much more complicated than a generic three-tier web app architecture.</p>
+<p>In software engineering, there’s the notion of a three-tier app. It’s helpful to be acquainted with this model as a data scientist, but I find it’s woefully insufficient for data science purposes.</p>
+<p>The three-tier app architecture is</p>
+<ul>
+<li><p>Presentation/Interaction tier – the actual interactions the user has with the app.</p></li>
+<li><p>Application tier – where data is processed.</p></li>
+<li><p>Data tier – where data associated with the application is stored and managed.</p></li>
+</ul>
+<p>In general, the presentation tier is the front-end, while the other two are the back-end. Usually, the application tier will be one or more APIs and the data tier is some sort of database storage.</p>
+<p>To think of a simple webapp, say that allows someone to buy a copy of a book online, a user visits the website, picks out a book, puts in their credit card, and clicks a button to purchase.</p>
+<p>In the application layer, an API receives their order, pushes that order into the “orders to be shipped” queue in the warehouse, and adds the user’s contact info and order history to the database, which is the data tier.</p>
+<p>The big difference between many software engineering projects and data science is the direction of the data flow. This is what makes it hard to take software engineering workflows and simply adapt them to data science.</p>
+<p>TODO - image of software engineering data flowing front to back, and data science flowing back to front</p>
+<p>In most software engineering workflows, the user interactions are what <strong>create</strong> the data. A user interacts with a webpage and creates an order or history that needs to be captured or used somehow. The software engineer, by circumscribing the ways the user interacts with the app actually defines the data flowing through the app.</p>
+<p>In contrast, most data science apps are designed to give the user a view or a way to interact with an existing bunch of data – and that initial data flow is usually real-world data. It takes work to reshape that data into something useful to the end user – that’s in fact the entire practice of data science.</p>
+<p>So in data science, the set of microservices you’ll want to consider is pretty broad, and they each look pretty different. I’ve come up with seven reasonably distinct components that make up most data science projects. Some may not have all these components, but most data science processes fit somewhere into these seven services:</p>
+<ol type="1">
+<li><p>Data Ingestion</p></li>
+<li><p>Data Refining</p></li>
+<li><p>Model training</p></li>
+<li><p>Model predictions and or business logic</p></li>
+<li><p>App Data</p></li>
+<li><p>App Operations</p></li>
+</ol>
+<p>Beyond this taxonomy, I don’t have much to say about each of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.</p>
+<p>I don’t have anything particularly special to say about data ingestion + refining, except that you should almost certainly keep these processes separate. It’s tempting not to save original data (if you’re respoonsible for ingesting) and to just keep refined data. This is almost always a mistake. I can’t tell you how many times I’ve gone back later and realized that I wanted to update my refining process in a way that relied on still having the source data. Save your source data.</p>
+<p>Similarly, I have nothing of interest to say about model training, except that this step is by far the most over-hyped part of the data science process. If you’re a young data scientist, you’ll almost surely get more success out of getting really good at any other step of this process rather than focusing on model training. It’s the most crowded and the most automate-able.</p>
+<p>Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham’s <a href="https://mastering-shiny.org/">Mastering Shiny</a> book is the go-to reference if you want to…well, you know.</p>
+<p>BUT, I’ve got a lot to say about steps 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic and app logic. Or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.</p>
+<p>And then there’s the question of how to serve your data into the running app. That’s what I’ll spend much of the rest of this chapter on.</p>
+<section id="you-should-use-apis-more" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="you-should-use-apis-more"><span class="header-section-number">4.1</span> You should use APIs more</h2>
+<p>You are a data scientist. I don’t know you. I’ve almost certainly never looked at your code. But I can tell you, that in very high likelihood, you should be writing more APIs.</p>
+<p>APIs can seem intimidating if you’ve never written one before. Writing an API seems like crossing the rubicon between data scientist and software engineer.</p>
+<p>I’m here to tell you that if you know how to write a function in R or Python, you can write an API. For all intents and purposes, an API is just a function that is ready for you to run outside your console.</p>
+<p>While the concept of APIs can be extremely intimidating, the actual process of writing an API is no more complicated that writing and documenting a function in R or Python. There are a variety of API frameworks in both R and Python. As of this writing, the ones I’d recommend the most are FastAPI in Python and Plumber in R.</p>
+<p>To demystify an API, let’s start with a use case.</p>
+<p>Let’s say I’ve got a shiny app that visualizes certain data points from the palmer penguins data set.</p>
+<p>TODO – see if I can deploy to shinyapps and iframe in</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define UI</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">fluidPage</span>(</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sidebar with a slider input for number of bins </span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sidebarLayout</span>(</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sidebarPanel</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">selectInput</span>(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">inputId =</span> <span class="st">"species"</span>, </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">label =</span> <span class="st">"Species"</span>, </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">choices =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>), </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">selected =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">multiple =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Show a plot of the generated distribution</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mainPanel</span>(</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plotOutput</span>(<span class="st">"penguinPlot"</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>penguinPlot <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>({</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Filter data</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    dat <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        species <span class="sc">%in%</span> input<span class="sc">$</span>species</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Render Plot</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    dat <span class="sc">%&gt;%</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ggplot</span>(</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        <span class="fu">aes</span>(</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>          <span class="at">x =</span> flipper_length_mm,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>          <span class="at">y =</span> body_mass_g,</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>          <span class="at">color =</span> sex</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>      ) <span class="sc">+</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_point</span>()</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the application </span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The structure of this Shiny app is bad. Now, it’s not a huge deal, because this is a simple shiny app that’s pretty easy to parse, but I’ve seen many much larger apps with this same structure. Why is this bad? Because <em>all</em> of the app’s logic is contained inside a plotRender-er.</p>
+<p>In this case, I’ve combined <em>business logic</em> and <em>app logic</em>. As your apps get more complicated, you’ll want to keep the app itself strictly for the logic of the app – what selections has the user made and what needs to be displayed to them as a result.</p>
+<p>The business logic – what those decisions mean, and the resulting calculations should – at minimum – be moved into standalone functions.</p>
+<p>Rewriting this app to make better use of functions, it looks something like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define UI</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">fluidPage</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Sidebar with a slider input for number of bins </span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sidebarLayout</span>(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sidebarPanel</span>(</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">selectInput</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">inputId =</span> <span class="st">"species"</span>, </span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">label =</span> <span class="st">"Species"</span>, </span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">choices =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>), </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">selected =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>),</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">multiple =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Show a plot of the generated distribution</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mainPanel</span>(</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">plotOutput</span>(<span class="st">"penguinPlot"</span>)</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>filter_data <span class="ot">&lt;-</span> <span class="cf">function</span>(species) {</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>      species <span class="sc">%in%</span> <span class="sc">!!</span>species</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Filter data</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  dat <span class="ot">&lt;-</span> <span class="fu">reactive</span>(<span class="fu">filter_data</span>(input<span class="sc">$</span>species))</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Render Plot</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>penguinPlot <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>({</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dat</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>      <span class="fu">aes</span>(</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">x =</span> flipper_length_mm,</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>        <span class="at">y =</span> body_mass_g,</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>        <span class="at">color =</span> sex</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>()</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the application </span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, I’ve separated the user interaction and visualization layer from the business logic, which is pretty trivial in this case.</p>
+<p>Here’s what a plumber API version of my business logic looks like:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plumber)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#* @apiTitle Penguin Explorer</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#* @apiDescription An API for exploring palmer penguins.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#* Get data set based on parameters</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#* @param species which penguin species to include</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#* @get /data</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(<span class="at">species =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)) {</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      species <span class="sc">%in%</span> <span class="sc">!!</span>species</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I’ll need to change my function in the app somewhat to actually call the API, but it’s pretty easy.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>filter_data <span class="ot">&lt;-</span> <span class="cf">function</span>(species) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  httr<span class="sc">::</span><span class="fu">GET</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">url =</span> <span class="st">"http://127.0.0.1:9046"</span>, </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">path =</span> <span class="st">"data"</span>, </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">query =</span> <span class="fu">list</span>(<span class="at">species =</span> species)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  ) </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>I can now host this plumber API somewhere, and everyone I’ve allowed to have access can access the data just as easily as the app can. This is a really powerful ability for you.</p>
+</section>
+<section id="separate-updating-data-from-code" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="separate-updating-data-from-code"><span class="header-section-number">4.2</span> Separate updating data from code</h2>
+<p>In this chapter, we’re going to explore how you decide how to store the data for your app. But first, let’s just talk through what the options are so it makes sense as we talk about why you might choose one over the other in the rest of the chapter.</p>
+<section id="storage-format" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="storage-format"><span class="header-section-number">4.2.1</span> Storage Format</h3>
+<p>The first question of how to store the data is the storage format. There are really three distinct options for storage format.</p>
+<p><strong>Flat file</strong> storage describes writing the data out into a simple file. The canonical example of a flat file is a <code>csv</code> file. However, there are also other formats that may make data storage smaller because of compression, make reads faster, and/or allow you to save arbitrary objects rather than just rectangular data. In R, the <code>rds</code> format is the generic binary format, while <code>pickle</code> is the generic binary format in python.</p>
+<p>Flat files can be moved around just like any other file on your computer. You can put them on your computer, share them through tools like dropbox, google drive, scp, or more.</p>
+<p>The biggest disadvantage of flat file data storage is twofold – and is related to their indivisibility. In order to use a flat file in R or Python, you’ll need to load it into your R or Python session. For small data files, this isn’t a big deal. But if you’ve got a large file, it can take a long time to read, which you may not want to wait for. Also, if your file has to go over a network, that can be a very slow operation. Or having to load it into an app at startup. Also, there’s generally no way to version data, or just update part, so if you’re saving archival versions, they can take up a lot of space very quickly.</p>
+<p>At the other extreme end from a flat file format is a <strong>database</strong>. A database is a standalone server with its own storage, memory, and compute. In general, you’ll recall things from a database using some sort of query language. Most databases you’ll interact with in a data science context are designed around storing rectangular data structures and use Structured Query Language (SQL) to get at the data inside.</p>
+<p>There are other sorts of databases that store other kinds of objects – you may need these depending on the kind of objects you’re working with. Often the IT/Admin group will have standard databases they work with or use, and you can just piggyback on their decisions. Sometimes you’ll also have choices to make about what database to use, which are beyond the scope of this book.</p>
+<p>The big advantage of a database is that the data is stored and managed by an independent process. This means that accessing data from your app is often a matter of just connecting to the database, as opposed to having to move files around.</p>
+<p>Working with databases can also be frought – you usually end up in one of two situations – either the database isn’t really for the data science team, in which case you can probably get read access, but not write. So you’ll be able to use the database as your source of truth, but you won’t be able to write there for intermediate tables and other things you might need. Or you’ll have freedom to set up your own database, in which case you’ll have to own it – and that comes with its own set of headaches.</p>
+<p>There’s a third option for data storage that is quickly rising in popularity for medium size data. These options are ones that allow you to store data in a flat file, but access it in a smarter way than “just load all the data into memory”. SQLite is a classic on this front that gives you SQL access to what is basically just a flat file. There are also newer entrants into this place that are better from an analytics perspective, like combining Apache Arrow with feather and parquet files and the dask project in Python.</p>
+<p>These tools can give you the best of both worlds – you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you’ll still have to keep track of where the actual files are and make them accessible to your app.</p>
+</section>
+<section id="storage-location" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="storage-location"><span class="header-section-number">4.2.2</span> Storage Location</h3>
+<p>The second question after what you’re storing is where. If you are using a database, then the answer is easy. The database just lives where it lives, and you’ll need to make sure you have a way to access it – both in terms of network access – as well as making sure you can authenticate into it (more on that below).</p>
+<p>If you’re not using a database, then you’ll have to decide where to store the data for your app. Most apps that aren’t using a database start off rather naively with the data in the app bundle.</p>
+<p>&lt;TODO: Image of data in app bundle&gt;</p>
+<p>This works really well during development and is an easy pattern to get started with. The problem is that this pattern generally falls apart when it goes to production. Usually this pattern works fine for a while. Problems start to arise when the data needs updating, and most data needs updating. Usually, you’ll be ready to update the data in the app long before you’re ready to update the app itself.</p>
+<p>At this point, you’ll be kicking yourself that you now have to update the data inside the app every time you want to want to make a data update. It’s generally a better idea to have the data live outside the app bundle. Then you can update the data without mucking around with the app itself.</p>
+<p>A few options for this include just putting a flat file (or flat with differential read) into a directory near the app bundle. The <code>pins</code> package is also a great option here</p>
+</section>
+</section>
+<section id="choosing-your-storage-solution" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="choosing-your-storage-solution"><span class="header-section-number">4.3</span> Choosing your storage solution</h2>
+<section id="how-frequently-are-the-data-updated-relative-to-the-code" class="level3" data-number="4.3.1">
+<h3 data-number="4.3.1" class="anchored" data-anchor-id="how-frequently-are-the-data-updated-relative-to-the-code"><span class="header-section-number">4.3.1</span> How frequently are the data updated relative to the code?</h3>
+<p>Many data apps have different update requirements for different data in the app.</p>
+<p>For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves, perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.</p>
+<p>On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. &lt;TODO: change to hospital example?&gt;</p>
+<p>If your data is updated only very infrequently, it might make sense to just bundle it up with the app code and update it on a similar cadence to the app itself.</p>
+<p>&lt;TODO: Picture data in app bundle&gt;</p>
+<p>On the other hand, the more frequently updated data probably doesn’t make sense to update at the same cadence as the app code. You probably want to access that data in some sort of external location, perhaps on a mounted drive outside the app bundle, in a pin or bucket, or in a database.</p>
+<p>In my experience, you almost never want to actually bundle data into the app. You almost always want to allow for the app data (“state”) to live outside the app and for the app to read it at runtime. Even data that you think will be updated infrequently, is unlikely to be updated as infrequently as your app code. Animals move on and off the endangered list, ingredient substitutions are made, and hospitals open and close and change their names in memoriam of someone.</p>
+<p>It’s also worth considering whether your app needs a live data connection to do processing, or whether looking up values in a pre-processed table will suffice. The more complex the logic inside your app, the less likely you’ll be able to anticipate what users need, and the more likely you’ll have to do a live lookup.</p>
+</section>
+<section id="is-your-app-read-only-or-does-it-have-to-write" class="level3" data-number="4.3.2">
+<h3 data-number="4.3.2" class="anchored" data-anchor-id="is-your-app-read-only-or-does-it-have-to-write"><span class="header-section-number">4.3.2</span> Is your app read-only, or does it have to write?</h3>
+<p>Many data apps are read-only. This is nice. If you’re going to allow your app to write, you’ll need to be careful about permissions, protecting from data loss via SQL injection or other things, and have to be careful to check data quality.</p>
+<p>If you want to save the data, you’ll also need a solution for that. There’s no one-size-fits-all answer here as it really depends on the sort of data you’re using. The main thing to keep in mind is that if you’re using a database, you’ll have to make sure you have write permissions.</p>
+</section>
+</section>
+<section id="when-does-the-app-fetch-its-data" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="when-does-the-app-fetch-its-data"><span class="header-section-number">4.4</span> When does the app fetch its data?</h2>
+<p>At app open or throughout runtime?</p>
+<p>The first important question you’ll have to figure out is what the requirements are for the code you’re trying to put into production.</p>
+<section id="how-big-are-the-data-in-the-app" class="level3" data-number="4.4.1">
+<h3 data-number="4.4.1" class="anchored" data-anchor-id="how-big-are-the-data-in-the-app"><span class="header-section-number">4.4.1</span> How big are the data in the app?</h3>
+<p>When I ask this question, people often jump to the size of the raw data they’re using – but that’s often a completely irrelevant metric. You’re starting backwards if you start from the size of the raw data. Instead, you should figure out what’s the size of data you actually need inside the app.</p>
+<p>To make this a little more concrete, let’s imagine you work for a large retailer and are responsible for creating a dashboard that will allow people to visualize the last week’s worth of sales for a variety of products. With this vague prompt, you could end up needing to load a huge amount of data into your app – or very little at all.</p>
+<p>One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to</p>
+<p>-&gt; data granularity -&gt; does it even need to be an app, or will a report do?</p>
+</section>
+<section id="what-are-the-performance-requirements-for-the-app" class="level3" data-number="4.4.2">
+<h3 data-number="4.4.2" class="anchored" data-anchor-id="what-are-the-performance-requirements-for-the-app"><span class="header-section-number">4.4.2</span> What are the performance requirements for the app?</h3>
+<p>One crucial question for your app is how much wait time is acceptable for people wanting to see the app – and when is that waiting ok? For example, if people need to be able to make selections and see the results in realtime, then you probably need a snappy database, or all the data preloaded into memory when they show up.</p>
+<p>For some apps, you want the data to be snappy throughout runtime, but it’s ok to have a lengthy startup process (perhaps because it can happen before the user actually arrives) and you want to load a lot of data as the app is starting and do much less throughout the app runtime.=</p>
+</section>
+<section id="creating-performant-database-queries" class="level3" data-number="4.4.3">
+<h3 data-number="4.4.3" class="anchored" data-anchor-id="creating-performant-database-queries"><span class="header-section-number">4.4.3</span> Creating Performant Database Queries</h3>
+<p>If you are using a database, you’ll want to be careful about how you construct your queries to make sure they perform well. The main way to think about this is whether your queries will be eager or lazy.</p>
+<p>In an eager app, you’ll pull basically all of the data for the app as it starts up, while a lazy app will pull data only as it is need.</p>
+<p>&lt;TODO: Diagram of eager vs lazy data pulling&gt;</p>
+<p>Making your app eager is usually much simpler – you just read in all the data at the beginning. This is often a good first cut at writing an app, as you’re not sure exactly what requirements your app has. For relatively small datasets, this is often good enough.</p>
+<p>If it seems like your app is starting up slowly – or your data’s too big to all pull in, you may want to pull data more lazily.</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Before you start converting queries to speed up your app, it’s always worthwhile to profile your app and actually check that the data pulling is the slow step. I’ve often been wrong in my intuitions about what the slow step of the app is.</p>
+<p>There’s nothing more annoying than spending hours refactoring your app to pull data more lazily only to realize that pulling the data was never the slow step to begin with.</p>
+</div>
+</div>
+<p>It’s also worth considering how to make your queries perform better, regardless of when they occur in your code. Obviously you want to pull the minimum amount of data possible, so making data less granular, pulling in a smaller window of data, or pre-computing summaries is great when possible (though again, it’s worth profiling before you take on a lot of work that might result in minimal performance improvements).</p>
+<p>Once you’ve decided whether to make your app eager or lazy, you can think about whether to make the query eager or lazy. In most cases, when you’re working with a database, the slowest part of the process is the actual process of pulling the data. That means that it’s generally worth it to be lazy with your query. And if you’re using <code>dplyr</code> from R, being eager vs lazy is simply a matter of where in the chain you put the <code>collect</code> statement.</p>
+<p>So you’re better off sending a query off to the database, letting the database do a bunch of computations, and pulling a small results set back rather than pulling in a whole data set and doing computations in R.</p>
+</section>
+<section id="how-to-connect-to-databases" class="level3" data-number="4.4.4">
+<h3 data-number="4.4.4" class="anchored" data-anchor-id="how-to-connect-to-databases"><span class="header-section-number">4.4.4</span> How to connect to databases?</h3>
+<p>In R, there are two answers to how to connect to a database. You can either use a direct connector to connect to the database, this generally will provide a driver to the DBI package. There are other database alternatives, but they’re pretty rare.</p>
+<p>&lt;TODO: image of direct connection vs through driver&gt;</p>
+<p>You can also use an ODBC/JDBC driver to connect to the database. In this case, you’ll use something inside your R or Python session to use an database driver that has nothing to do with R or Python. Many organizations like these because IT/Admins can configure them on behalf of users and can be agnostic about whether users are using them from R, Python, or something else entirely.</p>
+<p>If you’re in R, the <code>odbc</code> package gives you a way to interface with ODBC drivers. I’m unaware of a general solution for conencting to odbc drivers in Python.</p>
+<p>A DSN is a particular way to configure an ODBC driver. They are nice because it means that the Admin can fill in the connection details ahead of time, and you don’t need to know any details of the connection, other than your username and password.</p>
+<p>&lt;TODO: image of how DSN works&gt;</p>
+<p>In R, writing a package that creates database connections for users is also a very popular way to provide database connections to the group.</p>
+</section>
+</section>
+<section id="how-do-i-do-data-authorization" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="how-do-i-do-data-authorization"><span class="header-section-number">4.5</span> How do I do data authorization?</h2>
+<p>This is a question you probably don’t think about much as you’re puttering around inside RStudio or in a Jupyter Notebook. But when you take an app to production, this becomes a crucial question.</p>
+<p>The best and easiest case here is that everyone who views the app has the same permissions to see the data. In that case, you can just allow the app access to the data, and you can check whether someone is authorized to view the app as a whole, rather than at the data access layer.</p>
+<p>In some cases, you might need to provide differential data access to different users. Sometimes this can be accomplished in the app itself. For example, if you can identify the user, you can gate access to certain tabs or features of your app. Many popular app hosting options for R and Python data science apps pass the username into the app as an environment variable.</p>
+<p>Sometimes you might also have a column in a table that allows you to filter by who’s allowed to view, so you might just be able to filter to allowable rows in your database query.</p>
+<p>Sometimes though, you’ll actually have to pass database credentials along to the database, which will do the authorization for you. This is nice, because then all you have to do is pass along the correct credntial, but it’s also a pain because you have to somehow get the credential and send it along with the query.</p>
+<p>&lt;TODO: Image of how a kinit/JWT flow work&gt;</p>
+<p>Most commonly, kerberos tickets or JWTs are used for this task. Usually your options for this depend on the database itself, and the ticket/JWT granting process will likely have to be handled by the database admin.</p>
+<section id="securely-managing-credentials" class="level3" data-number="4.5.1">
+<h3 data-number="4.5.1" class="anchored" data-anchor-id="securely-managing-credentials"><span class="header-section-number">4.5.1</span> Securely Managing Credentials</h3>
+<p>The single most important thing you can do to secure your credentials for your outside services is to avoid ever putting credentials in plaintext. The simplest alternative is to do a lookup from environment variables in either R or Python. There are many more secure things you can do, but it’s pretty trivial to put <code>Sys.getenv("my_db_password")</code> into an app rather than actually typing the value. In that case, you’d set the variable in a <code>.Rprofile</code> or <code>.Renviron</code> .</p>
+<p>Similarly, in Python, you can get and set environment variables using the <code>os</code> module. <code>os.environ['DB_PASSWORD'] = 'my-pass'</code> and <code>os.getenv('DB_PASSWORD')</code>, <code>os.environ.get('DB_PASSWORD')</code> or <code>os.environ('DB_PASSWORD')</code>. If you want to set environment variables from a file, generally people in Python use the<code>dotenv</code> package along with a <code>.env</code> file.</p>
+<p>You should not commit these files to git, but should manually move them across environments, so they never appear anywhere centrally accessible.</p>
+<p>In some organizations, this will still not be perceived secure enough, because the credentials are not encrypted at rest. Any of the aforementioned files are just plain text files – so if someone unauthorized were to get access to your machine, they’d be able to grab all of the goodies in your <code>.Rprofile</code> and use them themselves.</p>
+<p>Some hosting software, like RStudio Connect, can take care of this problem, as they store your environment variables inside the software in an encrypted fashion and inject them into the R runtime.</p>
+<p>There are a number of more secure alternatives – but they generally require a little more work.</p>
+<p>There are packages in both R and Python called <code>keyring</code> that allow you to use the system keyring to securely store environment variables and recall them at runtime. These can be good in a development environment, but run into trouble in a production environment because they generally rely on a user actually inputting a password for the system keyring.</p>
+<p>One popular alternative is to use credentials pre-loaded on the system to enable using a ticket or token – often a Kerberos token or a JWT. This is generally quite do-able, but often requires some system-level configuration.</p>
+<p>&lt;TODO: image of kerberos&gt;</p>
+<p>You may need to enable running as particular Linux users if you don’t want to do all of the authentication interactively in the browser. You usually cannot just recycle login tokens, because they are service authorization tokens, not token-granting tokens.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</section>
+</section>
+<section id="some-notes-if-youre-administering-the-service" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="some-notes-if-youre-administering-the-service"><span class="header-section-number">4.6</span> Some notes if you’re administering the service</h2>
+<p>This chapter has mostly been intended for consumption by app authors who will be creating data science assets. But in some cases, you might also have to administer the service yourself. Here are a few tips and thoughts.</p>
+<p>Choosing which database to use in a given case is very complicated. There are dozens and dozens of different kinds of databases, and many different vendors, all trying to convince you that theirs is superior.</p>
+<p>If you’re doing certain kinds of bespoke analytics, then it might really matter. In my experience, using postgres is good enough for most things involving rectangular data of moderate size, and a storage bucket is often good enough for things you might be tempted to put in a NoSQL database until the complexity of the data gets very large.</p>
+<p>Either way, a database as a service is a pretty basic cloud service. For example, AWS’s RDS is their simplest database service, and you can get a PostgreSQL, MySQL, MariaDB, or SQL Server database for very reasonable pricing.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> It works well for reasonably sized data loads (up to 64Tb).</p>
+<p>RDS is optimized for individual transactions. In some cases, you might want to consider a full data warehouse. AWS’s is called Redshift and it runs a flavor of PostgreSQL. In general it’s better when you have a lot of data (goes up to several petabytes) or are doing demanding queries a lot more often that you’re querying for individual rows. Redshift is a good bit more expensive, so it’s worth keeping that in mind.</p>
+<p>If you’re storing data on a share drive, you’ll have to make sure that it’s available in your prod environment. This process is called mounting a drive or volume onto a server. It’s quite a straightforward process, but needing to mount a drive into two different servers places some constraints on where those servers have to be.</p>
+<p>&lt;TODO: picture of mounting a drive&gt;</p>
+<p>When you’re working in the cloud, you’ll get compute separate from volumes. This works nicely, because you can get the compute you need and separately choose a volume size that works for you. There are many nice tools around volumes that often include automated backups, and the ability to easily move snapshots from place to place – including just moving the same data onto a larger drive in just a few minutes.</p>
+<p>EBS is AWS’s name for their standard storage volumes. You get one whenever you’ve got an EC2 instance.</p>
+<p>In some cases, you’ll need to have a drive that’s mounted to multiple machines at once, then you’ll need some sort of network drive.</p>
+<p>The mounting process works exactly the same, but the underlying technology needs to be a little more complex to accommodate how it works. Depending on whether you’re talking about connecting multiple Linux hosts, you might use NFS (Network File Share), or SMB/CIFS (Windows only), or some combination of the two might use Samba. If you’re getting to this level, it’s probably a good idea to involve a professional IT/Admin.</p>
+<p>https://www.varonis.com/blog/cifs-vs-smb</p>
+<p>https://www.reddit.com/r/sysadmin/comments/1ei3ht/the_difference_between_nfs_cifs_smb_samba/</p>
+<p>https://cloudinfrastructureservices.co.uk/nfs-vs-smb/</p>
+<p>https://cloudinfrastructureservices.co.uk/nfs-vs-cifs/</p>
+</section>
+<section id="exercises" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="exercises"><span class="header-section-number">4.7</span> Exercises</h2>
+<ol type="1">
+<li>Connect to and use an S3 bucket from the command line and from R/Python.</li>
+<li>Stand up a container with Postgres in it, connect using isql, then from R/Python using ODBC/JDBC.</li>
+<li>Stand up an EC2 instance w/ EBS volume, change EBS to different instances.</li>
+<li>Stand up an NFS instance and mount onto a server.</li>
+</ol>
+
+
+</section>
+<section class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1" role="doc-endnote"><p>I believe that it is theoretically possible to create a token that grants access to multiple services. For example, you could have a token that grants access to both RStudio Server and a database. I’ve never seen this implemented.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>You can also do an Oracle database if you have a license, but if you’re reading this, you almost certainly don’t have an Oracle license you have to use. Consider yourself lucky.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec1/docker.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec2/sec-intro.html" class="pagination-link">
+        <span class="nav-page-text">Working with IT</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
