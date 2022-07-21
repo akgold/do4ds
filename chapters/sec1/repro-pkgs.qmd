@@ -1,72 +1,208 @@
 # Environments as Code {repro=""}
 
-Reproducibility in data science is hard.
+I like to think of doing data science much like producing a delicious meal. In my data, I have the raw ingredients I'll slice, dice, and recombine to make something great, and my code is the recipe I'll follow to get there.[^1]
 
-But it's also important.
+[^1]: Credit for this analogy goes to my former colleague Sean Lopp -- a fount of excellent analogies and overall wonderful co-worker.
 
-In data science, we're usually either trying to discover something new about the world, or to make a prediction that will prove useful in the future. Our results being reproducible is an important part of assuring that's the case.
-
-There are lots of code-based strategies -- like literate programming -- that ensure the reproducibility of our code, and various tools to make sure we can reproduce the dataset we ran the code on. Those tools and techniques are outside the scope of this book. In this book, we're going to talk about how to make an environment that is reproducible.
-
-It's worth saying that reproducibility isn't binary -- it's a spectrum. There are things that are fully irreproducible, like an analysis that relies on a random number generator with no seed set. In that case, you will never be able to reproduce your earlier results. Going from that to setting a seed is the very lowest level of reproducibility.
-
-And while it might be tempting to say that you should always maximize reproducibility, there's generally a tradeoff -- making things more reproducible is also generally more work.
-
-![](images-repro/repro-spectrum.png){width="429"}
-
-Depending on your organization, you may have reproducibility requirements. In highly-regulated industries, these may actually be legal or regulatory requirements you have to meet and it might be worth it for your organization to undertake a significant hassle or cost to ensure reproducibility.
-
-In other cases, you're just trying to make sure you can be confident in and verify your results later. In that case, there's probably a lower amount of resources available -- and lower requirements -- in terms of how reproducible it's worth making things.
-
-## The Environment
-
-The example above talked about reproducibility as a function of what you did in your code -- did you bother to set a seed for your random number generator or not?
-
-But for the purpose of this chapter, that's the last we're going to talk about code reproducibility. Instead, we're going to discuss re-creating the environment. You might well ask: well, what is the environment?
-
-For the purposes of data science, I think of everything that isn't code you've written or the data you're using. The environment is the mixing bowl where those two things meet to do your work. In a lot of cases, data scientists can get away without thinking about the environment...at least for a while.
+Novice cooks generally think that their prep is done once they've gathered their ingredients and recipes. They'll grab a tomato and chop/smush it with whatever dull butter knife happens to be at hand. But that's not how the pros think. A pro probably has a knife just for tomatoes and they frequently -- perhaps every time they use it -- hone it to razor sharpness so they can slice paper-thin slices off even the mushiest tomato.
 
 ![](images-repro/env.jpeg){width="413"}
 
-Often, you've got an environment, probably on your laptop, where things work well enough. The problem comes later. Sometimes this comes up when collaborating on a piece of work -- how many times have you told a collaborator, "Well, it works on my machine..." Other times it comes up when you get to think about taking an app or report into production -- thinking about how to make sure your app or report will reliably run for an extended period of time. And sometimes it comes up in the context of archiving what you're doing - if you need to re-run this later to verify results, are you confident that it will run cleanly and return the same results.
+Regardless of your proficiency in the kitchen, you're a pro (or aiming to be one) at data science. In this chapter, we're going to talk about the data science equivalent of prepping your knives in your kitchen -- actively managing your data science environments using code.
 
-As I said above, there is no perfect answer to reproducing an environment, but there are some general considerations to keep in mind, and a few tools and strategies I've found that are useful.
+Kitchen metaphors aside, your data science environment is the stack of software and hardware below the level of your code, from the R and Python packages you're using right down to the physical hardware your code runs on.
 
-In computational terms, the environment is everything that isn't the code or data themselves. There are layers of environment, one atop the other, right down to the physical hardware.
+Most data scientists are like novice cooks, and think little -- or not at all -- about the readiness of their environment and the sharpness of their tools. One of the primary results of this is the oft-spoken, and dreaded phrase, "well, it works on my machine" after attempting to share code with a colleague or deploy an app into a different environment.
 
-*The data science reproducibility stack generally includes 6 elements:*
+Some people who read this will just throw up their hands and say, "well, it's impossible to make things completely reproducible, so I'm not going to bother". And they're right about the first part. Trying to craft an environment that's completely reproducible is somewhat of a fool's errand.
 
-1.  *Code*
-2.  *Data*
-3.  *R + Python Packages*
-4.  *R + Python Versions*
-5.  *Other System Libraries*
-6.  *Operating System*
+![](images-repro/repro-spectrum.png){width="429"}
 
-\[TODO: redo graphic as layers, add hardware\]
+There's a tradeoff. Making things more reproducible is generally takes more work -- in a way that's frustratingly asymptotic.
 
-![](images-repro/stack-layers.png){width="348"}
+Some industries are highly-regulated and need to be able to guarantee they can reproduce an analysis exactly -- down to the layer of machine instructions -- a decade later. In this world, the general reproducibility practice for an analysis is to take a physical piece of hardware that they know runs the analysis, make a backup or two, and just keep that physical piece of hardware running for many years.
 
-Again, depending on your requirements, there may be different answers to your reproducibility issues. In almost all cases, it's worthwhile to make sure you can easily reproduce your language and package environments. This can solve a lot of headaches down the road, and I recommend it in almost all cases that aren't just a one-off quick analysis (and sometimes even then!).
+But you don't have to go all the way there -- making things 100% reproducible is really, really hard. But making things a little more reproducible is really quite easy.
 
-But there are also highly-regulated industries where you have to ensure the reproducibility of results down to the level of hardware-specific machine instructions and your version of reproducibility might involve just keeping hardware running for a decade to make sure the environment is truly and completely reproducible.
+The first step towards making environments more reproducible is by starting to create Environments as Code. In the DevOps world, the aim is to create environments that are largely "stateless" -- functionally identical copies of any environment can be created and destroyed at whim using code.
 
-## Two Layers of Environment Management
+The glib, but useful shorthand for the idea of Infrastucture or Environments as code is that they should be "cattle, not pets" -- interchangeable one for the other.
 
-In most cases, you won't have to persist your physical hardware -- and if you're in the cloud that's not really even an option. In that case, I generally recommend two "layers" of tooling to ensure environmental reproducibility.
+In this chapter, we'll get into the why and how of capturing a data science environments in code, saving them for later, and easily moving them around from place to place.
 
-![](images-repro/repro-layers.jpeg){width="298"}
+## Environments have layers
 
-If you need to maintain your hardware, that's beyond the scope of this book. But I am going to suggest two sets of tools for managing the R and Python package environments you might have, as well as the underlying versions of R and Python, the system libraries, and the operating system.
+When you first start thinking about environments, it can be hard to wrap your head around. The environment seems like a monolith and it can be hard to figure out what the different components are.
 
-### Reproducing Package Environments
+I generally think of three layers in the data science environments -- and these are in order, each layer of the environment is actually built on the ones below. Once you understand the layers of an environment, you can think more clearly about what your actual reproducibility needs are, and which environmental layers you need to target putting in code.
 
-TODO: add section on `rig` + `pyenv`, add section on using RStudio Pacakge Manager snapshots
++-------------+------------------------------+
+| Layer       | Contents                     |
++=============+==============================+
+| Packages    | R + Python Packages          |
++-------------+------------------------------+
+| System      | R + Python Language Versions |
+|             |                              |
+|             | Other System Libraries       |
+|             |                              |
+|             | Operating System             |
++-------------+------------------------------+
+| Hardware    | Virtual Hardware             |
+|             |                              |
+|             | Physical Hardware            |
++-------------+------------------------------+
 
-For data science projects, it's generally worth using a language-specific tool to manage the set of packages you want in your environment. In R, `{renv}` is the standard on this front. In Python, there are many different options. In the context of production data science, I recommend `{virtualenv}/{venv}` and related tools.
+Note that your code and your data are not the environment -- they are what the environment is for. As you're thinking about reproducibility, I'd encourage you to think about how they fit inside the environment and how they might be reproduced.[^2] But we're not going to address them in this book.
 
-::: rmdinfo
-A sidebar on Conda
+[^2]: If you're an R user, I'd especially recommend [What they forgot to teach you about R](https://rstats.wtf/).
+
+For most data scientists, the biggest bang for buck is getting the package layer right. In a lot of organization another team entirely will be responsible for the system and hardware layers, but the package layer is always your responsibility as the data scientist. Moreover, managing that layer isn't terribly hard, and if you get it right, you'll solve a huge fraction of the "runs on my machine" issues you're likely to encounter.
+
+### Package environments as code
+
+A successful package Environment as Code setup has two key attributes:
+
+1.  Your package environment is isolated and cannot be disrupted by other activities on the same machine.
+2.  Your package environment can easily be captured and transported elsewhere.
+
+Before we get to what a good Environment as Code setup looks like, let's dive into what bad setups look like.
+
+In a lot of cases, data scientists have the habit of starting a project, and when they need to install packages, they just run an `install.packages` command in their console or `pip install` in their terminal. This works fine for a while. But the problem with this is that the default has you installing things into a cache that's shared among every project on your system.
+
+What happens if you come back to a project after a year and you've been installing things into your machine-wide package cache the whole time. It's very possible you won't have the right versions and your code will break.
+
+The other problem happens when it comes time to share a project with others. It's not uncommon to see an intro to an R script that looks something like:
+
+```{r}
+#| eval: false
+
+# Check if dplyr installed
+if (!"dplyr" %in% row.names(installed.packages())) {
+  # install if not
+  install.packages("dplyr")
+}
+
+```
+
+ACK! Please don't do this!
+
+Number one, this is very rude. If someone runs your code, you'll be installing packages willy-nilly into their system. Additionally, because this doesn't specify a *version* of the `{dplyr}` package, it doesn't even really fix the problem!
+
+### Step 1: Standalone Package Libraries
+
+As a data scientist, you've very familiar with installing packages from a repository using the `install.packages` command in R or `pip install` or `conda install` in Python. But do you really understand what's happening when you type that command?
+
+Let's first level set on what are the various states for R or Python packages. There are three states packages can be in -- and we're going to go back to our data science as cooking analogy.
+
+Packages can be stored in a repository, like CRAN or BioConductor in R or PyPI or Conda in Python. You can think of a package in a repository like food at the grocery store -- it's packaged up and ready to go, but inert. Setting aside groovy bodegas with eat-in areas, you don't get to eat at the grocery store. You've got to buy the food and take it home before you can use it -- and you've got to install the food before you can use it.
+
+And then your library is your pantry, where you keep a private set of packages, bespoke to you and the food you like to cook -- the projects you're likely to do. Loading a package with a `library` or `import` command is like taking the food out of the pantry and putting it on the counter so you can actually cook with it.
+
+\[Diagram of package states\]
+
+By default, when you install an R or Python package, that package installs into user space. That means that it installs into a package library that is specific to your user, but is shared among every time that package is used by you on the machine.
+
+This isn't a disastrous situation, but it is a recipe for package incompatibilities down the road.
+
+\[TODO: diagram of user-level vs project level installs\]
+
+The most important thing to understand about package libraries is that libraries can only have one version of any given package at a time. So that means that if I have code that relies on version 1.0 of a given package and I install a new version of that package, version 1.0 is gone and I am likely to run into package incompatibility issues.
+
+It's for this reason that you want to have standalone package libraries for each *project* on your system. Hopefully, you already have good practices around having each project in a standalone directory on your system and making a git repo in that system. Now just make the base directory of that directory a standalone library as well.
+
+::: callout-note
+### What if I have multiple content items?
+
+In many data science projects, you've got multiple content items within a single project. Maybe you have an ETL script and an API and an app. After a lot of experimenting, my recommendation is to create one git repo for the whole project and have content-level package libraries.
+
+This is not a rule or anything...just a suggestion about how I've found it works best over time.
+
+\[TODO: Add image\]
+:::
+
+#### What's really happening?
+
+I happen to think the grocery store metaphor for package management is a useful one, but you might be wondering what the heck is *actually* happening when you're using `{renv}` or `{venv}`. How does this package magic happen?
+
+First, let's quickly go over what happens when you install or load a package.
+
+![](images/paste-DDF1FAAB.png)
+
+![](images/paste-09F9422F.png)
+
+Whenever you install a package, there are two key settings that R or Python consult -- the URL of the repository to install from and the library to install to. And similarly, when you load an R or Python library, the install checks the library location. In R, the command used is `.libPaths()` and in python it's `sys.path`.
+
+So you can see that it's (conceptually) pretty simple to create a standalone package library for any project -- when the virtual environment is activated, just make sure that the project level library is what comes back when checking the library path.
+
+You can see it pretty easily in R -- if I run `.libPaths()` before and after activating an `{renv}` environment, the first entry from the `.libPaths()` call changes from a user level library `/Users/alexkgold` to a project level library `/Users/alexkgold/Documents/do4ds/`.
+
+```{r}
+#| eval: false
+
+.libPaths()
+[1] "/Users/alexkgold/Library/R/x86_64/4.2/library"                 
+[2] "/Library/Frameworks/R.framework/Versions/4.2/Resources/library"
+renv::activate()
+* Project '~/Documents/do4ds/docker/docker/plumber' loaded. [renv 0.15.5]
+.libPaths()
+[1] "/Users/alexkgold/Documents/do4ds/docker/docker/plumber/renv/library/R-4.2/x86_64-apple-darwin17.0"
+[2] "/Library/Frameworks/R.framework/Versions/4.2/Resources/library"  
+```
+
+Similarly in Python, it looks like this -- note that the after version replaces the last line of the `sys.path` with a project-level library:
+
+```{bash}
+#| eval: false
+
+❯ python3 -m site                                       
+sys.path = [
+    '/Users/alexkgold/Documents/python-examples/dash-app',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/lib-dynload',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/site-packages',
+]
+USER_BASE: '/Users/alexkgold/Library/Python/3.8' (doesn't exist)
+USER_SITE: '/Users/alexkgold/Library/Python/3.8/lib/python/site-packages' (doesn't exist)
+ENABLE_USER_SITE: True
+
+❯ source .venv/bin/activate                       
+(.venv)
+
+❯ python3 -m site
+sys.path = [
+    '/Users/alexkgold/Documents/python-examples/dash-app',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8',
+    '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/lib-dynload',
+    '/Users/alexkgold/Documents/python-examples/dash-app/.venv/lib/python3.8/site-packages',
+]
+USER_BASE: '/Users/alexkgold/Library/Python/3.8' (doesn't exist)
+USER_SITE: '/Users/alexkgold/Library/Python/3.8/lib/python/site-packages' (doesn't exist)
+ENABLE_USER_SITE: False
+(.venv)
+```
+
+### Step 2: Document environment state.
+
+Using standalone package libraries for each project ensures that your projects remain undisturbed when you come back to them months or years later and keeps your work reproducible.
+
+But it doesn't solve the sharing problem.
+
+That is, you still need some help when it comes time to share an environment with someone else. So how does that work?
+
+\[TODO: image -- anatomy of a lockfile\]
+
+Both R and Python have great utilities that make it easy to capture the current state of a library into a `lockfile` or `requirements.txt` and to restore those libraries later or somewhere else.
+
+In R, `{renv}` is the standard on this front. In Python, there are many different options. In the context of production data science, I recommend `{virtualenv}/{venv}` and related tools.
+
+Now, when you share your project with someone else, your `lockfile` or `requirements.txt` goes along for the ride. Sometimes people are dismayed that their library doesn't go along as well and that people have to install the packages themselves -- but this is by design!
+
+One -- package libraries can be very small, so putting just a short lockfile or requirements file into git is definitely preferred. The other reason is that the actual package install can differ system to system. For example, if you're working on a Windows laptop and your colleague is on a Mac, an install of `{dplyr}` 1.0 means that different files are installed -- but with exactly the same functionality. You want to respect this, so instead of sending the whole library along for the ride, you just send the specification that `dplyr 1.0` is needed.
+
+::: callout-note
+## A sidebar on Conda
 
 Many data scientists love Conda for managing their Python environments.
 
@@ -75,71 +211,9 @@ Conda is a great tool for its main purpose -- allowing you to create a data scie
 In the context of a production environment, Conda smashes together the language version, the package management, and (sometimes) the system library management. This has the benefit of being conceptually simple and easy-to-use. But I've often seen it go awry in production environments, and I generally recommend people use a tool that's just for package management, like `{venv}`, as opposed to an all-in-one tool like Conda.
 :::
 
-In both R and Python, these tools accomplish two main tasks for you:
-
-1.  They create a standalone package environment that's independent of anything else you do on your computer. That means that you can have another project with different package requirements that won't mess up this one.
-
-2.  They make it easy to record the exact package requirements for your project.
-
 On a high level, the workflows for these tasks are similar between R and Python. However, there are some meaningful differences in tooling -- especially because virtually every computer arrives with a system version of Python installed, while R is only ever installed by a user trying to do data science tasks. At the end of the day, this actually makes it *harder* to use Python because you do not want to use your system Python for your data science work...but sometimes it accidentally gets into the mix.
 
 A general suggestion of workflows for data science package management, whether in R or Python -- this should be independently done for *every* project:
-
-1.  Create a new directory for the project.
-
-2.  If you're in R, make sure you've got renv `install.packages("renv")`
-
-3.  Create a standalone library for the project.
-
-    1.  renv::init()
-
-    2.  python -m venv .venv
-
-4.  Install packages into your project
-
-    1.  (note R done from inside a session, python done from command line)
-
-    2.  Renv does some clever caching so if you use the same package in multiple projects, installs will be fast
-
-    3.  TODO: does venv do the same?
-
-        1.  install.packages(...)
-
-        2.  python -m pip install ...
-
-5.  Snapshot your package state
-
-    1.  renv::snapshot()
-
-    2.  pip freeze \> requirements.txt
-
-When you come back to your project later, you just reactivate these environment, and you're back into your isolated project environment.
-
-1.  Run the appropriate activation command.
-
-    1.  renv::activate() (automatically in project-level .Rprofile)
-
-    2.  source .venv/bin/activate
-
-Then, when you want to collaborate or move this project to a different machine, you just move the renv lockfile or the requirements.txt. In general, these tools come with default `.gitignore`s that move *just* the file that describes the package set and not the packages themselves. This is a good thing!
-
-In general, packages are specific to the underlying machine -- in particular to the operating system and language version, so the optimal thing is to move just the file recording the required versions and then restore those versions wherever you end up, as opposed to moving live package binaries that may or may not work in a new location.
-
-1.  Move your renv lockfile or requirements.txt into place.
-
-2.  Create an renv or virtual env
-
-    1.  renv::init()
-
-    2.  python -m venv .venv
-
-3.  Restore the captured set of packages from the lockfile/requirements
-
-    1.  renv::restore()
-
-    2.  pip install -r requirements.txt
-
-TODO: add section on inspecting lockfiles to understand
 
 ### Reproducing the rest of the stack
 
@@ -152,3 +226,51 @@ In other cases, your R or Python library might basically just be a wrapper for s
 There are many tools you can use to record and reproduce the R and Python versions you're using, the system libraries, and the operating system itself. Many of these fall into the category of [Infrastructure-as-Code configuration tools](iac).
 
 These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments -- and for good reason! In fact, the next chapter is going to be all about the use of Docker in data science. However, it's worth keeping in mind that if you're working in the context of a formally-supported IT organization, they may have other tooling they prefer to create and maintain environments, and they can be equally valid.
+
+## Environments as Code Cheatsheet
+
+### Checking your library + repository status
+
+### Creating and Using a Standalone Project Library
+
++---------------------------------------+------------------------------------------+----------------------------------+
+| Step                                  | R Command                                | Python Command                   |
++=======================================+==========================================+==================================+
+| Make a standalone project directory.  | \-                                       | \-                               |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Make sure you've got `{renv}/{venv}`. | `install.packages("renv")`               | Included w/ Python 3.5+          |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Create a standalone library.          | `renv::init()`                           | `python -m venv <dir>`           |
+|                                       |                                          |                                  |
+|                                       |                                          | Recommend: `use .venv for <dir>` |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Activate project library.             | `renv::activate()`                       | `source <dir>/bin/activate`      |
+|                                       |                                          |                                  |
+|                                       | Happens automatically if using projects. |                                  |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Install packages as normal.           | `install.packages("<pkg>")`              | `python -m pip install <pkg>`    |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Snapshot package state.               | `renv::snapshot()`                       | `pip freeze > requirements.txt`  |
++---------------------------------------+------------------------------------------+----------------------------------+
+| Exit project environment.             | Leave R project.                         | `deactivate`                     |
++---------------------------------------+------------------------------------------+----------------------------------+
+
+### Collaborating on someone else's project
+
++------------------------------+-----------------------------------------------+-----------------------------------+
+| Step                         | R Command                                     | Python Command                    |
++==============================+===============================================+===================================+
+| Download project.            |                                               |                                   |
++------------------------------+-----------------------------------------------+-----------------------------------+
+| Move into project directory. | `setwd("<project-dir>")`                      | `cd <project-dir>`                |
+|                              |                                               |                                   |
+|                              | Or just open R project in RStudio.            |                                   |
++------------------------------+-----------------------------------------------+-----------------------------------+
+| Create project environment.  | `renv::init()`                                | `python -m venv <dir>`            |
+|                              |                                               |                                   |
+|                              |                                               | Recommend: `use .venv for <dir>`  |
++------------------------------+-----------------------------------------------+-----------------------------------+
+| Enter project environment.   | Happens automatically.                        | `source <dir> /bin/activate`      |
++------------------------------+-----------------------------------------------+-----------------------------------+
+| Restore packages.            | May happen automatically or `renv::restore()` | `pip install -r requirements.txt` |
++------------------------------+-----------------------------------------------+-----------------------------------+
