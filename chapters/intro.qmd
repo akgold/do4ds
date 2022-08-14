@@ -1,57 +1,79 @@
 # Introduction {.unnumbered}
 
-As a standalone practice, data science is pretty useless. We all love creating beautiful charts, minimizing prediction error, and writing elegant code in R or Python. But ultimately, what matters in data science is whether you're able to affect decision-making at your organization.
+Data science itself is pretty useless.
 
-That means that at some point, you're going to have to share your work, and at that point your work is *in production*. For many data scientists, *in production* is some mythical state that definitely doesn't involve google sheets, csv files, half-baked database queries. That conception is wrong.
+It's likely you became a data scientist because you love creating beautiful charts, minimizing model prediction error, or writing elegant code in R or Python.
 
-If you're a data scientist and you're trying to put your work in front of someone else's eyes, you're in production.
+Ultimately and perhaps frustratingly, these things don't matter. What matters is whether the output of your work is useful in affecting decisions at your organization or in the broader world.
 
-Depending on your organization and situation, you might just be creating some reports from a static data file on your machine that you print or email around. But very often, the things you're doing are more complex than that and they have to be *deployed*. Perhaps you're hosting a live app that people visit on a daily basis. Or you're updating the data in a report every week. Or maybe you're serving predictions from your machine learning model to another system that consumes them.
+In order to have those effects, you're going to have to share your work by putting it *in production*. For many of us, *in production* is some mythical state that involves super computers running ultra-complex machine learning models running over dozens of shards of data, terrabytes each.
 
-In any case, you're now heading into *DevOps* territory. And while you've spent your time thinking about data cleaning, building great dashboards and visualizations, and (perhaps) gradient boosted trees, it's suddenly the cases that performance, database connections, and (perhaps) Docker are keeping you awake at night.
+It definitely occurs on a misty mountaintop, and does not involve the google sheets, csv files, or half-baked database queries in our work.
 
-If so, this book is for you. This book is designed to equip you with the technical understanding to apply DevOps practices and tooling to your own work, to help you interact with the IT/Admin professionals at your organization, and (if you must) DIY a server of your own.
+I'm here to tell you that you're wrong. If you're a data scientist and you're trying to put your work in front of someone else's eyes, you're *in production*. And if you're *in production*, this book is for you.
 
-## What is DevOps anyway?
+Maybe you're creating a one-off report that will get emailed around or hosting a live app that people visit once a week. Maybe you're re-running a report as new data comes in every week or serving live predictions to another service from a machine learning model.
 
-DevOps is an extremely slippery thing, despite the fact that innumerable pixels have already been spent on explaining and exploring DevOps. To be honest, a lot of those pixels are industry hype that obscure more than they clarify.
+Regardless of what *in production* looks like for you and your org, you want to make sure that the things you're doing are correct, dependable, reproducible, and performant (enough).
 
-DevOps is a slippery concept, because it's not a specific set of technologies -- it's a set of norms, practices, and tools that help make the path from development to deployment easier. If you, like me, have a data science background, this can be a somewhat incomprehensible statement. What does it really mean?
+As you head into production you may find that you've spent your time thinking about data cleaning, building great dashboards and visualizations, and gradient boosted trees, but it's performance, database connections, and Docker that are keeping you awake at night. Or maybe they're not yet, because the challenge is ahead and you don't even know what you need to know.
 
-Some organizations end up essentializing DevOps as IT/Admin, but make it Docker. It basically boils down to closing the gap between the development teams and the IT/Admin teams.
+If so, this book is for you.
+
+The goal of this book is to acquaint you with the field of DevOps as it's relevant for data scientists. The hope is that by the time you finish this book, you'll have the language and technical understanding to apply DevOps practices and tooling to your own work, to help you interact with the IT/Admin professionals at your organization, and (if you must) DIY your own systems as needed.
+
+## What is DevOps, anyway?
+
+A quick google search will return innumerable pixels explaining DevOps. To be honest, a lot of those pixels are industry hype -- and I still find the concept slippery.
+
+One of the reasons DevOps is slippery is because because it's not a specific set of technologies or tools or procedures -- it's a set of cultural norms, practices, and tools that interlock to shorten and de-risk the path from software development to deployment.
+
+Historically, organizations had IT/Admins who were responsible for the servers, networking, and workstations that allowed those organizations to manage and use all their various computerized technologies. Then, the organization had a separate development department that was writing code. These people were developing applications for use inside the company - or if it was a software company -- to deliver to their customers.
+
+When an application was complete (or perceived as such), it'd be hurled over the wall between Development and Operations and the Operations department would figure out how to put that application into production. They'd figure out the hardware and networking requirements, check that it was performant enough, and get it going in the real world. Needless to say, this pattern is very fragile and subject to many errors.
+
+If you've ever shared an analysis or an app with a colleague and experienced the dreaded "well, it runs on my computer" phenomenon, you know some of the basic issues well.
+
+DevOps arose as a discipline to lower the wall between Development and Operations and recognize that the practice of putting software into production is a shared responsibility between the app's developer(s) and the IT/Admin folks who manage the underlying infrastructure.
 
 ::: callout-note
-## DevOps vs IT/Admin
+## Terminology in this book
 
-***DevOps*** refers to the *knowledge, practices, and tools* that can help you put your work into production. It's what this book is about.
+**DevOps** refers to the *knowledge, practices, and tools* that make it easier, safer, and faster to put work into production.
 
-***IT/Admin*** describes a set of *people and roles* who have the permission and responsibility for managing the computers at your organization.
-
-Depending on your organization, the people and team with IT/Admin team might have a different name like SysAdmin, Site Reliability Engineering (SRE), or (yes) DevOps.[^intro-1] In large organizations, IT/Admin functions may be split among many different standalone groups including security, databases, networking, storage, procurement, cloud, and more.
-
-In small organizations, there may be no named IT/Admin group, which means it's you!
-
-Either way, that's how I'll be using these terms throughout the book.
+**IT/Admin** describes a set of *people and roles* who have the permission and responsibility for managing the servers and computers at your organization.
 :::
 
-[^intro-1]: I think a lot of DevOps experts would argue that you'r doing DevOps wrong if you have a standalone DevOps team.
+The structure of IT/Admin teams varies a lot by organizations. Their names vary widely -- they might be named Information Technology (IT), SysAdmin, Site Reliability Engineering (SRE), or (yes) DevOps.[^intro-1]
 
-Like agile, to which it's closely related, the context in which DevOps is being used matters a lot, so the details of what it means to apply a DevOps lens are variable. Here are a few examples of what it might meant to use DevOps outside a Data Science environment.[^intro-2] Part of the reason that DevOps is such a slippery concept is that deployment targets vary widely, and so getting concrete about DevOps is highly dependent on your context.
+[^intro-1]: I think a lot of DevOps experts would argue that you're doing DevOps wrong if you have a standalone DevOps team, but some companies have them.
 
-[^intro-2]: If you're interested in an extended DevOps example, [*The Phoenix Project*](https://itrevolution.com/the-phoenix-project/)is a book about DevOps that, as a friend once put it, reads like "a trashy romance novel for DevOps people". Strong recommend.
+In my experience, many different kinds of structures can work if you're trying to work with the IT/Admin folks at your organization to develop a data science DevOps practice.
 
-Here are a few examples of where DevOps might come into play:
+However, there are three that raise red flags for me:
 
--   You work for a hardware store chain and are responsible for developing the inventory software. This software has to know how many of any given part are on the shelf at any given time, help store managers know when to order more, and integrate with the online ordering system. While you write the software, you're not the one who supervises it when it's running -- that's the IT/Admin group. When you write a new module, the entire system has to go offline for a day to add your new code and test it in production. You might work with the IT/Admin team to be able to add a new module to the software without requiring any downtime.
+1.  IT/Admin functions that are split into separate atomic units like security, databases, networking, storage, procurement, cloud, and more. This is common at large organizations. This generally means that you've got lots of competent people around, but that figuring out who the right one is for any particular task, and getting all the right people in a room is going to be hard. Progress is likely to be slow.
 
--   Perhaps you work for a company that produces software data scientists use to write and deploy code in R and Python. You have to build and test your software on a wide variety of operating systems before releasing it. Historically, it has taken the entire team a week to run all these tests and you'd like to be able to lower the cost of each release so you can release more frequently. You might look to DevOps tooling and practices to try to reduce the burden of setting up environments with each target operating system, building the software, testing it, and making the new version live on the website.
+2.  Outsourced IT/Admin functions. Fundamentally, an outsourced IT/Admin function means that your organization isn't interested in nurturing the Ops half of DevOps internally.
 
-These are strictly software engineering examples of applying DevOps, and don't have much to do with Data Science. So let's talk a little about how these lessons and tools can apply to you as a data scientist.
+    There are also some concrete issues, like that outsourced IT/Admin teams are often in India, so it can be hard to find meeting times with American + European teams and that turnover tends to be higher in outsourced IT/Admin teams, so it can be hard for anyone to develop real expertise in the systems the Dev folks rely on daily.
 
-## DevOps for Data Science
+3.  No IT/Admin function, or one that says that working with the data science team isn't their job. This isn't a tragedy, but it probably means you're about to become your own IT/Admin. Luckily, you've picked up this book, so you're in the right place.
+
+Whether your organization has a IT/Admin setup that facilitates DevOps best practices or not, hopefully this book can help you take the first steps towards making your path to production smoother and simpler.
+
+## What's in this book?
+
+The term DevOps was coined in 2008, and the field is reasonably well-developed at this point. Software engineering and data science are related practices -- and there's a lot data scientists can learn from DevOps.
+
+However, a simple 1-1 transposition of DevOps practices would be a mistake. Instead, this book aims to give you an introduction to the practices, norms, and tools -- derived from standard DevOps practices -- that will make the path to production easier for you as a data scientist.
 
 As a data scientist, there are DevOps practices -- or their equivalents -- that you should adopt to make your transition to data science in production as smooth as possible. The first section of this book is about those things. The tools, norms, and practices that you can take from DevOps and apply to your own practices as a data scientist.
 
-In the second section, we'll get into things that you probably shouldn't manage yourself, but where you'll have to interact with IT/Admins. Knowing enough about these topics to engage intelligently is important -- and this section will equip you with the knowledge you need to be successful working with your organization's IT/Admins.
+The book is split into three sections.
 
-In the final section, you'll learn about how to do this hands on. In some cases, you won't be able to avoid taking on some of the role of IT/Admin. You'll have to stand up and administer your own servers. These chapters will illuminate some tools and patterns that can make your life simpler on this front. And if you discover you actually like it, reach out, my team is usually hiring.
+The first section focuses on best practices taken from DevOps practices you can employ to design your workflows, applications, and reports to make them safe and easy to put into production -- and update them once they're there.
+
+The second section is designed for data scientists who have to interact with IT/Admins, we'll get into things that you probably shouldn't manage yourself, but where you'll have to interact with IT/Admins. Knowing enough about these topics to engage intelligently is important -- and this section will equip you with the knowledge you need to be successful working with your organization's IT/Admins.
+
+In the final section, you'll learn about how to do this hands on. In some cases, you won't be able to avoid taking on some of the role of IT/Admin. You'll have to stand up and administer your own servers. These chapters will illuminate some tools and patterns that can make your life simpler on this front.
