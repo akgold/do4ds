@@ -6,13 +6,13 @@ If you're reading this section and trying it out, you've moved past DevOps for D
 
 There are many, many varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won't be covering them in any depth here. Instead, I'll share a few of the different "categories" (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.
 
-To get from "nothing" to a usable server state, there are (at minimum) two things you need to do – provision the infrastructure you need, and configure that infrastructure to do what you want.
+To get from "nothing" to a usable server state, there are (at minimum) two things you need to do -- provision the infrastructure you need, and configure that infrastructure to do what you want.
 
 For example, let's say I'm standing up a server to deploy a simple shiny app. In order to get that server up, I'll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I'll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.
 
 So, for example, you might use AWS's CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.
 
-In infrastructure as code tooling, there generally isn't a clear dividing line between tools that do provisioning and tools that do configuration…but most tools lean one way or the other.
+In infrastructure as code tooling, there generally isn't a clear dividing line between tools that do provisioning and tools that do configuration...but most tools lean one way or the other.
 
 Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).
 
@@ -30,12 +30,59 @@ In short, exactly which tool you'll need will depend a lot on what you're trying
 
 In many organizations, the entire data science stack is supported by the IT/Admin group. In this case, you probably want a two-dimensional Dev/Test/Prod setup. The IT/Admin group maintains their own Dev/Test/Prod configuration.
 
-Dev and Test are where they try out and test new hardware configurations – the data scientists doing their work only have access to the Prod environment. They have their own Dev/Test/Prod setup within the IT/Admin prod environment.
+Dev and Test are where they try out and test new hardware configurations -- the data scientists doing their work only have access to the Prod environment. They have their own Dev/Test/Prod setup within the IT/Admin prod environment.
 
 For simplicity of terminology, I often refer to the IT/Admin Dev + Test environments as staging to differentiate from the Data Science Dev/Test/Prod environments.
 
 In this setup, you would select the IT configuration that works for your organization and maintain one or two copies of the entire environment. I often call this a staging environment to differentiate it from the dev/test/prod environments for the data science assets.
 
-So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that's purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use – dev, test, and prod.
+So when you wanted to make a chance to the underlying servers or their architecture, that would be tested in the staging environment and then deployed to production. Data scientists would never work in the staging environment (except as testers), that's purely for IT/Admin testing. The staging environment would include all of the environments data scientists would use -- dev, test, and prod.
 
 Then, data science code promotion through dev/test/prod would be distinct from how server changes get made.
+
+## Lab: Dockerized Deployment
+
+### Running a service in a container
+
+Consider reviewing the [containers](#docker) section if you're not generally familiar with how to run a container.
+
+If you want to run a service, like RStudio Server, out of a container, the pattern is very similar to running an interactive app. You'll find an appropriate container, bring it up, and do some port mapping to make it available to the outside world.
+
+The [rocker](https://hub.docker.com/u/rocker) organization makes available a number of containers related to R and RStudio. So if you want a container running RStudio Server on your laptop, it's as easy as running
+
+    docker run \
+      --rm -d \
+      -p 8787:8787 \
+      --name rstudio \
+      rocker/rstudio
+
+Now, when you go to `http://localhost:8787` on your laptop, you should see the the RStudio login screen...but what's the password? Luckily, the wonderful folks who built the `rocker/rstudio` container made it easy to supply a password for the default `rstudio` user.
+
+We do this by supplying an environment variable to the container named `PASSWORD` using the `-e` flag.
+
+So, `docker kill rstudio` and try again by adding a password when you start:
+
+    docker run \
+      --rm -d \
+      -p 8787:8787 \
+      --name rstudio \
+      -e PASSWORD=my-rstudio-pass
+      rocker/rstudio
+
+Now you should be looking at the RStudio IDE! Hurray!
+
+This is great for standing up a quick sandbox...but before you go standing up an RStudio Server on your laptop and spreading it around the world, there are a few things you'll want to think about.
+
+It's totally possible to run a service like RStudio Server in a docker container, but you'll need to take all the same steps to make it available to the outside world in terms of hosting it on a server, routing traffic properly, and making sure that you're using `HTTPS` to secure your traffic. See chapters XX-XX for more on all that.
+
+Now, let's say I wanted to create another user on the server (docker exec)
+
+But there's also one more concern that's particular to Docker.
+
+One of the best things about a Docker container is how ephemeral it is. Things come up in moments, and when they're gone you don't have to worry about them. But that's also very dangerous if you want things to persist.
+
+The best way to fix this is to mount in external volumes that will maintain the state should the container die or should you want to replace it. We went over how to do that in the last section.
+
+At a minimum, you'll want to mount in the user home directories that store all the data and code you can see in RStudio Server. You may also want to mount in other bits of state, like wherever you've installed your version of R, and the config file you're using to maintain the server.
+
+Note that unlike on a server, where you'll restart the process of the server, the pattern with a container generally is to kill and restart the container, and let changes come up with the new container.

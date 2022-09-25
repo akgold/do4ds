@@ -81,3 +81,41 @@ TODO: talk about command line programs + flags
 5.  Create a local text file and SFTP it to the server. SSH in, edit the file, and SFTP it back.
 6.  \[Advanced\] Stand up a nginx server on your remote instance. Don't open the port to the world, but SSH port forward the server page to your local browser.
 
+------------------------------------------------------------------------
+
+## Lab
+
+Before we leave the AWS console, let's make sure that we'll be able to get to it from the internet.
+
+Scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
+
+Click `Edit inbound rules` , then `Add rule`. Under `Type`, scroll down and select `HTTP`, and under `Source Type`, select `Anywhere-IPv4`. Scroll down and click `Save rules`.
+
+### SSH into the server
+
+The `.pem` key you downloaded is the skeleton key to your server. If you were setting up a real server, you'd need to be extremely careful with this key, as it allows unrestricted access to the server. For the same reason, it's also great for quickly monkeying around with a server.
+
+Before we can use it to open the server, we'll need to make a quick change to the permissions on the key.
+
+To take the next steps, you'll need to at least be able to open your computer's terminal and copy/paste some commands below. If that's new to you, feel free to check out the [chapter on using the command line](#command-line).
+
+If you're on a Mac or Linux system, you'll do the following:
+
+``` bash
+$ cd ~/Downloads #or whatever directory the key is in
+$ chmod 600 my_test_key.pem
+```
+
+#TODO: Windows?
+
+To access your server, click on the `Instance ID` link for your server, and copy the `Public IPv4 DNS`, which will start with `ec2-` and end with `amazonaws.com`.
+
+In your terminal type the following
+
+``` bash
+$ ssh -i my_test_key.pem ubuntu@<Public IPv4 DNS you copied>
+```
+
+Type `yes` when prompted, and you're now logged in to your server!
+
+### 
