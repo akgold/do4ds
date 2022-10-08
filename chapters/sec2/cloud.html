@@ -185,7 +185,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/sec2/linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Administering a Server</span></a>
+  <a href="../../chapters/sec2/linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Administering a Linux Server</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -269,7 +269,9 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#login-to-the-aws-console" id="toc-login-to-the-aws-console" class="nav-link" data-scroll-target="#login-to-the-aws-console"><span class="toc-section-number">6.5.1</span>  Login to the AWS Console</a></li>
   <li><a href="#stand-up-an-instance" id="toc-stand-up-an-instance" class="nav-link" data-scroll-target="#stand-up-an-instance"><span class="toc-section-number">6.5.2</span>  Stand up an instance</a></li>
-  <li><a href="#burn-it-all-down" id="toc-burn-it-all-down" class="nav-link" data-scroll-target="#burn-it-all-down"><span class="toc-section-number">6.5.3</span>  Burn it all down</a></li>
+  <li><a href="#configure-server-access" id="toc-configure-server-access" class="nav-link" data-scroll-target="#configure-server-access"><span class="toc-section-number">6.5.3</span>  Configure Server Access</a></li>
+  <li><a href="#grab-the-address-of-your-server" id="toc-grab-the-address-of-your-server" class="nav-link" data-scroll-target="#grab-the-address-of-your-server"><span class="toc-section-number">6.5.4</span>  Grab the address of your server</a></li>
+  <li><a href="#stopping-or-burning-it-down" id="toc-stopping-or-burning-it-down" class="nav-link" data-scroll-target="#stopping-or-burning-it-down"><span class="toc-section-number">6.5.5</span>  Stopping or burning it down</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/cloud.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
@@ -398,11 +400,25 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <p>Keep track of the <code>my_test_key.pem</code> file your computer downloads, you’ll need it again in a minute.</p>
 <p>Click <code>Launch Instances</code>. AWS is now creating a virtual server <em>just for you</em>. If you click <code>View Instances</code> in the lower right, you’ll see your instance. When the instance state switches to <code>Running</code>, it’s up and running!</p>
 </section>
-<section id="burn-it-all-down" class="level3" data-number="6.5.3">
-<h3 data-number="6.5.3" class="anchored" data-anchor-id="burn-it-all-down"><span class="header-section-number">6.5.3</span> Burn it all down</h3>
-<p>One of the best things about cloud infrastructure is that it can go away as easily as it came up. We made a number of choices here that are fine for ephemeral infrastructure for playing around. But this server should not be used for anything real.</p>
-<p>When you’ve had your fill of playing, let’s take the server down.</p>
-<p>Go back to the EC2 page for your server. Under the <code>Instance State</code> drop down in the upper right, choose <code>Terminate Instance</code>. If you go to the <code>Instances</code> page, it’ll take just a minute for the instance to go away.</p>
+<section id="configure-server-access" class="level3" data-number="6.5.3">
+<h3 data-number="6.5.3" class="anchored" data-anchor-id="configure-server-access"><span class="header-section-number">6.5.3</span> Configure Server Access</h3>
+<p><em>TODO: is this necessary just for SSH? I thought the default sg includes SSH.</em></p>
+<p>Before we leave the AWS console, let’s make sure that we’ll be able to get to it from the internet.</p>
+<p>Scroll down to the Security tab. Click the blue link under <code>Security Groups</code>, which will start with <code>sg-</code> and include <code>launch-wizard-</code> in parentheses.</p>
+<p>Click <code>Edit inbound rules</code> , then <code>Add rule</code>. Under <code>Type</code>, scroll down and select <code>HTTP</code>, and under <code>Source Type</code>, select <code>Anywhere-IPv4</code>. Scroll down and click <code>Save rules</code>.</p>
+</section>
+<section id="grab-the-address-of-your-server" class="level3" data-number="6.5.4">
+<h3 data-number="6.5.4" class="anchored" data-anchor-id="grab-the-address-of-your-server"><span class="header-section-number">6.5.4</span> Grab the address of your server</h3>
+<p>Before we leave the AWS console, let’s grab the IP address of the server so we can use it to get back later.</p>
+<p>Go back to the AWS console and click on the <code>Instance ID</code> link for your server, and copy the <code>Public IPv4 DNS</code>, which will start with <code>ec2-</code> and end with <code>amazonaws.com</code>.</p>
+<p>Throughout the next chapters, I’ll refer to this as your <code>&lt;server-address&gt;</code>. Save it somewhere you can easily get back to later.</p>
+</section>
+<section id="stopping-or-burning-it-down" class="level3" data-number="6.5.5">
+<h3 data-number="6.5.5" class="anchored" data-anchor-id="stopping-or-burning-it-down"><span class="header-section-number">6.5.5</span> Stopping or burning it down</h3>
+<p>If you’re stopping for the day at this point, it’s handy to be able to stop your server where it is so you don’t pay for it overnight.</p>
+<p>Go back to the EC2 page for your server. Under the <code>Instance State</code> drop down in the upper right, choose <code>Stop Instance</code>.</p>
+<p>After a couple minutes the instance will stop and you won’t get charged for it. Before you come back to the next lab, you’ll need to start the instance back up so it’s ready to go.</p>
+<p>If you want to completely delete the instance at any point, you can choose to <code>Terminate Instance</code> from that same <code>Instance State</code> dropdown.</p>
 
 
 </section>
