@@ -1,10 +1,56 @@
-# Administering a Server
+# Administering a Linux Server
 
-# Useful Shell Commands
+Now that you've got a Linux server and you're able to log in, it's time to get acquainted with your server, learn how to move around, and start getting some things done.
 
-Unlike on your Windows or Mac desktop, most work on a server is done via the shell -- an interactive text-based prompt. If you master the set of commands below, you'll always feel like a real hacker.
+There are two big differences between your laptop and a Linux server that you'll have to get used to. The first is that servers generally do not have graphical user interfaces (GUIs) for doing administrative tasks. If you want to adjust the system settings on your laptop or navigate from directory to directory, you can click through a file tree or open up your preferences pane. For the most case, all interaction you're going to have with your server is going to be via the command line. It's easier than you might think if you've never done it before, but it'll take a little learning.
 
-In most cases, you'll be using the `bash` shell. If you're using Linux or Mac, that'll be the default. Below, I'm intentionally mixing up bash commands and Linux system commands because they're useful. If you know the difference and are pedantic enough to care, this list isn't for you anyway.
+![](images-servers/desktop-vs-server.drawio.svg "Desktop vs Server")
+
+The second difference is that the server we set up runs Linux -- as do the overwhelming majority of the world's servers. If you're interacting with the command line, the differences between Linux and other operating systems (especially MacOS) aren't huge, but there's a little learning involved.
+
+In order to get started, this section is going to be around navigating in Linux and learning how to do some basic administrative tasks. There are entire books written about Linux System Administration. Pick up one of those if you're curious.
+
+## A little about Linux
+
+Every computer in the world runs on an operating system. The operating system defines the way that applications -- like Microsoft Word, RStudio, and Minecraft -- can interact with the underlying hardware. They define how files are stored and accessed, how applications are installed and can connect to networks, and more.
+
+TODO: Image of hardware, operating system, applications
+
+Back in the early days of computing, basically every computer manufacturer created its own operating system that was super-tightly linked to the hardware. These days, there are only a few operating systems that most systems use.
+
+For desktop and laptop computers, there's Windows, MacOS, and Linux; Windows and Linux for servers, and Android (actually a flavor of Linux) and iOS for phones and tablets.[^linux-admin-1]
+
+[^linux-admin-1]: There are no Mac servers. There is a product called *Mac Server*, but it's used to manage Mac desktops and iOS devices, not a real server.
+
+    There are also a few other operating systems that you'll rarely encounter, like Oracle Solaris.
+
+The 1960s were a wild time for operating systems. Basically every computer company invented their own operating system for their machines. In the early 1970s, AT&T labs released a proprietary operating system called Unix.
+
+Unix espoused a philosophy of small system-level programs that could be chained together to do more complex things. It turned out that this philosophy made a lot of sense, and starting in the early 1980s, a variety of *Unix-like* operating systems were released. Unix-like operating systems were clones -- they behaved like Unix, but didn't actually include any code from Unix (because it was proprietary). ;
+
+::: callout-note
+This philosophy, called piping, should feel extremely familiar to you if you're an R user. The tidyverse pipe `%>%` and the base R pipe introduced in R 4.1 `|>` are both directly inspired by the Unix/Linux pipe `|`.
+:::
+
+Linux is the most successful of those clones, an open source Unix-like operating system released in 1991 by software engineer Linus Torvalds.[^linux-admin-2] Another of those clones was the predecessor to what is now MacOS.
+
+[^linux-admin-2]: People who are pedantic about operating systems or the history of computing will scream that the original release of Linux was just the operating system *kernel*, not a full operating system like Unix. I've noted it here to satisfy pedants, but it doesn't matter much in practice.
+
+A difference you've probably experienced before between Unix-like systems and Windows, which is not Unix-like is the type of slashes used in file paths. Unix-like systems use forward slashes `/`, while Windows uses back slashes `\`.
+
+A huge majority of the world's servers run on Linux. There are meaningful Windows server deployments in some enterprises, but it's relatively small compared to the install base of Linux servers. Along with most of the world's servers, almost all of the world's embedded computers -- in ATMs, cars and planes, TVs, and most other gadgets and gizmos -- run on Linux. If you have an Android phone or a Chromebook -- that's Linux. Basically all of the world's supercomputers use Linux.
+
+As you might imagine, the profusion of Linux in all different kinds of systems similarly necessitates different kinds of Linux. The Linux you're going to run on a server that's designed to be a data science workbench is going to be very different from the version of Linux running in your car or on your phone.
+
+There are many different distributions (usually called "distros") of Linux, for desktop, server, and other applications.
+
+There are a few main distros you're likely to run across on servers in your organization -- Ubuntu, Red Hat Enterprise Linux (RHEL), Amazon Linux 2, and SUSE ([pronunced soo-suh](https://www.youtube.com/watch?v=nLdexZlVkAY)).[^linux-admin-3]
+
+[^linux-admin-3]: CentOS (short for Community ENTerprise Operating System) is an open source operating system maintained by Red Hat. Red Hat is changing the relationship between CentOS and RHEL and is discontinuing released of CentOS until 2024.
+
+# Basics of Administering Linux
+
+Below, I'm intentionally mixing up bash commands and Linux system commands because they're useful. If you know the difference and are pedantic enough to care, this list isn't for you anyway.
 
 ## Miscellaneous Symbols
 
@@ -176,7 +222,71 @@ Often useful in server contexts for reading log files.
 | `p asswd`  |              |                 |         |
 | `us eradd` |              |                 |         |
 
-## Lab: Installing R, Python, and More
+## Lab: Setting up a user, configuring SSH, Installing R, Python, and More
+
+# Accessing Servers via SSH {#ssh}
+
+Now that you're set up and comfortable using the command line, let's spend some time exploring SSH.
+
+SSH -- short for Secure (Socket) Shell -- is the standard way of accessing servers for the purpose of administering them using command line tools. By using SSH, you can have a terminal open on your laptop, but instead of interacting with your local machine, you'll be interacting with a remote server.
+
+Whenever you're using SSH, the correct mental model in your head is that you're typing the command into your local terminal, but it's actually running off on the remote server. SSH is the technology that allows those commands and their results to go securely back and forth between the server and your terminal window.
+
+In your day-to-day usage of SSH, the main thing you'll have to do is manage your SSH keys. SSH keys are gibberish strings of letters and numbers that allow your computer to verify that it's you to the server you want to access.
+
+Here's how it works -- when you want to SSH into a server, you'll create an SSH keypair. This keypair has two components -- the *public key* and the *private key*.
+
+You'll take the public key and put it on the server you're trying to access and you'll keep the private key securely on your laptop. Then, when you go to access the server, you'll use the command line to open an SSH session and the server will check that the public key it has matches the private key your laptop is offering.
+
+If it matches, you get an SSH session!
+
+#### How SSH works
+
+At first blush, the way SSH works seems nonsensical. I can just take my public key and just kinda chuck it out into the world and then it's all ok?!?
+
+Like most cryptography, public key encryption relies on mathematical operations that are easy in one direction, but hard in the other.
+
+For example, it's computationally trivial to multiply two large prime numbers and check if they equal some other number, but it's very computationally expensive to start with a big number and find the largest prime factors of that number.
+
+In an oversimplified (but useful) mental model, you can think about the public key as just being a large number, and the private key being the two primes. While it seems like it might still be insecure, SSH keys are *very* big numbers. Modern encryption standards mean that it's basically impossible to break a public SSH key.
+
+However, it is totally possible to compromise the security of an SSH connection by being sloppy with your private keys. So while SSH is cyptographically super secure, the whole system is only as secure as you. Don't share your SSH private keys.
+
+## Lab: Accessing the Terminal and Setting up SSH
+
+Hopefully you're all set up with your terminal theme, feeling great about turning into a hacker.
+
+To start, open your terminal program.
+
+You should be confronted by the command prompt where you'll start typing.
+
+We're going to start by creating a new SSH key and putting it on the server we set up.
+
+*NOTE - should we do this after creating a user?*
+
+### Create an SSH key
+
+**For Mac**
+
+From the terminal on your machine, you'll run the `ssh-keygen` utility to create a public/private key pair.
+
+-   The terminal
+-   3 step process
+    1.  generate public/private keys `ssh-keygen`
+    2.  place keys in appropriate place
+    3.  use ssh to do work
+-   Permissions on key
+
+## Getting Comfortable in your own setup
+
+-   Using ssh-config
+
+## Advanced SSH Tips + Tricks
+
+-   SSH Tunneling/Port Forwarding
+-   -vvvv, -i, -p \[Diagram: Port Forwarding\]
+
+TODO: talk about command line programs + flags
 
 Try standing up a new server and installing R and RStudio Server Open Source, or Python and JupyterHub.
 

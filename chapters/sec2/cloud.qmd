@@ -146,10 +146,30 @@ Keep track of the `my_test_key.pem` file your computer downloads, you'll need it
 
 Click `Launch Instances`. AWS is now creating a virtual server *just for you*. If you click `View Instances` in the lower right, you'll see your instance. When the instance state switches to `Running`, it's up and running!
 
-### Burn it all down
+### Configure Server Access
 
-One of the best things about cloud infrastructure is that it can go away as easily as it came up. We made a number of choices here that are fine for ephemeral infrastructure for playing around. But this server should not be used for anything real.
+*TODO: is this necessary just for SSH? I thought the default sg includes SSH.*
 
-When you've had your fill of playing, let's take the server down.
+Before we leave the AWS console, let's make sure that we'll be able to get to it from the internet.
 
-Go back to the EC2 page for your server. Under the `Instance State` drop down in the upper right, choose `Terminate Instance`. If you go to the `Instances` page, it'll take just a minute for the instance to go away.
+Scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
+
+Click `Edit inbound rules` , then `Add rule`. Under `Type`, scroll down and select `HTTP`, and under `Source Type`, select `Anywhere-IPv4`. Scroll down and click `Save rules`.
+
+### Grab the address of your server
+
+Before we leave the AWS console, let's grab the IP address of the server so we can use it to get back later.
+
+Go back to the AWS console and click on the `Instance ID` link for your server, and copy the `Public IPv4 DNS`, which will start with `ec2-` and end with `amazonaws.com`.
+
+Throughout the next chapters, I'll refer to this as your `<server-address>`. Save it somewhere you can easily get back to later.
+
+### Stopping or burning it down
+
+If you're stopping for the day at this point, it's handy to be able to stop your server where it is so you don't pay for it overnight.
+
+Go back to the EC2 page for your server. Under the `Instance State` drop down in the upper right, choose `Stop Instance`.
+
+After a couple minutes the instance will stop and you won't get charged for it. Before you come back to the next lab, you'll need to start the instance back up so it's ready to go.
+
+If you want to completely delete the instance at any point, you can choose to `Terminate Instance` from that same `Instance State` dropdown.
