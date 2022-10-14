@@ -1,0 +1,87 @@
+# Upgraded Networking
+
+In the last section, we went over a [general introduction to networking](#url), including an introduction to DNS, how to get and use a real URL, and making sure your servers are secure with SSL/HTTPS.
+
+When you're managing a relatively simple server -- especially one that's relatively low-threat, this is perfectly fine. However, if you're managing a cluster of several servers, you have other security concerns, or a high-threat environment, you may need more complex networking solutions to make sure that your environment stays secure and manageable.
+
+In this chapter, we'll learn a little about how an environment can be further secured from internet traffic.
+
+### What does it mean for networking to be more complex?
+
+In our lab, we set up a single server so it could be directly accessed over the internet. You went to the IP address or URL we configured and could get right into the server, assuming you had the right password.
+
+More complex networking generally consists of putting your server inside a *private network*. We'll get into the details of exactly how this works, but the general idea is that the server itself lives inside a private network and is not accessible from outside. Anyone wanting to get in has to go through one or more layers of other servers, generally referred to as *proxy servers* or *proxies*.
+
+This means that the traffic actually coming to your server only comes *from other servers you control*, as opposed to from anywhere on the internet. It's easy to imagine this is more secure, and we'll get into exactly why below.
+
+### What complex networking gets you
+
+If you're working as part of a larger organization, that's almost certainly not an acceptable configuration for your server.
+
+In this chapter, we'll get a bunch into how more complex network topologies work, but we'll first start with why. There are three main things that more complex networks get you -- abstraction for ease of use, security, and compliance.
+
+Compliance is the simplest of these. In some fields, you may have actual legal or contractual requirements that your server not be accessible to the public. That means that the configuration we used in the earlier section of this book is simply not acceptable and you'll have to do something different.
+
+The second thing more complex networking gets you is more useful abstraction. For example, let's say you wanted to replace your single server data science workbench with a pair of load-balanced servers. In the configuration we currently have, you'd have to spend a lot of time manually adjusting the URLs or IP addresses stored in various other servers. By using more complex network routing and hostnames inside a private network, you can assign a hostname to an IP address in one place and then use that hostname elsewhere, so even if you switch out the actual server, not much has to change in your networking configuration. This probably doesn't matter much in your current configuration, but gets to be really important when you have a system with many different services, each potentially with several servers.
+
+Lastly, and perhaps most obviously, using more complex networking techniques is one of the best ways to introduce security in layers to the front door of your data science workbench. There are a few different ways more complex networking can protect your server.
+
+The first, and simplest, is that it puts another point of failure between your high-value server and the open internet. Say you are the victim of a distributed denial of service (DDOS) attack. This is a type of attack where someone who controls a fleet of bots sends unending amounts of traffic to your servers solely for the purpose of overwhelming them -- usually for ransom. It's not great for your actual data science server to go down as a result of being overwhelmed. On the other hand, if your traffic is going through a proxy, they can take down the proxy and your data science server is humming along unimpeded, giving you the opportunity to quickly bring up another proxy or access your server a different way.
+
+The second reason private networking is more secure is that you can put things on your proxy servers to do threat detection. For example, if you are the target of a DDOS attack, you wouldn't know that it's happening if and until your server goes down if you just are hosting RStudio Server on the open internet. While it generally doesn't happen automatically, a proxy server is a great place to put monitoring for various kinds of threats.
+
+Lastly, and most importantly, using a proxy server reduces the attack surface for outside attacks. You can think of it like this -- putting your server open on the internet is akin to having a castle in the middle of an open field. It's probably pretty safe -- and if everything goes right -- you're fine. But what if someone accidentally leaves a window open? Or the guard forgets to close the gate at night. You could be in big trouble then.
+
+Putting your valuable server inside a private network is like surrounding that castle with an impregnable wall with only one front door. Now you can ensure that anyone who wants to get in has to come through the front door first. You still don't want to leave more openings in your server than absolutely necessary, but you can rest a little easier that mistakes configuring your server are unlikely to be catastrophic.
+
+In this case, the castle windows and doors are like the ports on your server. You can control port openings on your server itself from inside the server, or by adjusting security groups. But almost everyone I know has at some point made their security groups wide open to try to test or debug something. What happens if you forget to set them back?
+
+### What does a secure network look like?
+
+The topology of a more secure network looks, honestly, a lot like a castle. The outer walls of the castle are the boundaries of your private network, which AWS calls a virtual private cloud (VPC). Inside the VPC, you get complete control over the IP addresses inside so you can assign hostnames that are only valid inside your VPC -- so you don't need to worry about them conflicting with anything in the outside world.
+
+Inside the VPC, you can define *subnets*, which are smaller areas of the VPC that can be used for different purposes. Subnets are either private -- meaning only accessible from inside the VPC, or public -- meaning they may be accessible from outside the subnet.
+
+::: callout-note
+#### How networks are defined
+
+VPCs and subnets are defined by something called a Classless Inter-Domain Routing (CIDR) block. We're not going to get deep into the details, but the basic idea is that each CIDR block has a certain number of IP addresses in it. You can allot parts of the whole VPC's CIDR blocks to each of your subnets.
+
+Each CIDR block is defined by a starting address and the size of the network. A `/32` network has only IP address in it, and lower numbers indicate broader blocks. So, so `0.0.0.0/16` would indicate the CIDR block that includes all 65,536 IPv4 addresses from `0.0.0.0` to `0.0.255.255`.
+
+For IPv4 networks, VPCs should be defined using the IP addresses specified for private usage, starting with either `10`, `172`, or `198`.
+:::
+
+Your public subnets generally only house the servers you're using to proxy traffic from the outside world into your private subnets. This is sometimes called a *demilitarized zone (DMZ)*. In most cases, you'll have minimum two servers in the DMZ. You'll usually have one or more proxies or load-balancers to handle the incoming HTTPS traffic that comes in from the outside world. You'll also usually have a proxy that is just for passing SSH traffic along to hosts in the private network, often called a *bastion host* or *jump box*.
+
+Also in the DMZ lives your NAT/Internet Gateway (MORE DETAILS).
+
+Private networks generally host all of the servers that actually *do things*. Your data science workbench server, your databases, server for hosting shiny apps -- all these things should live inside the private network. Any of it that needs to be accessible outside should be made accessible via setting the right rules on your security groups, proxies, and NATs.
+
+Should you need to access resources that live in another VPC, you can do something called VPC peering, which allows two or more VPCs to essentially act as one. It's worth noting that if you're doing VPC peering, IP addresses have to be unique across *both* peered VPCs.
+
+https://docs.aws.amazon.com/vpc/latest/userguide/configure-your-vpc.html
+
+## The role of proxies
+
+-   Proxies
+
+    -   Forward (outbound) vs reverse (inbound)
+
+        -   Traffic inside the network
+
+        -   Network gateways at edges
+
+        -   Proxies -- inbound vs outbound
+
+    -   Ports open
+
+## Fully Offline/Airgapped operations
+
+-   Fully Offline Operations
+
+    -   Downloading packages
+
+    -   Getting R/Python packages
+
+    -   Software licensing
