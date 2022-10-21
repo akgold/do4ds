@@ -26,15 +26,15 @@ The best way to ensure that deployments go smoothly is to make them as minimal a
 
 If you're a data scientist, you probably have a really good idea what your Dev environment looks like. It's probably a Jupyter Notebook or an IDE with data science capabilities like RStudio, Spyder, or PyCharm. You use this environment to do exploratory data analysis, try out new types of charts and graphs, and test model performance against new features that you might design. This is really different than what most IT/Admins imagine is happening in Dev.
 
-For a pure software engineering project, the Dev environment isn't about exploration and experimentation -- it's about building. The relationship between data science and software engineering is akin to the difference between archaeology and architecture. Data science is about exploring existing relationships and sharing them with others once they've been discovered. The path is often meandering -- and it's usually not clear whether it's even a possible one when you start. In contrast, pure software engineering is like designing a building. You know from the beginning that you're designing a building for a particular purpose -- you might need a little exploration to ensure you've thought through all of the nooks and crannies -- or that you've chosen the right materials or that you're going to stay on budget, but you'll have a pretty good idea up front whether it's possible to design the building you want.
+For a pure software engineering project, the Dev environment isn't about exploration and experimentation -- it's about building. The relationship between data science and software engineering is akin to the difference between archaeology and architecture. Data science is about exploring existing relationships and sharing them with others once they've been discovered. The path is often meandering -- and it's usually not clear whether it's even a possible one when you start. In contrast, pure software engineering is like designing a building. You know from the beginning that you're designing a building for a particular purpose. You might need a little exploration to ensure you've thought through all of the nooks and crannies, or that you've chosen the right materials, or that you're going to stay on budget, but you'll have a pretty good idea up front whether it's possible to design the building you want.
 
-This means that Dev environments look really different for a data scientist vs a software engineer.
+This means that Dev environments look really different for a data scientist versus a software engineer.
 
 The biggest difference is that most IT/Admins are going to think of Dev, Test, and Prod being three identical copies of the same environment. That's close to what you need as a data scientist, but really it's more like you need a sandbox, a test environment, and prod. That means that if you're using a deployment platform like RStudio Connect or Dash Enterprise, you probably don't need it in your Dev environment, and that you don't need your development tool in Test or Prod (any changes should go back through the deployment pipeline).
 
 ### Test and Prod
 
-**Test** is (shockingly) an environment for testing. Depending on the type of asset you're developing, the test environment might incorporate testing that you do, testing by outside entities like security, and/or performance testing. Generally, the test environment facilitates User Acceptance Testing (UAT) where you can investigate whether labels and buttons are clear or whether plots and graphs meet the need. Depending on your organization, test might be collapsed with dev, it might be a single environment, or it could be multiple for the different types of testing.
+**Test** is (unsurprisingly) an environment for testing. Depending on the type of asset you're developing, the test environment might incorporate testing that you do, testing by outside entities like security, and/or performance testing. Generally, the test environment facilitates User Acceptance Testing (UAT), where you can investigate whether labels and buttons are clear or whether plots and graphs meet the need. Depending on your organization, test might be collapsed with dev, it might be a single environment, or it could be multiple environments for the different types of testing.
 
 **Prod** is the gold standard environment where things run without any manual human intervention. Usually the only way to get things into prod is through some type of formalized process -- sometimes backed by a computer process like a git merge or push from a Continuous Integration/Continuous Deployment (CI/CD) platform (more on that below). One of the most important ways to keep prod stable is that nothing changes in prod other than via a simple promotion from the test environment.
 
@@ -44,7 +44,7 @@ One of the biggest risks during the dev and test parts of an assets lifecycle is
 
 In contrast, data science is all about using and learning from your organization's actual data. So a dev environment that doesn't include access to your organization's real data is going to be completely useless if it doesn't have real data in it. This is often a difficult thing to convince an IT/Admin of.
 
-In many cases, data science assets and reports are read-only so if you're mostly building visualizations or dashboards that just consume the business data, perhaps clean it for analytics purposes, you can happily accept a read-only connection to your organization's data.[^code-promotion-1] In this case, it works just fine to connect to your real data from your Dev and Test environments and create graphs, models, and dashboards based on the real data, testing out new visualizations and model features in a safe sandbox while the existing version of your app or report runs smoothly in prod.
+In many cases, data science assets and reports are read-only. If you're mostly building visualizations or dashboards that just consume the business data, perhaps clean it for analytics purposes, you can happily accept a read-only connection to your organization's data.[^code-promotion-1] In this case, it works just fine to connect to your real data from your Dev and Test environments and create graphs, models, and dashboards based on the real data, testing out new visualizations and model features in a safe sandbox while the existing version of your app or report runs smoothly in prod.
 
 [^code-promotion-1]: In fact, you should probably feel grateful! It's nice to know you can mess around as much as you want without risking any damage to real data.
 
@@ -78,7 +78,7 @@ CI/CD adds a layer on top of this. CI/CD allows you to integrate functional test
 
 For the purposes of CI/CD, the most interesting jobs are those that do something after there's a commit or a completed merge, often deploying the relevant asset to its designated location.
 
-So a CI/CD integration using the same git graph as above would have released 3 new test versions of the app and 2 new prod versions. Note that in this case, the second test release revealed a bug, which was fixed and tested in the test version of the app before a prod release was completed.
+A CI/CD integration using the same git graph as above would have released 3 new test versions of the app and 2 new prod versions. Note that in this case, the second test release revealed a bug, which was fixed and tested in the test version of the app before a prod release was completed.
 
 In years past, the two most popular CI/CD tools were called Travis and Jenkins. By all accounts, these tools were somewhat unwieldy and difficult to get set up. More recently, GitHub -- the foremost git server -- released GitHub Actions (GHA), which is CI/CD tooling directly integrated into GitHub that's free for public repositories and free up to some limits for private ones.
 
@@ -88,13 +88,13 @@ It's safe to say GHA is eating the world of CI/CD.[^code-promotion-3]
 
     Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so I'd expect Azure DevOps and GitHub to converge at some point...but who knows?
 
-For example, if you're reading this book online, it was deployed to the website you're currently viewing using GHA. I'm not going to get deep into the guts of GHA, but instead talk generally about the pattern for deploying data science assets, and then go through how I set up getting this book to run on GHA.
+For example, if you're reading this book online, it was deployed to the website you're currently viewing using GHA. I'm not going to get deep into the guts of GHA, but instead talk generally about the pattern for deploying data science assets, and then go through how I set up this book on GHA.
 
 ### Using CI/CD to deploy data science assets
 
 In general, using a CI/CD tool to deploy a data science asset is pretty straightforward. The mental model to have is that the CI/CD tool stands up a completely empty server for you, and runs some code on it.
 
-That means that you're just doing something simple like spellchecking, you can probably just specify to run spellcheck. If you're doing something more complicated, like rendering an R Markdown document or Jupyter Notebook and then pushing it to a server, you'll have to take a few extra steps to be sure the right version of R or Python is on the CI/CD server, that your package environment is properly reproduced, and that you have the right code to render your document.
+That means that if you're just doing something simple like spellchecking, you can probably just specify to run spellcheck. If you're doing something more complicated, like rendering an R Markdown document or Jupyter Notebook and then pushing it to a server, you'll have to take a few extra steps to be sure the right version of R or Python is on the CI/CD server, that your package environment is properly reproduced, and that you have the right code to render your document.
 
 Feel free to take a look through the [code for the GitHub Action for this book](https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_bookdown.yml). It's all YAML, so it's pretty human-readable.
 
@@ -194,7 +194,11 @@ TODO: Notes on using virtual environments + Docker.
 
 For example, doing test on a Windows laptop and then going to prod on a Linux server introduces a potential that things that worked in test suddenly don't when going to prod. For that reason, making all three (or at least test and prod) match as precisely as possible is essential. The need to match these three environments so precisely is one reason for data science workloads moving onto servers.
 
-A bad pattern then would look like this -- I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server. At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.
+A bad pattern then would look like this:
+
+-   I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server.
+-   At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. 
+-   A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.
 
 The main way to combat this kind of state drift is to religiously use state-maintaining infrastructure as code (IaC) tooling. That means that all changes to the state of your servers ends up in your IaC tooling and no "just login and make it work" shenanigans are allowed in prod.
 
