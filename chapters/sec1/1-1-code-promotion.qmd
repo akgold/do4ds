@@ -44,21 +44,19 @@ One of the biggest risks during the dev and test parts of an assets lifecycle is
 
 In contrast, data science is all about using and learning from your organization's actual data. So a dev environment that doesn't include access to your organization's real data is going to be completely useless if it doesn't have real data in it. This is often a difficult thing to convince an IT/Admin of.
 
-In many cases, data science assets and reports are read-only. If you're mostly building visualizations or dashboards that just consume the business data, perhaps clean it for analytics purposes, you can happily accept a read-only connection to your organization's data.[^code-promotion-1] In this case, it works just fine to connect to your real data from your Dev and Test environments and create graphs, models, and dashboards based on the real data, testing out new visualizations and model features in a safe sandbox while the existing version of your app or report runs smoothly in prod.
+In many cases, data science assets and reports are read-only. If you're mostly building visualizations or dashboards that just consume the business data, perhaps clean it for analytics purposes, you can happily accept a read-only connection to your organization's data.[^1-1-code-promotion-1] In this case, it works just fine to connect to your real data from your Dev and Test environments and create graphs, models, and dashboards based on the real data, testing out new visualizations and model features in a safe sandbox while the existing version of your app or report runs smoothly in prod.
 
-[^code-promotion-1]: In fact, you should probably feel grateful! It's nice to know you can mess around as much as you want without risking any damage to real data.
+[^1-1-code-promotion-1]: In fact, you should probably feel grateful! It's nice to know you can mess around as much as you want without risking any damage to real data.
 
 On the other hand, if your app or report actually writes data, you'll have to be a little more clever. In general, you'll have to figure out how to redirect your apps output into a test data store, or to mock responses from the real services you're interacting with. The easiest way to do this is by including your output locations as variables inside your code and then setting them at runtime based on an environment variable. See [below](#config-swap) for an example of how to do this.
 
-## CI/CD and the mechanics of code promotion
+## Taking data science to production with CI/CD
 
-The common term for the mechanics of code promotion is Continuous Integration/Continuous Deployment (CI/CD).[^code-promotion-2]
+The common term for the mechanics of code promotion is Continuous Integration/Continuous Deployment (CI/CD).
 
-[^code-promotion-2]: I strongly recommend *The Phoenix Project* by Gene Kim, Kevin Behr, and George Spafford as a fun way to get acquainted if you're even remotely interested.
+CI/CD is about moving your data science projects, including code, data, and environment, into successively more formal states of production. While it's not a requirement to use source control to make this happen, the *mechanics* of CI/CD is usually tightly linked to source control procedures.
 
-In this book I'm mainly going to focus on a few workflows and a few tools that I've found particularly useful in a data science context.
-
-The most concrete way that CI/CD practices get expressed is through integrations into source control software -- usually git. If you're not already familiar, I'd suggest spending some time learning git. I will admit that learning git is nontrivial. People who say git is easy are either lying to look smarter or learned so long ago that they have forgotten the early-to-git sense that you're likely to mess up your entire workflow at any moment.
+If you're not already familiar, I'd suggest spending some time learning git. If you're just starting, you're in for a bit of a ride. People who say git is easy are either lying to look smarter or learned so long ago that they have forgotten how easy it is to mess up your entire workflow at any moment.
 
 ::: rmdinfo
 If you don't already know git and want to learn, I'd recommend [HappyGitWithR](https://happygitwithr.com/index.html) by Jenny Bryan. It's a great on-ramp to learn git.
@@ -82,9 +80,9 @@ A CI/CD integration using the same git graph as above would have released 3 new 
 
 In years past, the two most popular CI/CD tools were called Travis and Jenkins. By all accounts, these tools were somewhat unwieldy and difficult to get set up. More recently, GitHub -- the foremost git server -- released GitHub Actions (GHA), which is CI/CD tooling directly integrated into GitHub that's free for public repositories and free up to some limits for private ones.
 
-It's safe to say GHA is eating the world of CI/CD.[^code-promotion-3]
+It's safe to say GHA is eating the world of CI/CD.[^1-1-code-promotion-2]
 
-[^code-promotion-3]: It's worth remarking that GitLab has long offered a very good CI/CD integration. I'm going to talk about GHA, since it's the most popular, but you can accomplish these same things with GitLab CI/CD.
+[^1-1-code-promotion-2]: It's worth remarking that GitLab has long offered a very good CI/CD integration. I'm going to talk about GHA, since it's the most popular, but you can accomplish these same things with GitLab CI/CD.
 
     Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so I'd expect Azure DevOps and GitHub to converge at some point...but who knows?
 
@@ -98,9 +96,9 @@ That means that if you're just doing something simple like spellchecking, you ca
 
 Feel free to take a look through the [code for the GitHub Action for this book](https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_bookdown.yml). It's all YAML, so it's pretty human-readable.
 
-Here's what happens every time I make a push to the `main` branch of the repository for this book:[^code-promotion-4]
+Here's what happens every time I make a push to the `main` branch of the repository for this book:[^1-1-code-promotion-3]
 
-[^code-promotion-4]: Recall that a finished merge request into the `main` branch is equivalent to a push to `main` .
+[^1-1-code-promotion-3]: Recall that a finished merge request into the `main` branch is equivalent to a push to `main` .
 
 1.  Checkout the current `main` branch of the book.
 2.  Use the `r-lib` action to install R.
@@ -156,9 +154,9 @@ prod:
   url: "www.my-external-system.com"
 ```
 
-Then you can use an environment variable to the correct config and apply that configuration inside the app.[^code-promotion-5]
+Then you can use an environment variable to the correct config and apply that configuration inside the app.[^1-1-code-promotion-4]
 
-[^code-promotion-5]: By default, the `R_CONFIG_ACTIVE` variable is used to determine which config to get. If you're deploying to RStudio Connect, this value is locked to equal `rsconnect` , and you may want to use a different value, which you can do like `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
+[^1-1-code-promotion-4]: By default, the `R_CONFIG_ACTIVE` variable is used to determine which config to get. If you're deploying to RStudio Connect, this value is locked to equal `rsconnect` , and you may want to use a different value, which you can do like `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
 
 ```{r}
 #| eval: false
@@ -197,7 +195,7 @@ For example, doing test on a Windows laptop and then going to prod on a Linux se
 A bad pattern then would look like this:
 
 -   I develop an update to an important Shiny or Dash app in my local environment and then move it onto a server.
--   At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere. 
+-   At that point, the app doesn't quite work and I make a bunch of manual changes to the environment -- say adjusting file paths or adding R or Python packages. Those manual changes end up not really being documented anywhere.
 -   A week later, when I go to update the app in prod, it breaks on first deploy, because the server state of the test and prod servers drifted out of alignment.
 
 The main way to combat this kind of state drift is to religiously use state-maintaining infrastructure as code (IaC) tooling. That means that all changes to the state of your servers ends up in your IaC tooling and no "just login and make it work" shenanigans are allowed in prod.
