@@ -18,23 +18,23 @@ Some people who read this will just throw up their hands and say, "well, it's im
 
 ![](images-repro/repro-spectrum.png){width="429"}
 
-There's a tradeoff. Making things more reproducible is generally takes more work -- in a way that's frustratingly asymptotic.
+There's a tradeoff. Making things more reproducible generally takes more work -- in a way that's frustratingly asymptotic.
 
-Some industries are highly-regulated and need to be able to guarantee they can reproduce an analysis exactly -- down to the layer of machine instructions -- a decade later. In this world, the general reproducibility practice for an analysis is to take a physical piece of hardware that they know runs the analysis, make a backup or two, and just keep that physical piece of hardware running for many years.
+Some industries are highly regulated and need to be able to guarantee that they can reproduce an analysis exactly -- down to the layer of machine instructions -- a decade later. In this world, the general reproducibility practice for an analysis is to take a physical piece of hardware that they know runs the analysis, make a backup or two, and just keep that physical piece of hardware running for many years.
 
-But you don't have to go all the way there -- making things 100% reproducible is really, really hard. But making things a little more reproducible is really quite easy.
+But you don't have to go all the way there. Making things 100% reproducible is really, really hard. But making things a little more reproducible is really quite easy.
 
-The first step towards making environments more reproducible is by starting to create Environments as Code. In the DevOps world, the aim is to create environments that are largely "stateless" -- functionally identical copies of any environment can be created and destroyed at whim using code.
+The first step towards making environments more reproducible is to start to create Environments as Code. In the DevOps world, the aim is to create environments that are largely "stateless" -- functionally identical copies of any environment can be created and destroyed at whim using code.
 
-The glib, but useful shorthand for the idea of Infrastucture or Environments as code is that they should be "cattle, not pets" -- interchangeable one for the other.
+The glib-but-useful shorthand for the idea of Infrastucture or Environments as code is that they should be "cattle, not pets" -- interchangeable one for the other.
 
-In this chapter, we'll get into the why and how of capturing a data science environments in code, saving them for later, and easily moving them around from place to place.
+In this chapter, we'll get into the why and how of capturing data science environments in code, saving them for later, and easily moving them around from place to place.
 
 ## Environments have layers
 
-When you first start thinking about environments, it can be hard to wrap your head around. The environment seems like a monolith and it can be hard to figure out what the different components are.
+When you first start thinking about environments, it can be hard to wrap your head around them. The environment seems like a monolith, and it can be hard to figure out what the different components are.
 
-I generally think of three layers in the data science environments -- and these are in order, each layer of the environment is actually built on the ones below. Once you understand the layers of an environment, you can think more clearly about what your actual reproducibility needs are, and which environmental layers you need to target putting in code.
+I generally think of three layers in data science environments, and these are in order -- each layer of the environment is actually built on the ones below. Once you understand the layers of an environment, you can think more clearly about what your actual reproducibility needs are, and which environmental layers you need to target putting into code.
 
 +------------+------------------------------+
 | Layer      | Contents                     |
@@ -56,7 +56,7 @@ Note that your code and your data are not the environment -- they are what the e
 
 [^env-as-code-2]: If you're an R user, I'd especially recommend [What they forgot to teach you about R](https://rstats.wtf/).
 
-For most data scientists, the biggest bang for buck is getting the package layer right. In a lot of organization another team entirely will be responsible for the system and hardware layers, but the package layer is always your responsibility as the data scientist. Moreover, managing that layer isn't terribly hard, and if you get it right, you'll solve a huge fraction of the "runs on my machine" issues you're likely to encounter.
+For most data scientists, the biggest bang for your buck is getting the package layer right. In a lot of organizations, another team entirely will be responsible for the system and hardware layers, but the package layer is always your responsibility as the data scientist. Moreover, managing that layer isn't terribly hard, and if you get it right, you'll solve a huge fraction of the "runs on my machine" issues you're likely to encounter.
 
 ### Package environments as code
 
@@ -67,11 +67,11 @@ A successful package Environment as Code setup has two key attributes:
 
 Before we get to what a good Environment as Code setup looks like, let's dive into what bad setups look like.
 
-In a lot of cases, data scientists have the habit of starting a project, and when they need to install packages, they just run an `install.packages` command in their console or `pip install` in their terminal. This works fine for a while. But the problem with this is that the default has you installing things into a cache that's shared among every project on your system.
+In a lot of cases, data scientists have the habit of starting a project, and, when they need to install packages, they just run an `install.packages` command in their console or `pip install` in their terminal. This works fine for a while. But the problem with this is that the default has you installing things into a cache that's shared among every project on your system.
 
 What happens if you come back to a project after a year and you've been installing things into your machine-wide package cache the whole time. It's very possible you won't have the right versions and your code will break.
 
-The other problem happens when it comes time to share a project with others. It's not uncommon to see an intro to an R script that looks something like:
+The other problem happens when it comes time to share a project with others. It's not uncommon to see an intro to an R script that looks something like this:
 
 ```{r}
 #| eval: false
@@ -90,13 +90,13 @@ Number one, this is very rude. If someone runs your code, you'll be installing p
 
 ### Step 1: Standalone Package Libraries
 
-As a data scientist, you've very familiar with installing packages from a repository using the `install.packages` command in R or `pip install` or `conda install` in Python. But do you really understand what's happening when you type that command?
+As a data scientist, you're probably familiar with installing packages from a repository using the `install.packages` command in R or `pip install` or `conda install` in Python. But do you really understand what's happening when you type that command?
 
-Let's first level set on what are the various states for R or Python packages. There are three states packages can be in -- and we're going to go back to our data science as cooking analogy.
+Let's first level-set on what the various states for R or Python packages are. There are three states packages can be in -- and we're going to go back to our data science as cooking analogy.
 
-Packages can be stored in a repository, like CRAN or BioConductor in R or PyPI or Conda in Python. You can think of a package in a repository like food at the grocery store -- it's packaged up and ready to go, but inert. Setting aside groovy bodegas with eat-in areas, you don't get to eat at the grocery store. You've got to buy the food and take it home before you can use it -- and you've got to install the food before you can use it.
-
-And then your library is your pantry, where you keep a private set of packages, bespoke to you and the food you like to cook -- the projects you're likely to do. Loading a package with a `library` or `import` command is like taking the food out of the pantry and putting it on the counter so you can actually cook with it.
+1. Packages can be stored in a repository, like CRAN or BioConductor in R or PyPI or Conda in Python. You can think of a package in a repository like food at the grocery store -- it's packaged up and ready to go, but inert. Setting aside groovy bodegas with eat-in areas, you don't get to eat at the grocery store. You've got to buy the food and take it home before you can use it -- and you've got to install the food before you can use it.
+2. And then your library is your pantry, where you keep a private set of packages, bespoke to you and the food you like to cook -- the projects you're likely to do. 
+3. Loading a package with a `library` or `import` command is like taking the food out of the pantry and putting it on the counter so you can actually cook with it.
 
 \[Diagram of package states\]
 
@@ -104,7 +104,7 @@ By default, when you install an R or Python package, that package installs into 
 
 This isn't a disastrous situation, but it is a recipe for package incompatibilities down the road.
 
-\[TODO: diagram of user-level vs project level installs\]
+\[TODO: diagram of user-level vs project-level installs\]
 
 The most important thing to understand about package libraries is that libraries can only have one version of any given package at a time. So that means that if I have code that relies on version 1.0 of a given package and I install a new version of that package, version 1.0 is gone and I am likely to run into package incompatibility issues.
 
@@ -115,7 +115,7 @@ It's for this reason that you want to have standalone package libraries for each
 
 In many data science projects, you've got multiple content items within a single project. Maybe you have an ETL script and an API and an app. After a lot of experimenting, my recommendation is to create one git repo for the whole project and have content-level package libraries.
 
-This is not a rule or anything...just a suggestion about how I've found it works best over time.
+This is not a rule. It's just a suggestion about how I've found it works best over time.
 
 \[TODO: Add image\]
 :::
@@ -130,11 +130,11 @@ First, let's quickly go over what happens when you install or load a package.
 
 ![](images/paste-09F9422F.png)
 
-Whenever you install a package, there are two key settings that R or Python consult -- the URL of the repository to install from and the library to install to. And similarly, when you load an R or Python library, the install checks the library location. In R, the command used is `.libPaths()` and in python it's `sys.path`.
+Whenever you install a package, there are two key settings that R or Python consult: the URL of the repository to install from, and the library to install to. Similarly, when you load an R or Python library, the install checks the library location. In R, the command used is `.libPaths()`, and in Python it's `sys.path`.
 
-So you can see that it's (conceptually) pretty simple to create a standalone package library for any project -- when the virtual environment is activated, just make sure that the project level library is what comes back when checking the library path.
+So you can see that it's (conceptually) pretty simple to create a standalone package library for any project -- when the virtual environment is activated, just make sure that the project-level library is what comes back when checking the library path.
 
-You can see it pretty easily in R -- if I run `.libPaths()` before and after activating an `{renv}` environment, the first entry from the `.libPaths()` call changes from a user level library `/Users/alexkgold` to a project level library `/Users/alexkgold/Documents/do4ds/`.
+You can see it pretty easily in R. If I run `.libPaths()` before and after activating an `{renv}` environment, the first entry from the `.libPaths()` call changes from a user-level library `/Users/alexkgold` to a project-level library `/Users/alexkgold/Documents/do4ds/`.
 
 ```{r}
 #| eval: false
@@ -149,7 +149,7 @@ renv::activate()
 [2] "/Library/Frameworks/R.framework/Versions/4.2/Resources/library"  
 ```
 
-Similarly in Python, it looks like this -- note that the after version replaces the last line of the `sys.path` with a project-level library:
+Similarly, in Python it looks like this. Note that the "after" version replaces the last line of the `sys.path` with a project-level library:
 
 ```{bash}
 #| eval: false
@@ -193,13 +193,13 @@ That is, you still need some help when it comes time to share an environment wit
 
 \[TODO: image -- anatomy of a lockfile\]
 
-Both R and Python have great utilities that make it easy to capture the current state of a library into a `lockfile` or `requirements.txt` and to restore those libraries later or somewhere else.
+Both R and Python have great utilities that make it easy to capture the current state of a library into a `lockfile` or `requirements.txt` and to restore those libraries at a later date or somewhere else.
 
 In R, `{renv}` is the standard on this front. In Python, there are many different options. In the context of production data science, I recommend `{virtualenv}/{venv}` and related tools.
 
 Now, when you share your project with someone else, your `lockfile` or `requirements.txt` goes along for the ride. Sometimes people are dismayed that their library doesn't go along as well and that people have to install the packages themselves -- but this is by design!
 
-One -- package libraries can be very small, so putting just a short lockfile or requirements file into git is definitely preferred. The other reason is that the actual package install can differ system to system. For example, if you're working on a Windows laptop and your colleague is on a Mac, an install of `{dplyr}` 1.0 means that different files are installed -- but with exactly the same functionality. You want to respect this, so instead of sending the whole library along for the ride, you just send the specification that `dplyr 1.0` is needed.
+First, package libraries can be very small, so putting just a short lockfile or requirements file into git is definitely preferred. The other reason is that the actual package install can differ from system to system. For example, if you're working on a Windows laptop and your colleague is on a Mac, an install of `{dplyr}` 1.0 means that different files are installed -- but with exactly the same functionality. You want to respect this, so instead of sending the whole library along for the ride, you just send the specification that `dplyr 1.0` is needed.
 
 ::: callout-note
 ## A sidebar on Conda
@@ -213,7 +213,7 @@ In the context of a production environment, Conda smashes together the language 
 
 On a high level, the workflows for these tasks are similar between R and Python. However, there are some meaningful differences in tooling -- especially because virtually every computer arrives with a system version of Python installed, while R is only ever installed by a user trying to do data science tasks. At the end of the day, this actually makes it *harder* to use Python because you do not want to use your system Python for your data science work...but sometimes it accidentally gets into the mix.
 
-A general suggestion of workflows for data science package management, whether in R or Python -- this should be independently done for *every* project:
+A general suggestion of workflows for data science package management -- whether in R or Python -- is that this should be independently done for *every* project.
 
 ### Reproducing the rest of the stack
 
@@ -225,7 +225,7 @@ In other cases, your R or Python library might basically just be a wrapper for s
 
 There are many tools you can use to record and reproduce the R and Python versions you're using, the system libraries, and the operating system itself. Many of these fall into the category of [Infrastructure-as-Code configuration tools](iac).
 
-These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments -- and for good reason! In fact, the next chapter is going to be all about the use of Docker in data science. However, it's worth keeping in mind that if you're working in the context of a formally-supported IT organization, they may have other tooling they prefer to create and maintain environments, and they can be equally valid.
+These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments -- and for good reason! In fact, the next chapter is going to be all about the use of Docker in data science. However, it's worth keeping in mind that if you're working in the context of a formally-supported IT organization, they may have other tooling they prefer to use to create and maintain environments, and they can be equally valid.
 
 ## Environments as Code Cheatsheet
 
