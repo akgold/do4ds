@@ -26,7 +26,7 @@ For desktop and laptop computers, there's Windows, MacOS, and Linux; Windows and
 
 The 1960s were a wild time for operating systems. Basically every computer company invented their own operating system for their machines. In the early 1970s, AT&T labs released a proprietary operating system called Unix.
 
-Unix espoused a philosophy of small system-level programs that could be chained together to do more complex things. It turned out that this philosophy made a lot of sense, and starting in the early 1980s, a variety of *Unix-like* operating systems were released. Unix-like operating systems were clones -- they behaved like Unix, but didn't actually include any code from Unix (because it was proprietary). ;
+Unix espoused a philosophy of small system-level programs that could be chained together to do more complex things. It turned out that this philosophy made a lot of sense, and starting in the early 1980s, a variety of *Unix-like* operating systems were released. Unix-like operating systems were clones -- they behaved like Unix, but didn't actually include any code from Unix (because it was proprietary).
 
 ::: callout-note
 This philosophy, called piping, should feel extremely familiar to you if you're an R user. The tidyverse pipe `%>%` and the base R pipe introduced in R 4.1 `|>` are both directly inspired by the Unix/Linux pipe `|`.
@@ -48,91 +48,102 @@ There are a few main distros you're likely to run across on servers in your orga
 
 [^2-3-linux-admin-3]: CentOS (short for Community ENTerprise Operating System) is an open source operating system maintained by Red Hat. Red Hat is changing the relationship between CentOS and RHEL and is discontinuing released of CentOS until 2024.
 
-# Basics of Administering Linux
+## A tiny intro to Linux administration
 
--   Moving around
+Being a competent Linux admin is a career unto itself. So we're not going to try to get you there in this chapter. Instead, the goal of this chapter is going to be to get you familiar with the basic tasks of interacting with a Linux server and the tools you need to at least get started working on one.
 
--   Users + Groups
+When you log into a Linux server, you'll be interacting exclusively via the command line, so all of the commands in this chapter are going to be terminal commands. If you haven't yet figured out how to open the terminal on your laptop and got it themed and customized so it's perfect, I'd advise going back to [Chapter 2-2 on the command line](#command-line).
 
-    -   root access
+It's also worth mentioning that if you're using a Mac, many of these same tools and techniques will work out of the box and may be useful on your laptop. If you're running Windows, you may have to look up the exact commands and syntax -- but the general idea will hold.
 
--   Administration activities
+In just a second, we'll get into how to administer a Linux server, but let's first talk about what are the main tasks of Linux administration:
 
-    -   System resources
+-   **Moving around** **and file operations** A lot of the things you'll do administering a server are just moving around, looking at different files, and interacting with them. We'll spend some time on how to move around on the command line and how to interact with files.
 
-    -   Networking
+-   **Managing users** In general, if you're running a server, you're going to be managing a number of different users on the server. Creating users and groups and managing them -- specifically the things they're allowed to do is a huge part of server administration, and we'll go over what you'll need to do and how.
+
+-   **Managing resources** As a server admin, especially in the cloud, you've got the ability to manage the resources -- CPU, RAM, and memory -- available to you. Keeping track of how much you've got of these things, how they're being used, and making sure everyone is playing nice together with the shared resources is an important task.
+
+-   **Networking** Because your server is only valuable if you and others can connect to it, managing how your server can connect to the environment around it is an important part of Linux administration.
 
 Below, I'm intentionally mixing up bash commands and Linux system commands because they're useful. If you know the difference and are pedantic enough to care, this list isn't for you anyway.
 
+The first thing that's important to understand is that once you've SSH-ed into another server, your terminal is like a little window into that server. So everything that runs in the terminal is actually running on that other server and just bringing the results back to your eyes. But if you want to -- for example -- actually move a file from place to place, you'll need to do something else.
+
+### Understanding the Linux file system
+
+In the last chapter, you SSH-ed into your server using the `pem` key that was granted to you when you created the server. When you got there, you got dumped into the command line. So the first step is understanding where you are and how to go elsewhere.
+
+The first thing to understand in Linux is that commands always happen *in a particular* *place* -- called the working directory -- and *as a particular user*. Depending on who you are and where you are, the commands you're allowed to run and what happens when you do so might be different. It's worth noting that this is also true on your laptop, but the experience of clicking on and using apps obfuscates the fact that this is happening under the hood.
+
+When you land using the `pem` key, you've logged in as the root user and you're at the file path root.
+
+At any time, you can get the path where you're sitting with the `pwd` command, which is an abbreviation for *print working directory*.
+
+On a Linux server, you can think of the entire file system as a tree (for me an upside-down tree resonates more, since we generally talk about going "down" the tree to get to branches). The root of this tree is at `/`, and every file, folder, directory, and app is somewhere down the tree from `/`.
+
+::: callout-note
+If you're a Windows person, you might think this is analogous to `C:` -- it is, but only sorta.
+
+You're right that the root of your drive is at `C:` and other things are descended from there.
+
+Unlike in Linux, in Windows you can have multiple roots, one for each physical or logical disk you've got. That's why your machine may have a `D:` drive, or if you have network shares, those will often be on `M:` or `N:` or `P:`, each with its own sub-tree.
+
+In Linux, *everything* is a subtree below `/`, and it has nothing to do with the drives that house each of them. If you do have extra drives mounted to your Linux server, `/mnt` (short for mount) is a popular place to put them.
+:::
+
+In addition to being the root of the file tree, `/` is used to separate directories and files, so for example `/opt/R` is the directory (or file) called R inside the `opt` directory, which is inside `/`.
+
+Whenever you're locating a directory or file, you can do so using either *absolute* or *relative* file paths. An absolute file path is the location of a file relative to the file root, `/`, while a relative file path is the path relative to the spot where you are right now.
+
+When you're writing out a file path, you can also explicitly access the working directory using `.`. In the last chapter, we talked about the `ls` command, which lists what's in the working directory. Now, you understand that `ls` just has a default argument of `.`, so `ls` and `ls .` do exactly the same thing.
+
+So an absolute (sometime called fully-qualified) path always starts with `/` and might look something like `/home/alex/`. So regardless of what your working directory is, `ls /home/alex` will always show the contents of `/home/alex`.
+
+A relative path starts from your working directory. So I can run `ls alex`, and that will look for a directory named `alex` on the next rung down the tree from where I am and list its contents, if it exists. So if I'm in `/home`, `ls alex` will return the same thing as `ls /home/alex`, but otherwise it will return something else.
+
+If you ever want to explicitly indicate your working directory in a file path, you can do so with `.`, so `ls ./alex` is the same as `ls alex`.
+
+Sometimes absolute file paths make more sense, and sometimes relative paths do. In general, absolute file paths make more sense when you want to access the exact same resource from multiple places, and relative file paths make more sense when you want to access the same resource that might exist in different places. Now that you understand generally where you are, let's talk about how to start interacting.
+
+### Moving around and interacting
+
+The first thing you'll need to do is to look around your working directory and other directories, using the `ls` command, which we've already discussed in some detail.
+
+Once you've looked around, you'll have to move somewhere -- you can change your working directory with the `cd` command, short for change directory.
+
+There are a few directories with special names, aside from the root `/`. Your current working directory is always at `.`, and the parent of your current directory is at `..`, so you can move to the parent of your current directory using `cd ..` and up two levels with `cd ../..`.
+
+We'll get more into users below, but if your user has a home directory, that home directory is at `~`.
+
+There will be times when you have to copy, move, or remove files -- each of these things can be accomplished with commands that are similarly abbreviated forms of the relevant words -- `cp`, `mv`, and `rm`.
+
+::: callout-warning
+Be very careful with the `rm` command.
+
+Unlike on your desktop there's no recycle bin! Things that are deleted are instantly deleted forever.
+:::
+
+If you want to copy, move, or remove files, the `-r` flag for `recursive` is a handy one -- if you try to copy, move or remove a directory, you often mean to act on the entire subtree below that directory, which the `-r` flag indicates.
+
+Similarly, sometimes you want to list everything in a directory. For example, you might want to copy the entire contents of a directory. In that case, the wildcard, `*`, returns everything in a directory. So `cp alex/* alex2` copies the full contents of `alex` into `alex2`.
+
+There are times when you want to make files or directories with nothing in them -- the `touch` command makes a blank file at the specified file path, and `mkdir` makes a directory at the specified filepath. `mkdir` can be a little finicky about when paths exist and it will only make one level. So `mkdir my_dir` works, but `mkdir my_dir/my_sub_dir` does not. Using `mkdir -p`, it will use existing paths and make whichever parts of the path don't yet exist.
+
+### Interacting with server configuration
+
+On a Linux system, almost everything is either a text file or an executable. That means that configuration files and logs are just text files, and so you can interact with them all the same way.
+
+A very common pattern in Linux administration is to read a log file to look for errors or clues, adjust a configuration setting as a result, and then restart a process.
+
 ## Miscellaneous Symbols
 
-<table>
-<thead>
-<tr class="header">
-<th><p>Symbol</p></th>
-<th><p>What it is</p></th>
-<th><p>Helpful options</p></th>
-<th><p>Example</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>/</code></p></td>
-<td><p>system root</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>~</code></p></td>
-<td><p>your home directory</p></td>
-<td></td>
-<td><p><code>echo ~</code></p>
-<p><code>/ home/alex.gold</code></p></td>
-</tr>
-<tr class="odd">
-<td><p><code>.</code></p></td>
-<td><p>current working directory</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>man</code></p></td>
-<td><p><strong>man</strong>ual</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>|</code></p></td>
-<td><p>the pipe</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>echo</code></p></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>$</code></p></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p>sudo</p></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p>su</p></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+| Symbol | What it is                    | Helpful options | Example |
+|--------|-------------------------------|-----------------|---------|
+| `man`  | **man**ual                    |                 |         |
+| `|`    | the pipe                      |                 |         |
+| `echo` |                               |                 |         |
+| `$`    | treat something as a variable |                 |         |
 
 ## Moving yourself and your files
 
@@ -146,6 +157,18 @@ Below, I'm intentionally mixing up bash commands and Linux system commands becau
 </tr>
 </thead>
 <tbody>
+<tr class="odd">
+<td><p><code>/</code></p></td>
+<td><p>system root</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><p><code>.</code></p></td>
+<td><p>current working directory</p></td>
+<td></td>
+<td></td>
+</tr>
 <tr class="odd">
 <td><p><code>pwd</code></p></td>
 <td><p><strong>p</strong>rint <strong>w</strong>orking <strong>d</strong>irectory</p></td>
@@ -189,7 +212,19 @@ Below, I'm intentionally mixing up bash commands and Linux system commands becau
 <td></td>
 </tr>
 <tr class="odd">
-<td><p><code>chmod</code></p></td>
+<td><p><code>mkdir</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><p><code>touch</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><p><code>*</code></p></td>
 <td></td>
 <td></td>
 <td></td>
@@ -197,19 +232,69 @@ Below, I'm intentionally mixing up bash commands and Linux system commands becau
 </tbody>
 </table>
 
+## A rough `vim` intro
+
 ## Checking out Files
 
 Often useful in server contexts for reading log files.
 
-| C ommand | What it does | Helpful options | Example |
-|----------|--------------|-----------------|---------|
-| `cat`    |              |                 |         |
-| `less`   |              |                 |         |
-| `tail`   |              | -f              |         |
-| `grep`   |              |                 |         |
-| `tar`    |              |                 |         |
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 53%" />
+<col style="width: 18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><p>Command</p></th>
+<th><p>What it does</p></th>
+<th><p>Notes + Helpful options</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p><code>touch</code></p></td>
+<td><p>Updates the timestamp on a file.</p></td>
+<td><p>Creates a blank file if no file of that name exists.</p></td>
+</tr>
+<tr class="even">
+<td><p><code>cat</code></p></td>
+<td><p>Prints a file.</p></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><p><code>less</code></p></td>
+<td><p>Prints a file, but just a little.</p></td>
+<td><p>Can be very helpful to look at a few rows of csv. </p>
+<p>Only reads what youre looking at, so can be <em>much</em> faster than <code>cat</code> for big files.</p></td>
+</tr>
+<tr class="even">
+<td><p><code>tail</code></p></td>
+<td><p>Look at the end of a file.</p></td>
+<td><p>Log files usually are written so the newest part is <em>last</em>. So much so that tailing a log file is a synonym for looking at it.</p>
+<p>If you want to get a live view of a log file that will update as more is written, use the <code>-f</code> flag (for <em>follow</em>).</p></td>
+</tr>
+<tr class="odd">
+<td><p><code>grep</code></p></td>
+<td><p>Search a file using regex.</p></td>
+<td><p>Useful to search inside a file, but youve gotta write regex. I suggest testing expressions on regex101.com. </p>
+<p>Often useful in combination with the pipe.</p></td>
+</tr>
+<tr class="even">
+<td><p><code>tar</code></p></td>
+<td><p>Compress or decompress a file/directory.</p></td>
+<td><p>Annoyingly almost never used without flags.</p>
+<p>Create usually done using </p>
+<p><code>tar -czf &lt;archive name&gt; &lt;file(s) to tar&gt;</code></p>
+<p>Extract usually done with </p>
+<p><code>tar -xfv &lt;archive name&gt;</code></p></td>
+</tr>
+</tbody>
+</table>
 
 ## Checking out Server Activity
+
+Restarting processes?
 
 | C ommand | What it does | Helpful options | Example |
 |----------|--------------|-----------------|---------|
@@ -226,13 +311,57 @@ Often useful in server contexts for reading log files.
 | `ne tstat` |              |                 |         |
 | `curl`     |              |                 |         |
 
-## User Management
+## User + Permissions Management
 
-| Command   | What it does | Helpful options | Example |
-|-----------|--------------|-----------------|---------|
-| `whoami`  |              |                 |         |
-| `passwd`  |              |                 |         |
-| `useradd` |              |                 |         |
+<table>
+<thead>
+<tr class="header">
+<th><p>Command</p></th>
+<th><p>What it does</p></th>
+<th><p>Helpful options</p></th>
+<th><p>Example</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><p><code>~</code></p></td>
+<td><p>your home directory</p></td>
+<td></td>
+<td><p><code>echo ~</code></p>
+<p><code>/ home/alex.gold</code></p></td>
+</tr>
+<tr class="even">
+<td><p><code>su</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><p><code>whoami</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><p><code>passwd</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><p><code>useradd</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><p><code>chmod</code></p></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 
 ## Lab: Setting up a user, configuring SSH, Installing R, Python, and More
 
@@ -275,6 +404,8 @@ You should be confronted by the command prompt where you'll start typing.
 We're going to start by creating a new SSH key and putting it on the server we set up.
 
 *NOTE - should we do this after creating a user?*
+
+Use scp
 
 ### Create an SSH key
 
