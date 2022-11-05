@@ -323,11 +323,15 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#if-you-use-macos" id="toc-if-you-use-macos" class="nav-link" data-scroll-target="#if-you-use-macos"><span class="toc-section-number">7.1.2</span>  If you use MacOS</a></li>
   <li><a href="#if-you-use-a-windows-machine" id="toc-if-you-use-a-windows-machine" class="nav-link" data-scroll-target="#if-you-use-a-windows-machine"><span class="toc-section-number">7.1.3</span>  If you use a Windows machine</a></li>
   </ul></li>
-  <li><a href="#lab-accessing-your-server" id="toc-lab-accessing-your-server" class="nav-link" data-scroll-target="#lab-accessing-your-server"><span class="toc-section-number">7.2</span>  Lab: Accessing your server</a>
+  <li><a href="#the-structure-of-a-bash-command" id="toc-the-structure-of-a-bash-command" class="nav-link" data-scroll-target="#the-structure-of-a-bash-command"><span class="toc-section-number">7.2</span>  The structure of a bash command</a></li>
+  <li><a href="#ssh" id="toc-ssh" class="nav-link" data-scroll-target="#ssh"><span class="toc-section-number">8</span>  Accessing Servers via SSH</a>
   <ul class="collapse">
-  <li><a href="#ssh-into-the-server" id="toc-ssh-into-the-server" class="nav-link" data-scroll-target="#ssh-into-the-server"><span class="toc-section-number">7.2.1</span>  SSH into the server</a></li>
+  <li><a href="#lab-accessing-your-server" id="toc-lab-accessing-your-server" class="nav-link" data-scroll-target="#lab-accessing-your-server"><span class="toc-section-number">8.1</span>  Lab: Accessing your server</a>
+  <ul class="collapse">
+  <li><a href="#ssh-into-the-server" id="toc-ssh-into-the-server" class="nav-link" data-scroll-target="#ssh-into-the-server"><span class="toc-section-number">8.1.1</span>  SSH into the server</a></li>
   </ul></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="toc-section-number">7.3</span>  Exercises</a></li>
+  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="toc-section-number">8.2</span>  Exercises</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-2-cmd-line.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -411,10 +415,66 @@ Note
 <p>Windows comes with two shells built in, the Command shell (<code>cmd</code>) and the PowerShell. The command shell is older and has been superseded by PowerShell. If you’re just getting started, you absolutely should just work with PowerShell. If you’ve been using Command shell on a Windows machine for a long time, most Command shell command work in PowerShell, so it may be worth switching over.</p>
 </section>
 </section>
-<section id="lab-accessing-your-server" class="level2" data-number="7.2">
-<h2 data-number="7.2" class="anchored" data-anchor-id="lab-accessing-your-server"><span class="header-section-number">7.2</span> Lab: Accessing your server</h2>
-<section id="ssh-into-the-server" class="level3" data-number="7.2.1">
-<h3 data-number="7.2.1" class="anchored" data-anchor-id="ssh-into-the-server"><span class="header-section-number">7.2.1</span> SSH into the server</h3>
+<section id="the-structure-of-a-bash-command" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="the-structure-of-a-bash-command"><span class="header-section-number">7.2</span> The structure of a bash command</h2>
+<p>Once you log into your server, you’ll be using bash, whether you’re coming from Windows or Mac.</p>
+<p>So let’s take a moment and understand how to read and use a bash command.</p>
+<p>Each command in bash is its own small program and so you can interact with them on the command line in a standard way. There are some commands you just run by themselves, but most commands run with options and arguments.</p>
+<p>Arguments tell the command what to run on. For example, the <code>ls</code> command lists files in the indicated directory. If you leave the argument blank, it <code>ls</code> just lists files in the current directory, but you can also provide an argument of the directory you’d like to see inside.</p>
+<p>So <code>ls</code> will list the contents of the current directory, while <code>ls /home/alex</code> will list the contents of the <code>/home/alex</code> directory.</p>
+<p>Options or flags are sub-commands that modify how the command operates. Flags are denoted by having one or more dashes before them. For example, the <code>ls</code> command, which lists files, has the flag <code>-l</code>, which indicates that the files should be displayed as a list.</p>
+<p>Flags always come in between the command and any arguments to the command. So, for example, if I type <code>ls -l /home/alex</code> in my terminal, I get back the files in <code>/home/alex</code> formatted as a list.</p>
+<p>Some flags themselves have arguments, which appear after the flag and a space. So, for example, if you’re using the <code>-l</code> flag on <code>ls</code>, you can use the <code>-D</code> flag to format the datetime when the file was last updated.</p>
+<p>So, for example, running <code>ls -l -D %Y-%m-%dT%H:%M:%S /home/alex</code> will list all the files in <code>/home/alex</code> with the date-time of the last update formatted in ISO 8601 format (which is always the correct format for dates. Note that this structure <code>&lt;command&gt; &lt;flags + flag args&gt; &lt;command args&gt;</code> is always the structure of a bash command, and can make it hard to read, since you have to figure out how to read all the flags.</p>
+<p>All of the flags and arguments for commands can be found in the program’s <em>man page</em> (short for manual). You can access the man page for any command with <code>man &lt;command&gt;</code>. You can scroll the man page with arrow keys and exit with <code>q</code>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 23%">
+<col style="width: 49%">
+<col style="width: 27%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Symbol</th>
+<th>What it is</th>
+<th>Helpful options + notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>man</code></td>
+<td><strong>man</strong>ual</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>q</code></td>
+<td>Exit man pages (and many other situations)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ssh" class="level1" data-number="8">
+<h1 data-number="8"><span class="header-section-number">8</span> Accessing Servers via SSH</h1>
+<p>Now that you’re set up and comfortable using the command line, let’s spend some time exploring SSH.</p>
+<p>SSH – short for Secure (Socket) Shell – is the standard way of accessing servers for the purpose of administering them using command line tools. By using SSH, you can have a terminal open on your laptop, but instead of interacting with your local machine, you’ll be interacting with a remote server.</p>
+<p>Whenever you’re using SSH, the correct mental model in your head is that you’re typing the command into your local terminal, but it’s actually running off on the remote server. SSH is the technology that allows those commands and their results to go securely back and forth between the server and your terminal window.</p>
+<p>In your day-to-day usage of SSH, the main thing you’ll have to do is manage your SSH keys. SSH keys are gibberish strings of letters and numbers that allow your computer to verify that it’s you to the server you want to access.</p>
+<p>Here’s how it works – when you want to SSH into a server, you’ll create an SSH keypair. This keypair has two components – the <em>public key</em> and the <em>private key</em>.</p>
+<p>You’ll take the public key and put it on the server you’re trying to access and you’ll keep the private key securely on your laptop. Then, when you go to access the server, you’ll use the command line to open an SSH session and the server will check that the public key it has matches the private key your laptop is offering.</p>
+<p>If it matches, you get an SSH session!</p>
+<section id="how-ssh-works" class="level4" data-number="8.0.0.1">
+<h4 data-number="8.0.0.1" class="anchored" data-anchor-id="how-ssh-works"><span class="header-section-number">8.0.0.1</span> How SSH works</h4>
+<p>At first blush, the way SSH works seems nonsensical. I can just take my public key and just kinda chuck it out into the world and then it’s all ok?!?</p>
+<p>Like most cryptography, public key encryption relies on mathematical operations that are easy in one direction, but hard in the other.</p>
+<p>For example, it’s computationally trivial to multiply two large prime numbers and check if they equal some other number, but it’s very computationally expensive to start with a big number and find the largest prime factors of that number.</p>
+<p>In an oversimplified (but useful) mental model, you can think about the public key as just being a large number, and the private key being the two primes. While it seems like it might still be insecure, SSH keys are <em>very</em> big numbers. Modern encryption standards mean that it’s basically impossible to break a public SSH key.</p>
+<p>However, it is totally possible to compromise the security of an SSH connection by being sloppy with your private keys. So while SSH is cyptographically super secure, the whole system is only as secure as you. Don’t share your SSH private keys.</p>
+</section>
+<section id="lab-accessing-your-server" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="lab-accessing-your-server"><span class="header-section-number">8.1</span> Lab: Accessing your server</h2>
+<section id="ssh-into-the-server" class="level3" data-number="8.1.1">
+<h3 data-number="8.1.1" class="anchored" data-anchor-id="ssh-into-the-server"><span class="header-section-number">8.1.1</span> SSH into the server</h3>
 <p>The <code>.pem</code> key you downloaded is the skeleton key to your server. You should be extremely careful with the <code>.pem</code> key. In the next chapter, we’ll set up an actual user on the server and configure SSH, which is more secure.</p>
 <p>But we’ve got to get started on the server somehow, and using the <code>.pem</code> key is the way to do it.</p>
 <p>Before we can use it to open the server, we’ll need to make a quick change to the permissions on the key. We’ll get a lot into users, groups, and permissions in the next chapter. For now, you can just copy paste these commands.</p>
@@ -428,8 +488,8 @@ Note
 <p>In the next chapter, we’ll learn how to do some basic Linux Administration tasks. Let’s get going!</p>
 </section>
 </section>
-<section id="exercises" class="level2" data-number="7.3">
-<h2 data-number="7.3" class="anchored" data-anchor-id="exercises"><span class="header-section-number">7.3</span> Exercises</h2>
+<section id="exercises" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="exercises"><span class="header-section-number">8.2</span> Exercises</h2>
 <ol type="1">
 <li>Draw your own diagram of the sequence of things that occur when you execute <code>ssh user@server.company.com</code> in the terminal.</li>
 <li>Create a local text file and SFTP it to the server. SSH in, edit the file, and SFTP it back.</li>
@@ -438,6 +498,7 @@ Note
 </ol>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
