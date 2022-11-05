@@ -86,6 +86,39 @@ So, for example, running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` will list all t
 
 All of the flags and arguments for commands can be found in the program's *man page* (short for manual). You can access the man page for any command with `man <command>`. You can scroll the man page with arrow keys and exit with `q`.
 
+| Symbol        | What it is                                 | Helpful options + notes |
+|-----------------|------------------------------------|--------------------|
+| `man`         | **man**ual                                 |                         |
+| `q`           | Exit man pages (and many other situations) |                         || `Control + c` | Interrupt.                                 |                         |
+
+# Accessing Servers via SSH {#ssh}
+
+Now that you're set up and comfortable using the command line, let's spend some time exploring SSH.
+
+SSH -- short for Secure (Socket) Shell -- is the standard way of accessing servers for the purpose of administering them using command line tools. By using SSH, you can have a terminal open on your laptop, but instead of interacting with your local machine, you'll be interacting with a remote server.
+
+Whenever you're using SSH, the correct mental model in your head is that you're typing the command into your local terminal, but it's actually running off on the remote server. SSH is the technology that allows those commands and their results to go securely back and forth between the server and your terminal window.
+
+In your day-to-day usage of SSH, the main thing you'll have to do is manage your SSH keys. SSH keys are gibberish strings of letters and numbers that allow your computer to verify that it's you to the server you want to access.
+
+Here's how it works -- when you want to SSH into a server, you'll create an SSH keypair. This keypair has two components -- the *public key* and the *private key*.
+
+You'll take the public key and put it on the server you're trying to access and you'll keep the private key securely on your laptop. Then, when you go to access the server, you'll use the command line to open an SSH session and the server will check that the public key it has matches the private key your laptop is offering.
+
+If it matches, you get an SSH session!
+
+#### How SSH works
+
+At first blush, the way SSH works seems nonsensical. I can just take my public key and just kinda chuck it out into the world and then it's all ok?!?
+
+Like most cryptography, public key encryption relies on mathematical operations that are easy in one direction, but hard in the other.
+
+For example, it's computationally trivial to multiply two large prime numbers and check if they equal some other number, but it's very computationally expensive to start with a big number and find the largest prime factors of that number.
+
+In an oversimplified (but useful) mental model, you can think about the public key as just being a large number, and the private key being the two primes. While it seems like it might still be insecure, SSH keys are *very* big numbers. Modern encryption standards mean that it's basically impossible to break a public SSH key.
+
+However, it is totally possible to compromise the security of an SSH connection by being sloppy with your private keys. So while SSH is cyptographically super secure, the whole system is only as secure as you. Don't share your SSH private keys.
+
 ## Lab: Accessing your server
 
 ### SSH into the server
