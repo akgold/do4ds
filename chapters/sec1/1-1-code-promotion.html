@@ -326,7 +326,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#taking-data-science-to-production-with-cicd" id="toc-taking-data-science-to-production-with-cicd" class="nav-link" data-scroll-target="#taking-data-science-to-production-with-cicd"><span class="toc-section-number">1.2</span>  Taking data science to production with CI/CD</a>
   <ul class="collapse">
-  <li><a href="#using-cicd-to-deploy-data-science-assets" id="toc-using-cicd-to-deploy-data-science-assets" class="nav-link" data-scroll-target="#using-cicd-to-deploy-data-science-assets"><span class="toc-section-number">1.2.1</span>  Using CI/CD to deploy data science assets</a></li>
+  <li><a href="#a-rough-intro-to-git" id="toc-a-rough-intro-to-git" class="nav-link" data-scroll-target="#a-rough-intro-to-git"><span class="toc-section-number">1.2.1</span>  A Rough Intro to Git</a></li>
+  <li><a href="#using-cicd-to-deploy-data-science-assets" id="toc-using-cicd-to-deploy-data-science-assets" class="nav-link" data-scroll-target="#using-cicd-to-deploy-data-science-assets"><span class="toc-section-number">1.2.2</span>  Using CI/CD to deploy data science assets</a></li>
   </ul></li>
   <li><a href="#per-environment-configuration" id="toc-per-environment-configuration" class="nav-link" data-scroll-target="#per-environment-configuration"><span class="toc-section-number">1.3</span>  Per-Environment Configuration</a></li>
   <li><a href="#creating-and-maintaining-identical-environments" id="toc-creating-and-maintaining-identical-environments" class="nav-link" data-scroll-target="#creating-and-maintaining-identical-environments"><span class="toc-section-number">1.4</span>  Creating and Maintaining Identical Environments</a></li>
@@ -389,12 +390,64 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <h2 data-number="1.2" class="anchored" data-anchor-id="taking-data-science-to-production-with-cicd"><span class="header-section-number">1.2</span> Taking data science to production with CI/CD</h2>
 <p>The common term for the mechanics of code promotion is Continuous Integration/Continuous Deployment (CI/CD).</p>
 <p>CI/CD is about moving your data science projects, including code, data, and environment, into successively more formal states of production. While it’s not a requirement to use source control to make this happen, the <em>mechanics</em> of CI/CD is usually tightly linked to source control procedures.</p>
-<p>If you’re not already familiar, I’d suggest spending some time learning git. If you’re just starting, you’re in for a bit of a ride. People who say git is easy are either lying to look smarter or learned so long ago that they have forgotten how easy it is to mess up your entire workflow at any moment.</p>
+<section id="a-rough-intro-to-git" class="level3" data-number="1.2.1">
+<h3 data-number="1.2.1" class="anchored" data-anchor-id="a-rough-intro-to-git"><span class="header-section-number">1.2.1</span> A Rough Intro to Git</h3>
+<p>If you’re not already familiar, I’d suggest spending some time learning git. If you’re just starting, you’re in for a bit of a ride.</p>
+<p>People who say git is easy are either lying to look smarter or learned so long ago that they have forgotten how easy it is to mess up your entire workflow at any moment.</p>
+<p>I’m not going to get into the mechanics of git in this book– what it means to add, commit, push, pull, merge, and more. There are lots of great resources out there that I’m not aiming to reproduce.</p>
 <div class="rmdinfo">
 <p>If you don’t already know git and want to learn, I’d recommend <a href="https://happygitwithr.com/index.html">HappyGitWithR</a> by Jenny Bryan. It’s a great on-ramp to learn git.</p>
 <p>Even if you’re a Python user, the sections on getting started with git, on basic git concepts, and on workflows will be useful since they approach git from a data science perspective.</p>
 </div>
-<p>For the purposes of this section, I’m going to assume you at least conceptually understand what git branches are and what a merge is – as much of your CI/CD pipeline will be based on what happens when you merge.</p>
+<p>I will provide a quick git cheatsheet for memory purposes, and I will talk about some git <em>strategies</em> that match well with using git to execute a data science code promotion strategy.</p>
+<section id="git-cheatsheet" class="level4" data-number="1.2.1.1">
+<h4 data-number="1.2.1.1" class="anchored" data-anchor-id="git-cheatsheet"><span class="header-section-number">1.2.1.1</span> Git Cheatsheet</h4>
+<table class="table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 59%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it Does</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>git clone &lt;remote&gt;</code></td>
+<td>Clone a remote repo – make sure you’re using SSH URL.</td>
+</tr>
+<tr class="even">
+<td><code>git add &lt;files/dir&gt;</code></td>
+<td>Add files/dir to staging area.</td>
+</tr>
+<tr class="odd">
+<td><code>git commit -m &lt;message&gt;</code></td>
+<td>Commit your staging area.</td>
+</tr>
+<tr class="even">
+<td><code>git push origin &lt;branch&gt;</code></td>
+<td>Push to a remote.</td>
+</tr>
+<tr class="odd">
+<td><code>git pull origin &lt;branch&gt;</code></td>
+<td>Pull from a remote.</td>
+</tr>
+<tr class="even">
+<td><code>git checkout &lt;branch name&gt;</code></td>
+<td>Checkout a branch.</td>
+</tr>
+<tr class="odd">
+<td><code>git checkout -b &lt;branch name&gt;</code></td>
+<td>Create and checkout a branch.</td>
+</tr>
+<tr class="even">
+<td><code>git branch -d &lt;branch name&gt;</code></td>
+<td>Delete a branch.</td>
+</tr>
+</tbody>
+</table>
 <p>For production data science assets, I generally recommend long-running dev (or test) and prod branches, with feature branches for developing new things. The way this works is that new features are developed in a feature branch, merged into dev for testing, and then promoted to prod when you’re confident it’s ready.</p>
 <p>For example, if you had two new plots you were adding to an existing dashboard, your git commit graph might look like this:</p>
 <p><img src="images-code-promotion/git-branches.png" class="img-fluid" width="474"></p>
@@ -404,8 +457,10 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <p>In years past, the two most popular CI/CD tools were called Travis and Jenkins. By all accounts, these tools were somewhat unwieldy and difficult to get set up. More recently, GitHub – the foremost git server – released GitHub Actions (GHA), which is CI/CD tooling directly integrated into GitHub that’s free for public repositories and free up to some limits for private ones.</p>
 <p>It’s safe to say GHA is eating the world of CI/CD.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>For example, if you’re reading this book online, it was deployed to the website you’re currently viewing using GHA. I’m not going to get deep into the guts of GHA, but instead talk generally about the pattern for deploying data science assets, and then go through how I set up this book on GHA.</p>
-<section id="using-cicd-to-deploy-data-science-assets" class="level3" data-number="1.2.1">
-<h3 data-number="1.2.1" class="anchored" data-anchor-id="using-cicd-to-deploy-data-science-assets"><span class="header-section-number">1.2.1</span> Using CI/CD to deploy data science assets</h3>
+</section>
+</section>
+<section id="using-cicd-to-deploy-data-science-assets" class="level3" data-number="1.2.2">
+<h3 data-number="1.2.2" class="anchored" data-anchor-id="using-cicd-to-deploy-data-science-assets"><span class="header-section-number">1.2.2</span> Using CI/CD to deploy data science assets</h3>
 <p>In general, using a CI/CD tool to deploy a data science asset is pretty straightforward. The mental model to have is that the CI/CD tool stands up a completely empty server for you, and runs some code on it.</p>
 <p>That means that if you’re just doing something simple like spellchecking, you can probably just specify to run spellcheck. If you’re doing something more complicated, like rendering an R Markdown document or Jupyter Notebook and then pushing it to a server, you’ll have to take a few extra steps to be sure the right version of R or Python is on the CI/CD server, that your package environment is properly reproduced, and that you have the right code to render your document.</p>
 <p>Feel free to take a look through the <a href="https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_bookdown.yml">code for the GitHub Action for this book</a>. It’s all YAML, so it’s pretty human-readable.</p>
