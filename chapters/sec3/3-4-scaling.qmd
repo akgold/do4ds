@@ -26,9 +26,9 @@ TODO: Image of vertical + horizontal scaling
 
 Sometimes horizontal scaling is undertaken for pure scaling purposes, but sometimes it's undertaken for cluster resilience purposes. For example, you might want the cluster to be resilient to a node randomly failing, or being taken down for maintenance. In this context, horizontal scaling is often called *high availability*. Like many other things, high availability is a squishy term, and different organizations have very different definitions of what it means.
 
-For example, in one organization, high availability might just mean that there's a robust disaster recovery plan so servers can be brought back online with little data loss. In another organization, high availability might mean having duplicate servers that aren't physically colocated to avoid potential outages due to server issues or natural disasters. In other contexts, it might be a commitment to a particular amount of uptime.[^scaling-1]
+For example, in one organization, high availability might just mean that there's a robust disaster recovery plan so servers can be brought back online with little data loss. In another organization, high availability might mean having duplicate servers that aren't physically colocated to avoid potential outages due to server issues or natural disasters. In other contexts, it might be a commitment to a particular amount of uptime.[^3-4-scaling-1]
 
-[^scaling-1]: Often called nines of uptime, referring to the proportion of the time that the service is guaranteed to be online out of a year. So a one-nine service is up 90% of the time, allowing for 36 days of downtime a year. a five-nine service is up for 99.999% of the time, allowing for only about 5 1/4 minutes of downtime a year.
+[^3-4-scaling-1]: Often called nines of uptime, referring to the proportion of the time that the service is guaranteed to be online out of a year. So a one-nine service is up 90% of the time, allowing for 36 days of downtime a year. a five-nine service is up for 99.999% of the time, allowing for only about 5 1/4 minutes of downtime a year.
 
 Spannning Multiple AZs
 
@@ -62,25 +62,25 @@ The details of how this is accomplished varies by the individual app, but the ba
 
 One feature that is likely to be a requirement of your data science environment is *sticky sessions* or *sticky cookies*. This means that when you come through the load balancer, a cookie is added to your browser so that the load balancer can keep track of which node you were routed to. This is important in cases where the app state lives on the server -- for example, you want to get back to your same instance of a shiny app in an RStudio Connect cluster. In most load balancers, this is a simple option you can just turn on.
 
-There are a few different ways to configure load balancing for servers. The first is called active/active. This just means that all of the servers are online all of the time. So if I have two RStudio Server instances, they're both accepting traffic all the time.[^scaling-2]
+There are a few different ways to configure load balancing for servers. The first is called active/active. This just means that all of the servers are online all of the time. So if I have two RStudio Server instances, they're both accepting traffic all the time.[^3-4-scaling-2]
 
-[^scaling-2]: If the service you're configuring does internal routing, like RStudio Workbench, you also may need to select whether you have one or several primary nodes. A primary node is one that accepts traffic from the load balancer and routes it internally. You could have just one node in the cluster serve as primary or several. Unless there's a good reason to prefer one, it's usually advantageous to do several, because it adds one layer of resilience to your cluster.
+[^3-4-scaling-2]: If the service you're configuring does internal routing, like RStudio Workbench, you also may need to select whether you have one or several primary nodes. A primary node is one that accepts traffic from the load balancer and routes it internally. You could have just one node in the cluster serve as primary or several. Unless there's a good reason to prefer one, it's usually advantageous to do several, because it adds one layer of resilience to your cluster.
 
 \[Graphic: network diagram of lb-config -- active/active vs active/passive\]
 
-In active/passive configurations, you have two or more servers, with one set accepting traffing all the time, and the other set remaining inert until or unless the first set goes offline. This is sometimes called a blue/green or red/black configuration.[^scaling-3] People often really like this configuration if they have high requirements for uptime, and want to be able to do upgrades to the system behind the scenes and then just cut the traffic over at some point without an interruption in service. It is a nice idea. It is often very hard to pull off.
+In active/passive configurations, you have two or more servers, with one set accepting traffing all the time, and the other set remaining inert until or unless the first set goes offline. This is sometimes called a blue/green or red/black configuration.[^3-4-scaling-3] People often really like this configuration if they have high requirements for uptime, and want to be able to do upgrades to the system behind the scenes and then just cut the traffic over at some point without an interruption in service. It is a nice idea. It is often very hard to pull off.
 
-[^scaling-3]: Blue/Green and Red/Black aren't the same things, but the differences are deep in the weeds...and not even consistently used.
+[^3-4-scaling-3]: Blue/Green and Red/Black aren't the same things, but the differences are deep in the weeds...and not even consistently used.
 
 Disaster recovery is not really a load-balancing method, but it's closely related. In a disaster recovery configuration, you have a server that isn't accepting traffic, but is getting syncs of the main server's data on a regular basis. In the event the real server were to go down, the disaster recovery server could be activated and brought in to receive traffic more quickly than the original server could be revived.
 
 ## Container Deployment + Orchestration {#k8s}
 
-One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).[^scaling-4] Kubernetes is the way people orchestrate Docker containers in production settings.[^scaling-5] So basically that it's the way to put containers into production when you want more than one to interact -- say you've got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.
+One tool that comes up increasingly frequently when talking about scaling is Kubernetes (sometimes abbreviated as K8S).[^3-4-scaling-4] Kubernetes is the way people orchestrate Docker containers in production settings.[^3-4-scaling-5] So basically that it's the way to put containers into production when you want more than one to interact -- say you've got an app that separately has a database and a front end in different containers, or, like in this chapter, multiple load-balanced instances of the same containers.
 
-[^scaling-4]: Apparently, Kubernetes is an ancient Greek word for "helmsman", so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.
+[^3-4-scaling-4]: Apparently, Kubernetes is an ancient Greek word for "helmsman", so cutesy nautical puns abound. See, for example, the Kubernetes logo, which is a ship wheel.
 
-[^scaling-5]: Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but *rarely* in production. Kubernetes also is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
+[^3-4-scaling-5]: Pedants will be delighted in all the ways this is technically incorrect. Some people use other tools like Docker Swarm in development, but *rarely* in production. Kubernetes also is not limited to *Docker* containers. As of this writing in 2022, those are irrelevant details for most people.
 
 While the operational details of Kubernetes are very different from the horizontal scaling patterns we've discussed so far in this chapter, the conceptual requirements are the same.
 
@@ -102,9 +102,9 @@ For individual data scientists, Kubernetes is usually overkill for the type of w
 
 One of the nice abstraction layers Kubernetes provides is that in Kubernetes, you provide declarative statements of the containers you want to run, and any requirements you have. You separately register actual hardware with the cluster, and Kubernetes takes care of placing the conatiners onto the hardware depending on what you've got available.
 
-In practice, unless you're part of a very sophisticated IT organization, you'll almost certainly use Kubernetes via one of the cloud providers' *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes Service (EKS).[^scaling-6]
+In practice, unless you're part of a very sophisticated IT organization, you'll almost certainly use Kubernetes via one of the cloud providers' *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes Service (EKS).[^3-4-scaling-6]
 
-[^scaling-6]: If you aren't using EKS, Azures AKS, or Google's GKE, the main other competitor is Oracle's OpenShift, which some organizations have running in on-prem Kubernetes clusters.
+[^3-4-scaling-6]: If you aren't using EKS, Azures AKS, or Google's GKE, the main other competitor is Oracle's OpenShift, which some organizations have running in on-prem Kubernetes clusters.
 
 One really nice thing about using these Kubernetes clusters as a service is that adding more compute power to your cluster is generally as easy as a few button clicks. On the other hand, that also makes it dangerous from a cost perspective.
 
