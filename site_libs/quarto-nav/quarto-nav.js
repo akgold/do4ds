@@ -88,7 +88,6 @@ window.document.addEventListener("DOMContentLoaded", function () {
     let linkStyle = window.document.querySelector("#quarto-target-style");
     if (!linkStyle) {
       linkStyle = window.document.createElement("style");
-      linkStyle.setAttribute("id", "quarto-target-style");
       window.document.head.appendChild(linkStyle);
     }
     while (linkStyle.firstChild) {
@@ -153,7 +152,7 @@ window.document.addEventListener("DOMContentLoaded", function () {
   const headerEl = window.document.querySelector("header.fixed-top");
   if (headerEl && window.ResizeObserver) {
     const observer = new window.ResizeObserver(
-      updateDocumentOffsetWithoutAnimation
+      throttle(updateDocumentOffsetWithoutAnimation, 50)
     );
     observer.observe(headerEl, {
       attributes: true,
@@ -165,8 +164,8 @@ window.document.addEventListener("DOMContentLoaded", function () {
       "resize",
       throttle(updateDocumentOffsetWithoutAnimation, 50)
     );
+    setTimeout(updateDocumentOffsetWithoutAnimation, 500);
   }
-  setTimeout(updateDocumentOffsetWithoutAnimation, 250);
 
   // fixup index.html links if we aren't on the filesystem
   if (window.location.protocol !== "file:") {

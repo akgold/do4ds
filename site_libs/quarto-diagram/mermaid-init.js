@@ -1,8 +1,3 @@
-// mermaid-init.js
-// Initializes the quarto-mermaid JS runtime
-//
-// Copyright (C) 2022 by RStudio, PBC
-
 /**
  * String.prototype.replaceAll() polyfill
  * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
@@ -186,9 +181,9 @@ const _quartoMermaid = {
 window.addEventListener(
   "load",
   function () {
-    mermaid.init("pre.mermaid-js");
+    mermaid.init("div.cell-output-display pre.mermaid");
     for (const svgEl of Array.from(
-      document.querySelectorAll("pre.mermaid-js svg")
+      document.querySelectorAll("div.cell-output-display pre.mermaid svg")
     )) {
       _quartoMermaid.postProcess(svgEl);
     }
