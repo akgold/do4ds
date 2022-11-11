@@ -263,7 +263,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#inbound-vs-outbound-proxies" id="toc-inbound-vs-outbound-proxies" class="nav-link" data-scroll-target="#inbound-vs-outbound-proxies"><span class="toc-section-number">12.1.2</span>  Inbound vs outbound proxies</a></li>
   </ul></li>
   <li><a href="#fully-offlineairgapped-operations" id="toc-fully-offlineairgapped-operations" class="nav-link" data-scroll-target="#fully-offlineairgapped-operations"><span class="toc-section-number">12.2</span>  Fully Offline/Airgapped operations</a></li>
-  <li><a href="#review-questions" id="toc-review-questions" class="nav-link" data-scroll-target="#review-questions"><span class="toc-section-number">12.3</span>  Review Questions</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">12.3</span>  Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/3-2-secure-networking.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -272,7 +272,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></h1>
+<h1 class="title"><span id="sec-networks-2" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></span></h1>
 </div>
 
 
@@ -286,7 +286,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 </header>
 
-<p>In the last section, we went over a <a href="../sec2/2-4-understanding-traffic.html">general introduction to networking</a>, including an introduction to DNS, how to get and use a real URL, and making sure your servers are secure with SSL/HTTPS.</p>
+<p>In <a href="../sec2/2-4-understanding-traffic.html">Chapter&nbsp;<span>9</span></a> we went over a general introduction to networking, including an introduction to DNS, how to get and use a real URL, and making sure your servers are secure with SSL/HTTPS.</p>
 <p>When you’re managing a relatively simple server – especially one that’s relatively low-threat, this is perfectly fine. However, if you’re managing a cluster of several servers, you have other security concerns, or a high-threat environment, you may need more complex networking solutions to make sure that your environment stays secure and manageable.</p>
 <p>In this chapter, we’ll learn a little about how an environment can be further secured from internet traffic.</p>
 <section id="what-does-it-mean-for-networking-to-be-more-complex" class="level3" data-number="12.0.1">
@@ -355,7 +355,7 @@ Network Debugging Tip
 <p>In most cases, proxies sit right on the edge of your network – in the DMZ (public subnet) between your private servers and the open internet. In some cases, there are also proxies <em>inside</em> different segments of the private network. These are generally for the purposes of isolating components as a security measure – like having watertight bulkheads between sections of a ship. If you’ve got a proxy – for example – between your app development environment and where it’s deployed, that’s a reasonably common cause of issues along the way.</p>
 <p>Developing a good mental model of where network connections originate is really important in terms of understanding why proxies might be causing you trouble. One of the most helpful things you can do when talking to your IT/Admin about networking issues is help them understand when your data science environment requires an inbound connection and when it requires an outbound connection.</p>
 <p>TODO: image inbound vs outbound connection</p>
-<p>As we went over in <a href="$url">chapter 2</a><a href="../sec2/2-4-understanding-traffic.html">-</a><a href="$url">4</a>, network traffic <em>always</em> operates on a call and response model. So whether your traffic is inbound or outbound is dependent on <em>who makes the call</em>. Inbound means that the call is coming from a computer <em>outside</em> the private network directed to a server <em>inside</em> the private network, and outbound is the opposite.</p>
+<p>As we went over in <a href="$url">chapter 2</a><a href="#url">-</a><a href="$url">4</a>, network traffic <em>always</em> operates on a call and response model. So whether your traffic is inbound or outbound is dependent on <em>who makes the call</em>. Inbound means that the call is coming from a computer <em>outside</em> the private network directed to a server <em>inside</em> the private network, and outbound is the opposite.</p>
 <p>So basically, anything that originates on your laptop – including the actual session into the server is an inbound connection, while anything that originates on the server – including <em>everything</em> in code that runs on the server is an outbound connection.</p>
 <section id="what-proxies-do" class="level3" data-number="12.1.1">
 <h3 data-number="12.1.1" class="anchored" data-anchor-id="what-proxies-do"><span class="header-section-number">12.1.1</span> What proxies do</h3>
@@ -401,9 +401,11 @@ Network Debugging Tip
 <p>If you are truly offline, you probably won’t be able to move things on or off your private servers. Instead, when you need things, the IT/Admin will either connect to a server in the DMZ that has permission to access both the public internet and the private network to load things, or they’ll actually have to download things to their laptop from the internet, connect to the server in the offline environment, and upload them.</p>
 <p>TODO: drawing of offline operations</p>
 </section>
-<section id="review-questions" class="level2" data-number="12.3">
-<h2 data-number="12.3" class="anchored" data-anchor-id="review-questions"><span class="header-section-number">12.3</span> Review Questions</h2>
+<section id="comprehension-questions" class="level2" data-number="12.3">
+<h2 data-number="12.3" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">12.3</span> Comprehension Questions</h2>
 <ol type="1">
+<li>What is the advantage of adopting a more complex networking setup than a server just deployed directly on the internet? Are there advantages other than security?</li>
+<li>Draw a mental map with the following entities: inbound traffic, outbound traffic, proxy, DMZ, private subnet, public subnet, VPC</li>
 <li>Let’s say you’ve got a private VPC that hosts an instance of RStudio Server, an instance of JupyterHub, and a Shiny Server that has an app deployed. Here are a few examples of traffic – are they outbound, inbound, or within the network?
 <ol type="1">
 <li><p>Someone connecting to and starting a session on RStudio Server.</p></li>
@@ -413,6 +415,7 @@ Network Debugging Tip
 <li><p>A call in a Shiny app using <code>httr2</code> or <code>requests</code> to a public API that hosts data.</p></li>
 <li><p>Accessing a private corporate database from a Shiny for Python app using <code>sqlalchemy</code>.</p></li>
 </ol></li>
+<li>What are the most likely pain points for running a data science workbench that is fully offline/airgapped?</li>
 </ol>
 
 

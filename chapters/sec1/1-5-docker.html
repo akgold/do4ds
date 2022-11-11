@@ -332,9 +332,11 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#docker-run-flags" id="toc-docker-run-flags" class="nav-link" data-scroll-target="#docker-run-flags"><span class="toc-section-number">5.6.2</span>  <code>docker run</code> flags</a></li>
   </ul></li>
   <li><a href="#build-your-own-with-dockerfiles" id="toc-build-your-own-with-dockerfiles" class="nav-link" data-scroll-target="#build-your-own-with-dockerfiles"><span class="toc-section-number">5.7</span>  Build your own with Dockerfiles</a></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="toc-section-number">5.8</span>  Exercises</a>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">5.8</span>  Comprehension Questions</a></li>
+  <li><a href="#lab-running-a-container-locally" id="toc-lab-running-a-container-locally" class="nav-link" data-scroll-target="#lab-running-a-container-locally"><span class="toc-section-number">5.9</span>  Lab: Running a Container Locally</a></li>
+  <li><a href="#portfolio-example-run-rstudio-server-in-a-container" id="toc-portfolio-example-run-rstudio-server-in-a-container" class="nav-link" data-scroll-target="#portfolio-example-run-rstudio-server-in-a-container"><span class="toc-section-number">5.10</span>  Portfolio Example: Run RStudio Server in a Container</a>
   <ul class="collapse">
-  <li><a href="#running-a-service-in-a-container" id="toc-running-a-service-in-a-container" class="nav-link" data-scroll-target="#running-a-service-in-a-container"><span class="toc-section-number">5.8.1</span>  Running a service in a container</a></li>
+  <li><a href="#running-a-service-in-a-container" id="toc-running-a-service-in-a-container" class="nav-link" data-scroll-target="#running-a-service-in-a-container"><span class="toc-section-number">5.10.1</span>  Running a service in a container</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/1-5-docker.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
@@ -344,7 +346,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></h1>
+<h1 class="title"><span id="sec-docker" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></span></h1>
 </div>
 
 
@@ -455,7 +457,7 @@ Note
 <section id="prerequisites" class="level3" data-number="5.4.1">
 <h3 data-number="5.4.1" class="anchored" data-anchor-id="prerequisites"><span class="header-section-number">5.4.1</span> Prerequisites</h3>
 <p>In order to get started with Docker, you’ll need to know a few things. The first is that you’ll have to actually have Docker installed on an environment you can use. The easiest way to do this is to install <a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a> on your laptop, but you can also put Docker on a server environment.</p>
-<p>In order to follow along, you’ll also need to be able to open and use a terminal, see the section on <a href="../sec2/2-2-cmd-line.html">using the command line</a> if you’re not already comfortable.</p>
+<p>In order to follow along, you’ll also need to be able to open and use a terminal, see the section on <a href="#command-line">using the command line</a> if you’re not already comfortable.</p>
 </section>
 <section id="getting-started" class="level3" data-number="5.4.2">
 <h3 data-number="5.4.2" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">5.4.2</span> Getting Started</h3>
@@ -537,7 +539,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>A command line flag is an argument passed to a command line program. If you’re not familiar, it might be helpful to start by checking out <a href="../sec2/2-2-cmd-line.html">that section</a> of the book.</p>
+<p>A command line flag is an argument passed to a command line program. If you’re not familiar, it might be helpful to start by checking out <a href="#command-line">that section</a> of the book.</p>
 </div>
 </div>
 <p>Let’s pull apart the two commands we just used – which use the command line flags you’re most likely to need.</p>
@@ -572,8 +574,7 @@ Note
 <p>The <code>-d</code> flag instructs the container to run in <em>detached</em> mode so the container won’t block the terminal session. You can feel free to run the container attached – but you’ll have to quit the container by aborting the command from inside the terminal (<code>Ctrl + c</code>), or opening another terminal to <code>docker kill</code> the container.</p>
 <p>The <code>-p</code> flag <em>publishes</em> a port from inside the container to the host machine. So by specifying <code>-p 8000:8000</code>, we’re taking whatever’s available on the port <code>8000</code> inside the container and making it available at the same port on the <code>localhost</code> of the machine that’s hosting the container.</p>
 <p>TODO: picture of ports</p>
-<p>Port forwarding is always specified as <code>&lt;host port&gt;:&lt;container port&gt;</code>. Try playing around with changing the values to make the API available on a different port, perhaps <code>9876</code>. For a more in-depth treatment of ports, see the section later in the book.</p>
-<p>TODO: link to ports section</p>
+<p>Port forwarding is always specified as <code>&lt;host port&gt;:&lt;container port&gt;</code>. Try playing around with changing the values to make the API available on a different port, perhaps <code>9876</code>. For a more in-depth treatment of ports, see <a href="../sec2/2-4-understanding-traffic.html">Chapter&nbsp;<span>9</span></a>.</p>
 <p>The <code>--name</code> flag gives our container a name. This is really just a convenience so that you could do commands like <code>docker kill</code> in terms of the container name, rather than the container ID, which will be different for each person who runs the command.</p>
 <p>In a lot of cases, you won’t bother with a name for the container.</p>
 <p>You can find container ID using the <code>docker ps</code> command to get the <em>process status</em>. In the case below, I could control the container with the name <code>palmer-plumber</code>, or with the container ID. You can abbreviate container IDs as long as they’re unique – I tend to use the first three characters.</p>
@@ -649,19 +650,33 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  mv ./hello.html /project-out/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Once you’ve created your Dockerfile, you build it into an image using <code>docker build -t &lt;image name&gt;</code> and then you can push that to DockerHub or another registry using <code>docker push</code>.</p>
 </section>
-<section id="exercises" class="level2" data-number="5.8">
-<h2 data-number="5.8" class="anchored" data-anchor-id="exercises"><span class="header-section-number">5.8</span> Exercises</h2>
+<section id="comprehension-questions" class="level2" data-number="5.8">
+<h2 data-number="5.8" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">5.8</span> Comprehension Questions</h2>
 <ol type="1">
-<li>See if you can get a copy of RStudio Server running in a container on your desktop using the <code>rocker/rstudio</code> container. Can you access your home directory from RStudio Server?
+<li>What does using a Docker container for a data science project make easier? What does it make harder?</li>
+<li>Draw a mental map of the relationship between the following: Dockerfile, Docker Image, Docker Registry, Docker Container</li>
+<li>When would you want to use each of the following flags for <code>docker run</code>? When wouldn’t you?
+<ul>
+<li><code>-p</code>, <code>--name</code>, <code>-d</code>, <code>--rm</code>, <code>-v</code></li>
+</ul></li>
+<li>What are the most important Dockerfile commands?</li>
+</ol>
+</section>
+<section id="lab-running-a-container-locally" class="level2" data-number="5.9">
+<h2 data-number="5.9" class="anchored" data-anchor-id="lab-running-a-container-locally"><span class="header-section-number">5.9</span> Lab: Running a Container Locally</h2>
+<p>TODO: move palmer penguins example down here</p>
+<p>CONSIDER – should the portfolio example instead be dockerizing the app you created in section 1-3?</p>
+</section>
+<section id="portfolio-example-run-rstudio-server-in-a-container" class="level2" data-number="5.10">
+<h2 data-number="5.10" class="anchored" data-anchor-id="portfolio-example-run-rstudio-server-in-a-container"><span class="header-section-number">5.10</span> Portfolio Example: Run RStudio Server in a Container</h2>
+<p>Write a blog post about getting RStudio Server running in a container on your desktop using the <code>rocker/rstudio</code> container. Can you access your home directory from RStudio Server?</p>
 <ul>
 <li><p>Hint 1: You’ll probably need all of the <code>docker run</code> flags you’ve learned and one more – the <code>-e KEY=value</code> flag provides an environment variable to the running container.</p></li>
 <li><p>Hint 2: The default port for RStudio Server is <code>8787</code>.</p></li>
 <li><p>Hint 3: If you’re running a laptop with Apple Silicon (M1 or M2), you may need to try a different container. <code>amoselb/rstudio-m1</code> worked for me.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p></li>
-</ul></li>
-<li>Can you build your own container to house an interactive app built in Shiny, Dash, Streamlit, or another framework of your choice?</li>
-</ol>
-<section id="running-a-service-in-a-container" class="level3" data-number="5.8.1">
-<h3 data-number="5.8.1" class="anchored" data-anchor-id="running-a-service-in-a-container"><span class="header-section-number">5.8.1</span> Running a service in a container</h3>
+</ul>
+<section id="running-a-service-in-a-container" class="level3" data-number="5.10.1">
+<h3 data-number="5.10.1" class="anchored" data-anchor-id="running-a-service-in-a-container"><span class="header-section-number">5.10.1</span> Running a service in a container</h3>
 <p>Consider reviewing the <a href="#docker">containers</a> section if you’re not generally familiar with how to run a container.</p>
 <p>If you want to run a service, like RStudio Server, out of a container, the pattern is very similar to running an interactive app. You’ll find an appropriate container, bring it up, and do some port mapping to make it available to the outside world.</p>
 <p>The <a href="https://hub.docker.com/u/rocker">rocker</a> organization makes available a number of containers related to R and RStudio. So if you want a container running RStudio Server on your laptop, it’s as easy as running</p>
