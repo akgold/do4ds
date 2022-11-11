@@ -1,4 +1,4 @@
-# Environments as Code {repro=""}
+# Environments as Code {#sec-env-as-code}
 
 TODO: add note on shared vs user vs project space
 
@@ -38,21 +38,21 @@ When you first start thinking about environments, it can be hard to wrap your he
 
 I generally think of three layers in data science environments, and these are in order -- each layer of the environment is actually built on the ones below. Once you understand the layers of an environment, you can think more clearly about what your actual reproducibility needs are, and which environmental layers you need to target putting into code.
 
-+---------------+------------------------------+
-| Layer         | Contents                     |
-+===============+==============================+
-| Packages      | R + Python Packages          |
-+---------------+------------------------------+
-| System        | R + Python Language Versions |
-|               |                              |
-|               | Other System Libraries       |
-|               |                              |
-|               | Operating System             |
-+---------------+------------------------------+
-| Hardware      | Virtual Hardware             |
-|               |                              |
-|               | Physical Hardware            |
-+---------------+------------------------------+
++----------+------------------------------+
+| Layer    | Contents                     |
++==========+==============================+
+| Packages | R + Python Packages          |
++----------+------------------------------+
+| System   | R + Python Language Versions |
+|          |                              |
+|          | Other System Libraries       |
+|          |                              |
+|          | Operating System             |
++----------+------------------------------+
+| Hardware | Virtual Hardware             |
+|          |                              |
+|          | Physical Hardware            |
++----------+------------------------------+
 
 Note that your code and your data are not the environment -- they are what the environment is for. As you're thinking about reproducibility, I'd encourage you to think about how they fit inside the environment and how they might be reproduced.[^1-2-env-as-code-2] But we're not going to address them in this book.
 
@@ -75,15 +75,13 @@ What happens if you come back to a project after a year and you've been installi
 
 The other problem happens when it comes time to share a project with others. It's not uncommon to see an intro to an R script that looks something like this:
 
-```{r}
-#| eval: false
+``` {r}}
 
 # Check if dplyr installed
 if (!"dplyr" %in% row.names(installed.packages())) {
   # install if not
   install.packages("dplyr")
 }
-
 ```
 
 ACK! Please don't do this!
@@ -134,7 +132,7 @@ So you can see that it's (conceptually) pretty simple to create a standalone pac
 
 You can see it pretty easily in R. If I run `.libPaths()` before and after activating an `{renv}` environment, the first entry from the `.libPaths()` call changes from a user-level library `/Users/alexkgold` to a project-level library `/Users/alexkgold/Documents/do4ds/`.
 
-```{r}
+``` {r}}
 #| eval: false
 
 .libPaths()
@@ -213,9 +211,23 @@ On a high level, the workflows for these tasks are similar between R and Python.
 
 At the end of the day, this actually makes it *harder* to use Python because you do not want to use your system Python for your data science work...but sometimes it accidentally gets into the mix.
 
-### Step 3: Collaborate
+### Step 3: Collaborate or Deploy
 
-TODO
+The nice thing about these tools is that they make collaboration easy. One big problem people run into is that they plan to share their package library with collaborators. Don't do this!
+
+There are two reasons -- first, sharing a library is a bad idea because it can change under people with no warning, leaving them confused about why things are breaking. If you're potentially working on a different operating system from your collaborators, this won't even work in the first place. And if you're trying to deploy - probably on a Linux server -- and you're developing on your Windows or Mac laptop, it's not going to work at all.
+
+The other reason is that this collaboration works really nicely over git. Putting large files -- like an entire package library -- into git is generally a bad idea. In most cases, you'll want to gitignore the library itself and instead just share the lockfile.
+
+::: callout-note
+## Sharing package caches
+
+If you're on a shared server, you may want to share a package cache across users. This generally isn't necessary, but can save some space on the server. Both `{renv}` and `venv` include settings to allow you to relocate the package cache to a shared location on the server. You'll need to make sure that all the relevant users have read and write privileges to this location.
+:::
+
+If you are collaborating, both Python and R have one-line commands for restoring a library from a lockfile. In R, you should make sure to set your working directory to the project directory -- or open the project in RStudio -- and run `renv::restore()`.
+
+In Python, you'll want to make sure you activate your project-level virtual environment using `venv source ./venv/bin/activate` and then install from a requirements file using `pip install -r requirements.txt`.
 
 ### Reproducing the rest of the stack
 
@@ -227,7 +239,7 @@ In other cases, your R or Python library might basically just be a wrapper for s
 
 There are many tools you can use to record and reproduce the R and Python versions you're using, the system libraries, and the operating system itself.
 
-These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments -- and for good reason! In fact, the next chapter is going to be all about the use of Docker in data science. However, it's worth keeping in mind that if you're working in the context of a formally-supported IT organization, they may have other tooling they prefer to use to create and maintain environments, and they can be equally valid.
+These days, the clear leader of the pack on this front is Docker. It has become an increasingly popular way to create, maintain, and use standalone environments -- and for good reason! In [Chapter @sec-docker] we'll get deep into the use of Docker in data science. However, it's worth keeping in mind that if you're working in the context of a formally-supported IT organization, they may have other tooling they prefer to use to create and maintain environments, and they can be equally valid.
 
 ## Environments as Code Cheatsheet
 
@@ -274,7 +286,21 @@ TODO
 |                              |                                               |                                   |
 |                              |                                               | Recommend: `use .venv for <dir>`  |
 +------------------------------+-----------------------------------------------+-----------------------------------+
-| Enter project environment.   | Happens automatically.                        | `source <dir> /bin/activate`      |
+| Enter project environment.   | Happens automatically.                        | `source <dir>/bin/activate`       |
 +------------------------------+-----------------------------------------------+-----------------------------------+
 | Restore packages.            | May happen automatically or `renv::restore()` | `pip install -r requirements.txt` |
 +------------------------------+-----------------------------------------------+-----------------------------------+
+
+## Comprehension Questions
+
+1.  Why does difficulty increase as the level of required reproducibility increase for a data science project. In your day-to-day work, what's the hardest reproducibility challenge?
+2.  Draw a mental map of the relationships between the 7 levels of the reproducibility stack. Pay particular attention to *why* the higher layers depend on the lower ones.
+3.  What are the two key attributes of environments as code? Why do you need both of them? Are there cases where you might only care about one?
+4.  Draw a mental map of the relationships between the following: package repository, package library, package, project-level-library, `.libPaths()` (R) or `sys.path`(python), lockfile
+5.  Why is it a bad idea to share package libraries? What's the best way to collaborate with a colleague using an environment as code? What are the commands you'll run in R or Python to save a package environment and restore it later?
+
+## Portfolio Exercise: Use `{renv}` or `venv`
+
+Create a post for your (new?) personal website that includes a plot or other bit of R or Python code.
+
+Create a project-specific library for your blog and integrate it into your existing GitHub Actions pipeline so you can build the website as well as the R or Python Content.
