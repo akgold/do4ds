@@ -330,7 +330,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#ssh-into-the-server" id="toc-ssh-into-the-server" class="nav-link" data-scroll-target="#ssh-into-the-server"><span class="toc-section-number">8.1.1</span>  SSH into the server</a></li>
   </ul></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="toc-section-number">8.2</span>  Exercises</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">8.2</span>  Comprehension Questions</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-2-cmd-line.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
@@ -429,9 +429,9 @@ Note
 <p>All of the flags and arguments for commands can be found in the program’s <em>man page</em> (short for manual). You can access the man page for any command with <code>man &lt;command&gt;</code>. You can scroll the man page with arrow keys and exit with <code>q</code>.</p>
 <table class="table">
 <colgroup>
-<col style="width: 20%">
-<col style="width: 51%">
-<col style="width: 27%">
+<col style="width: 25%">
+<col style="width: 48%">
+<col style="width: 26%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -475,26 +475,64 @@ Note
 <h2 data-number="8.1" class="anchored" data-anchor-id="lab-accessing-your-server"><span class="header-section-number">8.1</span> Lab: Accessing your server</h2>
 <section id="ssh-into-the-server" class="level3" data-number="8.1.1">
 <h3 data-number="8.1.1" class="anchored" data-anchor-id="ssh-into-the-server"><span class="header-section-number">8.1.1</span> SSH into the server</h3>
-<p>The <code>.pem</code> key you downloaded is the skeleton key to your server. You should be extremely careful with the <code>.pem</code> key. In the next chapter, we’ll set up an actual user on the server and configure SSH, which is more secure.</p>
+<p>The <code>.pem</code> key you downloaded is the skeleton key to your server. You should be extremely careful with the <code>.pem</code> key. In <a href="2-3-linux-admin.html">Chapter&nbsp;<span>8</span></a>, we’ll set up an actual user on the server and configure SSH, which is more secure.</p>
 <p>But we’ve got to get started on the server somehow, and using the <code>.pem</code> key is the way to do it.</p>
 <p>Before we can use it to open the server, we’ll need to make a quick change to the permissions on the key. We’ll get a lot into users, groups, and permissions in the next chapter. For now, you can just copy paste these commands.</p>
-<p>The easiest way to use <code>my_test_key.pem</code> key is to open a Terminal right in that folder. Find <code>my_test_key.pem</code> key in the Finder (probably in your Downloads folder), you can right-click and hit <code>New iTerm Window Here</code> to open a terminal session in the directory where your <code>.pem</code> key is.</p>
-<p>Now, you can go to your terminal app and run</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> chmod 600 my_test_key.pem</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>#TODO: Windows?</p>
+<p>The keypair is the authentication mechanism to get into our server. Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in <a href="2-3-linux-admin.html">Chapter&nbsp;<span>8</span></a>). If you try to use the keypair without first changing the permissions, you’ll be unable to and get a warning that looks something like:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash}</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">\@</span> WARNING: UNPROTECTED PRIVATE KEY FILE! <span class="dt">\@</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ex">Permissions</span> 0644 for <span class="st">'do4ds-lab-key.pem'</span> are too open.</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="ex">It</span> is required that your private key files are NOT accessible by others.</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">This</span> private key will be ignored.</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">Load</span> key <span class="st">"do4ds-lab-key.pem"</span>: bad permissions</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ex">ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com:</span> Permission denied <span class="er">(</span><span class="ex">publickey</span><span class="kw">)</span><span class="bu">.</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>[QUESTION – does this happen on Windows? If so, what are commands to alter permissions?]</p>
+<p>So let’s change the file permissions.</p>
+<p>We’ll get into the details of how to use these commands in just a minute. For now, you’ll need to open a terminal window, navigate to the directory where the key is and change the file permissions.</p>
+<p>On my machine that looks like:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd ~/Documents/do4ds-lab</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> chmod 600 do4ds-lab-key.pem</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You can sub in the path to where your key is and the name you used for your key.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+SSH on Windows
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a long time, Windows didn’t come with a built in SSH client, so you had to use PuTTY to do SSH from a Windows machine. Microsoft brought a native SSH client to Windows 10 in 2015, and it has been enabled by default since 2018.</p>
+<p>If you run into any trouble using SSH commands on Windows, double check that you’ve enabled the <code>OpenSSH Client</code>.</p>
+</div>
+</div>
 <p>In your terminal type the following</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ssh <span class="at">-i</span> my_test_key.pem ubuntu@<span class="op">&lt;</span>Public IPv4 DNS you copied<span class="op">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ssh <span class="at">-i</span> do4ds-lab-key.pem ubuntu@<span class="va">$SERVER_ADDRESS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Type <code>yes</code> when prompted, and you’re now logged in to your server!</p>
-<p>In the next chapter, we’ll learn how to do some basic Linux Administration tasks. Let’s get going!</p>
 </section>
 </section>
-<section id="exercises" class="level2" data-number="8.2">
-<h2 data-number="8.2" class="anchored" data-anchor-id="exercises"><span class="header-section-number">8.2</span> Exercises</h2>
+<section id="comprehension-questions" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">8.2</span> Comprehension Questions</h2>
 <ol type="1">
-<li>Draw your own diagram of the sequence of things that occur when you execute <code>ssh user@server.company.com</code> in the terminal.</li>
-<li>Create a local text file and SFTP it to the server. SSH in, edit the file, and SFTP it back.</li>
-<li>Something with prezto themes/plugins.</li>
-<li>tmux</li>
+<li>Draw a mental map that includes the following: terminal, shell, operating system, my laptop, server, ssh public key, ssh private key</li>
+<li>If you don’t know the real commands for them, make up what you think the bash commands might be to do the following. So if you think you’d create a command called <code>cmd</code> with a flag <code>-p</code> and an argument <code>arg</code>, you’d write <code>cmd -p &lt;what p does&gt; &lt;arg&gt;</code>. In the next chapter you’ll get to see how close you got to the real thing:
+<ol type="1">
+<li><p>Change Directories, the only argument is where to go</p></li>
+<li><p>Making a Directory, with an optional flag to make parents as you go. The only argument is the directory to make.</p></li>
+<li><p>Remove files, with flags to do so recursively and to force it without checking in first. The only argument is the file or directory to remove.</p></li>
+</ol></li>
 </ol>
 
 
