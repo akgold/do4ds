@@ -54,7 +54,7 @@ In the past few years, there has been a rise in interest in "serverless" computi
 
 However, there are two distinct things happening that can meaningfully be described as serverless...but they're completely different.
 
-One is the rise of containerization. In chapter XXXX, we'll get deep into the weeds on using docker yourself. Docker is a very cool tool that makes software much more portable, because you can bring the environment -- all the way down to the operating system -- around with you very easily. This is kinda a superpower, and many organizations are moving towards using docker containers as the atomic units of their IT infrastructure, so the IT organization doesn't manage any servers directly, and instead just manages docker containers.
+One is the rise of containerization. In [Chapter @sec-docker], we got deep into the weeds on using docker yourself. Docker is a very cool tool that makes software much more portable, because you can bring the environment -- all the way down to the operating system -- around with you very easily. This is kinda a superpower, and many organizations are moving towards using docker containers as the atomic units of their IT infrastructure, so the IT organization doesn't manage any servers directly, and instead just manages docker containers.
 
 In some sense, this is meaningfully serverless. You've moved the level of abstraction up a layer from servers and virtual machines to docker containers. And managing docker containers is often meaningfully easier than managing virtual machines directly. However, you still face a lot of the same problems like versioning operating systems, dealing with storage and networking yourself, and more.
 
@@ -87,6 +87,8 @@ Azure and GCP tend to name their offerings pretty literally. AWS, on the other h
     -   Private Clouds: VPC, Virtual Network, Google Virtual Private Cloud
     -   DNS - Route53, Azure DNS + Traffic Manager, Google Cloud DNS
 
+-   Lambda
+
 ### Not IaaS
 
 -   Container Hosting - ECS, Azure Container Instances + Container Registry
@@ -104,18 +106,6 @@ Azure and GCP tend to name their offerings pretty literally. AWS, on the other h
 
 IaaC tooling
 
-### AWS Instance Classes for Data Science
-
-t3 -- good b/c of instance credits, limited size
-
-Cs -- good b/c fast CPUs
-
-R - good b/c high amount of RAM
-
-P - have GPUs, but also v expensive
-
-Instance scale linearly w/ number of cores (plot?)
-
 ## Lab
 
 ### Login to the AWS Console
@@ -130,46 +120,89 @@ If not, go to <https://aws.amazon.com> and click `Sign In to the Console` .
 
 If you've never set up an AWS account before, click `Create a New AWS account` and follow the instructions to create an account. Note that even if you've got an Amazon account for ordering stuff online and watching movies, an AWS account is separate.
 
-Once you've logged in, you'll be confronted by the AWS console. There are a ton of things here, and it's rather overwhelming. If you feel like you have to understand what all these things are before going ahead, feel free to check out the chapter on The Cloud.
+Once you've logged in, you'll be confronted by the AWS console. There are a ton of things here, and it's rather overwhelming.
 
 ### Stand up an instance
 
-Click on the `EC2` service (it's under `Launch a virtual machine` or `Compute` depending on where you landed). The table has all the different quick start Amazon Machine Images (AMIs). Find and click `Ubuntu Server 20.04 LTS` -- it'll be one of the first handful.
+AWS's "rent a server" is called EC2.[^2-1-cloud-2] It is the most basic AWS service, and it's what we're going to use to get started.
 
-Now you'll be seeing the instance size chooser. It should have auto-selected a server with the label `Free tier eligible`. Just stick with this for now.
+[^2-1-cloud-2]: It's short for *Elastic Cloud Compute*, but everyone just says EC2.
 
-Scroll down and click `Review and Launch`, and `Launch` on the next page.
+::: callout-note
+I'm going to walk you through setting up an instance from the AWS console. The exact buttons and text may change by the time you read this, but the general overview will be the same.
+:::
 
-When you click Launch, you'll be asked to use a key pair. Assuming you don't have an existing keypair, select `Create a new key pair`, name it `my_test_key`, and click `Download`.
+There are five things we have to configure before launching the server. I'm not going to walk you through configuring each one on this page, because Amazon is constantly updating the exact layout of the page and the text, but I'll explain the choices and then you can make them yourself -- or even make similar choices if you're in GCP or Azure.
 
-Keep track of the `my_test_key.pem` file your computer downloads, you'll need it again in a minute.
+The first choice is instance **name and tags**. None of this is required -- it's for convenience and organization. I'd suggest you name the server something like `do4ds-lab`.
 
-Click `Launch Instances`. AWS is now creating a virtual server *just for you*. If you click `View Instances` in the lower right, you'll see your instance. When the instance state switches to `Running`, it's up and running!
+Next, you'll have to choose the **image**. An image is what will be on your server when you start it. Images can range from just a bare operating system to a suspended version of an operating server. AWS makes a variety of images available for free, but there are also images that require extra payments on top of the server costs. We're not going to use one of those.
 
-### Configure Server Access
+All clouds have a concept of server images. In AWS, they're called *AMIs* (pronounced like you're reading the letters individually, short for *Amazon Machine Image*).
 
-*TODO: is this necessary just for SSH? I thought the default sg includes SSH.*
+Since we're going to work on configuring the server from the ground up, we're going to choose an AMI that's just the operating system. Choose the most basic Ubuntu one. Double check that it's *free tier eligible*.
 
-Before we leave the AWS console, let's make sure that we'll be able to get to it from the internet.
+At the time of this writing, that's using Ubuntu 22.04. Some details of commands may change if the version of Ubuntu is different, but the general outline will be the same.
 
-Scroll down to the Security tab. Click the blue link under `Security Groups`, which will start with `sg-` and include `launch-wizard-` in parentheses.
+You'll have to choose an **Instance Type**. This is the category of server you're going to use. There are different families of servers you can get. Within each family, instance types scale by size in terms of number of CPUs and amount of memory.
 
-Click `Edit inbound rules` , then `Add rule`. Under `Type`, scroll down and select `HTTP`, and under `Source Type`, select `Anywhere-IPv4`. Scroll down and click `Save rules`.
+As of this writing, the largest server that is free tier eligible is a *t2.micro* with 1 CPU and 1 Gb of memory. That is a very small server.
+
+If all you're doing is walking through the lab, it should be sufficient, but if you actually want to do any data science work, you'll need a substantially larger server.
+
+It is possible to rack up really large AWS bills, so be careful. That said, a modestly-sized server is still pretty cheap if you're only putting it up for a short amount of time. As of this writing, a `t3.2xlarge` with 8 CPUs and 32Gb of memory is \$0.33 an hour. So a full year running full time for an instance is nearly \$3,000, but if you're only running that instance for a little while -- say the few hours it'll take you to complete this lab, it will probably only be a few dollars.
+
+For thoughts on server sizing and choosing, see [Chapter @sec-servers].
+
+Next, you'll need to make sure you have a keypair. We'll get into what this key is and how to use it in [Chapter @sec-cmd-line]. For now, you'll need to create a keypair if you don't already have one. I'd suggest naming it `do4ds-lab-key` because I'll use that name, so you can just copy/paste commands if you use the same name.
+
+I'd recommend creating a directory for this lab, perhaps something like `do4ds-lab` and putting your keypair there. If you're not going to do that, just make sure you keep track of where you downloaded it.
+
+Whether you're on Windows or Mac, download the `pem` version of the key.
+
+You shouldn't need to change any **networking settings** from the defaults. Make sure it's configured to allow SSH traffic.
+
+You'll need to **configure storage**. By default, the server comes just with root storage. Root storage is where the operating system will be, as well as storing most of the executables you'll need.
+
+You'll want another volume where you'll store the actual work you're doing -- data files, code, and more. You can attach volumes quite easily. In AWS, they're called EBS (short for *Elastic Block Store*). While it's not strictly necessary to configure an extra EBS volume to complete the labs in this book, make sure to add one since it's necessary if you ever want to stand up an actual environment to do work.
+
+You can feel free to look through the Advanced Details, but you shouldn't need to adjust any of them.
+
+When you go to the summary, it should look something like this, assuming you followed the instructions here:
+
+![](images/paste-089E941E.png)
+
+Click `Launch Instance`. AWS is now creating a virtual server *just for you*.
+
+If you go back to the EC2 page and click on `Instances` you can see your instance as it comes up. You may need to remove the filter for `State: Running` since it'll take a few moments to be `Running`.
 
 ### Grab the address of your server
 
-Before we leave the AWS console, let's grab the IP address of the server so we can use it to get back later.
+If you click on the actual instance ID in blue, you can see all the details of your server.
 
-Go back to the AWS console and click on the `Instance ID` link for your server, and copy the `Public IPv4 DNS`, which will start with `ec2-` and end with `amazonaws.com`.
+The instance ID and public IP addresses were auto-assigned.
 
-Throughout the next chapters, I'll refer to this as your `<server-address>`. Save it somewhere you can easily get back to later.
+Grab the Public IPv4 DNS address, which starts with `ec2-` and ends with `amazonaws.com`. Copy it somewhere easy to grab. That's going to be the way we access the server.
+
+For example, as I write this, my server has the address `ec2-54-159-134-39.compute-1.amazonaws.com`. In the commands, I'll include the variable `SERVER_ADDRESS`. If you'd like to be able to copy commands verbatim, you can set the variable `SERVER_ADDRESS` to be your server address using `SERVER_ADDRESS=ec2-54-159-134-39.compute-1.amazonaws.com`.
+
+::: callout-tip
+If you're used to R, where it's best practice to put spaces around `=`, notice that assigning variables in bash *requires* no spaces around `=`.
+:::
 
 ### Stopping or burning it down
 
-If you're stopping for the day at this point, it's handy to be able to stop your server where it is so you don't pay for it overnight.
+Whenever you're stopping for the day, you may want to suspend your server so you're not paying for it overnight or using up your free tier hours.
 
-Go back to the EC2 page for your server. Under the `Instance State` drop down in the upper right, choose `Stop Instance`.
+You can suspend an instance in the state it's in so it can be restarted later. Depending on how much data you're storing, it may not be free, but storage costs are generally very modest.
+
+Whenever you want to suspend your instance, go to the EC2 page for your server. Under the `Instance State` drop down in the upper right, choose `Stop Instance`.
 
 After a couple minutes the instance will stop and you won't get charged for it. Before you come back to the next lab, you'll need to start the instance back up so it's ready to go.
 
 If you want to completely delete the instance at any point, you can choose to `Terminate Instance` from that same `Instance State` dropdown.
+
+## Comprehension Questions
+
+1.  What is the difference between PaaS, IaaS, and SaaS? What's an example of each that you're familiar with?
+2.  What are the names for AWS's services for: renting a server, file system storage, blob storage

@@ -87,7 +87,7 @@ So, for example, running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` will list all t
 All of the flags and arguments for commands can be found in the program's *man page* (short for manual). You can access the man page for any command with `man <command>`. You can scroll the man page with arrow keys and exit with `q`.
 
 | Symbol | What it is                                 | Helpful options + notes |
-|---------------|-------------------------------------|--------------------|
+|------------------|-----------------------------------|-------------------|
 | `man`  | **man**ual                                 |                         |
 | `q`    | Exit man pages (and many other situations) |                         |
 
@@ -123,35 +123,70 @@ However, it is totally possible to compromise the security of an SSH connection 
 
 ### SSH into the server
 
-The `.pem` key you downloaded is the skeleton key to your server. You should be extremely careful with the `.pem` key. In the next chapter, we'll set up an actual user on the server and configure SSH, which is more secure.
+The `.pem` key you downloaded is the skeleton key to your server. You should be extremely careful with the `.pem` key. In [Chapter @sec-linux-admin], we'll set up an actual user on the server and configure SSH, which is more secure.
 
 But we've got to get started on the server somehow, and using the `.pem` key is the way to do it.
 
 Before we can use it to open the server, we'll need to make a quick change to the permissions on the key. We'll get a lot into users, groups, and permissions in the next chapter. For now, you can just copy paste these commands.
 
-The easiest way to use `my_test_key.pem` key is to open a Terminal right in that folder. Find `my_test_key.pem` key in the Finder (probably in your Downloads folder), you can right-click and hit `New iTerm Window Here` to open a terminal session in the directory where your `.pem` key is.
+The keypair is the authentication mechanism to get into our server. Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in [Chapter @sec-linux-admin]). If you try to use the keypair without first changing the permissions, you'll be unable to and get a warning that looks something like:
 
-Now, you can go to your terminal app and run
+``` {{bash}}
 
-``` bash
-$ chmod 600 my_test_key.pem
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+
+\@ WARNING: UNPROTECTED PRIVATE KEY FILE! \@
+
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+
+Permissions 0644 for 'do4ds-lab-key.pem' are too open.
+
+It is required that your private key files are NOT accessible by others.
+
+This private key will be ignored.
+
+Load key "do4ds-lab-key.pem": bad permissions
+
+ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).
 ```
 
-#TODO: Windows?
+\[QUESTION -- does this happen on Windows? If so, what are commands to alter permissions?\]
+
+So let's change the file permissions.
+
+We'll get into the details of how to use these commands in just a minute. For now, you'll need to open a terminal window, navigate to the directory where the key is and change the file permissions.
+
+On my machine that looks like:
+
+``` bash
+$ cd ~/Documents/do4ds-lab
+$ chmod 600 do4ds-lab-key.pem
+```
+
+You can sub in the path to where your key is and the name you used for your key.
+
+::: callout-note
+## SSH on Windows
+
+For a long time, Windows didn't come with a built in SSH client, so you had to use PuTTY to do SSH from a Windows machine. Microsoft brought a native SSH client to Windows 10 in 2015, and it has been enabled by default since 2018.
+
+If you run into any trouble using SSH commands on Windows, double check that you've enabled the `OpenSSH Client`.
+:::
 
 In your terminal type the following
 
 ``` bash
-$ ssh -i my_test_key.pem ubuntu@<Public IPv4 DNS you copied>
+$ ssh -i do4ds-lab-key.pem ubuntu@$SERVER_ADDRESS
 ```
 
 Type `yes` when prompted, and you're now logged in to your server!
 
-In the next chapter, we'll learn how to do some basic Linux Administration tasks. Let's get going!
+## Comprehension Questions
 
-## Exercises
+1.  Draw a mental map that includes the following: terminal, shell, operating system, my laptop, server, ssh public key, ssh private key
+2.  If you don't know the real commands for them, make up what you think the bash commands might be to do the following. So if you think you'd create a command called `cmd` with a flag `-p` and an argument `arg`, you'd write `cmd -p <what p does> <arg>`. In the next chapter you'll get to see how close you got to the real thing:
+    1.  Change Directories, the only argument is where to go
 
-1.  Draw your own diagram of the sequence of things that occur when you execute `ssh user@server.company.com` in the terminal.
-2.  Create a local text file and SFTP it to the server. SSH in, edit the file, and SFTP it back.
-3.  Something with prezto themes/plugins.
-4.  tmux
+    2.  Making a Directory, with an optional flag to make parents as you go. The only argument is the directory to make.
+
+    3.  Remove files, with flags to do so recursively and to force it without checking in first. The only argument is the file or directory to remove.
