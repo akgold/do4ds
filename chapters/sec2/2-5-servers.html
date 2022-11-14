@@ -268,7 +268,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#get-a-lot-of-storage-its-cheap" id="toc-get-a-lot-of-storage-its-cheap" class="nav-link" data-scroll-target="#get-a-lot-of-storage-its-cheap"><span class="toc-section-number">10.2.4</span>  Get a lot of storage, it’s cheap</a></li>
   <li><a href="#aws-instance-classes-for-data-science" id="toc-aws-instance-classes-for-data-science" class="nav-link" data-scroll-target="#aws-instance-classes-for-data-science"><span class="toc-section-number">10.2.5</span>  AWS Instance Classes for Data Science</a></li>
   </ul></li>
-  <li><a href="#exercises" id="toc-exercises" class="nav-link" data-scroll-target="#exercises"><span class="toc-section-number">10.3</span>  Exercises</a></li>
+  <li><a href="#lab-upgrading-instance-size" id="toc-lab-upgrading-instance-size" class="nav-link" data-scroll-target="#lab-upgrading-instance-size"><span class="toc-section-number">10.3</span>  Lab: Upgrading Instance Size</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">10.4</span>  Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-5-servers.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -381,15 +382,53 @@ You can get around the in-memory limitation by using a <a href="#database">datab
 <p>Instance scale linearly w/ number of cores (plot?)</p>
 </section>
 </section>
-<section id="exercises" class="level2" data-number="10.3">
-<h2 data-number="10.3" class="anchored" data-anchor-id="exercises"><span class="header-section-number">10.3</span> Exercises</h2>
+<section id="lab-upgrading-instance-size" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="lab-upgrading-instance-size"><span class="header-section-number">10.3</span> Lab: Upgrading Instance Size</h2>
+<p>Ok, now we’re going to experience the real magic of the cloud – <em>flexibility.</em></p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Now that we’ve got JupyterHub and RStudio Server up and running at stable paths, you might want to just use the terminals inside those environments rather than SSH-ing in. Up to you!</p>
+<p>You get exactly the same terminal by logging in as <code>test-user</code> and using the terminal as you would from SSH-ing in.</p>
+</div>
+</div>
+<p>We’re going to upgrade the size of our server in just a minute or two.</p>
+<p>First, let’s confirm what we’ve got available. You can check the number of CPUs you’ve got with <code>lscpu</code> in a terminal. Similarly, you can check the amount of RAM with <code>free -h</code>. This is just so you can prove to yourself later that the instance really changed.</p>
+<p>Now, you can go to the instance page in the AWS console. The first step is to stop (not terminate!) the instance. This means that changing instance type <em>does</em> require some downtime for the instance, but it’s quite limited.</p>
+<p>Once the instance has stopped, you can change the instance type under Actions &gt; Instance Settings. Then start the instance. It’ll take a few seconds to start the instance.</p>
+<p><em>And that’s it</em>.</p>
+<p>So, for example, I changed from a <code>t2.micro</code> to a <code>t2.small</code>. Both only have 1 CPU, so I won’t see any difference in <code>lscpu</code>, but running <code>free -h</code> before and after the switch reveals the difference in the total column:</p>
+<pre><code>test-user@ip-172-31-53-181:~$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           966Mi       412Mi       215Mi       0.0Ki       338Mi       404Mi
+Swap:             0B          0B          0B
+test-user@ip-172-31-53-181:~$ free -h
+               total        used        free      shared  buff/cache   available
+Mem:           1.9Gi       225Mi       1.3Gi       0.0Ki       447Mi       1.6Gi
+Swap:             0B          0B          0B</code></pre>
+<p>I got twice as much RAM!</p>
+<p>There are some rules around being able to change from one instance type to another…but this is an amazing superpower if you’ve got variable workloads or a team that’s growing. The ability to scale a machine so easily is a game-changer.</p>
+<p>A lot of the things we did – adding the elastic IP and daemonizing JupyterHub are the reason that we’re able to bring it back up so smoothly.</p>
+<p>You can do the same thing with attached volumes, resizing them on-the-fly. It’s worth noting that you can only revise volume sizes <em>up</em>, and that after resizing, you’ll have to adjust the Linux filesystem so it knows it can take advantage of the new space available. AWS has good walkthroughs available on how to resize the file system, so I won’t go into it in any detail other than to say it has to be done.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">10.4</span> Comprehension Questions</h2>
 <ol type="1">
 <li><p>Think about the scenarios below – which part of your computer would you want to upgrade to solve the problem?</p>
 <ol type="1">
 <li><p>You try to load a big csv file into pandas in Python. It churns for a while and then crashes.</p></li>
 <li><p>You go to build a new ML model on your data. You’d like to re-train the model once a day, but it turns out training this model takes 26 hours on your laptop.</p></li>
-<li><p>You design an visualization <code>Matplotlib</code> , and create a whole bunch in a loop/</p></li>
+<li><p>You design an visualization <code>Matplotlib</code> , and create a whole bunch in a loop, you want to parallelize the operation. Right now you’re running on a <code>t2.small</code> with 1 CPU.</p></li>
 </ol></li>
+<li><p>Draw a mind map of the following: CPU, RAM, Storage, Operations Per Second, Parallel Operations, GPU, Machine Learning</p></li>
+<li><p>What are the architectural differences between a CPU and a GPU? Why does this make a GPU particularly good for Machine Learning?</p></li>
 </ol>
 
 

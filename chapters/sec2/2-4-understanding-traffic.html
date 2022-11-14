@@ -288,6 +288,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#how-to-configure-dns-for-your-server" id="toc-how-to-configure-dns-for-your-server" class="nav-link" data-scroll-target="#how-to-configure-dns-for-your-server"><span class="toc-section-number">9.8.1</span>  How to configure DNS for your server</a></li>
   <li><a href="#getting-a-cert-of-your-own" id="toc-getting-a-cert-of-your-own" class="nav-link" data-scroll-target="#getting-a-cert-of-your-own"><span class="toc-section-number">9.8.2</span>  Getting a cert of your own</a></li>
   </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">9.9</span>  Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-4-understanding-traffic.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -368,8 +369,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <p>As you work more with <code>http</code> traffic, you’ll learn some of the common codes. Here’s a cheatshet for some of the most frequent you’ll see.</p>
 <table class="table">
 <colgroup>
-<col style="width: 9%">
-<col style="width: 90%">
+<col style="width: 10%">
+<col style="width: 89%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -605,6 +606,78 @@ What happened to www?
 </section>
 <section id="lab-getting-a-domain-and-ssl-for-your-server" class="level2" data-number="9.8">
 <h2 data-number="9.8" class="anchored" data-anchor-id="lab-getting-a-domain-and-ssl-for-your-server"><span class="header-section-number">9.8</span> Lab: Getting a domain and SSL for your server</h2>
+<p>In this lab, we’re going to go from having to SSH tunnel to be able to use your data science workbench to making it available over the internet in general. That means we’re going to have to do 3 things: configure the networking to allow HTTP traffic, configure a real domain for our server, and configure SSL to keep our traffic safe.</p>
+<p>We know that right now our RStudio Server is ready to serve traffic inside our server on port 8787 and JupyterHub is on 8000, but nothing can get to them! So the first step is to allow traffic to get to them.</p>
+<p>Obviously, the easiest thing we could do would be to just open up ports 8787 and 8000 to the world. This works! If you want to try it, go to the settings for your server’s security group and just add a custom TCP rule allowing access to ports 8787 and 8000 from anywhere. If you visit &lt;server address&gt;:8787 you should get RStudio (login with <code>test-user</code> and your password) and if you visit 8000, you can get to Jupyter.</p>
+<p>It works!</p>
+<p>BUT now your users have to remember these arbitrary ports to use your server. It’s also insecure. There isn’t a good way to secure these ports with SSL.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>So we’re going to put a proxy in front of our two editors that will allow people to go to either RStudio or Jupyter on subpaths.</p>
+<p>There are two popular open source options for proxies – nginx and apache. We’re going to use nginx. Configuring nginx is generally a pretty painful experience – it’s a matter of making sure there are no typos, and debugging can be rather difficult. Until you get really comfortable with proxies, you’ll probably mostly just copy/paste config lines in. That’s what we’re going to do here.</p>
+<p>Here are the steps:</p>
+<ol type="1">
+<li>Install nginx with <code>sudo apt install nginx</code>.</li>
+<li>Save a copy of <code>nginx.conf</code>, <code>cp /etc/nginx/nginx.conf /etc/nginx/nginx-default.conf</code>.</li>
+<li>Replace the <code>http</code> block in the default nginx.conf with the following. Put the following into the config <code>sudo vim /etc/nginx/nginx.conf</code>.</li>
+<li>Test that your configuration is valid <code>sudo nginx -t</code>.</li>
+<li>Start nginx <code>sudo systemctl start nginx</code>. If you see nothing all is well.</li>
+</ol>
+<p>If you need to change anything, update the config and then restart with <code>sudo systemctl restart nginx</code>.</p>
+<p>QUESTION - is this too complicated? Should I make it an either/or and then allow people to do both as a challenge?</p>
+<pre><code>http {
+  
+  # Enable websockets (needed for Shiny)
+   map $http_upgrade $connection_upgrade {
+            default upgrade;
+            ''      close;
+    }
+
+  server {
+    listen 80;
+
+    location /rstudio/ {
+      # Needed only for a custom path prefix of /rstudio
+      rewrite ^/rstudio/(.*)$ /$1 break;
+
+      # Use http here when ssl-enabled=0 is set in rserver.conf
+      proxy_pass http://localhost:8787;
+
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_read_timeout 20d;
+
+      # Not needed if www-root-path is set in rserver.conf
+      proxy_set_header X-RStudio-Root-Path /rstudio;
+
+      # Optionally, use an explicit hostname and omit the port if using 80/443
+      proxy_set_header Host $host:$server_port;
+    }
+
+    location /jupyter/ {
+      # NOTE important to also set base url of jupyterhub to /jupyter in its config
+      proxy_pass http://127.0.0a.1:8000;
+
+      proxy_redirect   off;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+
+      # websocket headers
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }</code></pre>
+<p>There’s one more thing you’ll have to do, which is to let RStudio and JupyterHub know that they’re on a subpath. Complex web experences like RStudio and JupyterHub frequently send people to a different subpath internally. In order to do so properly, they need to know to prepend all of those requests with the subpath.</p>
+<p>RStudio accepts a header from the proxy that lets it know what path it’s on (see the <code>X-RStudio-Root-Path</code> header line in the nginx config). Jupyter needs to be explicitly told.</p>
+<p>First we’ll need to get to the autogenerated config with</p>
+<pre><code> jupyterhub --generate-config
+ sudo mkdir /etc/jupyterhub
+ sudo mv jupyterhub_config.py /etc/jupyterhub</code></pre>
+<p>Find the line you want to change – you can search in vim with <code>/ &lt;thing you're searching for&gt;</code>. Go to the next hit with <code>n</code>.</p>
+<p>When you get to the line that reads <code># c.JupyterHub.bind_url = 'http://:8000'</code>, uncomment and add a <code>/jupyter</code> on the end, so it reads <code>c.JupyterHub.bind_url = 'http://:8000/jupyter</code>.</p>
+<p>Start jupyterhub with a specific config file.</p>
+<pre><code>jupyterhub -f /etc/jupyterhub/jupyterhub_config.py</code></pre>
 <section id="how-to-configure-dns-for-your-server" class="level3" data-number="9.8.1">
 <h3 data-number="9.8.1" class="anchored" data-anchor-id="how-to-configure-dns-for-your-server"><span class="header-section-number">9.8.1</span> How to configure DNS for your server</h3>
 <p>From the perspective of someone trying to set up their own website, there’s only one DNS server that matters to you personally – the DNS server for your <em>domain name registrar</em>.</p>
@@ -648,13 +721,80 @@ What happened to www?
 <p>The last record uses the wildcard symbol <code>*</code> to send all subdomain traffic that’s not already spoken for – say <code>blog.example.com</code> or <code>info.example.com</code> directly to the IP address specified. In this case, I’m sending all of those subdomains to a different IP address, maybe a 404 (not found) page – or maybe I’m serving all the subdomains off a different server.</p>
 <p>So what happens is that your query goes through several layers of public DNS servers to get to the DNS entry for your domain name registrar. In many cases, you’ll directly configure your domain name registrar to point to your website or server – but you also can configure the domain name registrar to point at another set of DNS servers you actually control with an <em>NS record</em>.</p>
 <p>If you’re setting up your own server, this probably isn’t the case, but some large enterprises do run their own private DNS servers.</p>
+<section id="actually-doing-it" class="level4" data-number="9.8.1.1">
+<h4 data-number="9.8.1.1" class="anchored" data-anchor-id="actually-doing-it"><span class="header-section-number">9.8.1.1</span> Actually Doing It</h4>
+<p>Allocate an Elastic IP. If you’ve restarted your server, you’ve probably noticed that the IP address changed! This can be a real pain if you have to reconfigure your DNS every time. AWS offers a service called Elastic IP that gives you an IP address that won’t change that you can use with your instance, even if you restart it.</p>
+<p>As of this writing, Elastic IPs are free as long as it’s associated with a single running EC2 instance. You get charged if they’re not active – basically AWS doesn’t want you hoarding Elastic IPs. Great – just make sure to give back the elastic IP if you take down your instance.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you were doing this for real, and not in a somewhat arbitrary order that’s grouped by topic, it would’ve made sense to set up the elastic IP as soon as you brought the server up so you only would’ve used that IP address.</p>
+</div>
+</div>
+<p>Go to Elastic IP and click allocate. Once it has been allocated, you’ll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.</p>
+<p>I was given the Elastic IP <code>52.70.205.182</code>. So now if I go to <code>52.70.205.182</code>, I get my server.</p>
+<p>Note that once you make this change, your server will no longer be available at its old IP address, so you’ll have to ssh in at the new one. If you have SSH terminals open when you make the change, they will break.</p>
+<p>This part will not be free, but it can be very cheap. You’ll have to actually buy a domain name. The easiest way to do this is via AWS’s Route53 service. You can get domains on Route53 for as little as $9 per year. But there are cheaper services. For example, I was able to get the domain do4ds-lab.shop for $1.98 for a year on namecheap.com.</p>
+<p>Once you’ve got your domain, you have to configure your DNS. You’ll have to create 2 A records – one each for the @ host and the * host pointing to your IP and one for the CNAME at the www with the value being your bare domain.</p>
+<p>So in NameCheap, my Advanced DNS configuration looks like this:</p>
+<p><img src="images-traffic/namecheap-config.png" class="img-fluid"></p>
+<p>Now you just have to be patient. Unfortunately DNS takes time to propagate. After a few minutes, your server should be reachable at your domain. Wow!</p>
+</section>
 </section>
 <section id="getting-a-cert-of-your-own" class="level3" data-number="9.8.2">
 <h3 data-number="9.8.2" class="anchored" data-anchor-id="getting-a-cert-of-your-own"><span class="header-section-number">9.8.2</span> Getting a cert of your own</h3>
-<p>TODO</p>
-
-
+<p>There’s a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.</p>
+<p>They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!</p>
+<p>For anyone who’s never dealt with self-signing certificates in the past, let me tell you, this is magical!</p>
+<p>In our nginx configuration, we’ll need to add a line certbot will use to know which site to generate the certificate for.</p>
+<p>So inside the nginx configuration’s server block, add</p>
+<pre><code>server_name do4ds-lab.shop www.do4ds-lab.shop;</code></pre>
+<p>substituting in your domain for mine. Make sure to do both the bare domain and the <code>www</code> subdomain.</p>
+<p>At that point, you can just install certbot and let it go! As of this writing, that was as simple as running</p>
+<pre><code>sudo su
+apt-get install certbot
+apt-get install python3-certbot-nginx
+systemctl restart nginx
+sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</code></pre>
+<p>If you google “configure nginx with letsencrypt”, there’s a <a href="https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/">great article</a> by someone at Nginx walking you through the process if the commands above change.</p>
+<p>I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added. You’ll notice two things – one is inside the server block. You’ll notice that the <code>listen 80</code> is gone. We’re no longer listening for <code>HTTP</code> traffic. Instead there’s a <code>listen 443</code> – the default port for SSL, and a bunch of stuff that says <code># managed by Certbot</code> that tells nginx where to find the SSL certificate.</p>
+<p>Scrolling down a little, there’s a new server block that is listening on <code>80</code>. This block returns a <code>301</code>, which you might recall is a redirect code (specifically for a <em>permanent</em> redirect) sending all <code>HTTP</code> traffic to <code>HTTPS</code>.</p>
+<p>Before we exit and test it out, let’s do one more thing. RStudio does a bunch of sending traffic back to itself. For that reason, the <code>/rstudio</code> proxy location <em>also</em> needs to know to upgrade traffic from <code>HTTP</code> to <code>HTTPS</code>.</p>
+<p>So add the following line to the nginx config:</p>
+<pre><code>proxy_set_header X-Forwarded-Proto https; #redirect URLs back to https</code></pre>
+<p>Proto here is short for <em>protocol</em>. So this is letting RStudio Server know that when it forwards or redirects traffic, it should do so to <code>HTTPS</code>, not <code>HTTP</code>.</p>
+<hr>
+<p>Ok – let’s try out our newly-secured workbench!</p>
+<p>Go to the URL your server is hosted at, and you’ll find that…it’s broken again.</p>
+<p>Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn’t open?</p>
+<p>If you thought of the AWS instance security group, you’re right! You’ll remember that by default it was open to SSH traffic on port <code>22</code>, and we opened it to <code>HTTP</code> traffic on <code>80</code>. But now that we’re sending it <code>HTTPS</code> traffic on <code>443</code>, you’ll have to open it to that traffic as well.</p>
+<p>Add a rule to allow <code>HTTPS</code> traffic on 443 from anywhere.</p>
+<p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio and <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub! Voila!</p>
+<p>Note that you <em>also</em> can now SSH into <code>ssh test-user@&lt;domain&gt;</code>, so you don’t ever need to remember IP Addresses for day-to-day operations.</p>
 </section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="9.9">
+<h2 data-number="9.9" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">9.9</span> Comprehension Questions</h2>
+<ol type="1">
+<li>Write down the step-by-step procedure that is followed when you sit down at your laptop and type google.com into the search bar. Your explanation should include the following terms: URL, domain, DNS, protocol, HTTP, HTTPS, Default Address, Router</li>
+<li>Create a mind map of the following terms: Application Layer Protocol, HTTP, HTTPS, SSH, Port, 22, 80, 443</li>
+<li>In the following URLs, what are the domain, top-level domain, path, subdomain, query parameters?
+<ol type="1">
+<li><p>https://blog.example.com/2022-10-30</p></li>
+<li><p>facebook.com?search=alex.gold</p></li>
+<li><p>https://alexkgold.space/mfy.html</p></li>
+</ol></li>
+<li>Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA, Public Certificate, Private Certificate, 443</li>
+</ol>
+
+
 </section>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
@@ -664,6 +804,7 @@ What happened to www?
 <li id="fn3"><p>There are actually a few different types of addresses used to do this. IP addresses are used for identifying network resources and the MAC address used for physical hardware. Your router is also responsible for assigning IP addresses to devices as they join the network via the dynamic host configuration protocol (DHCP). I’m glossing over all these details as they’re immaterial to the understanding important for this chapter.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>If you’re thinking carefully, you might realize that “public” IP addresses aren’t inherently different from private ones. ALL IP addresses are only valid within a particular network. It’s just that public IP addresses are valid across the biggest network of them all – the internet.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>Unless you’ve done it in the last few years. Routing those controls to phone apps has become really common if you’ve got a relatively modern router.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>As of this writing, JupyterHub supports configuring SSL in the product, but RStudio Server does not. Posit Workbench, the paid version of RStudio Server does support SSL configuration.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

@@ -345,8 +345,12 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#getting-data-science-tools-running" id="toc-getting-data-science-tools-running" class="nav-link" data-scroll-target="#getting-data-science-tools-running"><span class="toc-section-number">8.7.2</span>  Getting Data Science Tools Running</a></li>
   <li><a href="#installing-rstudio-server" id="toc-installing-rstudio-server" class="nav-link" data-scroll-target="#installing-rstudio-server"><span class="toc-section-number">8.7.3</span>  Installing RStudio Server</a></li>
   <li><a href="#installing-jupyerhub-jupyterlab" id="toc-installing-jupyerhub-jupyterlab" class="nav-link" data-scroll-target="#installing-jupyerhub-jupyterlab"><span class="toc-section-number">8.7.4</span>  Installing JupyerHub + JupyterLab</a></li>
+  <li><a href="#running-as-a-service" id="toc-running-as-a-service" class="nav-link" data-scroll-target="#running-as-a-service"><span class="toc-section-number">8.7.5</span>  Running as a service</a></li>
   </ul></li>
-  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">8.8</span>  Comprehension Questions</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">8.8</span>  Comprehension Questions</a>
+  <ul class="collapse">
+  <li><a href="#questions-for-alex" id="toc-questions-for-alex" class="nav-link" data-scroll-target="#questions-for-alex"><span class="toc-section-number">8.8.1</span>  Questions for Alex</a></li>
+  </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-3-linux-admin.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -914,9 +918,9 @@ Creates file if doesnt already exist.
 
 <table class="table">
 <colgroup>
-<col style="width: 19%">
-<col style="width: 19%">
-<col style="width: 19%">
+<col style="width: 17%">
+<col style="width: 17%">
+<col style="width: 17%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -1390,13 +1394,7 @@ Tip
 <pre><code>sudo apt-get update</code></pre>
 <p>The second is to manually download packages and install them on the system. We’re going to do a mixture of both.</p>
 <p>There are a few different ways you can install R on your system. I’d recommend following the instructions on the Posit (formerly RStudio) website for installing R on a server.</p>
-<p>As of this writing, for Ubuntu 22.04, that will look something like</p>
-<pre><code>sudo apt-get install gdebi-core
-export R_VERSION=4.1.3
-curl -O https://cdn.rstudio.com/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb
-sudo gdebi r-${R_VERSION}_1_amd64.deb</code></pre>
-<p>This will take a few moments to download and install. By default, this installs into the <code>/opt/R</code> directory. Once it’s done, you can run R with <code>/opt/R/{R_VERSION}/bin/R</code>. Great!</p>
-<p>You can also use the <code>rig</code> command line utility to install and manage versions of R. This is a little less manual.</p>
+<p>For the simplest R install experience, use rig.</p>
 </section>
 </section>
 <section id="installing-rstudio-server" class="level3" data-number="8.7.3">
@@ -1410,19 +1408,56 @@ sudo gdebi r-${R_VERSION}_1_amd64.deb</code></pre>
 </section>
 <section id="installing-jupyerhub-jupyterlab" class="level3" data-number="8.7.4">
 <h3 data-number="8.7.4" class="anchored" data-anchor-id="installing-jupyerhub-jupyterlab"><span class="header-section-number">8.7.4</span> Installing JupyerHub + JupyterLab</h3>
-<p>There is a python install, but it’s very barebones (e.g.&nbsp;no pip). You want a separate install for data science purposes.</p>
-<p>sudo apt install python3.10-venv</p>
-<p>Jupyter-specific venv: sudo python3 -m venv /opt/jupyterhub</p>
-<p>Install jupyterhub: sudo /opt/jupyterhub/bin/python3 -m pip install wheel jupyterhub jupyterlab ipywidgets</p>
-<p>Follow instructions here: https://docs.rstudio.com/resources/install-python/</p>
-<p>Make sure to add to path and make available as Jupyter Kernel.</p>
-<p>Install npm <code>sudo apt-get install npm</code>.</p>
-<p>Follow instructions: https://jupyterhub.readthedocs.io/en/1.2.0/installation-guide-hard.html – run all as sudo, make sure to use /opt/python.</p>
-<p><code>sudo /opt/python/3.7.13/bin/python -m pip install jupyterhub notebook</code></p>
-<p>JupyterHub runs <em>as</em> as python process.</p>
-<p>Tunnel in</p>
-<p><code>ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS</code></p>
-<p>Note if you ping <code>$SERVER_ADDRESS:8000</code> it doesn’t work.</p>
+<p>While RStudio uses R as it is running, you don’t need to configure anything in R for it to run. In contrast, JupyterHub and JupyterLab <em>are</em> Python programs, so we’re going to need to manage them in the context of a Python installation.</p>
+<p>By default, our server came with a python install, but it’s very barebones (e.g.&nbsp;no pip). In order to avoid messing with the system python, we’re going to create a virtual environment for the purpose of installing and running JupyterHub.</p>
+<pre><code>sudo su
+apt install python3.10-venv
+python3 -m venv /opt/jupyterhub
+source /opt/jupyterhub/bin/activate</code></pre>
+<p>Now that we’ve done that, let’s actually get JupyterHub itself installed and running. JupyterHub produces <a href="https://jupyterhub.readthedocs.io/en/stable/quickstart.html">docs that you can use</a> to get up and running very quickly. If you have to stop for any reason, make sure to come back, assume sudo, and start the JupyterHub virtual environment we created.</p>
+<p>Here were the installation steps that worked for me:</p>
+<pre><code>npm install -g configurable-http-proxy
+apt-get install npm nodejs
+python3 -m pip install jupyterhub jupyterlap notebook
+
+ln -s /opt/jupyterhub/bin/jupyterhub-singleuser /usr/local/bin/jupyterhub-singleuser # symlink in singleuser server, necessary because we're using virtual environment
+
+jupyterhub</code></pre>
+<p>If all went well, you’ll now have JupyterHub up and running on port <code>8000</code>!</p>
+<p>If you want to confirm, tunnel in with <code>ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS</code>.</p>
+</section>
+<section id="running-as-a-service" class="level3" data-number="8.7.5">
+<h3 data-number="8.7.5" class="anchored" data-anchor-id="running-as-a-service"><span class="header-section-number">8.7.5</span> Running as a service</h3>
+<p>By default, RStudio runs as a system service (remember we started it with <code>systemctl</code>?). In contrast, JupyterHub runs as a Python process. This is ok, but it means that we’ve got to remember the command to start it if we have to restart it, and that it won’t auto restart if it were to fail for any reason.</p>
+<p>A program that runs in the background on a machine, starting automatically, and controlled by <code>systemctl</code> is called a <em>daemon</em>. Luckily, it’s pretty easy to add JupyterHub as a system daemon to our server.</p>
+<p>Let’s start by creating a config file for JupyterHub. JupyterHub has a default config file, but it’ll be easier to manage later if we create the config file now so we can edit it as needed.</p>
+<p>You can create a config file using</p>
+<pre><code>jupyterhub --generate-config</code></pre>
+<p>Then, you should create a <code>/etc/jupyterhub</code> directory and move this file there. Later, when we start JupyterHub as a service, we’ll use this as the configuration, so if we want to change configuration later, there’s an easy way to do it.</p>
+<p>There are basically two steps – create a file describing the service for the server’s daemon, and then start the service.</p>
+<p>To start with, end the existing JupyterHub process. If you’ve still got that terminal open, you can do so with <code>ctrl</code> + <code>c</code>. If not, you can use your <code>ps aux</code> and <code>grep</code> skills to find and kill the JupyterHub processes.</p>
+<p>On Ubuntu, adding a daemon file uses a tool called <code>systemd</code> and is really straightforward.</p>
+<p>First, add this file to <code>/etc/systemd/system/jupyterhub.service</code>.</p>
+<p>It should be pretty easy to parse. Two things to notice – the <code>Environment</code> line adds <code>/opt/jupyterhub/bin</code> to the path – that’s where our virtual environment is.</p>
+<p>Second, the <code>ExecStart</code> line is the startup command. If you named your virtual environment something other than <code>jupyterhub</code>, you’ll have to change it in both these places.</p>
+<p>Note the <code>-f /etc/jupyterhub/jupyterhub_config.py</code> – this is the command to start JupyterHub with the config we created a few seconds ago.</p>
+<p>/etc/systemd/system/jupyterhub.service</p>
+<pre><code>[Unit]
+Description=Jupyterhub
+After=syslog.target network.target
+
+[Service]
+User=root
+Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"
+ExecStart=/opt/jupyterhub/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+<p>Now we just need to reload the daemon tool so it picks up the new service it has available and start JupyterHub!</p>
+<pre><code>systemctl daemon-reload
+systemctl start jupyterhub</code></pre>
+<p>You should now be able to see that JupyterHub is running using <code>systemctl status jupyterhub</code> and can see it again by tunneling to it.</p>
+<p>If you want JupyterHub to automatically restart when the server restarts, you can run <code>systemctl enable jupyterhub</code>.</p>
 </section>
 </section>
 <section id="comprehension-questions" class="level2" data-number="8.8">
@@ -1438,8 +1473,12 @@ sudo gdebi r-${R_VERSION}_1_amd64.deb</code></pre>
 <li><p>Create a file called <code>secrets.txt</code>, open it with vim, write something in, close and save it, and make it so that only you can read it.</p></li>
 </ol></li>
 </ol>
+<section id="questions-for-alex" class="level3" data-number="8.8.1">
+<h3 data-number="8.8.1" class="anchored" data-anchor-id="questions-for-alex"><span class="header-section-number">8.8.1</span> Questions for Alex</h3>
+<p>We didn’t actually make use of the EBS volume we mounted for home dirs. Should we do that? https://www.tecmint.com/move-home-directory-to-new-partition-disk-in-linux/</p>
 
 
+</section>
 </section>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
