@@ -90,16 +90,25 @@ In the pane below, you can inspect the actual content that is going back and for
 
 As you work more with `http` traffic, you'll learn some of the common codes. Here's a cheatshet for some of the most frequent you'll see.
 
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Code            | Meaning                                                                                                                                                    |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
++=================+============================================================================================================================================================+
 | `200`           | Everyone's favorite, a successful response.                                                                                                                |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `4xx` and `5xx` | Errors with, respectively, the request itself and the server.                                                                                              |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 |                 | Particular Error Codes                                                                                                                                     |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `400`           | Bad request. This isn't a request the server can understand.                                                                                               |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `401` and `403` | Unauthorized or forbidden. Often means required authentication hasn't been provided.                                                                       |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `404`           | Not found. There isn't any content at the address you're trying to access.                                                                                 |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | `504`           | gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
++-----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 ## Routers keep track of addresses
 
@@ -353,6 +362,98 @@ When you configure your site or server, there will likely be an option to redire
 
 ## Lab: Getting a domain and SSL for your server
 
+In this lab, we're going to go from having to SSH tunnel to be able to use your data science workbench to making it available over the internet in general. That means we're going to have to do 3 things: configure the networking to allow HTTP traffic, configure a real domain for our server, and configure SSL to keep our traffic safe.
+
+We know that right now our RStudio Server is ready to serve traffic inside our server on port 8787 and JupyterHub is on 8000, but nothing can get to them! So the first step is to allow traffic to get to them.
+
+Obviously, the easiest thing we could do would be to just open up ports 8787 and 8000 to the world. This works! If you want to try it, go to the settings for your server's security group and just add a custom TCP rule allowing access to ports 8787 and 8000 from anywhere. If you visit \<server address\>:8787 you should get RStudio (login with `test-user` and your password) and if you visit 8000, you can get to Jupyter.
+
+It works!
+
+BUT now your users have to remember these arbitrary ports to use your server. It's also insecure. There isn't a good way to secure these ports with SSL.[^2-4-understanding-traffic-6]
+
+[^2-4-understanding-traffic-6]: As of this writing, JupyterHub supports configuring SSL in the product, but RStudio Server does not. Posit Workbench, the paid version of RStudio Server does support SSL configuration.
+
+So we're going to put a proxy in front of our two editors that will allow people to go to either RStudio or Jupyter on subpaths.
+
+There are two popular open source options for proxies -- nginx and apache. We're going to use nginx. Configuring nginx is generally a pretty painful experience -- it's a matter of making sure there are no typos, and debugging can be rather difficult. Until you get really comfortable with proxies, you'll probably mostly just copy/paste config lines in. That's what we're going to do here.
+
+Here are the steps:
+
+1.  Install nginx with `sudo apt install nginx`.
+2.  Save a copy of `nginx.conf`, `cp /etc/nginx/nginx.conf /etc/nginx/nginx-default.conf`.
+3.  Replace the `http` block in the default nginx.conf with the following. Put the following into the config `sudo vim /etc/nginx/nginx.conf`.
+4.  Test that your configuration is valid `sudo nginx -t`.
+5.  Start nginx `sudo systemctl start nginx`. If you see nothing all is well.
+
+If you need to change anything, update the config and then restart with `sudo systemctl restart nginx`.
+
+QUESTION - is this too complicated? Should I make it an either/or and then allow people to do both as a challenge?
+
+    http {
+      
+      # Enable websockets (needed for Shiny)
+       map $http_upgrade $connection_upgrade {
+                default upgrade;
+                ''      close;
+        }
+
+      server {
+        listen 80;
+
+        location /rstudio/ {
+          # Needed only for a custom path prefix of /rstudio
+          rewrite ^/rstudio/(.*)$ /$1 break;
+
+          # Use http here when ssl-enabled=0 is set in rserver.conf
+          proxy_pass http://localhost:8787;
+
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_read_timeout 20d;
+
+          # Not needed if www-root-path is set in rserver.conf
+          proxy_set_header X-RStudio-Root-Path /rstudio;
+
+          # Optionally, use an explicit hostname and omit the port if using 80/443
+          proxy_set_header Host $host:$server_port;
+        }
+
+        location /jupyter/ {
+          # NOTE important to also set base url of jupyterhub to /jupyter in its config
+          proxy_pass http://127.0.0a.1:8000;
+
+          proxy_redirect   off;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+
+          # websocket headers
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+        }
+      }
+
+There's one more thing you'll have to do, which is to let RStudio and JupyterHub know that they're on a subpath. Complex web experences like RStudio and JupyterHub frequently send people to a different subpath internally. In order to do so properly, they need to know to prepend all of those requests with the subpath.
+
+RStudio accepts a header from the proxy that lets it know what path it's on (see the `X-RStudio-Root-Path` header line in the nginx config). Jupyter needs to be explicitly told.
+
+First we'll need to get to the autogenerated config with
+
+     jupyterhub --generate-config
+     sudo mkdir /etc/jupyterhub
+     sudo mv jupyterhub_config.py /etc/jupyterhub
+
+Find the line you want to change -- you can search in vim with `/ <thing you're searching for>`. Go to the next hit with `n`.
+
+When you get to the line that reads `# c.JupyterHub.bind_url = 'http://:8000'`, uncomment and add a `/jupyter` on the end, so it reads `c.JupyterHub.bind_url = 'http://:8000/jupyter`.
+
+Start jupyterhub with a specific config file.
+
+    jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+
 ### How to configure DNS for your server
 
 From the perspective of someone trying to set up their own website, there's only one DNS server that matters to you personally -- the DNS server for your *domain name registrar*.
@@ -391,6 +492,94 @@ So what happens is that your query goes through several layers of public DNS ser
 
 If you're setting up your own server, this probably isn't the case, but some large enterprises do run their own private DNS servers.
 
+#### Actually Doing It
+
+Allocate an Elastic IP. If you've restarted your server, you've probably noticed that the IP address changed! This can be a real pain if you have to reconfigure your DNS every time. AWS offers a service called Elastic IP that gives you an IP address that won't change that you can use with your instance, even if you restart it.
+
+As of this writing, Elastic IPs are free as long as it's associated with a single running EC2 instance. You get charged if they're not active -- basically AWS doesn't want you hoarding Elastic IPs. Great -- just make sure to give back the elastic IP if you take down your instance.
+
+::: callout-note
+If you were doing this for real, and not in a somewhat arbitrary order that's grouped by topic, it would've made sense to set up the elastic IP as soon as you brought the server up so you only would've used that IP address.
+:::
+
+Go to Elastic IP and click allocate. Once it has been allocated, you'll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.
+
+I was given the Elastic IP `52.70.205.182`. So now if I go to `52.70.205.182`, I get my server.
+
+Note that once you make this change, your server will no longer be available at its old IP address, so you'll have to ssh in at the new one. If you have SSH terminals open when you make the change, they will break.
+
+This part will not be free, but it can be very cheap. You'll have to actually buy a domain name. The easiest way to do this is via AWS's Route53 service. You can get domains on Route53 for as little as \$9 per year. But there are cheaper services. For example, I was able to get the domain do4ds-lab.shop for \$1.98 for a year on namecheap.com.
+
+Once you've got your domain, you have to configure your DNS. You'll have to create 2 A records -- one each for the \@ host and the \* host pointing to your IP and one for the CNAME at the www with the value being your bare domain.
+
+So in NameCheap, my Advanced DNS configuration looks like this:
+
+![](images-traffic/namecheap-config.png)
+
+Now you just have to be patient. Unfortunately DNS takes time to propagate. After a few minutes, your server should be reachable at your domain. Wow!
+
 ### Getting a cert of your own
 
-TODO
+There's a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.
+
+They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!
+
+For anyone who's never dealt with self-signing certificates in the past, let me tell you, this is magical!
+
+In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.
+
+So inside the nginx configuration's server block, add
+
+    server_name do4ds-lab.shop www.do4ds-lab.shop;
+
+substituting in your domain for mine. Make sure to do both the bare domain and the `www` subdomain.
+
+At that point, you can just install certbot and let it go! As of this writing, that was as simple as running
+
+    sudo su
+    apt-get install certbot
+    apt-get install python3-certbot-nginx
+    systemctl restart nginx
+    sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop
+
+If you google "configure nginx with letsencrypt", there's a [great article](https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/) by someone at Nginx walking you through the process if the commands above change.
+
+I'd recommend you take a moment and inspect the `/etc/nginx/nginx.conf` file to look at what certbot added. You'll notice two things -- one is inside the server block. You'll notice that the `listen 80` is gone. We're no longer listening for `HTTP` traffic. Instead there's a `listen 443` -- the default port for SSL, and a bunch of stuff that says `# managed by Certbot` that tells nginx where to find the SSL certificate.
+
+Scrolling down a little, there's a new server block that is listening on `80`. This block returns a `301`, which you might recall is a redirect code (specifically for a *permanent* redirect) sending all `HTTP` traffic to `HTTPS`.
+
+Before we exit and test it out, let's do one more thing. RStudio does a bunch of sending traffic back to itself. For that reason, the `/rstudio` proxy location *also* needs to know to upgrade traffic from `HTTP` to `HTTPS`.
+
+So add the following line to the nginx config:
+
+    proxy_set_header X-Forwarded-Proto https; #redirect URLs back to https
+
+Proto here is short for *protocol*. So this is letting RStudio Server know that when it forwards or redirects traffic, it should do so to `HTTPS`, not `HTTP`.
+
+------------------------------------------------------------------------
+
+Ok -- let's try out our newly-secured workbench!
+
+Go to the URL your server is hosted at, and you'll find that...it's broken again.
+
+Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn't open?
+
+If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.
+
+Add a rule to allow `HTTPS` traffic on 443 from anywhere.
+
+NOW you should be able to go to `<your-domain>/rstudio` and get to RStudio and `<your-domain>/jupyter` to get to JupyterHub! Voila!
+
+Note that you *also* can now SSH into `ssh test-user@<domain>`, so you don't ever need to remember IP Addresses for day-to-day operations.
+
+## Comprehension Questions
+
+1.  Write down the step-by-step procedure that is followed when you sit down at your laptop and type google.com into the search bar. Your explanation should include the following terms: URL, domain, DNS, protocol, HTTP, HTTPS, Default Address, Router
+2.  Create a mind map of the following terms: Application Layer Protocol, HTTP, HTTPS, SSH, Port, 22, 80, 443
+3.  In the following URLs, what are the domain, top-level domain, path, subdomain, query parameters?
+    1.  https://blog.example.com/2022-10-30
+
+    2.  facebook.com?search=alex.gold
+
+    3.  https://alexkgold.space/mfy.html
+4.  Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA, Public Certificate, Private Certificate, 443

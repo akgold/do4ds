@@ -124,7 +124,46 @@ P - have GPUs, but also v expensive
 
 Instance scale linearly w/ number of cores (plot?)
 
-## Exercises
+## Lab: Upgrading Instance Size
+
+Ok, now we're going to experience the real magic of the cloud -- *flexibility.*
+
+::: callout-note
+Now that we've got JupyterHub and RStudio Server up and running at stable paths, you might want to just use the terminals inside those environments rather than SSH-ing in. Up to you!
+
+You get exactly the same terminal by logging in as `test-user` and using the terminal as you would from SSH-ing in.
+:::
+
+We're going to upgrade the size of our server in just a minute or two.
+
+First, let's confirm what we've got available. You can check the number of CPUs you've got with `lscpu` in a terminal. Similarly, you can check the amount of RAM with `free -h`. This is just so you can prove to yourself later that the instance really changed.
+
+Now, you can go to the instance page in the AWS console. The first step is to stop (not terminate!) the instance. This means that changing instance type *does* require some downtime for the instance, but it's quite limited.
+
+Once the instance has stopped, you can change the instance type under Actions \> Instance Settings. Then start the instance. It'll take a few seconds to start the instance.
+
+*And that's it*.
+
+So, for example, I changed from a `t2.micro` to a `t2.small`. Both only have 1 CPU, so I won't see any difference in `lscpu`, but running `free -h` before and after the switch reveals the difference in the total column:
+
+    test-user@ip-172-31-53-181:~$ free -h
+                   total        used        free      shared  buff/cache   available
+    Mem:           966Mi       412Mi       215Mi       0.0Ki       338Mi       404Mi
+    Swap:             0B          0B          0B
+    test-user@ip-172-31-53-181:~$ free -h
+                   total        used        free      shared  buff/cache   available
+    Mem:           1.9Gi       225Mi       1.3Gi       0.0Ki       447Mi       1.6Gi
+    Swap:             0B          0B          0B
+
+I got twice as much RAM!
+
+There are some rules around being able to change from one instance type to another...but this is an amazing superpower if you've got variable workloads or a team that's growing. The ability to scale a machine so easily is a game-changer.
+
+A lot of the things we did -- adding the elastic IP and daemonizing JupyterHub are the reason that we're able to bring it back up so smoothly.
+
+You can do the same thing with attached volumes, resizing them on-the-fly. It's worth noting that you can only revise volume sizes *up*, and that after resizing, you'll have to adjust the Linux filesystem so it knows it can take advantage of the new space available. AWS has good walkthroughs available on how to resize the file system, so I won't go into it in any detail other than to say it has to be done.
+
+## Comprehension Questions
 
 1.  Think about the scenarios below -- which part of your computer would you want to upgrade to solve the problem?
 
@@ -132,4 +171,8 @@ Instance scale linearly w/ number of cores (plot?)
 
     2.  You go to build a new ML model on your data. You'd like to re-train the model once a day, but it turns out training this model takes 26 hours on your laptop.
 
-    3.  You design an visualization `Matplotlib` , and create a whole bunch in a loop/
+    3.  You design an visualization `Matplotlib` , and create a whole bunch in a loop, you want to parallelize the operation. Right now you're running on a `t2.small` with 1 CPU.
+
+2.  Draw a mind map of the following: CPU, RAM, Storage, Operations Per Second, Parallel Operations, GPU, Machine Learning
+
+3.  What are the architectural differences between a CPU and a GPU? Why does this make a GPU particularly good for Machine Learning?
