@@ -114,12 +114,12 @@ There are a few directories with special names, aside from the root `/`. Your cu
 
 We'll get more into users below, but if your user has a home directory, that home directory is at `~`.
 
-<table style="width:84%;">
+<table style="width:75%;">
 <colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
+<col style="width: 18%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -191,11 +191,11 @@ The true power of `grep` is unlocked in combination with the pipe. In Linux, the
 
 So, for example, a combination I do all the time is to pipe the output of `ls` into `grep` when searching for a file inside a directory. So if I was searching for a file that contained the word `data` somewhere in the filename inside a specific project directory, that might look something like `ls ~/projects/my-project | grep data`.
 
-<table style="width:89%;">
+<table style="width:87%;">
 <colgroup>
 <col style="width: 24%" />
 <col style="width: 24%" />
-<col style="width: 40%" />
+<col style="width: 38%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -252,11 +252,11 @@ Similarly, sometimes you want to list everything in a directory. For example, yo
 
 There are times when you want to make files or directories with nothing in them -- the `touch` command makes a blank file at the specified file path, and `mkdir` makes a directory at the specified filepath. `mkdir` can be a little finicky about when paths exist and it will only make one level. So `mkdir my_dir` works, but `mkdir my_dir/my_sub_dir` does not. Using `mkdir -p`, it will use existing paths and make whichever parts of the path don't yet exist.
 
-<table style="width:99%;">
+<table style="width:96%;">
 <colgroup>
 <col style="width: 23%" />
 <col style="width: 23%" />
-<col style="width: 29%" />
+<col style="width: 25%" />
 <col style="width: 23%" />
 </colgroup>
 <thead>
@@ -320,11 +320,11 @@ Once you've created an archive file, you've got to move it. The `scp` command is
 
 One thing to remember about `scp` is that it makes an SSH connection at your request. This means that the other side of the connection needs to be available to receive an inbound request to connect over SSH. This is probably true of your server, but is almost never true of your laptop. So that means that when you're getting things *to* or *from* your server you'll almost always run the `scp` command from your laptop's terminal, not from a terminal that's already SSH-ed into the server.
 
-<table style="width:60%;">
+<table style="width:54%;">
 <colgroup>
-<col style="width: 19%" />
-<col style="width: 19%" />
-<col style="width: 19%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
+<col style="width: 17%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -404,7 +404,7 @@ If you think back a little, this is one of the most common reasons for being in 
 You can change your user's password at any time with `passwd` and you can check the user you are with `whoami` or `id`.
 
 | Command         | What it does                   | Helpful options                                  | Example |
-|------------------|------------------|--------------------|------------------|
+|------------------|------------------|-------------------|------------------|
 | `sudo`          | Adopt super user permissions.  |                                                  |         |
 | `su <username>` | Change to be a different user. |                                                  |         |
 | `whoami` / `id` | Check the current user.        | `id` gives more information, but is less catchy. |         |
@@ -466,7 +466,7 @@ For now, we're just going to go over how to check how much you've got, how much 
 For many of these commands, the amount returned can be overwhelming, so you'll usually use some sort of filtering mechanism. For many of these commands, that means you'll run it, and send it into a pipe. On the other side of the pipe you might have `grep` to look for specific files or processes, or `head` or `tail` to get the first or last of them. If you want to specify how many, `head -n <n>` gives you the top `n` results.
 
 | Command | What it does                              | Helpful options                           |
-|-------------------|-------------------|-----------------------------------|
+|-------------------|-------------------|----------------------------------|
 | `head`  | Returns the first results from a command. | `-n <n>` to return the first `n` results. |
 
 ### Managing storage
@@ -477,11 +477,11 @@ If you're running low on storage space, or think you might be, there are two thi
 
 You'll almost always use `du` and `df` with the `-h` flag, which puts the numbers in human-readable format.
 
-<table style="width:86%;">
+<table style="width:80%;">
 <colgroup>
 <col style="width: 22%" />
 <col style="width: 22%" />
-<col style="width: 39%" />
+<col style="width: 33%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -595,6 +595,8 @@ You'll need to `scp` the public key to the server first.[^2-3-linux-admin-7]
 
     scp -i do4ds-lab-key.pem \\ \~/.ssh/id_ed25519.pub \\ #default name for ed25519 encrypted key ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com:/home/ubuntu
 
+`scp -i do4ds-lab-key.pem  ~/.ssh/id_ed25519.pub ubuntu@$SERVER_ADDRESS:/home/ubuntu`
+
 See if you can parse this command. Note that we have to specify that we're using the `pem` key for the server, which file we're copying, which user we're connecting as, and where it's going on the server.
 
 Now our public key is up on the server. Let's move it into place on the server. Here are the commands to do so
@@ -645,18 +647,11 @@ The second is to manually download packages and install them on the system. We'r
 
 There are a few different ways you can install R on your system. I'd recommend following the instructions on the Posit (formerly RStudio) website for installing R on a server.
 
-As of this writing, for Ubuntu 22.04, that will look something like
-
-    sudo apt-get install gdebi-core
-    export R_VERSION=4.1.3
-    curl -O https://cdn.rstudio.com/r/ubuntu-2204/pkgs/r-${R_VERSION}_1_amd64.deb
-    sudo gdebi r-${R_VERSION}_1_amd64.deb
-
-This will take a few moments to download and install. By default, this installs into the `/opt/R` directory. Once it's done, you can run R with `/opt/R/{R_VERSION}/bin/R`. Great!
-
-You can also use the `rig` command line utility to install and manage versions of R. This is a little less manual.
+For the simplest R install experience, use rig.
 
 ### Installing RStudio Server
+
+As a first step, you'll have to download and install RStudio Server. These
 
 Directions are here: https://posit.co/download/rstudio-server/
 
@@ -672,31 +667,81 @@ RStudio Server runs as a system process -- R also needs to be installed.
 
 ### Installing JupyerHub + JupyterLab
 
-There is a python install, but it's very barebones (e.g. no pip). You want a separate install for data science purposes.
+While RStudio uses R as it is running, you don't need to configure anything in R for it to run. In contrast, JupyterHub and JupyterLab *are* Python programs, so we're going to need to manage them in the context of a Python installation.
 
-sudo apt install python3.10-venv
+By default, our server came with a python install, but it's very barebones (e.g. no pip). In order to avoid messing with the system python, we're going to create a virtual environment for the purpose of installing and running JupyterHub.
 
-Jupyter-specific venv: sudo python3 -m venv /opt/jupyterhub
+    sudo su
+    apt install python3.10-venv
+    python3 -m venv /opt/jupyterhub
+    source /opt/jupyterhub/bin/activate
 
-Install jupyterhub: sudo /opt/jupyterhub/bin/python3 -m pip install wheel jupyterhub jupyterlab ipywidgets
+Now that we've done that, let's actually get JupyterHub itself installed and running. JupyterHub produces [docs that you can use](https://jupyterhub.readthedocs.io/en/stable/quickstart.html) to get up and running very quickly. If you have to stop for any reason, make sure to come back, assume sudo, and start the JupyterHub virtual environment we created.
 
-Follow instructions here: https://docs.rstudio.com/resources/install-python/
+Here were the installation steps that worked for me:
 
-Make sure to add to path and make available as Jupyter Kernel.
+    npm install -g configurable-http-proxy
+    apt-get install npm nodejs
+    python3 -m pip install jupyterhub jupyterlap notebook
 
-Install npm `sudo apt-get install npm`.
+    ln -s /opt/jupyterhub/bin/jupyterhub-singleuser /usr/local/bin/jupyterhub-singleuser # symlink in singleuser server, necessary because we're using virtual environment
 
-Follow instructions: https://jupyterhub.readthedocs.io/en/1.2.0/installation-guide-hard.html -- run all as sudo, make sure to use /opt/python.
+    jupyterhub
 
-`sudo /opt/python/3.7.13/bin/python -m pip install jupyterhub notebook`
+If all went well, you'll now have JupyterHub up and running on port `8000`!
 
-JupyterHub runs *as* as python process.
+If you want to confirm, tunnel in with `ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS`.
 
-Tunnel in
+### Running as a service
 
-`ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS`
+By default, RStudio runs as a system service (remember we started it with `systemctl`?). In contrast, JupyterHub runs as a Python process. This is ok, but it means that we've got to remember the command to start it if we have to restart it, and that it won't auto restart if it were to fail for any reason.
 
-Note if you ping `$SERVER_ADDRESS:8000` it doesn't work.
+A program that runs in the background on a machine, starting automatically, and controlled by `systemctl` is called a *daemon*. Luckily, it's pretty easy to add JupyterHub as a system daemon to our server.
+
+Let's start by creating a config file for JupyterHub. JupyterHub has a default config file, but it'll be easier to manage later if we create the config file now so we can edit it as needed.
+
+You can create a config file using
+
+    jupyterhub --generate-config
+
+Then, you should create a `/etc/jupyterhub` directory and move this file there. Later, when we start JupyterHub as a service, we'll use this as the configuration, so if we want to change configuration later, there's an easy way to do it.
+
+There are basically two steps -- create a file describing the service for the server's daemon, and then start the service.
+
+To start with, end the existing JupyterHub process. If you've still got that terminal open, you can do so with `ctrl` + `c`. If not, you can use your `ps aux` and `grep` skills to find and kill the JupyterHub processes.
+
+On Ubuntu, adding a daemon file uses a tool called `systemd` and is really straightforward.
+
+First, add this file to `/etc/systemd/system/jupyterhub.service`.
+
+It should be pretty easy to parse. Two things to notice -- the `Environment` line adds `/opt/jupyterhub/bin` to the path -- that's where our virtual environment is.
+
+Second, the `ExecStart` line is the startup command. If you named your virtual environment something other than `jupyterhub`, you'll have to change it in both these places.
+
+Note the `-f /etc/jupyterhub/jupyterhub_config.py` -- this is the command to start JupyterHub with the config we created a few seconds ago.
+
+/etc/systemd/system/jupyterhub.service
+
+    [Unit]
+    Description=Jupyterhub
+    After=syslog.target network.target
+
+    [Service]
+    User=root
+    Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"
+    ExecStart=/opt/jupyterhub/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+
+    [Install]
+    WantedBy=multi-user.target
+
+Now we just need to reload the daemon tool so it picks up the new service it has available and start JupyterHub!
+
+    systemctl daemon-reload
+    systemctl start jupyterhub
+
+You should now be able to see that JupyterHub is running using `systemctl status jupyterhub` and can see it again by tunneling to it.
+
+If you want JupyterHub to automatically restart when the server restarts, you can run `systemctl enable jupyterhub`.
 
 ## Comprehension Questions
 
@@ -709,3 +754,7 @@ Note if you ping `$SERVER_ADDRESS:8000` it doesn't work.
     2.  Figure out which port `JupyterHub` is running on.
 
     3.  Create a file called `secrets.txt`, open it with vim, write something in, close and save it, and make it so that only you can read it.
+
+### Questions for Alex
+
+We didn't actually make use of the EBS volume we mounted for home dirs. Should we do that? https://www.tecmint.com/move-home-directory-to-new-partition-disk-in-linux/
