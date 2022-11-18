@@ -44,7 +44,7 @@ So in data science, the set of microservices you'll want to consider is pretty b
 
 6.  App Operations
 
-Beyond this taxonomy, I don't have much to say about some of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.
+I'd generally recommend having a separate piece of code for each of these layers for clarity.
 
 I don't have anything particularly special to say about data ingestion + refining, except that you should almost certainly keep these processes separate. It's tempting not to save original data (if you're respoonsible for ingesting) and to just keep refined data. This is almost always a mistake. I can't tell you how many times I've gone back later and realized that I wanted to update my refining process in a way that relied on still having the source data. Save your source data.
 
@@ -52,7 +52,7 @@ Similarly, I have nothing of interest to say about model training, except that t
 
 Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham's [Mastering Shiny](https://mastering-shiny.org/) book is the go-to reference if you want to... well, master Shiny.
 
-BUT, I've got a lot to say about tiers 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic (DEFINITION) and app logic (DEFINITION), or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.
+BUT, I've got a lot to say about tiers 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic (the code that generates the *content* of your app) and app logic (the code that defines the way the app functions), or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.
 
 And then there's the question of how to serve your data into the running app. That's what I'll spend much of the rest of this chapter describing.
 
@@ -127,7 +127,7 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-The structure of this Shiny app is bad. Now, it's not a huge deal, because this is a simple shiny app that's pretty easy to parse, but I've seen many much larger apps with this same structure. Why is this bad? Because *all* of the app's logic is contained inside a plotRender-er.
+The structure of this Shiny app is bad. Now, it's not a huge deal, because this is a simple Shiny app that's pretty easy to parse, but I've seen many much larger apps with this same structure. Why is this bad? Because *all* of the app's logic is contained inside a plotRender-er.
 
 In this case, I've combined *business logic* and *app logic*. As your apps get more complicated, you'll want to keep the app itself strictly for the logic of the app -- what selections has the user made and what needs to be displayed to them as a result.
 
@@ -163,7 +163,7 @@ ui <- fluidPage(
   )
 )
 
-filter_data <- function(species) {
+filter_data <- function(species) { # TODO: add default here? 
   palmerpenguins::penguins %>%
     dplyr::filter(
       species %in% !!species
@@ -257,6 +257,8 @@ There's a third family of options for data storage that is quickly rising in pop
 
 These tools can give you the best of both worlds: you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you'll still have to keep track of where the actual files are and make them accessible to your app.
 
+One last option is a shared spreadsheet like Google Drive. This can be a good solution because you don't have to host it anywhere yourself, access is easy to control, and there are simple tools for interacting.
+
 ### Storage Location
 
 The second question after what you're storing is where. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access, as well as making sure you can authenticate into it (more on that below).
@@ -279,7 +281,7 @@ Many data apps have different update requirements for different data in the app.
 
 For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves -- perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.
 
-On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. \<TODO: change to hospital example?\>
+On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. 
 
 If your data is updated only very infrequently, it might make sense to just bundle it up with the app code and update it on a similar cadence to the app itself.
 
@@ -309,9 +311,9 @@ When I ask this question, people often jump to the size of the raw data they're 
 
 To make this a little more concrete, let's imagine you work for a large retailer and are responsible for creating a dashboard that will allow people to visualize the last week's worth of sales for a variety of products. With this vague prompt, you could end up needing to load a huge amount of data into your app -- or very little at all.
 
-One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to
+One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to provide total weekly sales at the department level, that's probably just a few data points. And even if you need to go back a long ways, it's just a few hundred data points. 
 
--\> data granularity -\> does it even need to be an app, or will a report do?
+But if you start needing to slice and dice the data in a lot of directions, then the data size starts multiplying, and you may have to include the entire raw data set in the report. For example, if you need to include weekly sales at the department level, then the size of your data is the $number of weeks * number of departments$. If you need to include more dimensions -- say you need to add geographies, then your data size **multiplies** by the number of geographies. 
 
 ### What are the performance requirements for the app?
 
