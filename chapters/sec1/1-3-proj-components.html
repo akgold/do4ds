@@ -133,6 +133,7 @@ gtag('js', new Date());
 gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 </script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -391,11 +392,11 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <li><p>App Data</p></li>
 <li><p>App Operations</p></li>
 </ol>
-<p>Beyond this taxonomy, I don’t have much to say about some of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.</p>
+<p>I’d generally recommend having a separate piece of code for each of these layers for clarity.</p>
 <p>I don’t have anything particularly special to say about data ingestion + refining, except that you should almost certainly keep these processes separate. It’s tempting not to save original data (if you’re respoonsible for ingesting) and to just keep refined data. This is almost always a mistake. I can’t tell you how many times I’ve gone back later and realized that I wanted to update my refining process in a way that relied on still having the source data. Save your source data.</p>
 <p>Similarly, I have nothing of interest to say about model training, except that this step is by far the most over-hyped part of the data science process. If you’re a young data scientist, you’ll almost surely get more success out of getting really good at any other step of this process rather than focusing on model training. It’s the most crowded and the most automatable.</p>
 <p>Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham’s <a href="https://mastering-shiny.org/">Mastering Shiny</a> book is the go-to reference if you want to… well, master Shiny.</p>
-<p>BUT, I’ve got a lot to say about tiers 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic (DEFINITION) and app logic (DEFINITION), or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.</p>
+<p>BUT, I’ve got a lot to say about tiers 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic (the code that generates the <em>content</em> of your app) and app logic (the code that defines the way the app functions), or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.</p>
 <p>And then there’s the question of how to serve your data into the running app. That’s what I’ll spend much of the rest of this chapter describing.</p>
 <section id="you-should-use-apis-more" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="you-should-use-apis-more"><span class="header-section-number">3.1</span> You should use APIs more</h2>
@@ -458,7 +459,7 @@ server &lt;- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)</code></pre>
-<p>The structure of this Shiny app is bad. Now, it’s not a huge deal, because this is a simple shiny app that’s pretty easy to parse, but I’ve seen many much larger apps with this same structure. Why is this bad? Because <em>all</em> of the app’s logic is contained inside a plotRender-er.</p>
+<p>The structure of this Shiny app is bad. Now, it’s not a huge deal, because this is a simple Shiny app that’s pretty easy to parse, but I’ve seen many much larger apps with this same structure. Why is this bad? Because <em>all</em> of the app’s logic is contained inside a plotRender-er.</p>
 <p>In this case, I’ve combined <em>business logic</em> and <em>app logic</em>. As your apps get more complicated, you’ll want to keep the app itself strictly for the logic of the app – what selections has the user made and what needs to be displayed to them as a result.</p>
 <p>The business logic – what those decisions mean, and the resulting calculations – should, at minimum, be moved into standalone functions.</p>
 <p>Rewriting this app to make better use of functions, it looks something like this:</p>
@@ -489,7 +490,7 @@ ui &lt;- fluidPage(
   )
 )
 
-filter_data &lt;- function(species) {
+filter_data &lt;- function(species) { # TODO: add default here? 
   palmerpenguins::penguins %&gt;%
     dplyr::filter(
       species %in% !!species
@@ -563,6 +564,7 @@ shinyApp(ui = ui, server = server)</code></pre>
 <p>Working with databases can also be frought. You usually end up in one of two situations. In the first situation, the database isn’t really for the data science team. You can probably get read access, but not write – so you’ll be able to use the database as your source of truth, but you won’t be able to write there for intermediate tables and other things you might need. In the second situation, you have freedom to set up your own database, in which case you’ll have to own it – and that comes with its own set of headaches.</p>
 <p>There’s a third family of options for data storage that is quickly rising in popularity for medium-sized data. These options allow you to store data in a flat file, but access it in a smarter way than “just load all the data into memory”. SQLite is a classic example on this front that gives you SQL access to what is basically just a flat file. There are also newer entrants into this place that are better from an analytics perspective, like combining Apache Arrow with feather and parquet files and the dask project in Python.</p>
 <p>These tools can give you the best of both worlds: you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you’ll still have to keep track of where the actual files are and make them accessible to your app.</p>
+<p>One last option is a shared spreadsheet like Google Drive. This can be a good solution because you don’t have to host it anywhere yourself, access is easy to control, and there are simple tools for interacting.</p>
 </section>
 <section id="storage-location" class="level3" data-number="3.2.2">
 <h3 data-number="3.2.2" class="anchored" data-anchor-id="storage-location"><span class="header-section-number">3.2.2</span> Storage Location</h3>
@@ -580,7 +582,7 @@ shinyApp(ui = ui, server = server)</code></pre>
 <h3 data-number="3.3.1" class="anchored" data-anchor-id="how-frequently-are-the-data-updated-relative-to-the-code"><span class="header-section-number">3.3.1</span> How frequently are the data updated relative to the code?</h3>
 <p>Many data apps have different update requirements for different data in the app.</p>
 <p>For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves – perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.</p>
-<p>On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. &lt;TODO: change to hospital example?&gt;</p>
+<p>On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently.</p>
 <p>If your data is updated only very infrequently, it might make sense to just bundle it up with the app code and update it on a similar cadence to the app itself.</p>
 <p>&lt;TODO: Picture data in app bundle&gt;</p>
 <p>On the other hand, the more frequently updated data probably doesn’t make sense to update at the same cadence as the app code. You probably want to access that data in some sort of external location, perhaps on a mounted drive outside the app bundle, in a pin or bucket, or in a database.</p>
@@ -601,8 +603,8 @@ shinyApp(ui = ui, server = server)</code></pre>
 <h3 data-number="3.4.1" class="anchored" data-anchor-id="how-big-are-the-data-in-the-app"><span class="header-section-number">3.4.1</span> How big are the data in the app?</h3>
 <p>When I ask this question, people often jump to the size of the raw data they’re using – but that’s often a completely irrelevant metric. You’re starting backwards if you start from the size of the raw data. Instead, you should figure out what’s the size of data you actually need inside the app.</p>
 <p>To make this a little more concrete, let’s imagine you work for a large retailer and are responsible for creating a dashboard that will allow people to visualize the last week’s worth of sales for a variety of products. With this vague prompt, you could end up needing to load a huge amount of data into your app – or very little at all.</p>
-<p>One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to</p>
-<p>-&gt; data granularity -&gt; does it even need to be an app, or will a report do?</p>
+<p>One of the most important questions is how much you can cache before someone even opens the app. For example, if you need to provide total weekly sales at the department level, that’s probably just a few data points. And even if you need to go back a long ways, it’s just a few hundred data points.</p>
+<p>But if you start needing to slice and dice the data in a lot of directions, then the data size starts multiplying, and you may have to include the entire raw data set in the report. For example, if you need to include weekly sales at the department level, then the size of your data is the <span class="math inline">\(number of weeks * number of departments\)</span>. If you need to include more dimensions – say you need to add geographies, then your data size <strong>multiplies</strong> by the number of geographies.</p>
 </section>
 <section id="what-are-the-performance-requirements-for-the-app" class="level3" data-number="3.4.2">
 <h3 data-number="3.4.2" class="anchored" data-anchor-id="what-are-the-performance-requirements-for-the-app"><span class="header-section-number">3.4.2</span> What are the performance requirements for the app?</h3>
