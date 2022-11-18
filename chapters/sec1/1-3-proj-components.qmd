@@ -2,11 +2,9 @@
 
 One of the fundamental building blocks of good DevOps practices is microservices. The idea of microservices is that you want to build each application as a collection of smaller, separable components. These components interact via well-defined interfaces so that it's easy to change the internal workings of each component without messing up the system as whole. It also allows you to make these changes with a much higher degree of confidence that changes to one component can be integrated and deployed without unanticipated downstream consequences.
 
-You can think of microservices as the idea of writing functions in your code (you are writing functions, right?), but one level up. Instead of thinking of a single function, you're thinking at the level of an entire component of your analysis, report, app, or pipeline.
+You can think of microservices as the same idea as writing functions in your code (you are writing functions, right?), but one level up. Instead of thinking of a single function, you're thinking at the level of an entire component of your analysis, report, app, or pipeline.
 
-The idea of microservices for a general software engineering project is pretty straightforward, you have services that interact with each other over APIs -- RESTful ones where possible. Honestly, this isn't a terrible idea for data scientists, and we'll get a little bit into what RESTful APIs are in this chapter and how to use them.
-
-But a data science app stack is actually much more complicated than a generic three-tier web app architecture.
+The idea of microservices for a general software engineering project is pretty straightforward: you have services that interact with each other over APIs -- RESTful ones where possible. Honestly, this isn't a terrible idea for data scientists, and we'll get a little bit into what RESTful APIs are in this chapter and how to use them.
 
 In software engineering, there's the notion of a three-tier app. It's helpful to be acquainted with this model as a data scientist, but I find it's woefully insufficient for data science purposes.
 
@@ -20,7 +18,7 @@ The three-tier app architecture is
 
 In general, the presentation tier is the front-end, while the other two are the back-end. Usually, the application tier will be one or more APIs and the data tier is some sort of database storage.
 
-To think of a simple webapp, say that allows someone to buy a copy of a book online, a user visits the website, picks out a book, puts in their credit card, and clicks a button to purchase.
+Let's look at a simple webapp that allows someone to buy a copy of a book online. In the presentation/interaction layer, a user visits the website, picks out a book, puts in their credit card, and clicks a button to purchase.
 
 In the application layer, an API receives their order, pushes that order into the "orders to be shipped" queue in the warehouse, and adds the user's contact info and order history to the database, which is the data tier.
 
@@ -30,7 +28,7 @@ TODO - image of software engineering data flowing front to back, and data scienc
 
 In most software engineering workflows, the user interactions are what **create** the data. A user interacts with a webpage and creates an order or history that needs to be captured or used somehow. The software engineer, by circumscribing the ways the user interacts with the app actually defines the data flowing through the app.
 
-In contrast, most data science apps are designed to give the user a view or a way to interact with an existing bunch of data -- and that initial data flow is usually real-world data. It takes work to reshape that data into something useful to the end user -- that's in fact the entire practice of data science.
+In contrast, most data science apps are designed to give the user a view or a way to interact with existing data -- and that initial data flow is usually real-world data. It takes work to reshape that data into something useful to the end user -- that's in fact the entire practice of data science.
 
 So in data science, the set of microservices you'll want to consider is pretty broad, and they each look pretty different. I've come up with seven reasonably distinct components that make up most data science projects. Some may not have all these components, but most data science processes fit somewhere into these seven services:
 
@@ -40,37 +38,37 @@ So in data science, the set of microservices you'll want to consider is pretty b
 
 3.  Model training
 
-4.  Model predictions and or business logic
+4.  Model predictions and/or business logic
 
 5.  App Data
 
 6.  App Operations
 
-Beyond this taxonomy, I don't have much to say about each of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.
+Beyond this taxonomy, I don't have much to say about some of these layers, except that you should probably have a separate piece of code for each one. Keeping them separate allows you to change and tweak each layer without major implications for the other ones.
 
 I don't have anything particularly special to say about data ingestion + refining, except that you should almost certainly keep these processes separate. It's tempting not to save original data (if you're respoonsible for ingesting) and to just keep refined data. This is almost always a mistake. I can't tell you how many times I've gone back later and realized that I wanted to update my refining process in a way that relied on still having the source data. Save your source data.
 
-Similarly, I have nothing of interest to say about model training, except that this step is by far the most over-hyped part of the data science process. If you're a young data scientist, you'll almost surely get more success out of getting really good at any other step of this process rather than focusing on model training. It's the most crowded and the most automate-able.
+Similarly, I have nothing of interest to say about model training, except that this step is by far the most over-hyped part of the data science process. If you're a young data scientist, you'll almost surely get more success out of getting really good at any other step of this process rather than focusing on model training. It's the most crowded and the most automatable.
 
-Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham's [Mastering Shiny](https://mastering-shiny.org/) book is the go-to reference if you want to...well, you know.
+Similarly, for app operations, there are lots of books on how to write good apps. I think the Shiny framework is great, and Hadley Wickham's [Mastering Shiny](https://mastering-shiny.org/) book is the go-to reference if you want to... well, master Shiny.
 
-BUT, I've got a lot to say about steps 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic and app logic. Or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.
+BUT, I've got a lot to say about tiers 4 and 5. All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, mixing up business logic (DEFINITION) and app logic (DEFINITION), or that serve model predictions right inside the app. These apps would almost always be better served by moving the business logic into a standalone API.
 
-And then there's the question of how to serve your data into the running app. That's what I'll spend much of the rest of this chapter on.
+And then there's the question of how to serve your data into the running app. That's what I'll spend much of the rest of this chapter describing.
 
 ## You should use APIs more
 
-You are a data scientist. I don't know you. I've almost certainly never looked at your code. But I can tell you, that in very high likelihood, you should be writing more APIs.
+You are a data scientist. I probably don't know you. I've almost certainly never looked at your code. But I can tell you, with very high likelihood, that you should be writing more APIs.
 
 APIs can seem intimidating if you've never written one before. Writing an API seems like crossing the rubicon between data scientist and software engineer.
 
-I'm here to tell you that if you know how to write a function in R or Python, you can write an API. For all intents and purposes, an API is just a function that is ready for you to run outside your console.
+I'm here to tell you that if you know how to write a function in R or Python, you can write an API. For all intents and purposes, an API is just a function that is available to run outside your console.
 
 While the concept of APIs can be extremely intimidating, the actual process of writing an API is no more complicated that writing and documenting a function in R or Python. There are a variety of API frameworks in both R and Python. As of this writing, the ones I'd recommend the most are FastAPI in Python and Plumber in R.
 
 To demystify an API, let's start with a use case.
 
-Let's say I've got a shiny app that visualizes certain data points from the palmer penguins data set.
+Let's say I've got a Shiny app that visualizes certain data points from the Palmer Penguins data set.
 
 TODO -- see if I can deploy to shinyapps and iframe in
 
@@ -133,7 +131,7 @@ The structure of this Shiny app is bad. Now, it's not a huge deal, because this 
 
 In this case, I've combined *business logic* and *app logic*. As your apps get more complicated, you'll want to keep the app itself strictly for the logic of the app -- what selections has the user made and what needs to be displayed to them as a result.
 
-The business logic -- what those decisions mean, and the resulting calculations should -- at minimum -- be moved into standalone functions.
+The business logic -- what those decisions mean, and the resulting calculations -- should, at minimum, be moved into standalone functions.
 
 Rewriting this app to make better use of functions, it looks something like this:
 
@@ -196,7 +194,7 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-Now, I've separated the user interaction and visualization layer from the business logic, which is pretty trivial in this case.
+Now I've separated the user interaction and visualization layer from the business logic, which is pretty trivial in this case.
 
 Here's what a plumber API version of my business logic looks like:
 
@@ -243,9 +241,9 @@ The first question of how to store the data is the storage format. There are rea
 
 **Flat file** storage describes writing the data out into a simple file. The canonical example of a flat file is a `csv` file. However, there are also other formats that may make data storage smaller because of compression, make reads faster, and/or allow you to save arbitrary objects rather than just rectangular data. In R, the `rds` format is the generic binary format, while `pickle` is the generic binary format in python.
 
-Flat files can be moved around just like any other file on your computer. You can put them on your computer, share them through tools like dropbox, google drive, scp, or more.
+Flat files can be moved around just like any other file on your computer. You can put them on your computer, and share them through tools like dropbox, google drive, scp, or more.
 
-The biggest disadvantage of flat file data storage is twofold -- and is related to their indivisibility. In order to use a flat file in R or Python, you'll need to load it into your R or Python session. For small data files, this isn't a big deal. But if you've got a large file, it can take a long time to read, which you may not want to wait for. Also, if your file has to go over a network, that can be a very slow operation. Or having to load it into an app at startup. Also, there's generally no way to version data, or just update part, so if you're saving archival versions, they can take up a lot of space very quickly.
+The biggest disadvantage of flat file data storage is twofold -- and is related to their indivisibility. In order to use a flat file in R or Python, you'll need to load it into your R or Python session. For small data files, this isn't a big deal. But if you've got a large file, it can take a long time to read, which you may not want to wait for. Also, if your file has to go over a network, that can be a very slow operation. Or you might have to load it into an app at startup. Also, there's generally no way to version data, or just update part, so, if you're saving archival versions, they can take up a lot of space very quickly.
 
 At the other extreme end from a flat file format is a **database**. A database is a standalone server with its own storage, memory, and compute. In general, you'll recall things from a database using some sort of query language. Most databases you'll interact with in a data science context are designed around storing rectangular data structures and use Structured Query Language (SQL) to get at the data inside.
 
@@ -253,25 +251,25 @@ There are other sorts of databases that store other kinds of objects -- you may 
 
 The big advantage of a database is that the data is stored and managed by an independent process. This means that accessing data from your app is often a matter of just connecting to the database, as opposed to having to move files around.
 
-Working with databases can also be frought -- you usually end up in one of two situations -- either the database isn't really for the data science team, in which case you can probably get read access, but not write. So you'll be able to use the database as your source of truth, but you won't be able to write there for intermediate tables and other things you might need. Or you'll have freedom to set up your own database, in which case you'll have to own it -- and that comes with its own set of headaches.
+Working with databases can also be frought. You usually end up in one of two situations. In the first situation, the database isn't really for the data science team. You can probably get read access, but not write -- so you'll be able to use the database as your source of truth, but you won't be able to write there for intermediate tables and other things you might need. In the second situation, you have freedom to set up your own database, in which case you'll have to own it -- and that comes with its own set of headaches.
 
-There's a third option for data storage that is quickly rising in popularity for medium size data. These options are ones that allow you to store data in a flat file, but access it in a smarter way than "just load all the data into memory". SQLite is a classic on this front that gives you SQL access to what is basically just a flat file. There are also newer entrants into this place that are better from an analytics perspective, like combining Apache Arrow with feather and parquet files and the dask project in Python.
+There's a third family of options for data storage that is quickly rising in popularity for medium-sized data. These options allow you to store data in a flat file, but access it in a smarter way than "just load all the data into memory". SQLite is a classic example on this front that gives you SQL access to what is basically just a flat file. There are also newer entrants into this place that are better from an analytics perspective, like combining Apache Arrow with feather and parquet files and the dask project in Python.
 
-These tools can give you the best of both worlds -- you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you'll still have to keep track of where the actual files are and make them accessible to your app.
+These tools can give you the best of both worlds: you get away from the R and Python limitation of having to load all your data into memory, without having to run a separate database server. But you'll still have to keep track of where the actual files are and make them accessible to your app.
 
 ### Storage Location
 
-The second question after what you're storing is where. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access -- as well as making sure you can authenticate into it (more on that below).
+The second question after what you're storing is where. If you are using a database, then the answer is easy. The database just lives where it lives, and you'll need to make sure you have a way to access it -- both in terms of network access, as well as making sure you can authenticate into it (more on that below).
 
 If you're not using a database, then you'll have to decide where to store the data for your app. Most apps that aren't using a database start off rather naively with the data in the app bundle.
 
 \<TODO: Image of data in app bundle\>
 
-This works really well during development and is an easy pattern to get started with. The problem is that this pattern generally falls apart when it goes to production. Usually this pattern works fine for a while. Problems start to arise when the data needs updating, and most data needs updating. Usually, you'll be ready to update the data in the app long before you're ready to update the app itself.
+This works really well during development and is an easy pattern to get started with. Usually this pattern works fine for a while. The problem is that this pattern generally falls apart when it goes to production. Problems start to arise when the data needs updating -- and most data needs updating. Usually, you'll be ready to update the data in the app long before you're ready to update the app itself.
 
-At this point, you'll be kicking yourself that you now have to update the data inside the app every time you want to want to make a data update. It's generally a better idea to have the data live outside the app bundle. Then you can update the data without mucking around with the app itself.
+At this point, you'll be kicking yourself that you now have to update the data inside the app every time you want to make a data update. It's generally a better idea to have the data live outside the app bundle. Then you can update the data without mucking around with the app itself.
 
-A few options for this include just putting a flat file (or flat with differential read) into a directory near the app bundle. The `pins` package is also a great option here
+A few options for this include just putting a flat file (or flat with differential read) into a directory near the app bundle. The `pins` package is also a great option here.
 
 ## Choosing your storage solution
 
@@ -279,7 +277,7 @@ A few options for this include just putting a flat file (or flat with differenti
 
 Many data apps have different update requirements for different data in the app.
 
-For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves, perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.
+For example, imagine you were the data scientist for a wildlife group that needed a dashboard to track the types of animals that had been spotted by a wilderness wildlife camera. You probably have a table that gives parameters for the animals themselves -- perhaps things like endangered status, expected frequency, and more. That table probably needs to be updated very infrequently.
 
 On the other hand, the day to day counts of the number of animals spotted probably needs to be updated much more frequently. \<TODO: change to hospital example?\>
 
@@ -295,13 +293,13 @@ It's also worth considering whether your app needs a live data connection to do 
 
 ### Is your app read-only, or does it have to write?
 
-Many data apps are read-only. This is nice. If you're going to allow your app to write, you'll need to be careful about permissions, protecting from data loss via SQL injection or other things, and have to be careful to check data quality.
+Many data apps are read-only. This is nice. If you're going to allow your app to write, you'll need to be careful about permissions, protecting from data loss via SQL injection or other things, and you have to be careful to check data quality.
 
 If you want to save the data, you'll also need a solution for that. There's no one-size-fits-all answer here as it really depends on the sort of data you're using. The main thing to keep in mind is that if you're using a database, you'll have to make sure you have write permissions.
 
 ## When does the app fetch its data?
 
-At app open or throughout runtime?
+Does the app fetch its data at app open or throughout runtime?
 
 The first important question you'll have to figure out is what the requirements are for the code you're trying to put into production.
 
@@ -319,7 +317,7 @@ One of the most important questions is how much you can cache before someone eve
 
 One crucial question for your app is how much wait time is acceptable for people wanting to see the app -- and when is that waiting ok? For example, if people need to be able to make selections and see the results in realtime, then you probably need a snappy database, or all the data preloaded into memory when they show up.
 
-For some apps, you want the data to be snappy throughout runtime, but it's ok to have a lengthy startup process (perhaps because it can happen before the user actually arrives) and you want to load a lot of data as the app is starting and do much less throughout the app runtime.=
+For some apps, you want the data to be snappy throughout runtime, but it's ok to have a lengthy startup process (perhaps because it can happen before the user actually arrives) and you want to load a lot of data as the app is starting and do much less throughout the app runtime.
 
 ### Creating Performant Database Queries
 
@@ -339,19 +337,21 @@ Before you start converting queries to speed up your app, it's always worthwhile
 There's nothing more annoying than spending hours refactoring your app to pull data more lazily only to realize that pulling the data was never the slow step to begin with.
 :::
 
-It's also worth considering how to make your queries perform better, regardless of when they occur in your code. Obviously you want to pull the minimum amount of data possible, so making data less granular, pulling in a smaller window of data, or pre-computing summaries is great when possible (though again, it's worth profiling before you take on a lot of work that might result in minimal performance improvements).
+It's also worth considering how to make your queries perform better, regardless of when they occur in your code. You want to pull the minimum amount of data possible, so making data less granular, pulling in a smaller window of data, or pre-computing summaries is great when possible (though again, it's worth profiling before you take on a lot of work that might result in minimal performance improvements).
 
-Once you've decided whether to make your app eager or lazy, you can think about whether to make the query eager or lazy. In most cases, when you're working with a database, the slowest part of the process is the actual process of pulling the data. That means that it's generally worth it to be lazy with your query. And if you're using `dplyr` from R, being eager vs lazy is simply a matter of where in the chain you put the `collect` statement.
+Once you've decided whether to make your app eager or lazy, you can think about whether to make the query eager or lazy. In most cases, when you're working with a database, the slowest part of the process is actually pulling the data. That means that it's generally worth it to be lazy with your query. And if you're using `dplyr` from R, being eager vs lazy is simply a matter of where in the chain you put the `collect` statement.
 
-So you're better off sending a query off to the database, letting the database do a bunch of computations, and pulling a small results set back rather than pulling in a whole data set and doing computations in R.
+So you're better off sending a query to the database, letting the database do a bunch of computations, and pulling a small results set back, rather than pulling in a whole data set and doing computations in R.
 
 ### How to connect to databases?
 
-In R, there are two answers to how to connect to a database. You can either use a direct connector to connect to the database, this generally will provide a driver to the DBI package. There are other database alternatives, but they're pretty rare.
+In R, there are two answers to how to connect to a database. 
+
+The first option is to use a direct connector to connect to the database. This connector generally will provide a driver to the `DBI` package. There are other database alternatives, but they're pretty rare.
 
 \<TODO: image of direct connection vs through driver\>
 
-You can also use an ODBC/JDBC driver to connect to the database. In this case, you'll use something inside your R or Python session to use an database driver that has nothing to do with R or Python. Many organizations like these because IT/Admins can configure them on behalf of users and can be agnostic about whether users are using them from R, Python, or something else entirely.
+Alternatively, you can use an ODBC/JDBC driver to connect to the database. In this case, you'll use something inside your R or Python session to use a database driver that has nothing to do with R or Python. Many organizations like these because IT/Admins can configure them on behalf of users and can be agnostic about whether users are using them from R, Python, or something else entirely.
 
 If you're in R, the `odbc` package gives you a way to interface with ODBC drivers. I'm unaware of a general solution for conencting to odbc drivers in Python.
 
@@ -371,21 +371,21 @@ In some cases, you might need to provide differential data access to different u
 
 Sometimes you might also have a column in a table that allows you to filter by who's allowed to view, so you might just be able to filter to allowable rows in your database query.
 
-Sometimes though, you'll actually have to pass database credentials along to the database, which will do the authorization for you. This is nice, because then all you have to do is pass along the correct credntial, but it's also a pain because you have to somehow get the credential and send it along with the query.
+Sometimes though, you'll actually have to pass database credentials along to the database, which will do the authorization for you. This is nice, because then all you have to do is pass along the correct credential, but it's also a pain because you have to somehow get the credential and send it along with the query.
 
 \<TODO: Image of how a kinit/JWT flow work\>
 
-Most commonly, kerberos tickets or JWTs are used for this task. Usually your options for this depend on the database itself, and the ticket/JWT granting process will likely have to be handled by the database admin.
+Most commonly, Kerberos tickets or JSON web tokens (JWTs) are used for this task. Usually your options for this depend on the database itself, and the ticket/JWT granting process will likely have to be handled by the database admin.
 
 ### Securely Managing Credentials
 
-The single most important thing you can do to secure your credentials for your outside services is to avoid ever putting credentials in plaintext. The simplest alternative is to do a lookup from environment variables in either R or Python. There are many more secure things you can do, but it's pretty trivial to put `Sys.getenv("my_db_password")` into an app rather than actually typing the value. In that case, you'd set the variable in a `.Rprofile` or `.Renviron` .
+The single most important thing you can do to secure your credentials for your outside services is to avoid ever putting credentials in plaintext. The simplest alternative is to do a lookup from environment variables in either R or Python. There are many more secure things you can do, but it's pretty trivial to put `Sys.getenv("my_db_password")` into an app rather than actually typing the value. In that case, you'd set the variable in an `.Rprofile` or `.Renviron` file.
 
 Similarly, in Python, you can get and set environment variables using the `os` module. `os.environ['DB_PASSWORD'] = 'my-pass'` and `os.getenv('DB_PASSWORD')`, `os.environ.get('DB_PASSWORD')` or `os.environ('DB_PASSWORD')`. If you want to set environment variables from a file, generally people in Python use the`dotenv` package along with a `.env` file.
 
 You should not commit these files to git, but should manually move them across environments, so they never appear anywhere centrally accessible.
 
-In some organizations, this will still not be perceived secure enough, because the credentials are not encrypted at rest. Any of the aforementioned files are just plain text files -- so if someone unauthorized were to get access to your machine, they'd be able to grab all of the goodies in your `.Rprofile` and use them themselves.
+In some organizations, this will still not be perceived as secure enough, because the credentials are not encrypted at rest. Any of the aforementioned files are just plain text files -- so if someone unauthorized were to get access to your machine, they'd be able to grab all of the goodies in your `.Rprofile` and use them themselves.
 
 Some hosting software, like RStudio Connect, can take care of this problem, as they store your environment variables inside the software in an encrypted fashion and inject them into the R runtime.
 
@@ -407,13 +407,13 @@ This chapter has mostly been intended for consumption by app authors who will be
 
 Choosing which database to use in a given case is very complicated. There are dozens and dozens of different kinds of databases, and many different vendors, all trying to convince you that theirs is superior.
 
-If you're doing certain kinds of bespoke analytics, then it might really matter. In my experience, using postgres is good enough for most things involving rectangular data of moderate size, and a storage bucket is often good enough for things you might be tempted to put in a NoSQL database until the complexity of the data gets very large.
+If you're doing certain kinds of bespoke analytics, then it might really matter. In my experience, using Postgres is good enough for most things involving rectangular data of moderate size, and a storage bucket is often good enough for things you might be tempted to put in a NoSQL database until the complexity of the data gets very large.
 
 Either way, a database as a service is a pretty basic cloud service. For example, AWS's RDS is their simplest database service, and you can get a PostgreSQL, MySQL, MariaDB, or SQL Server database for very reasonable pricing.[^1-3-proj-components-2] It works well for reasonably sized data loads (up to 64Tb).
 
 [^1-3-proj-components-2]: You can also do an Oracle database if you have a license, but if you're reading this, you almost certainly don't have an Oracle license you have to use. Consider yourself lucky.
 
-RDS is optimized for individual transactions. In some cases, you might want to consider a full data warehouse. AWS's is called Redshift and it runs a flavor of PostgreSQL. In general it's better when you have a lot of data (goes up to several petabytes) or are doing demanding queries a lot more often that you're querying for individual rows. Redshift is a good bit more expensive, so it's worth keeping that in mind.
+AWS RDS is optimized for individual transactions. In some cases, you might want to consider a full data warehouse. AWS's full data warehouse is called Redshift and it runs a flavor of PostgreSQL. In general it's better when you have a lot of data (goes up to several petabytes) or are doing demanding queries a lot more often than you're querying for individual rows. Redshift is a good bit more expensive, so it's worth keeping that in mind.
 
 If you're storing data on a share drive, you'll have to make sure that it's available in your prod environment. This process is called mounting a drive or volume onto a server. It's quite a straightforward process, but needing to mount a drive into two different servers places some constraints on where those servers have to be.
 
@@ -421,9 +421,9 @@ If you're storing data on a share drive, you'll have to make sure that it's avai
 
 When you're working in the cloud, you'll get compute separate from volumes. This works nicely, because you can get the compute you need and separately choose a volume size that works for you. There are many nice tools around volumes that often include automated backups, and the ability to easily move snapshots from place to place -- including just moving the same data onto a larger drive in just a few minutes.
 
-EBS is AWS's name for their standard storage volumes. You get one whenever you've got an EC2 instance.
+EBS is AWS's name for their standard storage volumes. You get one whenever you create an EC2 instance.
 
-In some cases, you'll need to have a drive that's mounted to multiple machines at once, then you'll need some sort of network drive.
+In some cases, you'll need to have a drive that's mounted to multiple machines at once. In that case you'll need some sort of network drive.
 
 The mounting process works exactly the same, but the underlying technology needs to be a little more complex to accommodate how it works. Depending on whether you're talking about connecting multiple Linux hosts, you might use NFS (Network File Share), or SMB/CIFS (Windows only), or some combination of the two might use Samba. If you're getting to this level, it's probably a good idea to involve a professional IT/Admin.
 
