@@ -66,7 +66,7 @@ There are a few important elements to `http` requests and responses:
 
 -   Body - this is the content of the request or response.
 
-    -   It's worth noting that `GET` requests for fetching something generally don't include a body. Instead, any specifics on what is to be fetched are specified through *query parameters*, the part of the URL that shows up after the `?`. They're often something like, `?first_name=alex&last_name=gold`
+-   It's worth noting that `GET` requests for fetching something generally don't include a body. Instead, any specifics on what is to be fetched are specified through *query parameters*, the part of the URL that shows up after the `?`. They're often something like, `?first_name=alex&last_name=gold`
 
 ### Understand `http` traffic by inspecting it
 
@@ -390,51 +390,51 @@ If you need to change anything, update the config and then restart with `sudo sy
 
 QUESTION - is this too complicated? Should I make it an either/or and then allow people to do both as a challenge?
 
-    http {
+``` {filename="/etc/nginx/nginx.conf"}
+http {
+  
+  \# Enable websockets (needed for Shiny)
+  map \$http_upgrade \$connection_upgrade { 
+    default upgrade; '' close; 
+  }
+  
+  server { listen 80;
+    
+    location /rstudio/ {
+      # Needed only for a custom path prefix of /rstudio
+      rewrite ^/rstudio/(.*)$ /$1 break;
       
-      # Enable websockets (needed for Shiny)
-       map $http_upgrade $connection_upgrade {
-                default upgrade;
-                ''      close;
-        }
-
-      server {
-        listen 80;
-
-        location /rstudio/ {
-          # Needed only for a custom path prefix of /rstudio
-          rewrite ^/rstudio/(.*)$ /$1 break;
-
-          # Use http here when ssl-enabled=0 is set in rserver.conf
-          proxy_pass http://localhost:8787;
-
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection $connection_upgrade;
-          proxy_read_timeout 20d;
-
-          # Not needed if www-root-path is set in rserver.conf
-          proxy_set_header X-RStudio-Root-Path /rstudio;
-
-          # Optionally, use an explicit hostname and omit the port if using 80/443
-          proxy_set_header Host $host:$server_port;
-        }
-
-        location /jupyter/ {
-          # NOTE important to also set base url of jupyterhub to /jupyter in its config
-          proxy_pass http://127.0.0a.1:8000;
-
-          proxy_redirect   off;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header Host $host;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-
-          # websocket headers
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection $connection_upgrade;
-        }
-      }
+      # Use http here when ssl-enabled=0 is set in rserver.conf
+      proxy_pass http://localhost:8787;
+      
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_read_timeout 20d;
+      
+      # Not needed if www-root-path is set in rserver.conf
+      proxy_set_header X-RStudio-Root-Path /rstudio;
+      
+      # Optionally, use an explicit hostname and omit the port if using 80/443
+      proxy_set_header Host $host:$server_port;
+    }
+    
+    location /jupyter/ {
+      # NOTE important to also set base url of jupyterhub to /jupyter in its config
+      proxy_pass http://127.0.0a.1:8000;
+      
+      proxy_redirect   off;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      
+      # websocket headers
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }
+```
 
 There's one more thing you'll have to do, which is to let RStudio and JupyterHub know that they're on a subpath. Complex web experences like RStudio and JupyterHub frequently send people to a different subpath internally. In order to do so properly, they need to know to prepend all of those requests with the subpath.
 
@@ -452,9 +452,9 @@ When you get to the line that reads `# c.JupyterHub.bind_url = 'http://:8000'`, 
 
 Start jupyterhub with a specific config file.
 
-    jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
 
-### How to configure DNS for your server
+\### How to configure DNS for your server
 
 From the perspective of someone trying to set up their own website, there's only one DNS server that matters to you personally -- the DNS server for your *domain name registrar*.
 
@@ -498,11 +498,9 @@ Allocate an Elastic IP. If you've restarted your server, you've probably noticed
 
 As of this writing, Elastic IPs are free as long as it's associated with a single running EC2 instance. You get charged if they're not active -- basically AWS doesn't want you hoarding Elastic IPs. Great -- just make sure to give back the elastic IP if you take down your instance.
 
-::: callout-note
-If you were doing this for real, and not in a somewhat arbitrary order that's grouped by topic, it would've made sense to set up the elastic IP as soon as you brought the server up so you only would've used that IP address.
-:::
+::: callout-note If you were doing this for real, and not in a somewhat arbitrary order that's grouped by topic, it would've made sense to set up the elastic IP as soon as you brought the server up so you only would've used that IP address. :::
 
-Go to Elastic IP and click allocate. Once it has been allocated, you'll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.
+    Go to Elastic IP and click allocate. Once it has been allocated, you'll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.
 
 I was given the Elastic IP `52.70.205.182`. So now if I go to `52.70.205.182`, I get my server.
 
@@ -514,33 +512,29 @@ Once you've got your domain, you have to configure your DNS. You'll have to crea
 
 So in NameCheap, my Advanced DNS configuration looks like this:
 
-![](images-traffic/namecheap-config.png)
+    ![](images-traffic/namecheap-config.png)
 
 Now you just have to be patient. Unfortunately DNS takes time to propagate. After a few minutes, your server should be reachable at your domain. Wow!
 
-### Getting a cert of your own
+    ### Getting a cert of your own
 
-There's a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.
+    There's a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.
 
 They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!
 
 For anyone who's never dealt with self-signing certificates in the past, let me tell you, this is magical!
 
-In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.
+    In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.
 
 So inside the nginx configuration's server block, add
 
-    server_name do4ds-lab.shop www.do4ds-lab.shop;
+server_name do4ds-lab.shop www.do4ds-lab.shop;
 
 substituting in your domain for mine. Make sure to do both the bare domain and the `www` subdomain.
 
 At that point, you can just install certbot and let it go! As of this writing, that was as simple as running
 
-    sudo su
-    apt-get install certbot
-    apt-get install python3-certbot-nginx
-    systemctl restart nginx
-    sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop
+sudo su apt-get install certbot apt-get install python3-certbot-nginx systemctl restart nginx sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop
 
 If you google "configure nginx with letsencrypt", there's a [great article](https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/) by someone at Nginx walking you through the process if the commands above change.
 
@@ -558,19 +552,19 @@ Proto here is short for *protocol*. So this is letting RStudio Server know that 
 
 ------------------------------------------------------------------------
 
-Ok -- let's try out our newly-secured workbench!
+    Ok -- let's try out our newly-secured workbench!
 
 Go to the URL your server is hosted at, and you'll find that...it's broken again.
 
 Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn't open?
 
-If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.
+    If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.
 
 Add a rule to allow `HTTPS` traffic on 443 from anywhere.
 
 NOW you should be able to go to `<your-domain>/rstudio` and get to RStudio and `<your-domain>/jupyter` to get to JupyterHub! Voila!
 
-Note that you *also* can now SSH into `ssh test-user@<domain>`, so you don't ever need to remember IP Addresses for day-to-day operations.
+    Note that you *also* can now SSH into `ssh test-user@<domain>`, so you don't ever need to remember IP Addresses for day-to-day operations.
 
 ## Comprehension Questions
 
@@ -583,3 +577,4 @@ Note that you *also* can now SSH into `ssh test-user@<domain>`, so you don't eve
 
     3.  https://alexkgold.space/mfy.html
 4.  Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA, Public Certificate, Private Certificate, 443
+
