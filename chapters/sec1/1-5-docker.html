@@ -446,9 +446,9 @@ Note
 <p>The biggest reproducibility headache for most data scientists is managing R and Python package environments. While you can just install a bunch of packages into a container, save the container state, and move on, this really isn’t a good solution.</p>
 <p>If you do this, you’ve got the last state of your environment saved, but it’s not really reproducible. If you come back next year and need to add a new package, you’ll have no way to do it without potentially breaking the whole environment.</p>
 <p>The obvious solution is to write down the steps for creating your Docker container – in a file called a Dockerfile. Here, it’s tempting to create a Dockerfile that looks like:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>...</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">/opt/R/4.1.0/bin/R</span> install.packages<span class="er">(</span><span class="ex">c</span><span class="er">(</span><span class="st">"shiny"</span><span class="ex">,</span> <span class="st">"dplyr"</span><span class="kw">))</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb1-1"><a href="#cb1-1"></a>...</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="kw">RUN</span> <span class="ex">/opt/R/4.1.0/bin/R</span> install.packages<span class="er">(</span><span class="ex">c</span><span class="er">(</span><span class="st">"shiny"</span><span class="ex">,</span> <span class="st">"dplyr"</span><span class="kw">))</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>But this is also completely non-reproducible. Whenever you rebuild your container, you’ll install the newest versions of Shiny and Dplyr afresh, potentially ruining the reproducibility of your code. For that reason, the best move is to combine the ability of R and Python-specific libraries for capturing package state – like <code>renv</code> and <code>rig</code> in R and <code>virtualenv</code> , <code>conda</code> , and <code>pyenv</code> in Python are a much better choice than going all in on Docker. More on those topics in the <a href="#repro">chapter on environments</a>.</p>
 </section>
 <section id="trying-out-docker" class="level2" data-number="5.4">
@@ -618,37 +618,37 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 </ul>
 <p>If you do much digging, you’ll probably run into the <code>ENTRYPOINT</code> command, which can take a while to tell apart from <code>CMD</code>. If you’re building containers to run finished data science assets, you shouldn’t need <code>ENTRYPOINT</code>. If you’re building containers to – for example – accept a different asset to run or allow for particular arguments, you’ll need to use <code>ENTRYPOINT</code> to specify the command that will always run and <code>CMD</code> to specify the default arguments to <code>ENTRYPOINT</code>, which can be overridden on the command line.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>So here’s the Dockerfile I used to build the container for the Jupyter Notebook rendering. Look through it, can you understand what it’s doing?</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="cv">syntax=docker/dockerfile:1</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> ubuntu:20.04</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Copy external files</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="fu">mkdir</span> <span class="at">-p</span> /project/out/</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> ./requirements.txt /project/</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> ./hello.ipynb /project/</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Install system packages</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">apt-get</span> update <span class="kw">&amp;&amp;</span> <span class="ex">apt-get</span> install <span class="at">-y</span> <span class="dt">\</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  wget python3 python3-pip</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Install quarto CLI + clean up</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="fu">wget</span> https://github.com/quarto-dev/quarto-cli/releases/download/v0.9.83/quarto-0.9.83-linux-amd64.deb</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">dpkg</span> <span class="at">-i</span> ./quarto-0.9.83-linux-amd64.deb</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="fu">rm</span> <span class="at">-f</span> ./quarto-0.9.83-linux-amd64.deb</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Install Python requirements</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> <span class="ex">pip3</span> install <span class="at">-r</span> /project/requirements.txt</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Render notebook</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="kw">CMD</span> <span class="bu">cd</span> /project <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="ex">quarto</span> render ./hello.ipynb <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Move output to correct directory</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Needed because quarto requires relative paths in --output-dir: </span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># https://github.com/quarto-dev/quarto-cli/issues/362</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  rm -rf /project-out/hello_files/ &amp;&amp; <span class="op">\</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  mkdir -p /project-out/hello_files &amp;&amp; <span class="op">\</span></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  mv ./hello_files/* /project-out/hello_files/ &amp;&amp; <span class="op">\</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  mv ./hello.html /project-out/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># </span><span class="cv">syntax=docker/dockerfile:1</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">FROM</span> ubuntu:20.04</span>
+<span id="cb8-3"><a href="#cb8-3"></a></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co"># Copy external files</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="kw">RUN</span> <span class="fu">mkdir</span> <span class="at">-p</span> /project/out/</span>
+<span id="cb8-6"><a href="#cb8-6"></a></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="kw">COPY</span> ./requirements.txt /project/</span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="kw">COPY</span> ./hello.ipynb /project/</span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co"># Install system packages</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="kw">RUN</span> <span class="ex">apt-get</span> update <span class="kw">&amp;&amp;</span> <span class="ex">apt-get</span> install <span class="at">-y</span> <span class="dt">\</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>  wget python3 python3-pip</span>
+<span id="cb8-13"><a href="#cb8-13"></a></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="co"># Install quarto CLI + clean up</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="kw">RUN</span> <span class="fu">wget</span> https://github.com/quarto-dev/quarto-cli/releases/download/v0.9.83/quarto-0.9.83-linux-amd64.deb</span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="kw">RUN</span> <span class="ex">dpkg</span> <span class="at">-i</span> ./quarto-0.9.83-linux-amd64.deb</span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="kw">RUN</span> <span class="fu">rm</span> <span class="at">-f</span> ./quarto-0.9.83-linux-amd64.deb</span>
+<span id="cb8-18"><a href="#cb8-18"></a></span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co"># Install Python requirements</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="kw">RUN</span> <span class="ex">pip3</span> install <span class="at">-r</span> /project/requirements.txt</span>
+<span id="cb8-21"><a href="#cb8-21"></a></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="co"># Render notebook</span></span>
+<span id="cb8-23"><a href="#cb8-23"></a><span class="kw">CMD</span> <span class="bu">cd</span> /project <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
+<span id="cb8-24"><a href="#cb8-24"></a>  <span class="ex">quarto</span> render ./hello.ipynb <span class="kw">&amp;&amp;</span> <span class="dt">\</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a>  <span class="co"># Move output to correct directory</span></span>
+<span id="cb8-26"><a href="#cb8-26"></a>  <span class="co"># Needed because quarto requires relative paths in --output-dir: </span></span>
+<span id="cb8-27"><a href="#cb8-27"></a>  <span class="co"># https://github.com/quarto-dev/quarto-cli/issues/362</span></span>
+<span id="cb8-28"><a href="#cb8-28"></a>  rm -rf /project-out/hello_files/ &amp;&amp; <span class="op">\</span></span>
+<span id="cb8-29"><a href="#cb8-29"></a>  mkdir -p /project-out/hello_files &amp;&amp; <span class="op">\</span></span>
+<span id="cb8-30"><a href="#cb8-30"></a>  mv ./hello_files/* /project-out/hello_files/ &amp;&amp; <span class="op">\</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a>  mv ./hello.html /project-out/</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Once you’ve created your Dockerfile, you build it into an image using <code>docker build -t &lt;image name&gt;</code> and then you can push that to DockerHub or another registry using <code>docker push</code>.</p>
 </section>
 <section id="comprehension-questions" class="level2" data-number="5.8">

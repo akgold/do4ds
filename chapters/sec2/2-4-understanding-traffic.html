@@ -283,11 +283,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#how-ssltls-enhances-security" id="toc-how-ssltls-enhances-security" class="nav-link" data-scroll-target="#how-ssltls-enhances-security"><span class="toc-section-number">9.7.1</span>  How SSL/TLS Enhances Security</a></li>
   <li><a href="#public-and-private-certificates" id="toc-public-and-private-certificates" class="nav-link" data-scroll-target="#public-and-private-certificates"><span class="toc-section-number">9.7.2</span>  Public and Private Certificates</a></li>
   </ul></li>
-  <li><a href="#lab-getting-a-domain-and-ssl-for-your-server" id="toc-lab-getting-a-domain-and-ssl-for-your-server" class="nav-link" data-scroll-target="#lab-getting-a-domain-and-ssl-for-your-server"><span class="toc-section-number">9.8</span>  Lab: Getting a domain and SSL for your server</a>
-  <ul class="collapse">
-  <li><a href="#how-to-configure-dns-for-your-server" id="toc-how-to-configure-dns-for-your-server" class="nav-link" data-scroll-target="#how-to-configure-dns-for-your-server"><span class="toc-section-number">9.8.1</span>  How to configure DNS for your server</a></li>
-  <li><a href="#getting-a-cert-of-your-own" id="toc-getting-a-cert-of-your-own" class="nav-link" data-scroll-target="#getting-a-cert-of-your-own"><span class="toc-section-number">9.8.2</span>  Getting a cert of your own</a></li>
-  </ul></li>
+  <li><a href="#lab-getting-a-domain-and-ssl-for-your-server" id="toc-lab-getting-a-domain-and-ssl-for-your-server" class="nav-link" data-scroll-target="#lab-getting-a-domain-and-ssl-for-your-server"><span class="toc-section-number">9.8</span>  Lab: Getting a domain and SSL for your server</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">9.9</span>  Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-4-understanding-traffic.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
@@ -349,10 +345,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <li><p>Request Method – getting deep into HTTP request methods is beyond the scope of this book, but there are a variety of different methods you might use to interact with things on the internet. The most common are <code>GET</code> to get a webpage, <code>POST</code> or <code>PUT</code> to change something, and <code>DELETE</code> to delete something.</p></li>
 <li><p>Status Code - each HTTP response includes a status code indicating the response category. Some special codes you’ll quickly learn to recognize are below. The one you’ll (hopefully) see the most is 200, which is a successful response.</p></li>
 <li><p>Response and Request Headers – headers are metadata included with the request and response. These include things like the type of the request, the type of machine you’re coming from, cookie-setting requests and more. In some cases, these headers include authentication credentials and tokens, and other things you might want to inspect.</p></li>
-<li><p>Body - this is the content of the request or response.</p>
-<ul>
-<li>It’s worth noting that <code>GET</code> requests for fetching something generally don’t include a body. Instead, any specifics on what is to be fetched are specified through <em>query parameters</em>, the part of the URL that shows up after the <code>?</code>. They’re often something like, <code>?first_name=alex&amp;last_name=gold</code></li>
-</ul></li>
+<li><p>Body - this is the content of the request or response.</p></li>
+<li><p>It’s worth noting that <code>GET</code> requests for fetching something generally don’t include a body. Instead, any specifics on what is to be fetched are specified through <em>query parameters</em>, the part of the URL that shows up after the <code>?</code>. They’re often something like, <code>?first_name=alex&amp;last_name=gold</code></p></li>
 </ul>
 </section>
 <section id="understand-http-traffic-by-inspecting-it" class="level3" data-number="9.2.2">
@@ -624,51 +618,54 @@ What happened to www?
 </ol>
 <p>If you need to change anything, update the config and then restart with <code>sudo systemctl restart nginx</code>.</p>
 <p>QUESTION - is this too complicated? Should I make it an either/or and then allow people to do both as a challenge?</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>/etc/nginx/nginx.conf</strong></pre>
+</div>
 <pre><code>http {
   
-  # Enable websockets (needed for Shiny)
-   map $http_upgrade $connection_upgrade {
-            default upgrade;
-            ''      close;
-    }
-
-  server {
-    listen 80;
-
+  \# Enable websockets (needed for Shiny)
+  map \$http_upgrade \$connection_upgrade { 
+    default upgrade; '' close; 
+  }
+  
+  server { listen 80;
+    
     location /rstudio/ {
       # Needed only for a custom path prefix of /rstudio
       rewrite ^/rstudio/(.*)$ /$1 break;
-
+      
       # Use http here when ssl-enabled=0 is set in rserver.conf
       proxy_pass http://localhost:8787;
-
+      
       proxy_http_version 1.1;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
       proxy_read_timeout 20d;
-
+      
       # Not needed if www-root-path is set in rserver.conf
       proxy_set_header X-RStudio-Root-Path /rstudio;
-
+      
       # Optionally, use an explicit hostname and omit the port if using 80/443
       proxy_set_header Host $host:$server_port;
     }
-
+    
     location /jupyter/ {
       # NOTE important to also set base url of jupyterhub to /jupyter in its config
       proxy_pass http://127.0.0a.1:8000;
-
+      
       proxy_redirect   off;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header Host $host;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-
+      
       # websocket headers
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header Connection $connection_upgrade;
     }
   }</code></pre>
+</div>
 <p>There’s one more thing you’ll have to do, which is to let RStudio and JupyterHub know that they’re on a subpath. Complex web experences like RStudio and JupyterHub frequently send people to a different subpath internally. In order to do so properly, they need to know to prepend all of those requests with the subpath.</p>
 <p>RStudio accepts a header from the proxy that lets it know what path it’s on (see the <code>X-RStudio-Root-Path</code> header line in the nginx config). Jupyter needs to be explicitly told.</p>
 <p>First we’ll need to get to the autogenerated config with</p>
@@ -678,9 +675,8 @@ What happened to www?
 <p>Find the line you want to change – you can search in vim with <code>/ &lt;thing you're searching for&gt;</code>. Go to the next hit with <code>n</code>.</p>
 <p>When you get to the line that reads <code># c.JupyterHub.bind_url = 'http://:8000'</code>, uncomment and add a <code>/jupyter</code> on the end, so it reads <code>c.JupyterHub.bind_url = 'http://:8000/jupyter</code>.</p>
 <p>Start jupyterhub with a specific config file.</p>
-<pre><code>jupyterhub -f /etc/jupyterhub/jupyterhub_config.py</code></pre>
-<section id="how-to-configure-dns-for-your-server" class="level3" data-number="9.8.1">
-<h3 data-number="9.8.1" class="anchored" data-anchor-id="how-to-configure-dns-for-your-server"><span class="header-section-number">9.8.1</span> How to configure DNS for your server</h3>
+<p>jupyterhub -f /etc/jupyterhub/jupyterhub_config.py</p>
+<p>### How to configure DNS for your server</p>
 <p>From the perspective of someone trying to set up their own website, there’s only one DNS server that matters to you personally – the DNS server for your <em>domain name registrar</em>.</p>
 <p>Domain name registrars are the companies that actually own domains. You can buy or rent one from them in order to have a domain on the internet. So let’s say you take the data science server you set up in lab 1 and decide that you want to host it at a real domain.</p>
 <p>Your first stop would be a domain name registrar where you’d find an available domain you like and pull out your credit card.</p>
@@ -722,48 +718,30 @@ What happened to www?
 <p>The last record uses the wildcard symbol <code>*</code> to send all subdomain traffic that’s not already spoken for – say <code>blog.example.com</code> or <code>info.example.com</code> directly to the IP address specified. In this case, I’m sending all of those subdomains to a different IP address, maybe a 404 (not found) page – or maybe I’m serving all the subdomains off a different server.</p>
 <p>So what happens is that your query goes through several layers of public DNS servers to get to the DNS entry for your domain name registrar. In many cases, you’ll directly configure your domain name registrar to point to your website or server – but you also can configure the domain name registrar to point at another set of DNS servers you actually control with an <em>NS record</em>.</p>
 <p>If you’re setting up your own server, this probably isn’t the case, but some large enterprises do run their own private DNS servers.</p>
-<section id="actually-doing-it" class="level4" data-number="9.8.1.1">
-<h4 data-number="9.8.1.1" class="anchored" data-anchor-id="actually-doing-it"><span class="header-section-number">9.8.1.1</span> Actually Doing It</h4>
+<section id="actually-doing-it" class="level4" data-number="9.8.0.1">
+<h4 data-number="9.8.0.1" class="anchored" data-anchor-id="actually-doing-it"><span class="header-section-number">9.8.0.1</span> Actually Doing It</h4>
 <p>Allocate an Elastic IP. If you’ve restarted your server, you’ve probably noticed that the IP address changed! This can be a real pain if you have to reconfigure your DNS every time. AWS offers a service called Elastic IP that gives you an IP address that won’t change that you can use with your instance, even if you restart it.</p>
 <p>As of this writing, Elastic IPs are free as long as it’s associated with a single running EC2 instance. You get charged if they’re not active – basically AWS doesn’t want you hoarding Elastic IPs. Great – just make sure to give back the elastic IP if you take down your instance.</p>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>If you were doing this for real, and not in a somewhat arbitrary order that’s grouped by topic, it would’ve made sense to set up the elastic IP as soon as you brought the server up so you only would’ve used that IP address.</p>
-</div>
-</div>
-<p>Go to Elastic IP and click allocate. Once it has been allocated, you’ll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.</p>
+<p>::: callout-note If you were doing this for real, and not in a somewhat arbitrary order that’s grouped by topic, it would’ve made sense to set up the elastic IP as soon as you brought the server up so you only would’ve used that IP address. :::</p>
+<pre><code>Go to Elastic IP and click allocate. Once it has been allocated, you'll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.</code></pre>
 <p>I was given the Elastic IP <code>52.70.205.182</code>. So now if I go to <code>52.70.205.182</code>, I get my server.</p>
 <p>Note that once you make this change, your server will no longer be available at its old IP address, so you’ll have to ssh in at the new one. If you have SSH terminals open when you make the change, they will break.</p>
 <p>This part will not be free, but it can be very cheap. You’ll have to actually buy a domain name. The easiest way to do this is via AWS’s Route53 service. You can get domains on Route53 for as little as $9 per year. But there are cheaper services. For example, I was able to get the domain do4ds-lab.shop for $1.98 for a year on namecheap.com.</p>
 <p>Once you’ve got your domain, you have to configure your DNS. You’ll have to create 2 A records – one each for the @ host and the * host pointing to your IP and one for the CNAME at the www with the value being your bare domain.</p>
 <p>So in NameCheap, my Advanced DNS configuration looks like this:</p>
-<p><img src="images-traffic/namecheap-config.png" class="img-fluid"></p>
+<pre><code>![](images-traffic/namecheap-config.png)</code></pre>
 <p>Now you just have to be patient. Unfortunately DNS takes time to propagate. After a few minutes, your server should be reachable at your domain. Wow!</p>
-</section>
-</section>
-<section id="getting-a-cert-of-your-own" class="level3" data-number="9.8.2">
-<h3 data-number="9.8.2" class="anchored" data-anchor-id="getting-a-cert-of-your-own"><span class="header-section-number">9.8.2</span> Getting a cert of your own</h3>
-<p>There’s a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.</p>
+<pre><code>### Getting a cert of your own
+
+There's a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.</code></pre>
 <p>They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!</p>
 <p>For anyone who’s never dealt with self-signing certificates in the past, let me tell you, this is magical!</p>
-<p>In our nginx configuration, we’ll need to add a line certbot will use to know which site to generate the certificate for.</p>
+<pre><code>In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.</code></pre>
 <p>So inside the nginx configuration’s server block, add</p>
-<pre><code>server_name do4ds-lab.shop www.do4ds-lab.shop;</code></pre>
+<p>server_name do4ds-lab.shop www.do4ds-lab.shop;</p>
 <p>substituting in your domain for mine. Make sure to do both the bare domain and the <code>www</code> subdomain.</p>
 <p>At that point, you can just install certbot and let it go! As of this writing, that was as simple as running</p>
-<pre><code>sudo su
-apt-get install certbot
-apt-get install python3-certbot-nginx
-systemctl restart nginx
-sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</code></pre>
+<p>sudo su apt-get install certbot apt-get install python3-certbot-nginx systemctl restart nginx sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</p>
 <p>If you google “configure nginx with letsencrypt”, there’s a <a href="https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/">great article</a> by someone at Nginx walking you through the process if the commands above change.</p>
 <p>I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added. You’ll notice two things – one is inside the server block. You’ll notice that the <code>listen 80</code> is gone. We’re no longer listening for <code>HTTP</code> traffic. Instead there’s a <code>listen 443</code> – the default port for SSL, and a bunch of stuff that says <code># managed by Certbot</code> that tells nginx where to find the SSL certificate.</p>
 <p>Scrolling down a little, there’s a new server block that is listening on <code>80</code>. This block returns a <code>301</code>, which you might recall is a redirect code (specifically for a <em>permanent</em> redirect) sending all <code>HTTP</code> traffic to <code>HTTPS</code>.</p>
@@ -772,13 +750,13 @@ sudo certbot --nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</code></pre>
 <pre><code>proxy_set_header X-Forwarded-Proto https; #redirect URLs back to https</code></pre>
 <p>Proto here is short for <em>protocol</em>. So this is letting RStudio Server know that when it forwards or redirects traffic, it should do so to <code>HTTPS</code>, not <code>HTTP</code>.</p>
 <hr>
-<p>Ok – let’s try out our newly-secured workbench!</p>
+<pre><code>Ok -- let's try out our newly-secured workbench!</code></pre>
 <p>Go to the URL your server is hosted at, and you’ll find that…it’s broken again.</p>
 <p>Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn’t open?</p>
-<p>If you thought of the AWS instance security group, you’re right! You’ll remember that by default it was open to SSH traffic on port <code>22</code>, and we opened it to <code>HTTP</code> traffic on <code>80</code>. But now that we’re sending it <code>HTTPS</code> traffic on <code>443</code>, you’ll have to open it to that traffic as well.</p>
+<pre><code>If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.</code></pre>
 <p>Add a rule to allow <code>HTTPS</code> traffic on 443 from anywhere.</p>
 <p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio and <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub! Voila!</p>
-<p>Note that you <em>also</em> can now SSH into <code>ssh test-user@&lt;domain&gt;</code>, so you don’t ever need to remember IP Addresses for day-to-day operations.</p>
+<pre><code>Note that you *also* can now SSH into `ssh test-user@&lt;domain&gt;`, so you don't ever need to remember IP Addresses for day-to-day operations.</code></pre>
 </section>
 </section>
 <section id="comprehension-questions" class="level2" data-number="9.9">

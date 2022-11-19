@@ -395,8 +395,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <p>The simplest way of assigning permissions is called an <strong>access control list</strong> (ACL). In systems that use ACLs, each piece of content has a list of users who are allowed access. Sometimes, ACLs are also assigned to groups, which are simply sets of users – think <code>data-scientists</code>.</p>
 <p><img src="images-auth/acls.jpeg" class="img-fluid" width="572"></p>
 <p>One ACL implementation with which you may be familiar is file permissions on a Linux server. For example, if you have a Mac or are on a Linux server, you can open your terminal, navigate to a directory and do the following:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ls <span class="at">-l</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">-rwxr-xr-x</span>   1 alexkgold  staff   2274 May 10 12:09 README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="ex">$</span> ls <span class="at">-l</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">-rwxr-xr-x</span>   1 alexkgold  staff   2274 May 10 12:09 README.md</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>That first set of characters describes the ACL for the <code>README.md</code> file. The first character <code>-</code> indicates this is a file, as opposed to a directory of files (which would be <code>d</code>). Then there are three sets of 3 characters, <code>rwx</code>, which are short for <code>read</code>, <code>write</code>, and <code>execute</code>, with the first group for the owner, <code>alexkgold</code>, the second group for anyone else in the group <code>staff</code>, and the third set for anyone else.</p>
 <p>So you can read <code>-rwxr-xr-x</code> as, <em>this is a file that <code>alexkgold</code> can read, write or execute, and anyone else can read or execute, but not edit</em>.</p>
 <p>ACLs are pretty intuitive, but it turns out that when you are managing a lot of users across a lot of files, directories, and services, they can get pretty difficult to manage, so many organizations use Role Based Access Control (RBAC).</p>
@@ -461,11 +461,11 @@ objectClass = Person</code></pre>
 <p>Now that we understand in theory how LDAP works, let’s try out an actual example.</p>
 <p>To start, let’s stand up LDAP in a docker container:</p>
 <p>#TODO: update ldif</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> network create ldap-net</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 6389:389 <span class="dt">\</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> ldap-service <span class="dt">\</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--detach</span> alexkgold/auth</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">docker</span> network create ldap-net</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">docker</span> run <span class="at">-p</span> 6389:389 <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="at">--name</span> ldap-service <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>  <span class="at">--detach</span> alexkgold/auth</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code>ldapsearch</code> is a utility that lets us run queries against the LDAP tree. Let’s try it out against the LDAP container we just stood up.</p>
 <p>Let’s say I want to return everything in the subtree under <code>example.org</code>. In that case, I would run <code>ldapsearch -b dc=example,dc=org</code>, where <code>b</code> indicates my search base, which is a <code>dn</code>. But in order to make this actually work, we’ll need to include a few more arguments, including</p>
 <ul>
@@ -474,59 +474,59 @@ objectClass = Person</code></pre>
 <li><p>the bind password we’ll be using, indicated by <code>-w</code></p></li>
 </ul>
 <p>Since we’re testing, we’re also going to provide the flag <code>-x</code> to use whatever certificate is present on the server. Putting it altogether, along with the commands to reach the docker container, let’s try:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=admin,dc=example,dc=org"</span> <span class="at">-w</span> admin</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># extended LDIF</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># LDAPv3</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># filter: (objectclass=*)</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># requesting: ALL</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># example.org</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="ex">dn:</span> dc=example,dc=org</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> top</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> dcObject</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> organization</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="ex">o:</span> Example Inc.</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="ex">dc:</span> example</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># admin, example.org</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="ex">dn:</span> cn=admin,dc=example,dc=org</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> simpleSecurityObject</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> organizationalRole</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="ex">cn:</span> admin</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="ex">description:</span> LDAP administrator</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="ex">userPassword::</span> e1NTSEF9d3IyVFp6SlAyKy9xT2RsQ0owTDYzR0RzNFo0NUFrQ00=</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="co"># search result</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="ex">search:</span> 2</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="ex">result:</span> 0 Success</span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># numResponses: 3</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># numEntries: 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=admin,dc=example,dc=org"</span> <span class="at">-w</span> admin</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># extended LDIF</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co">#</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># LDAPv3</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">#</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co"># example.org</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="ex">dn:</span> dc=example,dc=org</span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="ex">objectClass:</span> top</span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="ex">objectClass:</span> dcObject</span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="ex">objectClass:</span> organization</span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="ex">o:</span> Example Inc.</span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="ex">dc:</span> example</span>
+<span id="cb4-18"><a href="#cb4-18"></a></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co"># admin, example.org</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="ex">dn:</span> cn=admin,dc=example,dc=org</span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="ex">objectClass:</span> simpleSecurityObject</span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="ex">objectClass:</span> organizationalRole</span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="ex">cn:</span> admin</span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="ex">description:</span> LDAP administrator</span>
+<span id="cb4-25"><a href="#cb4-25"></a><span class="ex">userPassword::</span> e1NTSEF9d3IyVFp6SlAyKy9xT2RsQ0owTDYzR0RzNFo0NUFrQ00=</span>
+<span id="cb4-26"><a href="#cb4-26"></a></span>
+<span id="cb4-27"><a href="#cb4-27"></a><span class="co"># search result</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a><span class="ex">search:</span> 2</span>
+<span id="cb4-29"><a href="#cb4-29"></a><span class="ex">result:</span> 0 Success</span>
+<span id="cb4-30"><a href="#cb4-30"></a></span>
+<span id="cb4-31"><a href="#cb4-31"></a><span class="co"># numResponses: 3</span></span>
+<span id="cb4-32"><a href="#cb4-32"></a><span class="co"># numEntries: 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>You should be able to read what got returned pretty seamlessly. One thing to notice is that the user password is returned, so it can be compared to a password provided. It is encrypted, so it doesn’t appear in plain text.</p>
 <p>Note that <code>ldap</code> is a protocol – so it takes the place of the <code>http</code> you’re used to in normal web operations. Like there’s <code>https</code>, there is also a protocol called <code>LDAPS</code>, which is <code>ldap</code> + <code>tls</code> for the same reason you’ve got <code>https</code>. LDAP is (almost) always running in the same private network as the service, so many organizations don’t require using LDAPS, but others do require it.</p>
 <p>Running the ldapadmin</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 6443:443 <span class="dt">\</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        <span class="at">--name</span> ldap-admin <span class="dt">\</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="at">--env</span> PHPLDAPADMIN_LDAP_HOSTS=ldap-service <span class="dt">\</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">--detach</span> osixia/phpldapadmin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 6443:443 <span class="dt">\</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>        <span class="at">--name</span> ldap-admin <span class="dt">\</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>        <span class="at">--env</span> PHPLDAPADMIN_LDAP_HOSTS=ldap-service <span class="dt">\</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>        <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a>        <span class="at">--detach</span> osixia/phpldapadmin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>dn for admin <code>cn=admin,dc=example,dc=org</code> pw: <code>admin</code></p>
 <p><a href="https://localhost:6443" class="uri">https://localhost:6443</a></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace with valid license</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">RSC_LICENSE</span><span class="op">=</span>XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Run without persistent data and using default configuration</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--privileged</span> <span class="dt">\</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--name</span> rsc <span class="dt">\</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--volume</span> <span class="va">$PWD</span>/rstudio-connect.gcfg:/etc/rstudio-connect/rstudio-connect.gcfg <span class="dt">\</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">-p</span> 3939:3939 <span class="dt">\</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">-e</span> RSC_LICENSE=<span class="va">$RSC_LICENSE</span> <span class="dt">\</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    rstudio/rstudio-connect:latest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># Replace with valid license</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="bu">export</span> <span class="va">RSC_LICENSE</span><span class="op">=</span>XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX</span>
+<span id="cb6-3"><a href="#cb6-3"></a></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co"># Run without persistent data and using default configuration</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--privileged</span> <span class="dt">\</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="at">--name</span> rsc <span class="dt">\</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="at">--volume</span> <span class="va">$PWD</span>/rstudio-connect.gcfg:/etc/rstudio-connect/rstudio-connect.gcfg <span class="dt">\</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="at">-p</span> 3939:3939 <span class="dt">\</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="at">-e</span> RSC_LICENSE=<span class="va">$RSC_LICENSE</span> <span class="dt">\</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a>    rstudio/rstudio-connect:latest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 <section id="single-vs-double-bind" class="level4" data-number="13.3.3.4">
 <h4 data-number="13.3.3.4" class="anchored" data-anchor-id="single-vs-double-bind"><span class="header-section-number">13.3.3.4</span> Single vs Double Bind</h4>
@@ -534,52 +534,52 @@ objectClass = Person</code></pre>
 <p>In a <em>Double Bind</em> configuration, there is a separate administrative service account, used to authenticate to the LDAP server. Once authentication is complete, then the user is queried in the system.</p>
 <p>Single bind configurations are often more limited than double bind ones. For example, in most cases you’ll only be able to see the single user as well as the groups they’re a part of. This can limit application functionality in some cases. On the other hand, there need be no master key maintained on your server, and some admins may prefer it for security reasons.</p>
 <p>We can see this really concretely. In the example above, you used a double bind by supplying admin credentials to LDAP. Let’s say instead, you just provide a single user’s credentials. In that case, I don’t get anything back if I just do a general search.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                                       </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># extended LDIF</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># LDAPv3</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># filter: (objectclass=*)</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># requesting: ALL</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co"># search result</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ex">search:</span> 2</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">result:</span> 32 No such object</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co"># numResponses: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                                       </span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co"># extended LDIF</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">#</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co"># LDAPv3</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="co"># search result</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="ex">search:</span> 2</span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="ex">result:</span> 32 No such object</span>
+<span id="cb7-13"><a href="#cb7-13"></a></span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="co"># numResponses: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>But just searching for information about Joe does return his own information.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> cn=joe,dc=engineering,dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                    32 ✘</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># extended LDIF</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># LDAPv3</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># base &lt;cn=joe,dc=engineering,dc=example,dc=org&gt; with scope subtree</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># filter: (objectclass=*)</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># requesting: ALL</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># joe, engineering.example.org</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="ex">dn:</span> cn=joe,dc=engineering,dc=example,dc=org</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="ex">cn:</span> joe</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="ex">gidNumber:</span> 500</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="ex">givenName:</span> Joe</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="ex">homeDirectory:</span> /home/joe</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="ex">loginShell:</span> /bin/sh</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="ex">mail:</span> joe@example.org</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> inetOrgPerson</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> posixAccount</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="ex">objectClass:</span> top</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="ex">sn:</span> Golly</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="ex">uid:</span> test<span class="dt">\j</span>oe</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="ex">uidNumber:</span> 1000</span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="ex">userPassword::</span> e01ENX1qL01raWZrdk0wRm1sTDZQM0MxTUlnPT0=</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="co"># search result</span></span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="ex">search:</span> 2</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="ex">result:</span> 0 Success</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="co"># numResponses: 2</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="co"># numEntries: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> cn=joe,dc=engineering,dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                    32 ✘</span>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="co"># extended LDIF</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="co">#</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="co"># LDAPv3</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co"># base &lt;cn=joe,dc=engineering,dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co"># joe, engineering.example.org</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="ex">dn:</span> cn=joe,dc=engineering,dc=example,dc=org</span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="ex">cn:</span> joe</span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="ex">gidNumber:</span> 500</span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="ex">givenName:</span> Joe</span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="ex">homeDirectory:</span> /home/joe</span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="ex">loginShell:</span> /bin/sh</span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="ex">mail:</span> joe@example.org</span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="ex">objectClass:</span> inetOrgPerson</span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="ex">objectClass:</span> posixAccount</span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="ex">objectClass:</span> top</span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="ex">sn:</span> Golly</span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="ex">uid:</span> test<span class="dt">\j</span>oe</span>
+<span id="cb8-23"><a href="#cb8-23"></a><span class="ex">uidNumber:</span> 1000</span>
+<span id="cb8-24"><a href="#cb8-24"></a><span class="ex">userPassword::</span> e01ENX1qL01raWZrdk0wRm1sTDZQM0MxTUlnPT0=</span>
+<span id="cb8-25"><a href="#cb8-25"></a></span>
+<span id="cb8-26"><a href="#cb8-26"></a><span class="co"># search result</span></span>
+<span id="cb8-27"><a href="#cb8-27"></a><span class="ex">search:</span> 2</span>
+<span id="cb8-28"><a href="#cb8-28"></a><span class="ex">result:</span> 0 Success</span>
+<span id="cb8-29"><a href="#cb8-29"></a></span>
+<span id="cb8-30"><a href="#cb8-30"></a><span class="co"># numResponses: 2</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a><span class="co"># numEntries: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </section>
 </section>
 <section id="kerberos-tickets" class="level3" data-number="13.3.4">
@@ -618,13 +618,13 @@ objectClass = Person</code></pre>
 <li><p><code>SP_ASSERTION_CONSUMER_SERVICE</code> is the URL of the SP that is prepared to receive the authorized responses coming back from the SAML IdP.</p></li>
 <li><p><code>SP_SINGLE_LOGOUT_SERVICE</code> is the URL where the SP will receive a logout command once someone has been logged out at the IdP level. Many SPs do not implement single logout.</p></li>
 </ul>
-<div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--name</span><span class="op">=</span>saml_idp <span class="dt">\</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>-p 8080:8080 <span class="dt">\</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>-p 8443:8443 <span class="dt">\</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>-e SIMPLESAMLPHP_SP_ENTITY_ID=http://app.example.com <span class="dt">\</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>-e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp <span class="dt">\</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>-e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp <span class="dt">\</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>-d kristophjunge/test-saml-idp:1.15</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="ex">docker</span> run <span class="at">--name</span><span class="op">=</span>saml_idp <span class="dt">\</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>-p 8080:8080 <span class="dt">\</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>-p 8443:8443 <span class="dt">\</span></span>
+<span id="cb9-4"><a href="#cb9-4"></a>-e SIMPLESAMLPHP_SP_ENTITY_ID=http://app.example.com <span class="dt">\</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>-e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp <span class="dt">\</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>-e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp <span class="dt">\</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>-d kristophjunge/test-saml-idp:1.15</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><a href="http://localhost:8080/simplesaml" class="uri">http://localhost:8080/simplesaml</a></p>
 <p>admin/secret</p>
 </section>
