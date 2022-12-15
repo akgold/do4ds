@@ -65,7 +65,7 @@ If you're thinking about hosting a data science workbench in Docker, you should 
 
 In this chapter, I'll suggest trying to stand up RStudio Server in a container on your desktop, but don't let the ease fool you. The majority of difficulties with administering a server are the same, even if you put your application stack into a Docker container. Section II of this book will have a lot more on those challenges, and I suggest you check it out if you're interested.
 
-Instead, we're going to stick with talking about how actual data scientists would want to use Docker -- to archive and share completed data science assets.
+Instead, we're going to stick with talking about how actual data scientists would want to use Docker: to archive and share completed data science assets.
 
 ![](images-docker/docker-usage.png)
 
@@ -73,9 +73,9 @@ In this pattern, you'll put your whole reproducibility stack inside the containe
 
 ## Container Gotchas
 
-Docker containers are great for certain purposes, but there are also some tradeoffs from working inside a Docker container that it's worth being aware of.
+Docker containers are great for certain purposes, but there are also some tradeoffs that it's worth being aware of.
 
-The first is the tradeoff of Docker's strength -- a container only gets access to the resources it has specifically been allowed to access.
+The first is the tradeoff of Docker's strength: a container only gets access to the resources it has specifically been allowed to access.
 
 This is a great feature for security and process isolation, but it means you may run into some issues with networking and access to system resources, like your files. You'll have to develop a reasonably good mental model of the relationship of the Docker container to the rest of your machine in order to be able to develop effectively.
 
@@ -95,11 +95,11 @@ RUN /opt/R/4.1.0/bin/R install.packages(c("shiny", "dplyr"))
 ...
 ```
 
-But this is also completely non-reproducible. Whenever you rebuild your container, you'll install the newest versions of Shiny and Dplyr afresh, potentially ruining the reproducibility of your code. For that reason, the best move is to combine the ability of R and Python-specific libraries for capturing package state -- like `renv` and `rig` in R and `virtualenv` , `conda` , and `pyenv` in Python are a much better choice than going all in on Docker. More on those topics in the [chapter on environments](#repro).
+But this is also completely non-reproducible. Whenever you rebuild your container, you'll install the newest versions of Shiny and Dplyr afresh, potentially ruining the reproducibility of your code. For that reason, the best move is to still use R- and Python-specific libraries for capturing package state -- like `renv` and `rig` in R and `virtualenv` , `conda` , and `pyenv` in Python -- rather than relying on Docker for that job. There's more on those topics in the [chapter on environments](#repro).
 
 ## Trying out Docker
 
-If you've read this far, you have a reasonably good mental model of when you might want to use Docker to encapsulate your data science environment or when you might not. The rest of this chapter will be a hands-on intro to using Docker to run a finished app.
+If you've read this far, you probably have a reasonably good mental model of when you might want to use Docker to encapsulate your data science environment or when you might not. The rest of this chapter will be a hands-on intro to using Docker to run a finished app.
 
 There are many great resources out there for *really* learning Docker. I'd suggest picking up one of them rather than relying on this book to learn everything you need to know about Docker -- but hopefully this can get you started.
 
@@ -214,7 +214,7 @@ At it's most basic, all you need to know is that you can run a Docker image loca
 A command line flag is an argument passed to a command line program. If you're not familiar, it might be helpful to start by checking out [that section](#command-line) of the book.
 :::
 
-Let's pull apart the two commands we just used -- which use the command line flags you're most likely to need.
+Let's pull apart the two commands we just used, which use the command line flags you're most likely to need.
 
 ### Parsing container names
 
@@ -284,9 +284,9 @@ In this case, we actually used a variable `$(pwd)`, which will be evaluated to t
 
 ## Build your own with Dockerfiles
 
-So far, we've just been working on running containers based on images I've already prepared for you. Let's look at how those images got created so you can try building your own.
+So far, we've just been running containers based on images I've already prepared for you. Let's look at how those images were created so you can try building your own.
 
-A Dockerfile is just a set of instructions that you use to build a Docker image. If you have a pretty good idea how to accomplish something on a running machine, you shouldn't have too much trouble building a Dockerfile to do the same as long as you remember two things:
+A Dockerfile is just a set of instructions that you use to build a Docker image. If you have a pretty good idea how to accomplish something on a running machine, you shouldn't have too much trouble building a Dockerfile to do the same, as long as you remember two things:
 
 TODO: Image of build vs run time
 
@@ -303,7 +303,7 @@ Here are the important commands you'll need for getting everything you need into
 
 -   `COPY` -- copy a file from the host filesystem into the container. Note that the working directory for your Dockerfile will be whatever your working directory is when you run your build command.
 
-One really nice thing about Docker containers is that they're build in *layers*. Each command in the Dockerfile defines a new layer. If you make changes below a given layer in your Dockerfile, rebuilding will be easy, because Docker will only start rebuilding at the layer with changes.
+One really nice thing about Docker containers is that they're built in *layers*. Each command in the Dockerfile defines a new layer. If you make changes below a given layer in your Dockerfile, rebuilding will be easy, because Docker will only start rebuilding at the layer with changes.
 
 If you're mainly building containers for finished data science assets to be re-run on demand, there's only one command you need:
 
@@ -311,9 +311,9 @@ If you're mainly building containers for finished data science assets to be re-r
 
 If you do much digging, you'll probably run into the `ENTRYPOINT` command, which can take a while to tell apart from `CMD`. If you're building containers to run finished data science assets, you shouldn't need `ENTRYPOINT`. If you're building containers to -- for example -- accept a different asset to run or allow for particular arguments, you'll need to use `ENTRYPOINT` to specify the command that will always run and `CMD` to specify the default arguments to `ENTRYPOINT`, which can be overridden on the command line.[^1-5-docker-2]
 
-[^1-5-docker-2]: This might sound backward -- the key is to realize that this is always how it works. The default `ENTRYPOINT` is `/bin/sh -c`, so `CMD` is just always providing arguments to the `ENTRYPOINT` .
+[^1-5-docker-2]: This might sound backward -- the key is to realize that this is always how it works. The default `ENTRYPOINT` is `/bin/sh -c`, so `CMD` is always just providing arguments to the `ENTRYPOINT`.
 
-So here's the Dockerfile I used to build the container for the Jupyter Notebook rendering. Look through it, can you understand what it's doing?
+Here's the Dockerfile I used to build the container for the Jupyter Notebook rendering. Look through it. Can you understand what it's doing?
 
 ``` dockerfile
 # syntax=docker/dockerfile:1
@@ -349,7 +349,7 @@ CMD cd /project && \
   mv ./hello.html /project-out/
 ```
 
-Once you've created your Dockerfile, you build it into an image using `docker build -t <image name>` and then you can push that to DockerHub or another registry using `docker push`.
+Once you've created your Dockerfile, you build it into an image using `docker build -t <image name>`. You can then push that to DockerHub or another registry using `docker push`.
 
 ## Comprehension Questions
 
@@ -416,8 +416,8 @@ But there's also one more concern that's particular to Docker.
 
 One of the best things about a Docker container is how ephemeral it is. Things come up in moments, and when they're gone you don't have to worry about them. But that's also very dangerous if you want things to persist.
 
-The best way to fix this is to mount in external volumes that will maintain the state should the container die or should you want to replace it. We went over how to do that in the last section.
+The best way to fix this is to mount external volumes that will maintain the state should the container die or should you want to replace it. We went over how to do that in the last section.
 
-At a minimum, you'll want to mount in the user home directories that store all the data and code you can see in RStudio Server. You may also want to mount in other bits of state, like wherever you've installed your version of R, and the config file you're using to maintain the server.
+At a minimum, you'll want to mount the user home directories that store all the data and code you can see in RStudio Server. You may also want to mount other bits of state, like wherever you've installed your version of R, and the config file you're using to maintain the server.
 
-Note that unlike on a server, where you'll restart the process of the server, the pattern with a container generally is to kill and restart the container, and let changes come up with the new container.
+Note that, unlike on a server (where you restart the process of the server), the pattern with a container is generally to kill and restart the container, and let changes come up with the new container.
