@@ -449,16 +449,28 @@ Note
 <div class="sourceCode" id="cb1"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb1-1"><a href="#cb1-1"></a>...</span>
 <span id="cb1-2"><a href="#cb1-2"></a><span class="kw">RUN</span> <span class="ex">/opt/R/4.1.0/bin/R</span> install.packages<span class="er">(</span><span class="ex">c</span><span class="er">(</span><span class="st">"shiny"</span><span class="ex">,</span> <span class="st">"dplyr"</span><span class="kw">))</span></span>
 <span id="cb1-3"><a href="#cb1-3"></a>...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>But this is also completely non-reproducible. Whenever you rebuild your container, you’ll install the newest versions of Shiny and Dplyr afresh, potentially ruining the reproducibility of your code. For that reason, the best move is to still use R- and Python-specific libraries for capturing package state – like <code>renv</code> and <code>rig</code> in R and <code>virtualenv</code> , <code>conda</code> , and <code>pyenv</code> in Python – rather than relying on Docker for that job. There’s more on those topics in the <a href="#repro">chapter on environments</a>.</p>
+<p>But this is also completely non-reproducible. Whenever you rebuild your container, you’ll install the newest versions of Shiny and Dplyr afresh, potentially ruining the reproducibility of your code. For that reason, the best move is to still use R- and Python-specific libraries for capturing package state – like <code>renv</code> and <code>rig</code> in R and <code>virtualenv</code> , <code>conda</code> , and <code>pyenv</code> in Python – rather than relying on Docker for that job. There’s more on those topics in the <a href="1-2-env-as-code.html">Chapter&nbsp;<span>2</span></a> on environments.</p>
 </section>
 <section id="trying-out-docker" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="trying-out-docker"><span class="header-section-number">5.4</span> Trying out Docker</h2>
 <p>If you’ve read this far, you probably have a reasonably good mental model of when you might want to use Docker to encapsulate your data science environment or when you might not. The rest of this chapter will be a hands-on intro to using Docker to run a finished app.</p>
-<p>There are many great resources out there for <em>really</em> learning Docker. I’d suggest picking up one of them rather than relying on this book to learn everything you need to know about Docker – but hopefully this can get you started.</p>
 <section id="prerequisites" class="level3" data-number="5.4.1">
 <h3 data-number="5.4.1" class="anchored" data-anchor-id="prerequisites"><span class="header-section-number">5.4.1</span> Prerequisites</h3>
 <p>In order to get started with Docker, you’ll need to know a few things. The first is that you’ll have to actually have Docker installed on an environment you can use. The easiest way to do this is to install <a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a> on your laptop, but you can also put Docker on a server environment.</p>
-<p>In order to follow along, you’ll also need to be able to open and use a terminal, see the section on <a href="#command-line">using the command line</a> if you’re not already comfortable.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We’re going to use Docker from a terminal on your machine. I’ll give you all the commands you’ll need, but you need to know how to find and open a terminal.</p>
+<p>If that’s new to you, you might want to skip ahead and check out the beginning of <a href="../sec2/2-2-cmd-line.html">Chapter&nbsp;<span>7</span></a> so you can at least open a terminal.</p>
+</div>
+</div>
 </section>
 <section id="getting-started" class="level3" data-number="5.4.2">
 <h3 data-number="5.4.2" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">5.4.2</span> Getting Started</h3>
@@ -469,7 +481,7 @@ Note
   --name palmer-plumber \
   alexkgold/plumber</code></pre>
 <p>Once you type in this command, it’ll take a minute to pull, extract, and start the container.</p>
-<p>Once the container starts up, you’ll see a long sequence of letters and numbers. Now, navigate to http://localhost:8000/docs/ in your browser (this URL has to be exact!), and you should see the documentation for an R language API that lets you explore the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins data set</a></p>
+<p>Once the container starts up, you’ll see a long sequence of letters and numbers. Now, navigate to http://localhost:8000/__docs__/ in your browser (this URL has to be exact!), and you should see the documentation for an R language API that lets you explore the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins data set</a></p>
 <p>That was probably pretty uninspiring. It took a long time to download and get started. In order to show the real power of Docker, let’s now kill the container with</p>
 <pre><code>docker kill palmer-plumber</code></pre>
 <p>You can check that the container isn’t running by trying to visit that URL again. You’ll get an error.</p>
@@ -480,6 +492,7 @@ Note
 <p>You can get into the container to poke around using the command</p>
 <pre><code>docker exec -it palmer-plumber /bin/bash</code></pre>
 <p>Once you’re in, try <code>cat api/plumber.R</code> to look at the code of the running API.</p>
+<p>When you need to get out, you can leave by typing <code>exit</code>.</p>
 <p><code>docker exec</code> is a general purpose command for executing a command inside a running container. The overwhelming majority of the time I use it, it’s to get a terminal inside a running container so I can poke around.</p>
 <p>You can spend a lot of time getting deep into why the command works, but just memorizing (or, more likely, repeatedly googling) <code>docker exec -it &lt;container&gt; /bin/bash</code> will get you pretty far.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
@@ -499,12 +512,13 @@ Note
 <p>One nicety of Docker is that it gives you quick access to the most common reason you’d probably exec into the container – looking at logs.</p>
 <p>After you’ve clicked around a little in the API, try running:</p>
 <pre><code>docker logs palmer-plumber</code></pre>
+<p>We’re done with this container now. Feel free to kill it before you move on.</p>
 <hr>
 <p>Great! We’ve played around with this container pretty thoroughly.</p>
 <p>Before we get into how this all works, let’s try one more example.</p>
-<p>Go back into your terminal and navigate to a directory you can play around in (the <code>cd</code> command is your friend here). Run the following in your terminal:</p>
+<p>Go back into your terminal and navigate to a directory you can play around in (the <code>cd</code> command is your friend here, see <a href="../sec2/2-2-cmd-line.html">Chapter&nbsp;<span>7</span></a> if you’re not familiar). Run the following in your terminal:</p>
 <pre><code>docker run \
--v $(pwd):/project-out \
+-v ${PWD}:/project-out \
 alexkgold/batch:0.1</code></pre>
 <p>It’ll take a minute to download – this container is about 600Mb. You may need to grant the container access to a directory on your machine when it runs. This container will take a few moments to run. If you go to the directory in file browser, you should be able to open <code>hello.html</code> in your web browser – it should be a rendered version of a Jupyter Notebook.</p>
 <p>This notebook is just a very basic visualization, but you can see how it’s nice to be able to render a Jupyter Notebook locally without having to worry about making sure you had any of the dependencies installed. This is good both for running on demand, and also for archival purposes.</p>
@@ -518,7 +532,7 @@ alexkgold/batch:0.1</code></pre>
 <p>Before we dig into the nitty-gritty of how that all worked – and how you might change it for your own purposes, let’s spend just a minute clarifying the lifecycle of a Docker container.</p>
 <p>This image explains the different states a Docker container can be in, and the commands you’ll need to move them around.</p>
 <p><img src="images-docker/docker-lifecycle.png" class="img-fluid" width="561"></p>
-<p>A container starts its life as a <em>Dockerfile</em>. A Dockerfile is a set of instructions for how to build a container. Dockerfiles are usually stored in a git repository, just like any other code, and it’s common to build them on push via a <a href="#cicd">CI/CD</a> pipeline.</p>
+<p>A container starts its life as a <em>Dockerfile</em>. A Dockerfile is a set of instructions for how to build a container. Dockerfiles are usually stored in a git repository, just like any other code, and it’s common to build them on push via a CI/CD pipeline.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>A working Dockerfile gets built into a <em>Docker image</em> with the <em>build</em> command. Images are immutable snapshots of the state of the container at a given time.</p>
 <p>It is possible to interactively build a container as you go and snapshot to create an image, but for the purposes of reproducibility, it’s generally preferable to build the image from a Dockerfile, and adjust the Dockerfile if you need to adjust the image.</p>
 <p>Usually, the image is going to be the thing that you share with other people, as it’s the version of the container that’s compiled and ready to go.</p>
@@ -540,7 +554,8 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>A command line flag is an argument passed to a command line program. If you’re not familiar, it might be helpful to start by checking out <a href="#command-line">that section</a> of the book.</p>
+<p>A command line flag is an argument passed to a command line program.</p>
+<p>There’s a lot more about using command line tools in <a href="../sec2/2-2-cmd-line.html">Chapter&nbsp;<span>7</span></a>.</p>
 </div>
 </div>
 <p>Let’s pull apart the two commands we just used, which use the command line flags you’re most likely to need.</p>
@@ -564,7 +579,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you just want a quick reference later, there’s a <a href="../append/docker-cheatsheet.html">cheatsheet in the appendix</a>.</p>
+<p>If you just want a quick reference later, there’s a cheatsheet in <span class="citation" data-cites="docker-cheat">[Appendix @docker-cheat]</span>.</p>
 </div>
 </div>
 <p>Let’s first look at how we ran the container with the plumber API in it.</p>
@@ -585,14 +600,14 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 
 35bd54e44015   alexkgold/plumber   "R -e 'pr &lt;- plumber…"   29 seconds ago   Up 28 seconds   0.0.0.0:8000-&gt;8000/tcp   palmer-plumber</code></pre>
 <hr>
-<p>Now let’s head over to the batch document rendering, where we only used one command line flag <code>-v $(pwd):/project-out</code>, short for <em>volume</em>. To demonstrate what this argument does, navigate to a new directory on your command line and re-run the container without the argument.</p>
+<p>Now let’s head over to the batch document rendering, where we only used one command line flag <code>-v ${PWD}:/project-out</code>, short for <em>volume</em>. To demonstrate what this argument does, navigate to a new directory on your command line and re-run the container without the argument.</p>
 <p>Wait…where’d my document go?</p>
 <p>Remember – containers are completely ephemeral. <em>What happens in the container stays in the container</em>. This means that when my document is rendered inside the container, it gets deleted when the container ends its job.</p>
 <p>But that’s not what I wanted – I wanted to get the output back out of the container.</p>
 <p>The solution – making data outside the container available to the container and vice-versa – is accomplished by <em>mounting a volume</em> into the container using the <code>-v</code> flag. Like with mounting a port, the syntax is <code>-v &lt;directory outside container&gt;:&lt;directory inside container&gt;</code>.</p>
 <p><img src="images-docker/docker-on-host.png" class="img-fluid" width="2048"></p>
 <p>This is an essential concept to understand when working with containers. Because containers are so ephemeral, volumes are the way to get anything from your host machine in, and to persist anything that you want to outlast the lifecycle of the container.</p>
-<p>In this case, we actually used a variable <code>$(pwd)</code>, which will be evaluated to the current working directory to be the directory <code>project-out</code> inside the container, so the rendered document can be persisted after the container goes away.</p>
+<p>In this case, we actually used a variable <code>${PWD}</code>, which will be evaluated to the current working directory to be the directory <code>project-out</code> inside the container, so the rendered document can be persisted after the container goes away.</p>
 </section>
 </section>
 <section id="build-your-own-with-dockerfiles" class="level2" data-number="5.7">
@@ -616,7 +631,7 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <ul>
 <li><code>CMD</code> - Specifies what command to run inside the container’s shell at runtime. This would be the same command you’d use to run your project from the command line.</li>
 </ul>
-<p>If you do much digging, you’ll probably run into the <code>ENTRYPOINT</code> command, which can take a while to tell apart from <code>CMD</code>. If you’re building containers to run finished data science assets, you shouldn’t need <code>ENTRYPOINT</code>. If you’re building containers to – for example – accept a different asset to run or allow for particular arguments, you’ll need to use <code>ENTRYPOINT</code> to specify the command that will always run and <code>CMD</code> to specify the default arguments to <code>ENTRYPOINT</code>, which can be overridden on the command line.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>If you do much digging, you’ll probably run into the <code>ENTRYPOINT</code> command, which can take a while to tell apart from <code>CMD</code>. If you’re building containers to run finished data science assets, you shouldn’t need <code>ENTRYPOINT</code>. If you’re building containers to – for example – accept a different asset to run or allow for particular arguments, you’ll need to use <code>ENTRYPOINT</code> to specify the command that will always run and <code>CMD</code> to specify the default arguments to <code>ENTRYPOINT</code>, which can be overridden on the command line.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p>Here’s the Dockerfile I used to build the container for the Jupyter Notebook rendering. Look through it. Can you understand what it’s doing?</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode numberSource dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb8-1"><a href="#cb8-1"></a><span class="co"># </span><span class="cv">syntax=docker/dockerfile:1</span></span>
 <span id="cb8-2"><a href="#cb8-2"></a><span class="kw">FROM</span> ubuntu:20.04</span>
@@ -674,7 +689,7 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <ul>
 <li><p>Hint 1: You’ll probably need all of the <code>docker run</code> flags you’ve learned and one more – the <code>-e KEY=value</code> flag provides an environment variable to the running container.</p></li>
 <li><p>Hint 2: The default port for RStudio Server is <code>8787</code>.</p></li>
-<li><p>Hint 3: If you’re running a laptop with Apple Silicon (M1 or M2), you may need to try a different container. <code>amoselb/rstudio-m1</code> worked for me.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p></li>
+<li><p>Hint 3: If you’re running a laptop with Apple Silicon (M1 or M2), you may need to try a different container. <code>amoselb/rstudio-m1</code> worked for me.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p></li>
 </ul>
 <section id="running-a-service-in-a-container" class="level3" data-number="5.10.1">
 <h3 data-number="5.10.1" class="anchored" data-anchor-id="running-a-service-in-a-container"><span class="header-section-number">5.10.1</span> Running a service in a container</h3>
@@ -712,8 +727,9 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <hr>
 <ol>
 <li id="fn1"><p>There are some other types of containers that are commonly used for specialized use cases, like high-performance computing.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>This might sound backward – the key is to realize that this is always how it works. The default <code>ENTRYPOINT</code> is <code>/bin/sh -c</code>, so <code>CMD</code> is always just providing arguments to the <code>ENTRYPOINT</code>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>This should eventually be resolved, keep an eye on <a href="https://github.com/rstudio/rstudio/issues/8809">this issue</a> in the RStudio repo.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Remember, we talked about them back in <a href="1-1-code-promotion.html">Chapter&nbsp;<span>1</span></a>!<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>This might sound backward – the key is to realize that this is always how it works. The default <code>ENTRYPOINT</code> is <code>/bin/sh -c</code>, so <code>CMD</code> is always just providing arguments to the <code>ENTRYPOINT</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>This should eventually be resolved, keep an eye on <a href="https://github.com/rstudio/rstudio/issues/8809">this issue</a> in the RStudio repo.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
