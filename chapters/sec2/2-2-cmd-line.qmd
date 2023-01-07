@@ -1,143 +1,307 @@
 # The Command Line + SSH {#sec-cmd-line}
 
-The biggest difference between working on your desktop and working on a server is that almost all work on a server is done via the command line -- an all-text interface where you'll interact via commands rather than a point-and-click graphical user interface (GUI).
+The biggest difference between working on your desktop and working on a
+server is that almost all work on a server is done via the command line
+-- an all-text interface where you'll interact by typing commands rather
+than a point-and-click graphical user interface (GUI).
 
-Once nice thing is that once you feel comfortable using the command line on a server, you'll probably find that there are many things that will get easier for you locally as well! Plus you get to feel like a real hacker.
+Once nice thing is that once you feel comfortable using the command line
+on a server, you'll probably find that there are many things that will
+get easier for you locally as well! Plus you get to feel like a real
+hacker.
 
-In this chapter we'll walk through getting access to the command line on your computer and talk about how to connect to a remote server using a protocol called SSH.
+In this chapter we'll walk through getting access to the command line on
+your computer and talk about how to connect to a remote server using a
+protocol called SSH.
+
+I'd recommend reading this chapter even if you've used SSH before. It's
+probable you didn't really understand *why* you took the steps you did.
+Hopefully, by the time you've finished this chapter you might have to
+google the exact commands, but you'll never again confuse a public and a
+private key and what to do with each (we've all been there).
 
 ## Setting up the command line
 
-The first step to using the command line is to figure out how to use it on your machine. The way you access the command line differs depending on your operating system.
+Before you start interacting with the command line on your machine, it's
+helpful to have a mental model of what you're interacting with.
 
-Before you start interacting with the command line on your machine, it's helpful to have a mental model of what you're interacting with.
+There are three layers to interacting with the command line -- the
+terminal, the shell, and the operating system commands.
 
-There are three layers to interacting with the command line -- the terminal, the shell, and the operating system commands.
+The *terminal* is the visual program where you'll type in commands.
+Depending on which terminal you're using, the colors and themes
+available for the window, as will the options for having multiple tabs
+and panes, and the keyboard shortcuts you'll use to manage them.
 
-The *terminal* is the visual program where you'll type in commands. Depending on which terminal you're using, the colors and themes available for the window (yay dark mode!), as will the options for having multiple tabs and panes, and the keyboard shortcuts you'll use to manage them.
+It is possible to spend A LOT of time customizing your terminal to be
+exactly what you like. Some might argue it is not be the best use of
+your time. Such people are no fun, and and having a terminal that's
+super customized to what you like is great.
 
-The *shell* is the program you're interacting with as you're typing in commands. It's what matches the words you type to actual commands or programs on your system. Depending on which shell you choose, you'll get different options for autocompletion, handy plugins, and coloring and theming of the actual text in your terminal.
+The *shell* is the program you're interacting with as you're typing in
+commands. It's what matches the words you type to actual commands or
+programs on your system. Depending on which shell you choose, you'll get
+different options for autocompletion, handy plugins, and coloring and
+theming of the actual text in your terminal.
 
-Lastly, the *operating system* is what actually runs the commands you're typing in. So the set of commands available to you will differ by whether you're using Windows or Mac or Linux.
+There is some overlap of things you can customize via the terminal vs
+the shell, so mix and match to your heart's content.
 
-\[TODO\] - Image of terminal hosting shell w/ OS commands
+Lastly, the *operating system* is what actually runs the commands you're
+typing in. So the set of commands available to you will differ by
+whether you're using Windows or Mac or Linux.
 
-It is possible to spend A LOT of time customizing your terminal to be exactly what you like. While it might not be the best use of your time, it is a lot of fun, and having a terminal that's super customized to what you like feels pretty cool.
+```{mermaid}
+graph LR
+    A[A Human] --> |Types| B[Commands]
+    A --> |Opens| E
+    E[Terminal] --> |Opens| C
+    C[Shell] --> |Dispatches| B
+    D[Operating System] --> |Defines the set of| B
+    D[Operating System] --> |Runs| B
+```
 
-We're not going to spend much time in this chapter actually playing on the command line -- that will come in the next chapter. Instead, we're going to mostly get everything set up and ready to go.
-
-### If you use Linux
-
-Why are you even reading this section? You're probably already an expert terminal user. Skip down to getting SSH set up.
-
-### If you use MacOS
-
-There are a bunch of things you *can* do with your terminal. I'm not going to exhaust them all. Instead, my goal is to let you know about the various levels at which you can interact, and suggest my favorites.
-
-MacOS comes with a built-in terminal app (conveniently called *Terminal).* It's fine.
-
-If you're going to be using your terminal more than occasionally, I'd recommend using the free [iTerm2](https://iterm2.com/), which adds a bunch of niceties like better theming and multiple tabs.
-
-The default shell for MacOS (and Linux) is called `bash`. `Bash` is a program that's been around for a long time, and it's super reliable. Many people (including me) like to replace `bash` with another shell that is basically `bash`+.
-
-Most of these other shells include all the things that `bash` can do and also allow more. I've been using `zsh` for years now and strongly recommend it. In addition to some basic niceties like better autocompletion than `bash`, `zsh` has a huge ecosystem of plugins that can do everything from making it easier to interact with git to controlling your Spotify music from the command line. `zsh` also has some really wonderful theming options that can do things like display your git status right on the command line.
-
-Because there's such a wild array of plugins for `zsh`, there are also options of plugin managers for `zsh`. I recommend `prezto`.
-
-I'm not going to go through the steps of installing and configuring these tools -- there are numerous online walkthroughs and guides.
-
-::: callout-tip
-#### What do I do?
-
-If you want to follow my recommendations, install iTerm2, `zsh`, and prezto.
-
-Then customize the look of the window and tab behavior in the iTerm2 preferences and customize the text theme and plugins vis prezto.
-:::
-
-### If you use a Windows machine
+In the next few sections of this chapter, we'll get into how to set up
+your terminal and shell so that it looks and behaves exactly the way you
+want.
 
 ::: callout-note
-I haven't used a Windows machine in many years. I've collected some recommendations here, but I can't personally vouch for them the way I can my Mac recommendations.
+I haven't used a Windows machine in many years. I've collected some
+recommendations here, but I can't personally vouch for them the way I
+can my Mac recommendations.
 :::
 
-Windows comes with a terminal built in. There are many other terminal programs you *can* use, but many Windows users think that the built in terminal is actually the best option. That makes things easy!
+### Choosing your terminal
 
-Windows comes with two shells built in, the Command shell (`cmd`) and the PowerShell. The command shell is older and has been superseded by PowerShell. If you're just getting started, you absolutely should just work with PowerShell. If you've been using Command shell on a Windows machine for a long time, most Command shell command work in PowerShell, so it may be worth switching over.
+The terminal is the graphical program you'll interact with to open
+terminal windows, have tabs, and do some theming of the window itself.
 
-## The structure of a bash command
+If you're using a Mac, you've got a built-in terminal app, conveniently
+called `Terminal`. It's fine.
 
-Once you log into your server, you'll be using bash, whether you're coming from Windows or Mac.
+If you're going to be using your terminal more than occasionally, I'd
+recommend downloading and switching to the the free
+\[iTerm2\](https://iterm2.com/), which adds a bunch of niceties like
+better theming and multiple tabs.
 
-So let's take a moment and understand how to read and use a bash command.
+If you're using Windows, there are a variety of alternative terminals
+you can try, but the built-in terminal is the favorite of many users.
+Experiment if you like, but feel free to stick with the default.
 
-Each command in bash is its own small program and so you can interact with them on the command line in a standard way. There are some commands you just run by themselves, but most commands run with options and arguments.
+### Choosing and configuring your shell
 
-Arguments tell the command what to run on. For example, the `ls` command lists files in the indicated directory. If you leave the argument blank, it `ls` just lists files in the current directory, but you can also provide an argument of the directory you'd like to see inside.
+The default shell for MacOS (and Linux) is called bash. It's a great
+shell, and it hasn't been replaced in a very long time. Many people --
+including me -- prefer to use other shells that build on top of bash,
+adding nicer theming and convenience features.
 
-So `ls` will list the contents of the current directory, while `ls /home/alex` will list the contents of the `/home/alex` directory.
+If you don't already have a favorite bash alternative, I recommend zsh.
+It has a few advantages over bash out of the box, like better
+autocompletion. It also has a huge ecosystem of themes and plugins that
+can make your shell way prettier and more functional. There are plugins
+that do everything from displaying your git status on the command line
+to controlling your Spotify playlist.
 
-Options or flags are sub-commands that modify how the command operates. Flags are denoted by having one or more dashes before them. For example, the `ls` command, which lists files, has the flag `-l`, which indicates that the files should be displayed as a list.
+Other popular alternative shells include Ksh and Fish.
 
-Flags always come in between the command and any arguments to the command. So, for example, if I type `ls -l /home/alex` in my terminal, I get back the files in `/home/alex` formatted as a list.
+The main reason to use zsh is the plugin ecosystem -- so you're going to
+want a plugin manager. The two most popular options are OhMyZsh and
+Prezto. I prefer and recommend prezto, but the choice is really up to
+you.
 
-Some flags themselves have arguments, which appear after the flag and a space. So, for example, if you're using the `-l` flag on `ls`, you can use the `-D` flag to format the datetime when the file was last updated.
+I'm not going to go through the steps of installing these tools -- there
+are numerous online walkthroughs and guides that you can google.
 
-So, for example, running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` will list all the files in `/home/alex` with the date-time of the last update formatted in ISO 8601 format (which is always the correct format for dates. Note that this structure `<command> <flags + flag args> <command args>` is always the structure of a bash command, and can make it hard to read, since you have to figure out how to read all the flags.
+But it is a little confusing to know what to customize where, so here's
+the high level overview if you've installed iTerm2, zsh, and prezto.
+You'll customize the look of the window and the tab behavior in the
+iTerm2 preferences and customize the text theme and plugins via prezto.
 
-All of the flags and arguments for commands can be found in the program's *man page* (short for manual). You can access the man page for any command with `man <command>`. You can scroll the man page with arrow keys and exit with `q`.
+Since you're configuring your plugins via prezto using files like the
+`.preztorc`, you shouldn't need to customize zsh much directly.
 
-| Symbol | What it is                                 | Helpful options + notes |
-|------------------|-----------------------------------|-------------------|
-| `man`  | **man**ual                                 |                         |
-| `q`    | Exit man pages (and many other situations) |                         |
+Windows comes with two shells built in, the Command shell (`cmd`) and
+the PowerShell. The command shell is older and has been superseded by
+PowerShell. If you're just getting started, you absolutely should just
+work with PowerShell. If you've been using Command shell on a Windows
+machine for a long time, most Command shell command work in PowerShell,
+so it may be worth switching over.
 
-# Accessing Servers via SSH {#ssh}
+Once you've installed PowerShell, many people like customizing it with
+Oh My Posh.
 
-Now that you're set up and comfortable using the command line, let's spend some time exploring SSH.
+## Accessing Servers via SSH
 
-SSH -- short for Secure (Socket) Shell -- is the standard way of accessing servers for the purpose of administering them using command line tools. By using SSH, you can have a terminal open on your laptop, but instead of interacting with your local machine, you'll be interacting with a remote server.
+Now that you're set up with a terminal and shell, let's dig into how to
+SSH into a remote server.
 
-Whenever you're using SSH, the correct mental model in your head is that you're typing the command into your local terminal, but it's actually running off on the remote server. SSH is the technology that allows those commands and their results to go securely back and forth between the server and your terminal window.
+SSH -- short for Secure (Socket) Shell -- facilitates secure two-way
+communication between your computer and the command line on a server.
+Using SSH, you can provide a server with commands and rest easy that
+they're going where you think and that the output is securely coming
+back.
 
-In your day-to-day usage of SSH, the main thing you'll have to do is manage your SSH keys. SSH keys are gibberish strings of letters and numbers that allow your computer to verify that it's you to the server you want to access.
+When you're interacting with a server using SSH, you'll have a terminal
+open on your laptop, but all the commands are actually running off on
+the remote server. This means that if you are using a Windows machine,
+you'll use Windows commands to open the SSH connection to the server and
+then switch to using Linux commands to actually administer the server.
 
-Here's how it works -- when you want to SSH into a server, you'll create an SSH keypair. This keypair has two components -- the *public key* and the *private key*.
+Logging into a server is straightforward once its configured, you'll
+just use `ssh <server url>` to get an interactive shell on that server.
+But in order to get there, you'll need to configure *ssh keys*. SSH keys
+are what allows your computer and the server to mutually verify identity
+and set up a secure connection.
 
-You'll take the public key and put it on the server you're trying to access and you'll keep the private key securely on your laptop. Then, when you go to access the server, you'll use the command line to open an SSH session and the server will check that the public key it has matches the private key your laptop is offering.
+SSH keys come in pairs with two components -- the *public key* and the
+*private key*.
 
-If it matches, you get an SSH session!
+I think these terms are somewhat of a misnomer. It would actually be
+better to call the private key the **key** and the public key the
+**lock**.
 
-#### How SSH works
+This is why you can give your public key to a server or service that you
+might not fully control. Someone who has your public key can verify that
+your private key is the one that fits that public key -- but it's
+basically impossible to reverse engineer the private key with the public
+key in hand.
 
-At first blush, the way SSH works seems nonsensical. I can just take my public key and just kinda chuck it out into the world and then it's all ok?!?
+::: callout-note
+## Public key cryptography is cool
 
-Like most cryptography, public key encryption relies on mathematical operations that are easy in one direction, but hard in the other.
+As an SSH user, you absolutely do not need to understand the underlying
+mathematics of public key cryptography, but conceptually quite simple.
+So forgive me this digression.
 
-For example, it's computationally trivial to multiply two large prime numbers and check if they equal some other number, but it's very computationally expensive to start with a big number and find the largest prime factors of that number.
+Public key cryptography relies on mathematical operations that are easy
+in one direction, but really hard to reverse.
 
-In an oversimplified (but useful) mental model, you can think about the public key as just being a large number, and the private key being the two primes. While it seems like it might still be insecure, SSH keys are *very* big numbers. Modern encryption standards mean that it's basically impossible to break a public SSH key.
+Let's say I ask you to find two numbers to multiply to equal 91
+($1 * 91$ doesn't count). It'll probably take you at least a minute to
+discover that the only numbers that work are 7 and 13.
 
-However, it is totally possible to compromise the security of an SSH connection by being sloppy with your private keys. So while SSH is cyptographically super secure, the whole system is only as secure as you. Don't share your SSH private keys.
+But if I were to give you 7 and 13 from the beginning, it'd be quick to
+check that $7 * 13 = 91$.
+
+That's how public key cryptography works -- your public key is a number
+with only two factors and your private key is those two factors. Logging
+in with the private key is quick, because checking multiplication is
+easy, but you can share the public key as broadly as you want, because
+reverse-engineering the two factors is hard. The difference is that
+actual public key cryptography doesn't use small numbers like 91. It
+uses numbers with 91 or 9,191 *digits*.[^2-2-cmd-line-1]
+
+SSH public keys are *very* big numbers and modern encryption standards
+mean that it's basically impossible to break a public SSH key.
+:::
+
+[^2-2-cmd-line-1]: It's worth noting that modern encryption methods use
+    substantially more convoluted mathematical operations than simple
+    multiplication -- but the idea is completely the same, and prime
+    numbers are equally important.
+
+However, it is totally possible to compromise the security of an SSH
+connection by being sloppy with your private keys. So while SSH is
+cyptographically super secure, the whole system is only as secure as
+you. Always keep your private keys securely in the place where they were
+created and share only the public keys.
+
+So that means if you need to log in to your server from your laptop,
+you'll create a keypair on your laptop and share your public key to the
+server. If you need to SSH *from* the server to another server or to a
+service that uses SSH, like GitHub, you'll create another SSH key on the
+server and use that public key on the far end of the connection.
+
+## Understanding bash commands
+
+Now that we understand *how* to connect, let's dig into what we're going
+to be doing when we get there. Because the server we'll be running is a
+Linux server, you'll be using `bash` when you get there, regardless of
+the operating system on your computer.
+
+The philosophy in `bash` is to provide small programs that each do one
+small thing well. The standard patterns for using `bash` commands
+involve the command itself, *arguments*, and *options*.
+
+A command is the program you tell the command line to run, usually an
+abbreviation of the word for what you want to do. For example, the
+command to *list* the contents of a directory is `ls`.
+
+Arguments tell the command what to run on. They come after the command
+with a space in between. For example, if I want to run `ls` on the
+directory `/home/alex`, I would run `ls /home/alex` on the command line.
+
+Many commands have default arguments. For example, `ls` runs by default
+on the directory I'm currently in. So if I'm in `/home/alex`, running
+`ls` and running `ls /home/alex` would return the same thing.
+
+Options or flags are sub-commands that modify how the command operates.
+Flags are denoted by having one or more dashes before them. For example,
+the `ls` command, which lists files, has the flag `-l`, which indicates
+that the files should be displayed as a list.
+
+Flags always come in between the command and any arguments to the
+command. So, for example, if I want to get the files in `/home/alex` as
+a list, I can run `ls -l /home/alex` or navigate to `/home/alex` and run
+`ls -l`.
+
+Some flags have arguments themselves. Arguments to flags appear after
+the flag with a space in between. So, for example, if you're using the
+`-l` flag on `ls`, you can use the `-D` flag to format the datetime when
+the file was last updated.
+
+So, for example, running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` will
+list all the files in `/home/alex` with the date-time of the last update
+formatted in ISO 8601 format (which is always the correct format for
+dates).
+
+It's nice that this structure is standard. You always know that a bash
+command will be formatted as
+`<command> <flags + flag args> <command args>`. The downside is that
+having the main argument come all the way at the end, after all the
+flags, can make it really hard to mentally parse commands if you don't
+know them super well. There's no magic trick to make it easier, but
+you're not alone -- and there is help available!
+
+All of the flags and arguments for commands can be found in the
+program's *man page* (short for manual). You can access the man page for
+any command with `man <command>`. You can scroll the man page with arrow
+keys and exit with `q`.
+
+| Symbol | What it is                                 |
+|--------|--------------------------------------------|
+| `man`  | **man**ual                                 |
+| `q`    | Exit man pages (and many other situations) |
 
 ## Lab: Accessing your server
 
+If you followed the lab in [Chapter @sec-cloud], you set up an EC2
+server. In this lab, we'll SSH in so you're ready to start administering
+the server in the next chapter.
+
 ### SSH into the server
 
-The `.pem` key you downloaded is the skeleton key to your server. You should be extremely careful with the `.pem` key. In [Chapter @sec-linux-admin], we'll set up an actual user on the server and configure SSH, which is more secure.
+The `.pem` key you downloaded when you set up the server is the skeleton
+key -- it will automatically let you in with complete admin privleges.
+In [Chapter @sec-linux-admin], we'll set up a user with SSH on the
+server with more limited permissions.
 
-But we've got to get started on the server somehow, and using the `.pem` key is the way to do it.
+In the meantime, we're going to use the `.pem` key to get started on the
+server, but be extremely careful with the power of the `.pem` key.
 
-Before we can use it to open the server, we'll need to make a quick change to the permissions on the key. We'll get a lot into users, groups, and permissions in the next chapter. For now, you can just copy paste these commands.
-
-The keypair is the authentication mechanism to get into our server. Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in [Chapter @sec-linux-admin]). If you try to use the keypair without first changing the permissions, you'll be unable to and get a warning that looks something like:
+Because the keypair is so powerful, AWS requires that you restrict the
+access pretty severely (more on what that means in [Chapter
+@sec-linux-admin]). If you try to use the keypair without first changing
+the permissions, you'll be unable to and get a warning that looks
+something like:
 
 ``` {{bash}}
 
-\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
 
 \@ WARNING: UNPROTECTED PRIVATE KEY FILE! \@
 
-\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
 
 Permissions 0644 for 'do4ds-lab-key.pem' are too open.
 
@@ -150,11 +314,17 @@ Load key "do4ds-lab-key.pem": bad permissions
 ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).
 ```
 
-\[QUESTION -- does this happen on Windows? If so, what are commands to alter permissions?\]
+Before we can use it to open the server, we'll need to make a quick
+change to the permissions on the key.
+
+\[QUESTION -- does this happen on Windows? If so, what are commands to
+alter permissions?\]
 
 So let's change the file permissions.
 
-We'll get into the details of how to use these commands in just a minute. For now, you'll need to open a terminal window, navigate to the directory where the key is and change the file permissions.
+We'll get into the details of how to use these commands in just a
+minute. For now, you'll need to open a terminal window, navigate to the
+directory where the key is and change the file permissions.
 
 On my machine that looks like:
 
@@ -163,15 +333,8 @@ $ cd ~/Documents/do4ds-lab
 $ chmod 600 do4ds-lab-key.pem
 ```
 
-You can sub in the path to where your key is and the name you used for your key.
-
-::: callout-note
-## SSH on Windows
-
-For a long time, Windows didn't come with a built in SSH client, so you had to use PuTTY to do SSH from a Windows machine. Microsoft brought a native SSH client to Windows 10 in 2015, and it has been enabled by default since 2018.
-
-If you run into any trouble using SSH commands on Windows, double check that you've enabled the `OpenSSH Client`.
-:::
+You can sub in the path to where your key is and the name you used for
+your key.
 
 In your terminal type the following
 
@@ -179,14 +342,34 @@ In your terminal type the following
 $ ssh -i do4ds-lab-key.pem ubuntu@$SERVER_ADDRESS
 ```
 
+::: callout-note
+## SSH on Windows
+
+For a long time, Windows didn't come with a built in SSH client, so you
+had to use PuTTY to do SSH from a Windows machine. Microsoft brought a
+native SSH client to Windows 10 in 2015, and it has been enabled by
+default since 2018.
+
+If you run into any trouble using SSH commands on Windows, double check
+that you've enabled the `OpenSSH Client`.
+:::
+
 Type `yes` when prompted, and you're now logged in to your server!
 
 ## Comprehension Questions
 
-1.  Draw a mental map that includes the following: terminal, shell, operating system, my laptop, server, ssh public key, ssh private key
-2.  If you don't know the real commands for them, make up what you think the bash commands might be to do the following. So if you think you'd create a command called `cmd` with a flag `-p` and an argument `arg`, you'd write `cmd -p <what p does> <arg>`. In the next chapter you'll get to see how close you got to the real thing:
+1.  Draw a mental map that includes the following: terminal, shell,
+    operating system, my laptop, server, ssh public key, ssh private key
+2.  If you don't know the real commands for them, make up what you think
+    the bash commands might be to do the following. So if you think
+    you'd create a command called `cmd` with a flag `-p` and an argument
+    `arg`, you'd write `cmd -p <what p does> <arg>`. In the next chapter
+    you'll get to see how close you got to the real thing:
     1.  Change Directories, the only argument is where to go
 
-    2.  Making a Directory, with an optional flag to make parents as you go. The only argument is the directory to make.
+    2.  Making a Directory, with an optional flag to make parents as you
+        go. The only argument is the directory to make.
 
-    3.  Remove files, with flags to do so recursively and to force it without checking in first. The only argument is the file or directory to remove.
+    3.  Remove files, with flags to do so recursively and to force it
+        without checking in first. The only argument is the file or
+        directory to remove.
