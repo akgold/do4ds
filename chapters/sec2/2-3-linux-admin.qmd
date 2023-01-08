@@ -1,437 +1,715 @@
-# Administering a Linux Server {#sec-linux-admin}
+# Basic Linux SysAdmin {#sec-linux-admin}
 
-Now that you've got a Linux server and you're able to log in, it's time to get acquainted with your server, learn how to move around, and start getting some things done.
+In the last chapter, we went over using the command line, which empowers
+you with *how* you'll interact with your server. This chapter is an
+intro to basic Linux server administration. By the end of this chapter,
+you'll have a much better idea of *what to do* once you get there.
 
-There are two big differences between your laptop and a Linux server that you'll have to get used to. The first is that servers generally do not have graphical user interfaces (GUIs) for doing administrative tasks. If you want to adjust the system settings on your laptop or navigate from directory to directory, you can click through a file tree or open up your preferences pane. For the most case, all interaction you're going to have with your server is going to be via the command line. It's easier than you might think if you've never done it before, but it'll take a little learning.
+It's worth saying that you can make a whole career out of Linux System
+Administration, so this chapter is going to be really focused on the
+things you need to know to successfully run a data science environment
+(and fun asides I feel like sharing).
 
-![](images-servers/desktop-vs-server.drawio.svg "Desktop vs Server")
-
-The second difference is that the server we set up runs Linux -- as do the overwhelming majority of the world's servers. If you're interacting with the command line, the differences between Linux and other operating systems (especially MacOS) aren't huge, but there's a little learning involved.
-
-In order to get started, this section is going to be around navigating in Linux and learning how to do some basic administrative tasks. There are entire books written about Linux System Administration. Pick up one of those if you're curious.
+In the lab for this chapter, we're going to finally get started with
+something that is recognizably about data science -- we're going to
+configure R and Python on our EC2 instance and configure both RStudio
+Server and JupyterHub. By the end of the chapter you'll have a running
+-- though inaccessible -- data science workbench.
 
 ## A little about Linux
 
-Every computer in the world runs on an operating system. The operating system defines the way that applications -- like Microsoft Word, RStudio, and Minecraft -- can interact with the underlying hardware. They define how files are stored and accessed, how applications are installed and can connect to networks, and more.
+A computer's operating system (OS) defines how applications -- like
+Microsoft Word, RStudio, and Minecraft -- interact with the underlying
+hardware to actually do computation. OSes define how files are stored
+and accessed, how applications are installed and can connect to
+networks, and more.
 
-TODO: Image of hardware, operating system, applications
+These days, basically all computers run on one of a few different
+operating systems -- Windows, MacOS, or Linux for laptops and desktops;
+Windows or Linux for servers, Android (a flavor of Linux) or iOS for
+phones and tablets, and Linux for other kinds of embedded systems (like
+ATMs and the chips in your car).
 
-Back in the early days of computing, basically every computer manufacturer created its own operating system that was super-tightly linked to the hardware. These days, there are only a few operating systems that most systems use.
+When you stand up a server, you're going to be choosing from one of a
+few versions of Linux. If you're unfamiliar with Linux, the number of
+choices can seem overwhelming, so here's a quick primer on the history
+of operating systems. Hopefully it'll help it all make sense.
 
-For desktop and laptop computers, there's Windows, MacOS, and Linux; Windows and Linux for servers, and Android (actually a flavor of Linux) and iOS for phones and tablets.[^2-3-linux-admin-1]
+Before the early 1970s, the market for computer hardware and software
+looked nothing like it does now. Computers released in that era had
+extremely tight linking between hardware and software. There were no
+standard interfaces between hardware and software, so each hardware
+manufacturer also had to release the software to use with their machine.
 
-[^2-3-linux-admin-1]: There are no Mac servers. There is a product called *Mac Server*, but it's used to manage Mac desktops and iOS devices, not a real server.
+In the early 1970s, Bell Labs released Unix -- the first operating
+system.
 
-    There are also a few other operating systems that you'll rarely encounter, like Oracle Solaris.
+Once there was an operating system, the computer market started looking
+a lot more familiar to 2020s eyes. Hardware manufacturers would build
+machines that ran Unix and software companies could write applications
+that ran on Unix. The fact that those applications would run on *any*
+Unix machine was a game-changer.
 
-The 1960s were a wild time for operating systems. Basically every computer company invented their own operating system for their machines. In the early 1970s, AT&T labs released a proprietary operating system called Unix.
+In the 1980s, programmers wanted to be able to work with Unix
+themselves, but didn't necessarily want to pay Bell Labs for Unix, so
+they started writing *Unix-like* operating systems. Unix-like OSes or
+Unix clones behaved just like Unix, but didn't actually include any code
+from Unix itself.[^2-3-linux-admin-1]
 
-Unix espoused a philosophy of small system-level programs that could be chained together to do more complex things. It turned out that this philosophy made a lot of sense, and starting in the early 1980s, a variety of *Unix-like* operating systems were released. Unix-like operating systems were clones -- they behaved like Unix, but didn't actually include any code from Unix (because it was proprietary).
+[^2-3-linux-admin-1]: Or at least they weren't supposed to. There's an
+    interesting history of lawsuits around the BSD operating system
+    including Unix code. BSD is a Unix clone that was the predecessor of
+    MacOS.
 
-::: callout-note
-This philosophy, called piping, should feel extremely familiar to you if you're an R user. The tidyverse pipe `%>%` and the base R pipe introduced in R 4.1 `|>` are both directly inspired by the Unix/Linux pipe `|`.
-:::
+In 1991, Linus Torvalds -- then a 21 year-old Finnish grad student --
+released Linux, an open source Unix clone via a amusingly nonchalant
+newsgroup posting.[^2-3-linux-admin-2]
 
-Linux is the most successful of those clones, an open source Unix-like operating system released in 1991 by software engineer Linus Torvalds.[^2-3-linux-admin-2] Another of those clones was the predecessor to what is now MacOS.
+[^2-3-linux-admin-2]: People who are pedantic about operating systems or
+    the history of computing will scream that the original release of
+    Linux was just the operating system *kernel*, not a full operating
+    system like Unix. I've noted it here to satisfy pedants, but it
+    doesn't matter much in practice.
 
-[^2-3-linux-admin-2]: People who are pedantic about operating systems or the history of computing will scream that the original release of Linux was just the operating system *kernel*, not a full operating system like Unix. I've noted it here to satisfy pedants, but it doesn't matter much in practice.
+Since then, Linux has seen tremendous adoption. A large majority of the
+world's servers run on Linux.[^2-3-linux-admin-3] Along with most of the
+world's servers, almost all of the world's embedded computers -- in
+ATMs, cars and planes, TVs, and most other gadgets and gizmos -- run on
+Linux. If you have an Android phone or a Chromebook -- that's Linux.
+Basically all of the world's supercomputers use Linux.
 
-A difference you've probably experienced before between Unix-like systems and Windows, which is not Unix-like is the type of slashes used in file paths. Unix-like systems use forward slashes `/`, while Windows uses back slashes `\`.
+[^2-3-linux-admin-3]: The remainder are almost entirely Windows servers.
+    There are a few other Unix-like systems that you might encounter,
+    like Oracle Solaris. There is no MacOS server. There is a product
+    called *Mac Server*, but it's just a program for managing Mac
+    desktops and iOS devices.
 
-A huge majority of the world's servers run on Linux. There are meaningful Windows server deployments in some enterprises, but it's relatively small compared to the install base of Linux servers. Along with most of the world's servers, almost all of the world's embedded computers -- in ATMs, cars and planes, TVs, and most other gadgets and gizmos -- run on Linux. If you have an Android phone or a Chromebook -- that's Linux. Basically all of the world's supercomputers use Linux.
+As you might imagine, running Linux in so many different places has
+necessitated the creation of many different kinds of Linux. For example,
+a full-featured Linux server is going to require a very different
+operating system than the barebones operating system running on an ATM
+with extremely modest computational power.
 
-As you might imagine, the profusion of Linux in all different kinds of systems similarly necessitates different kinds of Linux. The Linux you're going to run on a server that's designed to be a data science workbench is going to be very different from the version of Linux running in your car or on your phone.
+These different versions are called distributions (*distros* for short)
+of Linux. They have a variety of technical attributes and also different
+licensing models.
 
-There are many different distributions (usually called "distros") of Linux, for desktop, server, and other applications.
+Some versions of Linux, like Ubuntu, are completely open source. Others,
+like Red Hat Enterprise Linux (RHEL), are paid. Most paid Linux OSes
+have closely-related free and open source versions -- like CentOS and
+Fedora for RHEL.[^2-3-linux-admin-4]
 
-There are a few main distros you're likely to run across on servers in your organization -- Ubuntu, Red Hat Enterprise Linux (RHEL), Amazon Linux 2, and SUSE ([pronunced soo-suh](https://www.youtube.com/watch?v=nLdexZlVkAY)).[^2-3-linux-admin-3]
+[^2-3-linux-admin-4]: CentOS (short for Community ENTerprise Operating
+    System) is an open source operating system maintained by Red Hat.
+    The relationship between RHEL and CentOS is changing. The details
+    are somewhat complicated, but most people expect less adoption of
+    CentOS in enterprise settings going forward.
 
-[^2-3-linux-admin-3]: CentOS (short for Community ENTerprise Operating System) is an open source operating system maintained by Red Hat. Red Hat is changing the relationship between CentOS and RHEL and is discontinuing released of CentOS until 2024.
+Many organizations have a standard Linux distro they use -- most often
+RHEL/CentOS or Ubuntu. Increasingly, organizations deploying in AWS are
+using Amazon Linux, which is independently maintained by Amazon but was
+originally a RHEL derivative. There are also some organizations that use
+SUSE ([pronunced soo-suh](https://www.youtube.com/watch?v=nLdexZlVkAY)),
+which has both open source and enterprise versions.
 
 ## A tiny intro to Linux administration
 
-Being a competent Linux admin is a career unto itself. So we're not going to try to get you there in this chapter. Instead, the goal of this chapter is going to be to get you familiar with the basic tasks of interacting with a Linux server and the tools you need to at least get started working on one.
+We'll get into *how* to administer a Linux server just below, but before
+we get there, let's introduce *what* you'll be doing as a Linux server
+admin. There are three main things you'll manage as a Linux server
+admin:
 
-When you log into a Linux server, you'll be interacting exclusively via the command line, so all of the commands in this chapter are going to be terminal commands. If you haven't yet figured out how to open the terminal on your laptop and got it themed and customized so it's perfect, I'd advise going back to [Chapter 2-2 on the command line](#command-line).
+-   **System resources** Each server has a certain amount of resources
+    available. In particular, you've got CPU, RAM, and storage. Keeping
+    track of how much you've got of these things, how they're being
+    used, and making sure no one is gobbling up all the resources is an
+    important part of system administration.
 
-It's also worth mentioning that if you're using a Mac, many of these same tools and techniques will work out of the box and may be useful on your laptop. If you're running Windows, you may have to look up the exact commands and syntax -- but the general idea will hold.
+-   **Networking** Your server is only valuable if you and others can
+    connect to it, so managing how your server can connect to the
+    environment around it is an important part of Linux administration.
 
-In just a second, we'll get into how to administer a Linux server, but let's first talk about what are the main tasks of Linux administration:
+-   **Permissions** Servers generally exist to allow a number of people
+    to access the same machine. Creating users and groups and managing
+    what they're allowed to do them is a huge part of server
+    administration.
 
--   **Moving around** **and file operations** A lot of the things you'll do administering a server are just moving around, looking at different files, and interacting with them. We'll spend some time on how to move around on the command line and how to interact with files.
+-   **Applications** Generally you want to *do* something with your
+    server, so being able to interact with applications that are
+    running, debug issues, and fix things that aren't going well is an
+    essential Linux admin skill.
 
--   **Managing who can do what** In general, if you're running a server, you're going to be managing a number of different users on the server. Creating users and groups and managing them -- specifically the things they're allowed to do is a huge part of server administration, and we'll go over what you'll need to do and how.
+When you log into a Linux server, you'll be interacting exclusively via
+the command line, so all of the commands in this chapter are going to be
+terminal commands. If you haven't yet figured out how to open the
+terminal on your laptop and got it themed and customized so it's
+perfect, I'd advise going back to [Chapter @sec-cmd-line] to get it all
+configured.[^2-3-linux-admin-5]
 
--   **Managing resources** As a server admin, especially in the cloud, you've got the ability to manage the resources -- CPU, RAM, and memory -- available to you. Keeping track of how much you've got of these things, how they're being used, and making sure everyone is playing nice together with the shared resources is an important task.
-
--   **Networking** Because your server is only valuable if you and others can connect to it, managing how your server can connect to the environment around it is an important part of Linux administration.
-
-Below, I'm intentionally mixing up bash commands and Linux system commands because they're useful. If you know the difference and are pedantic enough to care, this list isn't for you anyway.
-
-The first thing that's important to understand is that once you've SSH-ed into another server, your terminal is like a little window into that server. So everything that runs in the terminal is actually running on that other server and just bringing the results back to your eyes. But if you want to -- for example -- actually move a file from place to place, you'll need to do something else.
-
-Now we'll get into some of these topics. Each section will introduce several concepts and the commands you can use to accomplish those things. I'll include a table of the commands mentioned. At the end of the book, there's a cheatsheet section that combines all of these commands.
-
-## The filesystem, files, and editing text
-
-In the last chapter, you SSH-ed into your server using the `pem` key that was granted to you when you created the server. When you got there, you got dumped into the command line. So the first step is understanding where you are and how to go elsewhere.
-
-The first thing to understand in Linux is that commands always happen *in a particular* *place* -- called the working directory -- and *as a particular user*. Depending on who you are and where you are, the commands you're allowed to run and what happens when you do so might be different. It's worth noting that this is also true on your laptop, but the experience of clicking on and using apps obfuscates the fact that this is happening under the hood.
-
-When you land using the `pem` key, you've logged in as the root user and you're at the file path root.
-
-At any time, you can get the path where you're sitting with the `pwd` command, which is an abbreviation for *print working directory*.
-
-On a Linux server, you can think of the entire file system as a tree (for me an upside-down tree resonates more, since we generally talk about going "down" the tree to get to branches). The root of this tree is at `/`, and every file, folder, directory, and app is somewhere down the tree from `/`.
+[^2-3-linux-admin-5]: My goal here is to be useful not precise, so I'm
+    intermingling `bash` commands and Linux system commands because
+    they're useful. If you know the difference and are pedantic enough
+    to care, this list isn't for you anyway.
 
 ::: callout-note
-If you're a Windows person, you might think this is analogous to `C:` -- it is, but only sorta.
+## Windows, Mac, and Linux
 
-You're right that the root of your drive is at `C:` and other things are descended from there.
+MacOS is based on BSD, a Unix clone, so any terminal commands you've
+used before will be very similar to Linux commands.
 
-Unlike in Linux, in Windows you can have multiple roots, one for each physical or logical disk you've got. That's why your machine may have a `D:` drive, or if you have network shares, those will often be on `M:` or `N:` or `P:`, each with its own sub-tree.
+Windows, on the other hand, is basically the only popular operating
+system that *isn't* a Unix clone. Over time, the Windows command line
+has gotten more Unix like, so the differences aren't as big as they used
+to be, but there will be some differences in the commands that work on
+Windows vs Linux. There will be some differences in the exact commands
+that work on Windows vs on Linux.
 
-In Linux, *everything* is a subtree below `/`, and it has nothing to do with the drives that house each of them. If you do have extra drives mounted to your Linux server, `/mnt` (short for mount) is a popular place to put them.
+The most obvious difference is the types of slashes used in file paths.
+Unix-like systems use forward slashes `/` to denote file hierarchies,
+while Windows uses back slashes `\`.
 :::
 
-In addition to being the root of the file tree, `/` is used to separate directories and files, so for example `/opt/R` is the directory (or file) called R inside the `opt` directory, which is inside `/`.
+## Basic navigation and interaction
 
-Whenever you're locating a directory or file, you can do so using either *absolute* or *relative* file paths. An absolute file path is the location of a file relative to the file root, `/`, while a relative file path is the path relative to the spot where you are right now.
+Being on the command line is different from having a desktop with a
+mouse or touchpad to click on things. So the first thing to learn is how
+to navigate around a Linux environment and interact with the things you
+find there using Linux commands.
 
-When you're writing out a file path, you can also explicitly access the working directory using `.`. In the last chapter, we talked about the `ls` command, which lists what's in the working directory. Now, you understand that `ls` just has a default argument of `.`, so `ls` and `ls .` do exactly the same thing.
+In Linux, *directories* define where you can be. A directory is just a
+container for files and other directories. In Linux, the entire file
+system is a tree (or perhaps an upside-down tree). The *root directory,
+`/`* is the base of the tree and a `/` in between two directories means
+that it's a sub-directory. So the directory `/home/alex` is the `alex`
+directory, which is contained in `home`, which is in the root directory.
 
-So an absolute (sometime called fully-qualified) path always starts with `/` and might look something like `/home/alex/`. So regardless of what your working directory is, `ls /home/alex` will always show the contents of `/home/alex`.
+In Linux, every directory is a sub-directory of `/` or a sub-directory
+of a sub-directory of `/` or...you get the picture. The sequence of
+directories that defines a location is called a *file path*.
 
-A relative path starts from your working directory. So I can run `ls alex`, and that will look for a directory named `alex` on the next rung down the tree from where I am and list its contents, if it exists. So if I'm in `/home`, `ls alex` will return the same thing as `ls /home/alex`, but otherwise it will return something else.
+Every Linux command happens *at a particular file path* -- called the
+working directory -- and *as a particular user*. It won't always matter,
+but in some cases the commands you're allowed to run and what happens
+when you do so might be really different for one user vs another or the
+same user in different places.[^2-3-linux-admin-6]
 
-If you ever want to explicitly indicate your working directory in a file path, you can do so with `.`, so `ls ./alex` is the same as `ls alex`.
+[^2-3-linux-admin-6]: It's interesting to note that this is also true on
+    your computer - when you open a program, a particular user is
+    running a program on your computer and opening a GUI window for you
+    to interact with. The point-and-clicking obfuscates this, but it's
+    still true.
 
-Sometimes absolute file paths make more sense, and sometimes relative paths do. In general, absolute file paths make more sense when you want to access the exact same resource from multiple places, and relative file paths make more sense when you want to access the same resource that might exist in different places.
+::: callout-note
+### How does `/` compare to `C:`?
 
-Once you've looked around, you'll have to move somewhere -- you can change your working directory with the `cd` command, short for change directory.
+If you're a Windows person, you might think this is analogous to `C:`.
+You're not wrong, but the analogy is imprecise.
 
-There are a few directories with special names, aside from the root `/`. Your current working directory is always at `.`, and the parent of your current directory is at `..`, so you can move to the parent of your current directory using `cd ..` and up two levels with `cd ../..`.
+In Linux, *everything* is a sub-directory of `/`, irrespective of the
+configuration of physical or virtual drives that houses the storage.
+Frequently, people will put extra drives on their server -- a process
+called mounting -- and house them at `/mnt` (short for...you guessed
+it).
 
-We'll get more into users below, but if your user has a home directory, that home directory is at `~`.
+That's different from Windows. In Windows you can have multiple roots,
+one for each physical or logical disk you've got. That's why your
+machine may have a `D:` drive, or if you have network shares, those will
+often be on `M:` or `N:` or `P:`, each with its own sub-directory.
+:::
 
-<table style="width:84%;">
-<colgroup>
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-<col style="width: 20%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p>Command</p></th>
-<th><p>What it does/is</p></th>
-<th><p>Helpful options</p></th>
-<th><p>Example</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>/</code></p></td>
-<td><p>system root</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>.</code></p></td>
-<td><p>current working directory</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>ls</code></p></td>
-<td><p><strong>l</strong>i<strong>s</strong>t objects in a directory</p></td>
-<td><p><code>-l</code> - format as <strong>l</strong>ist</p>
-<p><code>-a</code> - <strong>a</strong>ll (include hidden files)</p></td>
-<td><p><code>$ ls .</code></p>
-<p><code>$ ls -la</code></p></td>
-</tr>
-<tr class="even">
-<td><p><code>pwd</code></p></td>
-<td><p><strong>p</strong>rints <strong>w</strong>orking <strong>d</strong>irectory</p></td>
-<td></td>
-<td><p><code>$ pwd</code></p></td>
-</tr>
-<tr class="odd">
-<td><p><code>cd</code></p></td>
-<td><p><strong>c</strong>hange <strong>d</strong>irectory</p></td>
-<td></td>
-<td><p><code>$ cd ~/Documents</code></p></td>
-</tr>
-<tr class="even">
-<td><p><code>~</code></p></td>
-<td><p>home directory of the current user</p></td>
-<td></td>
-<td><p><code>$ ls ~</code></p></td>
-</tr>
-</tbody>
-</table>
+At any time, you can get the path where you're sitting with the `pwd`
+command, which is an abbreviation for *print working directory*. When
+you're writing out a file path, the working directory is at `.`.
+
+File paths can be either *absolute* -- that is specified relative to the
+root -- or *relative* to the working directory. You can always tell the
+difference because an absolute directory starts with `/` and a relative
+one will start with something else, often `.`.
+
+In [Chapter @sec-cmd-line], we talked about the `ls` command, which
+lists what's in a directory. Now, you can understand that `ls` just has
+a default argument of `.`, so `ls /home/alex` will always return the
+contents list of `/home/alex`. If you've navigated there, `ls` and
+`ls .` would also return exactly the same thing.
+
+Depending on what you're doing, either absolute or relative paths make
+more sense. In general, absolute file paths make more sense when you
+want to access the same resource regardless of where the command is run,
+and relative file paths make more sense when you want to access a
+resource specific to where you run it.
+
+Along with being able to inspect directories, it's useful to be able to
+relocate there. You can change your working directory with the `cd`
+command, short for *change directory*.
+
+Aside from `/` and `.`, there are two other special directories: `..`
+and `~`. `..` is the parent of the directory you're in, so you can move
+to the parent of your current directory using `cd ..` and to it's parent
+with `cd ../..`. `~` is the home directory of your user (assuming it has
+one). We'll get more into what that means in a bit.
+
+**Recap of commands in this section**
+
++------------+------------+------------+------------+
+| Command    | What it    | Helpful    | Example    |
+|            | does/is    | options    |            |
++============+============+============+============+
+| `/`        | system     |            |            |
+|            | root       |            |            |
++------------+------------+------------+------------+
+| `.`        | current    |            |            |
+|            | working    |            |            |
+|            | directory  |            |            |
++------------+------------+------------+------------+
+| `ls`       | **         | `-l` -     | `$ ls .`   |
+|            | l**i**s**t | format as  |            |
+|            | objects in | **l**ist   | `$ ls -la` |
+|            | a          |            |            |
+|            | directory  | `-a` -     |            |
+|            |            | **a**ll    |            |
+|            |            | (include   |            |
+|            |            | hidden     |            |
+|            |            | files)     |            |
++------------+------------+------------+------------+
+| `pwd`      | **p**rints |            | `$ pwd`    |
+|            | *          |            |            |
+|            | *w**orking |            |            |
+|            | **d        |            |            |
+|            | **irectory |            |            |
++------------+------------+------------+------------+
+| `cd`       | **c**hange |            | `$ cd ~/   |
+|            | **d        |            | Documents` |
+|            | **irectory |            |            |
++------------+------------+------------+------------+
+| `~`        | home       |            | `$ ls ~`   |
+|            | directory  |            |            |
+|            | of the     |            |            |
+|            | current    |            |            |
+|            | user       |            |            |
++------------+------------+------------+------------+
 
 ### Reading text files
 
-On a Linux system, almost everything is either a text file or an executable. That means that configuration files and logs are just text files, and so you can interact with them all the same way.
+Many of the files you'll interact with as a Linux admin are just text
+files. In particular, application configuration files and logs are
+usually just text files.
 
-A very common pattern in Linux administration is to read a log file to look for errors or clues, adjust a configuration setting as a result, and then restart a process.
+A very common pattern in Linux administration is to read a log file to
+look for errors or clues, adjust a configuration setting as a result,
+and then restart a process.
 
-You'll find that your skills in understanding the Linux file tree, moving around, and seeing what's in directories will be very helpful in getting to the files. Once you're there, it'll be useful to know how to actually interact with files.
+You'll find that your skills in understanding the Linux file tree,
+moving around, and seeing what's in directories will be very helpful in
+getting to the files. Once you're there, it'll be useful to know how to
+actually interact with files.
 
-Probably the commands you'll use most often will be `cat` and `tail`. `cat` is the command to print a file, starting at the beginning. It's often helpful to read through text files. Sometimes you've got a really big file and you want to see the first few rows (especially useful if it's a csv). In that case, `less` can be handy because it opens large files much faster.
+The commands you'll use most often will be `cat` and `tail`. `cat` is
+the command to print a file, starting at the beginning. It's often
+helpful to read through text files. Sometimes you've got a really big
+file and you want to see the first few rows (especially useful if it's a
+csv). In that case, `less` can be handy because it opens large files
+much faster.
 
-`tail` skips right to the *end* of a file. This is most useful when you're reading log files where the newest information is at the end. Log files usually are written so the newest part is *last*. So much so that tailing a log file is a synonym for looking at it.
+`tail` skips right to the *end* of a file. Log files usually are written
+so the newest part is *last* -- so much so that "tailing a log file" is
+a synonym for looking at it. In some cases, you'll want to tail a file
+as the process is still running and writing information to the log. You
+can get a live view of the end of the file using the `-f` flag (for
+*follow*).
 
-If you want to get a live view of a log file that will update as more is written, use the `-f` flag (for *follow*).
+Sometimes you want to search around inside a text file. You're probably
+familiar with the power of regular expressions (regex) to search for
+specific character sequences in text strings. The Linux command to do
+regex searches is `grep`, which returns results that match the regex
+pattern you specify.
 
-If you've used regex, you'll be familiar with the power of `grep` -- a tool for using regex search. `grep` searches for and returns results that match the pattern you specify. Using `grep` well requires being quite proficient in regex, so I usually just use it for simple searches.
+Using `grep` well requires being quite proficient in regex, so I usually
+just use it for simple searches.
 
-The true power of `grep` is unlocked in combination with the pipe. In Linux, the pipe operator -- `|` -- takes the output of the previous command and sends it into the next one. This kind of work will be very familiar to anyone who's used the tidyverse in R, which was directly inspired by the Linux pipe.
+The true power of `grep` is unlocked in combination with the pipe. The
+Linux pipe operator -- `|` -- takes the output of the previous command
+and sends it into the next one.
 
-So, for example, a combination I do all the time is to pipe the output of `ls` into `grep` when searching for a file inside a directory. So if I was searching for a file that contained the word `data` somewhere in the filename inside a specific project directory, that might look something like `ls ~/projects/my-project | grep data`.
+::: callout-note
+The pipe should feel extremely familiar to R users.
 
-<table style="width:89%;">
-<colgroup>
-<col style="width: 24%" />
-<col style="width: 24%" />
-<col style="width: 40%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p>Command</p></th>
-<th><p>What it does</p></th>
-<th><p>Notes + Helpful options</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>cat</code></p></td>
-<td><p>Prints a file.</p></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>less</code></p></td>
-<td><p>Prints a file, but just a little.</p></td>
-<td><p>Can be very helpful to look at a few rows of csv.</p>
-<p>Only reads what youre looking at, so can be <em>much</em> faster than <code>cat</code> for big files.</p></td>
-</tr>
-<tr class="odd">
-<td><p><code>tail</code></p></td>
-<td><p>Look at the end of a file.</p></td>
-<td><p>Log files usually are written so the newest part is <em>last</em>. So much so that tailing a log file is a synonym for looking at it.</p>
-<p>If you want to get a live view of a log file that will update as more is written, use the <code>-f</code> flag (for <em>follow</em>).</p></td>
-</tr>
-<tr class="even">
-<td><p><code>grep</code></p></td>
-<td><p>Search a file using regex.</p></td>
-<td><p>Useful to search inside a file, but youve gotta write regex. I suggest testing expressions on regex101.com.</p>
-<p>Often useful in combination with the pipe.</p></td>
-</tr>
-<tr class="odd">
-<td><p><code>|</code></p></td>
-<td><p>the pipe</p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+The `{magrittr}` pipe, `%>%,` has become extremely popular as part of
+the tidyverse since its introduction in 2013. A base R pipe, `|>`, was
+released as a part of R 4.1 in 2021.
 
-### Deleting and Moving Files
+The original pipe in `{magrittr}` took inspiration from both the Unix
+pipe and the pipe operator in the `F#` programming langauge.
+:::
 
-There will be times when you have to copy, move, or remove files -- each of these things can be accomplished with commands that are similarly abbreviated forms of the relevant words -- `cp`, `mv`, and `rm`.
+So, for example, a combination I do all the time is to pipe the output
+of `ls` into `grep` when searching for a file inside a directory. So if
+I was searching for a file that contained the word `data` somewhere in
+the filename inside a specific project directory, that might look
+something like `ls ~/projects/my-project | grep data`.
+
++----------------+----------------+------------------------+
+| Command        | What it does   | Notes + Helpful        |
+|                |                | options                |
++================+================+========================+
+| `cat`          | Prints a file. |                        |
++----------------+----------------+------------------------+
+| `less`         | Prints a file, | Can be very helpful to |
+|                | but just a     | look at a few rows of  |
+|                | little.        | csv.                   |
+|                |                |                        |
+|                |                | Lazily reads lines, so |
+|                |                | can be *much* faster   |
+|                |                | than `cat` for big     |
+|                |                | files.                 |
++----------------+----------------+------------------------+
+| `tail`         | Look at the    | Useful for logs, where |
+|                | end of a file. | the newest part is     |
+|                |                | *last*.                |
+|                |                |                        |
+|                |                | The `-f` flag is       |
+|                |                | useful for a live      |
+|                |                | view.                  |
++----------------+----------------+------------------------+
+| `grep`         | Search a file  | Writing regex can be a |
+|                | using regex.   | pain. I suggest        |
+|                |                | testing expressions on |
+|                |                | regex101.com.          |
+|                |                |                        |
+|                |                | Often useful in        |
+|                |                | combination with the   |
+|                |                | pipe.                  |
++----------------+----------------+------------------------+
+| `|`            | the pipe       |                        |
++----------------+----------------+------------------------+
+
+### Managing files and directories
+
+You can copy a file from one place to another using the `cp` command.
+`cp` leaves behind the old file and adds the new one at the specified
+location. You can move a file with the `mv` command, which does not
+leave the old file behind.
+
+If you want to remove a file entirely, you can use the `rm` command.
+There is also a version to remove a directory, `rmdir`.
 
 ::: callout-warning
 Be very careful with the `rm` command.
 
-Unlike on your desktop there's no recycle bin! Things that are deleted are instantly deleted forever.
+Unlike on your desktop there's no recycle bin! Things that are deleted
+are instantly deleted forever.
 :::
 
-If you want to copy, move, or remove files, the `-r` flag for `recursive` is a handy one -- if you try to copy, move or remove a directory, you often mean to act on the entire subtree below that directory, which the `-r` flag indicates.
+If you want to make a directory, `mkdir` makes a directory at the
+specified filepath. `mkdir` will only work if it's creating the entire
+file path specified, so `mkdir dir/sub_dir` will only work if neither
+`dir` nor `dir/sub_dir` works. Using `mkdir -p dir/sub_dir`, will make
+whichever parts of the path don't yet exist.
 
-Similarly, sometimes you want to list everything in a directory. For example, you might want to copy the entire contents of a directory. In that case, the wildcard, `*`, returns everything in a directory. So `cp alex/* alex2` copies the full contents of `alex` into `alex2`.
+If you want to operate on every file inside a directory, you can use the
+wildcard, `*`. So let's say you've got a `/data` directory that has a
+bunch of CSV files in it. You could create a new data directory with
+`mkdir new_data` and copy all the files in using `cp data/* new_data`.
+You can also use the wildcard for partial matches, so if `/data`
+included a mixture of CSV and PDF files, and you only wanted to copy the
+CSVs, you could do `cp data/*.csv new_data`.
 
-There are times when you want to make files or directories with nothing in them -- the `touch` command makes a blank file at the specified file path, and `mkdir` makes a directory at the specified filepath. `mkdir` can be a little finicky about when paths exist and it will only make one level. So `mkdir my_dir` works, but `mkdir my_dir/my_sub_dir` does not. Using `mkdir -p`, it will use existing paths and make whichever parts of the path don't yet exist.
++---------------+---------------+---------------+---------------+
+| Command       | What it       | Notes +       | Example       |
+|               | does/is       | Helpful       |               |
+|               |               | Options       |               |
++===============+===============+===============+===============+
+| `rm`          | *             | `-r` -        | `$ rm -       |
+|               | *r**e**m**ove | recursively a | rf old_docs/` |
+|               | -- delete     | directory and |               |
+|               | permanently!  | included      | BE VERY       |
+|               |               | files         | CAREFUL WITH  |
+|               |               |               | `-rf`         |
+|               |               | `-f` -        |               |
+|               |               | force - dont  |               |
+|               |               | ask for each  |               |
+|               |               | file          |               |
++---------------+---------------+---------------+---------------+
+| `cp`          | **c**o**p**y  |               |               |
++---------------+---------------+---------------+---------------+
+| `mv`          | **m**o**v**e  |               |               |
++---------------+---------------+---------------+---------------+
+| `*`           | wildcard      |               |               |
++---------------+---------------+---------------+---------------+
+| `mkdir`       | **m**a**k**e  |               |               |
+|               | **dir**ectory |               |               |
++---------------+---------------+---------------+---------------+
 
-<table style="width:99%;">
-<colgroup>
-<col style="width: 23%" />
-<col style="width: 23%" />
-<col style="width: 29%" />
-<col style="width: 23%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p>Command</p></th>
-<th><p>What it does/is</p></th>
-<th><p>Helpful options + Notes</p></th>
-<th><p>Example</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>rm</code></p></td>
-<td><p><strong>r</strong>e<strong>m</strong>ove delete permanently!</p></td>
-<td><p><code>-r</code> - recursively a directory and included files</p>
-<p><code>-f</code> - force - dont ask for each file</p></td>
-<td><p><code>$ rm old_doc</code></p>
-<p><code>r m -rf old_docs/</code></p>
-<p>BE VERY CAREFUL WITH <code>-rf</code></p></td>
-</tr>
-<tr class="even">
-<td><p><code>cp</code></p></td>
-<td><p><strong>c</strong>o<strong>p</strong>y</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>mv</code></p></td>
-<td><p><strong>m</strong>o<strong>v</strong>e</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>*</code></p></td>
-<td><p>wildcard</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td><p><code>mkdir</code></p></td>
-<td><p><strong>m</strong>a<strong>k</strong>e <strong>dir</strong>ectory</p></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><p><code>touch</code></p></td>
-<td><p>update files timestamp to current time</p></td>
-<td><p>Creates file if doesnt already exist.</p></td>
-<td></td>
-</tr>
-</tbody>
-</table>
+TODO: WHERE I STOPPED ON 2023-01-08
 
 ### Moving things to and from the server
 
-One thing that's likely to come up almost immediately when you're working on your server is how to move files to and from the server. There are two main tools you'll use for this task. The first is the `tar` command, which allows you to turn a set of files or whole directory into an archive. This is really handy because then moving a whole set of files turns into just moving one archive file. It also does some amount of file compression when it creates the archive file.
+One thing that's likely to come up almost immediately when you're
+working on your server is how to move files to and from the server.
+There are two main tools you'll use for this task. The first is the
+`tar` command, which allows you to turn a set of files or whole
+directory into an archive. This is really handy because then moving a
+whole set of files turns into just moving one archive file. It also does
+some amount of file compression when it creates the archive file.
 
-Annoyingly, the `tar` command does *both* archive creation and extraction, and is almost always used with several other flags. I never remember them -- this is a command I google 100% of the time I use it.
+Annoyingly, the `tar` command does *both* archive creation and
+extraction, and is almost always used with several other flags. I never
+remember them -- this is a command I google 100% of the time I use it.
 
-Once you've created an archive file, you've got to move it. The `scp` command is the way to do this. `scp` -- short for **s**ecure **c**o**p**y -- is basically a combo of SSH and copy. So you will sometimes use ssh flags like `-i` to specify a particular SSH key, and you'll also have to specify file paths.
+Once you've created an archive file, you've got to move it. The `scp`
+command is the way to do this. `scp` -- short for **s**ecure
+**c**o**p**y -- is basically a combo of SSH and copy. So you will
+sometimes use ssh flags like `-i` to specify a particular SSH key, and
+you'll also have to specify file paths.
 
-One thing to remember about `scp` is that it makes an SSH connection at your request. This means that the other side of the connection needs to be available to receive an inbound request to connect over SSH. This is probably true of your server, but is almost never true of your laptop. So that means that when you're getting things *to* or *from* your server you'll almost always run the `scp` command from your laptop's terminal, not from a terminal that's already SSH-ed into the server.
+One thing to remember about `scp` is that it makes an SSH connection at
+your request. This means that the other side of the connection needs to
+be available to receive an inbound request to connect over SSH. This is
+probably true of your server, but is almost never true of your laptop.
+So that means that when you're getting things *to* or *from* your server
+you'll almost always run the `scp` command from your laptop's terminal,
+not from a terminal that's already SSH-ed into the server.
 
-<table style="width:54%;">
-<colgroup>
-<col style="width: 17%" />
-<col style="width: 17%" />
-<col style="width: 17%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p>Command</p></th>
-<th><p>What it does</p></th>
-<th><p>Notes + Helpful options</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>tar</code></p></td>
-<td><p>compress/decompress file/directory</p></td>
-<td><p>Almost always used with flags that youll have to google.</p>
-<p>Create is usually</p>
-<p><code>tar -czf &lt;archive name&gt; &lt;file(s)&gt;</code></p>
-<p>Extract is usually</p>
-<p><code>tar -xfv &lt;archive name&gt;</code></p></td>
-</tr>
-<tr class="even">
-<td><p><code>scp</code></p></td>
-<td></td>
-<td></td>
-</tr>
-</tbody>
-</table>
++---------+---------+---------+
+| Command | What it | Notes + |
+|         | does    | Helpful |
+|         |         | options |
++=========+=========+=========+
+| `tar`   | compr   | Almost  |
+|         | ess/dec | always  |
+|         | ompress | used    |
+|         | file/di | with    |
+|         | rectory | flags   |
+|         |         | that    |
+|         |         | youll   |
+|         |         | have to |
+|         |         | google. |
+|         |         |         |
+|         |         | Create  |
+|         |         | is      |
+|         |         | usually |
+|         |         |         |
+|         |         | `tar -c |
+|         |         | zf <arc |
+|         |         | hive na |
+|         |         | me> <fi |
+|         |         | le(s)>` |
+|         |         |         |
+|         |         | Extract |
+|         |         | is      |
+|         |         | usually |
+|         |         |         |
+|         |         | `tar    |
+|         |         |  -xfv < |
+|         |         | archive |
+|         |         |  name>` |
++---------+---------+---------+
+| `scp`   |         |         |
++---------+---------+---------+
 
 ### Writing files - a rough intro to `vim`
 
-There will be many situations where writing into a text file will be handy while administering your server -- for example, when changing config files. When you're on the command line, you'll use a command line tool for writing into those files -- meaning you'll navigate inside the file and do file operations completely from the keyboard. No mouse or touchpad!
+There will be many situations where writing into a text file will be
+handy while administering your server -- for example, when changing
+config files. When you're on the command line, you'll use a command line
+tool for writing into those files -- meaning you'll navigate inside the
+file and do file operations completely from the keyboard. No mouse or
+touchpad!
 
-There are two main tools you'll probably encounter, `nano` and `vi`/`vim`.[^2-3-linux-admin-4]
+There are times when you want to make files or directories with nothing
+in them -- the `touch` command makes a blank file at the specified file
+path
 
-[^2-3-linux-admin-4]: `vi` is the original fullscreen text editor for Linux. `vim` is its successor (`vim` stands for `vi` i**m**proved). For our purposes, they're completely interchangeable.
++---------------+---------------+---------------+
+| Command       | What it does  | Notes         |
++===============+===============+===============+
+| `touch`       | Creates file  | Update files  |
+|               | if doesnt     | timestamp to  |
+|               | already       | current time  |
+|               | exist.        | if it does    |
+|               |               | exist         |
++---------------+---------------+---------------+
 
-You can open a file in either by typing `nano <filename>` or `vi <filename>`. Once there you'll be looking at a text file.
+There are two main tools you'll probably encounter, `nano` and
+`vi`/`vim`.[^2-3-linux-admin-7]
 
-Both `nano` and `vim` offer extremely powerful text editing tools. It might be worth it for you to spend some time really getting comfortable in one! In this book, we're just going to talk about the absolute minimum you'll need to do to avoid getting stuck. Getting stuck in `nano` or `vim` is an extremely common situation for a newbie Linux admin. Hopefully once you've read this, you'll at least avoid getting stuck in an editor with no way out.
+[^2-3-linux-admin-7]: `vi` is the original fullscreen text editor for
+    Linux. `vim` is its successor (`vim` stands for `vi` i**m**proved).
+    For our purposes, they're completely interchangeable.
 
-In `nano` there will be helpful prompts along the bottom to tell you how to interact with the file, so you'll see once you're ready to go, you can exit with `^x`. But what is `^`? Pressing that key doesn't seem to have any effect. The `^` caret is short for your control or command key -- depending on whether you're using a Mac or Windows keyboard. Phew!
+You can open a file in either by typing `nano <filename>` or
+`vi <filename>`. Once there you'll be looking at a text file.
 
-Where `nano` gives you helpful hints, `vim` leaves you all on your own. It doesn't even tell you you're inside `vim`! This is where many people get stuck and end up having to just exit and start a new terminal session. It's not the end of the world if you do, but a few simple `vim` commands can help you avoid that fate.
+Both `nano` and `vim` offer extremely powerful text editing tools. It
+might be worth it for you to spend some time really getting comfortable
+in one! In this book, we're just going to talk about the absolute
+minimum you'll need to do to avoid getting stuck. Getting stuck in
+`nano` or `vim` is an extremely common situation for a newbie Linux
+admin. Hopefully once you've read this, you'll at least avoid getting
+stuck in an editor with no way out.
 
-One of the most confusing things about `vim` is that you can't edit the file when you first enter. That's because `vim` keybindings were (1) developed in a time before all keyboards had arrow keys and (2) were designed to never make you take your hands off the center of the keyboard. When you enter, you're in "normal" mode in which you can't actually type anything!
+In `nano` there will be helpful prompts along the bottom to tell you how
+to interact with the file, so you'll see once you're ready to go, you
+can exit with `^x`. But what is `^`? Pressing that key doesn't seem to
+have any effect. The `^` caret is short for your control or command key
+-- depending on whether you're using a Mac or Windows keyboard. Phew!
 
-By pressing `i`, you can enter **i**nsert mode -- or "the mode where you can actually type stuff". These days, almost all keyboard have arrow keys and you can navigate using the arrow keys in insert mode.
+Where `nano` gives you helpful hints, `vim` leaves you all on your own.
+It doesn't even tell you you're inside `vim`! This is where many people
+get stuck and end up having to just exit and start a new terminal
+session. It's not the end of the world if you do, but a few simple `vim`
+commands can help you avoid that fate.
 
-Once you're done writing stuff, you can exit to normal mode by pressing the `escape` key. Once you're in normal mode, you can do file operations by prefixing commands with a colon `:`. The two most common commands you'll use are save (**w**rite) and **q**uit. You can combine these together, so you can save and quit in one command using `:wq`.
+One of the most confusing things about `vim` is that you can't edit the
+file when you first enter. That's because `vim` keybindings were (1)
+developed in a time before all keyboards had arrow keys and (2) were
+designed to never make you take your hands off the center of the
+keyboard. When you enter, you're in "normal" mode in which you can't
+actually type anything!
 
-Sometimes you may find yourself inside a file having made changes you want to discard. If you try to exit with `:q`, you'll again find yourself trapped in and endless loop of warnings that your changes won't be saved unable to exit. You can tell `vim` you mean it with the exclamation mark and exit using `:q!`.
+By pressing `i`, you can enter **i**nsert mode -- or "the mode where you
+can actually type stuff". These days, almost all keyboard have arrow
+keys and you can navigate using the arrow keys in insert mode.
 
-| Command  | What it does                                         | Notes + Helpful options                        |
-|--------------------|--------------------|--------------------------------|
-| `^`      | Prefix for file command in `nano` editor.            | Use the command or control key.                |
-| `i`      | Enter **i**nsert mode in `vim`                       |                                                |
-| `escape` | Enter normal mode in `vim`.                          |                                                |
-| `:w`     | **W**rite the current file in `vim` (in normal mode) | Can be combined to save and quit in one, `:wq` |
-| `:q`     | **Q**uit `vim` (in normal mode)                      | `:q!` quit without saving                      |
+Once you're done writing stuff, you can exit to normal mode by pressing
+the `escape` key. Once you're in normal mode, you can do file operations
+by prefixing commands with a colon `:`. The two most common commands
+you'll use are save (**w**rite) and **q**uit. You can combine these
+together, so you can save and quit in one command using `:wq`.
+
+Sometimes you may find yourself inside a file having made changes you
+want to discard. If you try to exit with `:q`, you'll again find
+yourself trapped in and endless loop of warnings that your changes won't
+be saved unable to exit. You can tell `vim` you mean it with the
+exclamation mark and exit using `:q!`.
+
++------------------+------------------+------------------------------+
+| Vim Command      | What it does     | Notes + Helpful options      |
++==================+==================+==============================+
+| `^`              | Prefix for file  | Use the command or control   |
+|                  | command in       | key.                         |
+|                  | `nano` editor.   |                              |
++------------------+------------------+------------------------------+
+| `i`              | Enter **i**nsert |                              |
+|                  | mode in `vim`    |                              |
++------------------+------------------+------------------------------+
+| `escape`         | Enter normal     |                              |
+|                  | mode in `vim`.   |                              |
++------------------+------------------+------------------------------+
+| `:w`             | **W**rite the    | Can be combined to save and  |
+|                  | current file in  | quit in one, `:wq`           |
+|                  | `vim` (in normal |                              |
+|                  | mode)            |                              |
++------------------+------------------+------------------------------+
+| `:q`             | **Q**uit `vim`   | `:q!` quit without saving    |
+|                  | (in normal mode) |                              |
++------------------+------------------+------------------------------+
 
 ## Managing who can do what
 
-Whenever you're doing something in Linux, you're doing that thing *as* a particular user. An important distinction about Linux users is that they may or may not correspond to an actual human.
+Whenever you're doing something in Linux, you're doing that thing *as* a
+particular user. An important distinction about Linux users is that they
+may or may not correspond to an actual human.
 
-In a minute, we'll create users on your workbench server. These will correspond to actual humans who will use the servers, and they'll have usernames, passwords, and home directories. But there are many more users than that on a Linux server. On most servers, there will be many *service accounts*, accounts that represent a particular service but don't have a password or a home directory. They basically just exist to be holders for permissions.
+In a minute, we'll create users on your workbench server. These will
+correspond to actual humans who will use the servers, and they'll have
+usernames, passwords, and home directories. But there are many more
+users than that on a Linux server. On most servers, there will be many
+*service accounts*, accounts that represent a particular service but
+don't have a password or a home directory. They basically just exist to
+be holders for permissions.
 
-For example, if you install RStudio Server on your server, there will be a user created called `rstudio-server`. So, for example, if you go to login to the server, it's the `rstudio-server` user who needs permissions to do the relevant mechanics to get you in, like check that you're a valid user on the system.
+For example, if you install RStudio Server on your server, there will be
+a user created called `rstudio-server`. So, for example, if you go to
+login to the server, it's the `rstudio-server` user who needs
+permissions to do the relevant mechanics to get you in, like check that
+you're a valid user on the system.
 
-A group is a collection of users for the purpose of managing permissions group-wide. Each user has exactly one *primary* group, and can be a member of zero or more secondary groups.[^2-3-linux-admin-5] By default, each user has their own primary group of the same name as their username.
+A group is a collection of users for the purpose of managing permissions
+group-wide. Each user has exactly one *primary* group, and can be a
+member of zero or more secondary groups.[^2-3-linux-admin-8] By default,
+each user has their own primary group of the same name as their
+username.
 
-[^2-3-linux-admin-5]: Depending on your version of Linux, there *may* be a limit of 16 groups per user.
+[^2-3-linux-admin-8]: Depending on your version of Linux, there *may* be
+    a limit of 16 groups per user.
 
-There's also an administrative, root, or super user. When you logged in to your server using the `pem` key, you were logged in as the `root` user. This is a very dangerous practice, and you should basically never do it, except when you've just stood up a fresh server.
+There's also an administrative, root, or super user. When you logged in
+to your server using the `pem` key, you were logged in as the `root`
+user. This is a very dangerous practice, and you should basically never
+do it, except when you've just stood up a fresh server.
 
-Instead, you'll want to create a user on the system using the `adduser` command, log in as that actual user, and adopt super user privileges to run particular commands by prefixing them with `sudo`.
+Instead, you'll want to create a user on the system using the `adduser`
+command, log in as that actual user, and adopt super user privileges to
+run particular commands by prefixing them with `sudo`.
 
-If you think back a little, this is one of the most common reasons for being in a file, having made edits, and being unable to exit. Your user very well may have read privileges, but not write. So you could get in and muck around, but when you went to save, you can't! Exiting with `:q!` and reopening with `sudo vim` is your best bet.
+If you think back a little, this is one of the most common reasons for
+being in a file, having made edits, and being unable to exit. Your user
+very well may have read privileges, but not write. So you could get in
+and muck around, but when you went to save, you can't! Exiting with
+`:q!` and reopening with `sudo vim` is your best bet.
 
-You can change your user's password at any time with `passwd` and you can check the user you are with `whoami` or `id`.
+You can change your user's password at any time with `passwd` and you
+can check the user you are with `whoami` or `id`.
 
-| Command         | What it does                   | Helpful options                                  | Example |
-|------------------|------------------|--------------------|------------------|
-| `sudo`          | Adopt super user permissions.  |                                                  |         |
-| `su <username>` | Change to be a different user. |                                                  |         |
-| `whoami` / `id` | Check the current user.        | `id` gives more information, but is less catchy. |         |
-| `passwd`        | Change password.               |                                                  |         |
-| `useradd`       | Add a new user.                |                                                  |         |
++----------------+----------------+-----------------+----------------+
+| Command        | What it does   | Helpful options | Example        |
++================+================+=================+================+
+| `sudo`         | Adopt super    |                 |                |
+|                | user           |                 |                |
+|                | permissions.   |                 |                |
++----------------+----------------+-----------------+----------------+
+| `              | Change to be a |                 |                |
+| su <username>` | different      |                 |                |
+|                | user.          |                 |                |
++----------------+----------------+-----------------+----------------+
+| `whoami` /     | Check the      | `id` gives more |                |
+| `id`           | current user.  | information,    |                |
+|                |                | but is less     |                |
+|                |                | catchy.         |                |
++----------------+----------------+-----------------+----------------+
+| `passwd`       | Change         |                 |                |
+|                | password.      |                 |                |
++----------------+----------------+-----------------+----------------+
+| `useradd`      | Add a new      |                 |                |
+|                | user.          |                 |                |
++----------------+----------------+-----------------+----------------+
 
 ### File Permissions
 
-Every object in Linux is just a file. Every log -- file. Every picture -- file. Every program -- file. So with a pretty simple set of permissions, you can assign what everyone on the system is allowed to do.
+Every object in Linux is just a file. Every log -- file. Every picture
+-- file. Every program -- file. So with a pretty simple set of
+permissions, you can assign what everyone on the system is allowed to
+do.
 
 ::: callout-note
-The question of who's allowed to do what -- authorization -- is an extremely deep one. There's a chapter all about authorization, how it differs from authentication, and the different ways your IT/Admins might want to manage it [later in the book](sec3/3-3auth).
+The question of who's allowed to do what -- authorization -- is an
+extremely deep one. There's a chapter all about authorization, how it
+differs from authentication, and the different ways your IT/Admins might
+want to manage it [later in the book](sec3/3-3auth).
 
-This is just going to be a high-level overview of basic Linux authorization.
+This is just going to be a high-level overview of basic Linux
+authorization.
 :::
 
-There are three permissions in Linux: read, write, and execute. For some files execute doesn't really make sense - what would it mean to execute a csv file? But Linux doesn't care -- you can assign any combination of these three permissions for any file.
+There are three permissions in Linux: read, write, and execute. For some
+files execute doesn't really make sense - what would it mean to execute
+a csv file? But Linux doesn't care -- you can assign any combination of
+these three permissions for any file.
 
 Now, how are these permissions assigned?
 
-Each file in Linux belongs to a user and a group. So for each file, read, write, and execute permissions can be set for the user who owns it, the group it belongs to, and everyone else.
+Each file in Linux belongs to a user and a group. So for each file,
+read, write, and execute permissions can be set for the user who owns
+it, the group it belongs to, and everyone else.
 
 To understand better, let's look at the actual permissions on a file.
 
-If you run `ls -l` on a directory, you get the list of the files -- and the first few columns give you all the information you need to know about the file's permissions.
+If you run `ls -l` on a directory, you get the list of the files -- and
+the first few columns give you all the information you need to know
+about the file's permissions.
 
-So, for example, here's a few lines of the output of running `ls -l` on a python project I've got.
+So, for example, here's a few lines of the output of running `ls -l` on
+a python project I've got.
 
     ❯ ls -l                                                           
     -rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
@@ -439,139 +717,239 @@ So, for example, here's a few lines of the output of running `ls -l` on a python
     -rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
     drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests
 
-The first character indicates the type of file -- `-` for normal and `d` for a directory.
+The first character indicates the type of file -- `-` for normal and `d`
+for a directory.
 
-The next 9 characters are indicators for the three permissions -- `r` for read, a `w` for write, and a `x` for execute or `-` for not -- first for the user, then the group, then any other user on the system.
+The next 9 characters are indicators for the three permissions -- `r`
+for read, a `w` for write, and a `x` for execute or `-` for not -- first
+for the user, then the group, then any other user on the system.
 
-So, for example, my `config.py` file with permissions of `rw-r-r--` indicates the user (`alexkgold`) can read and write the file, and everyone else -- including in the file's group `staff` -- has read only.
+So, for example, my `config.py` file with permissions of `rw-r-r--`
+indicates the user (`alexkgold`) can read and write the file, and
+everyone else -- including in the file's group `staff` -- has read only.
 
-In some cases, you may need to change a file's permissions. You can do so using the `chmod` command. For `chmod`, you indicate permissions with the sum of numbers -- 4 for read, 2 for write, and 1 for execute -- one number for the user, group, and everyone else. So `chmod 765 <filename>` would give the user full permissions, read and write to the group, and read and execute to everyone else. This would be a strange set of permissions to give a file, but it's a perfectly valid `chmod` command.
+In some cases, you may need to change a file's permissions. You can do
+so using the `chmod` command. For `chmod`, you indicate permissions with
+the sum of numbers -- 4 for read, 2 for write, and 1 for execute -- one
+number for the user, group, and everyone else. So `chmod 765 <filename>`
+would give the user full permissions, read and write to the group, and
+read and execute to everyone else. This would be a strange set of
+permissions to give a file, but it's a perfectly valid `chmod` command.
 
 ::: callout-note
-If you spend any time administering a Linux server, you almost certainly will at some point finding yourself frustratedly applying `chmod 777` to a file to give full permissions to everyone.
+If you spend any time administering a Linux server, you almost certainly
+will at some point finding yourself frustratedly applying `chmod 777` to
+a file to give full permissions to everyone.
 
-I can't in good faith tell you not to do this -- we've all been there. But if it's something important, be sure you change it back once you're finished figuring out what's going on.
+I can't in good faith tell you not to do this -- we've all been there.
+But if it's something important, be sure you change it back once you're
+finished figuring out what's going on.
 :::
 
-| Command                      | What it does                    | Helpful options + notes                                                                                          |
-|------------------------|------------------------|------------------------|
-| `chmod <permissions> <file>` | Modifies permissions on a file. | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
++----------------------+----------------------+----------------------+
+| Command              | What it does         | Helpful options +    |
+|                      |                      | notes                |
++======================+======================+======================+
+| `chmod <             | Modifies permissions | Number indicates     |
+| permissions> <file>` | on a file.           | permissions for      |
+|                      |                      | user, group, others: |
+|                      |                      | add 4 for read, 2    |
+|                      |                      | for write, 1 for     |
+|                      |                      | execute, 0 for       |
+|                      |                      | nothing.             |
++----------------------+----------------------+----------------------+
 
 ## Managing server resources
 
-Managing server resources is the third main activity you'll need to do as a server admin. There are three resources you'll need to manage -- CPU, RAM, and storage space. More on all three of these and how to make sure you've got enough [later in this section](/2-5-servers).
+Managing server resources is the third main activity you'll need to do
+as a server admin. There are three resources you'll need to manage --
+CPU, RAM, and storage space. More on all three of these and how to make
+sure you've got enough [later in this section](/2-5-servers).
 
-For now, we're just going to go over how to check how much you've got, how much you're using, and getting rid of stuff that's misbehaving.
+For now, we're just going to go over how to check how much you've got,
+how much you're using, and getting rid of stuff that's misbehaving.
 
-For many of these commands, the amount returned can be overwhelming, so you'll usually use some sort of filtering mechanism. For many of these commands, that means you'll run it, and send it into a pipe. On the other side of the pipe you might have `grep` to look for specific files or processes, or `head` or `tail` to get the first or last of them. If you want to specify how many, `head -n <n>` gives you the top `n` results.
+For many of these commands, the amount returned can be overwhelming, so
+you'll usually use some sort of filtering mechanism. For many of these
+commands, that means you'll run it, and send it into a pipe. On the
+other side of the pipe you might have `grep` to look for specific files
+or processes, or `head` or `tail` to get the first or last of them. If
+you want to specify how many, `head -n <n>` gives you the top `n`
+results.
 
-| Command | What it does                              | Helpful options                           |
-|-------------------|-------------------|----------------------------------|
-| `head`  | Returns the first results from a command. | `-n <n>` to return the first `n` results. |
++-----------------+-----------------+--------------------------------+
+| Command         | What it does    | Helpful options                |
++=================+=================+================================+
+| `head`          | Returns the     | `-n <n>` to return the first   |
+|                 | first results   | `n` results.                   |
+|                 | from a command. |                                |
++-----------------+-----------------+--------------------------------+
 
 ### Managing storage
 
-If you're running low on storage space, or think you might be, there are two things you might try to do -- delete some stuff or add a bigger disk. There are two commands -- `du` gives you the size of individual files inside a directory. This can be helpful for finding your largest files or directories if you think you might need to clean up things.
+If you're running low on storage space, or think you might be, there are
+two things you might try to do -- delete some stuff or add a bigger
+disk. There are two commands -- `du` gives you the size of individual
+files inside a directory. This can be helpful for finding your largest
+files or directories if you think you might need to clean up things.
 
-`df` is the more IT/Admin way of thinking about storage usage -- given a file or directory, what device is it mounted on and how full is that device? This can be really helpful if you're thinking about swapping out for a bigger storage volume.
+`df` is the more IT/Admin way of thinking about storage usage -- given a
+file or directory, what device is it mounted on and how full is that
+device? This can be really helpful if you're thinking about swapping out
+for a bigger storage volume.
 
-You'll almost always use `du` and `df` with the `-h` flag, which puts the numbers in human-readable format.
+You'll almost always use `du` and `df` with the `-h` flag, which puts
+the numbers in human-readable format.
 
-<table style="width:86%;">
-<colgroup>
-<col style="width: 22%" />
-<col style="width: 22%" />
-<col style="width: 39%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th><p>Command</p></th>
-<th><p>What it does</p></th>
-<th><p>Helpful options</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><p><code>du</code></p></td>
-<td><p>Check size of files.</p></td>
-<td><p>Most likely to be used <code>du -h &lt;dir&gt; | head -n 10</code></p>
-<p>`du head -n 10`</p></td>
-</tr>
-<tr class="even">
-<td><p><code>df</code></p></td>
-<td><p>Check storage space on device.</p></td>
-<td><p>-h</p></td>
-</tr>
-</tbody>
-</table>
++---------------+---------------+-------------------+
+| Command       | What it does  | Helpful options   |
++===============+===============+===================+
+| `du`          | Check size of | Most likely to be |
+|               | files.        | used              |
+|               |               | `du -h <d         |
+|               |               | ir> | head -n 10` |
+|               |               |                   |
+|               |               | \`du head -n 10\` |
++---------------+---------------+-------------------+
+| `df`          | Check storage | -h                |
+|               | space on      |                   |
+|               | device.       |                   |
++---------------+---------------+-------------------+
 
 ### Running processes
 
-Everything running on a computer is a process. So, for example, running a R session is (usually) one process. Some processes are more complex than others. For example, just running R or Python in your terminal and using the console is just a single process.
+Everything running on a computer is a process. So, for example, running
+a R session is (usually) one process. Some processes are more complex
+than others. For example, just running R or Python in your terminal and
+using the console is just a single process.
 
-But more complex interactions, like running R inside RStudio or Python in Jupyter involves a number of different processes and subprocesses.
+But more complex interactions, like running R inside RStudio or Python
+in Jupyter involves a number of different processes and subprocesses.
 
-Each process has a numeric **p**rocess **id** or `pid` that can be useful for referring to them.
+Each process has a numeric **p**rocess **id** or `pid` that can be
+useful for referring to them.
 
-Sometimes these processes take up more than their share of RAM and CPU -- the most relevant resources for running processes.
+Sometimes these processes take up more than their share of RAM and CPU
+-- the most relevant resources for running processes.
 
-As an admin, you'll occasionally have to track down rogue processes and shut them down. Shutting down a rogue process is pretty simple -- you'll use the `kill` command to kill processes once you've identified them. The trick is identifying the problematic ones.
+As an admin, you'll occasionally have to track down rogue processes and
+shut them down. Shutting down a rogue process is pretty simple -- you'll
+use the `kill` command to kill processes once you've identified them.
+The trick is identifying the problematic ones.
 
-Generally, if the system is doing something weird, `top` is a good first stop. `top` shows the processes consuming the most system resources in real time. It can help you find the processes that you might need to kill.
+Generally, if the system is doing something weird, `top` is a good first
+stop. `top` shows the processes consuming the most system resources in
+real time. It can help you find the processes that you might need to
+kill.
 
-If you have a better idea of where troublesome processes might be, `ps aux` lists processes for all users.[^2-3-linux-admin-6] It's common to pipe the output into `grep` to identify processes by names.
+If you have a better idea of where troublesome processes might be,
+`ps aux` lists processes for all users.[^2-3-linux-admin-9] It's common
+to pipe the output into `grep` to identify processes by names.
 
-[^2-3-linux-admin-6]: This is another one where you'll almost never use `ps` without `aux`.
+[^2-3-linux-admin-9]: This is another one where you'll almost never use
+    `ps` without `aux`.
 
-| Command  | What it does                      | Helpful options                                        |
-|------------------|-------------------------|-----------------------------|
-| `top`    | See what's running on the system. |                                                        |
-| `ps aux` | See all system processes.         | The second column is the pid if you want to kill them. |
-| `kill`   | Kill a system process.            | `-9` to force kill                                     |
++-----------------+-----------------------+---------------------------+
+| Command         | What it does          | Helpful options           |
++=================+=======================+===========================+
+| `top`           | See what's running on |                           |
+|                 | the system.           |                           |
++-----------------+-----------------------+---------------------------+
+| `ps aux`        | See all system        | The second column is the  |
+|                 | processes.            | pid if you want to kill   |
+|                 |                       | them.                     |
++-----------------+-----------------------+---------------------------+
+| `kill`          | Kill a system         | `-9` to force kill        |
+|                 | process.              |                           |
++-----------------+-----------------------+---------------------------+
 
 ## Managing networking
 
-The last thing you'll have to manage on your Linux server is networking. After all, servers are only valuable to the degree they can serve people something! Very often, you'll experience configuring something on your server, observing it working, and then not being able to get to it...without really understanding why.
+The last thing you'll have to manage on your Linux server is networking.
+After all, servers are only valuable to the degree they can serve people
+something! Very often, you'll experience configuring something on your
+server, observing it working, and then not being able to get to
+it...without really understanding why.
 
-In these cases, your first assumption should probably be that there's an issue with the networking. In another section, we'll get into the many places networking can be misconfigured, but the first thing to check is whether networking is the issue.
+In these cases, your first assumption should probably be that there's an
+issue with the networking. In another section, we'll get into the many
+places networking can be misconfigured, but the first thing to check is
+whether networking is the issue.
 
-`ping` and `curl` are useful tools for checking whether traffic can get into or out of your server. For example, if you're on your server and struggling to install packages from CRAN or PyPi, a ping to the relevant URL can check whether your request is getting through to those servers at all.
+`ping` and `curl` are useful tools for checking whether traffic can get
+into or out of your server. For example, if you're on your server and
+struggling to install packages from CRAN or PyPi, a ping to the relevant
+URL can check whether your request is getting through to those servers
+at all.
 
-On the flip side, if you can't log into your server, a ping command from your laptop to your server is a good check of whether you're correctly configured inbound networking.
+On the flip side, if you can't log into your server, a ping command from
+your laptop to your server is a good check of whether you're correctly
+configured inbound networking.
 
-Lastly, `netstat` is a useful command for checking which ports are being used on your machine. If you've got a service running, you need to make sure it's available on a port -- and that it's the right port! `netstat` can help you check. For this purpose, `netstat` is most useful with the `-tlp` flags to show programs that are listening and the programs associated.
+Lastly, `netstat` is a useful command for checking which ports are being
+used on your machine. If you've got a service running, you need to make
+sure it's available on a port -- and that it's the right port! `netstat`
+can help you check. For this purpose, `netstat` is most useful with the
+`-tlp` flags to show programs that are listening and the programs
+associated.
 
 ### Practical SSH
 
-Note that you don't need to use `-i` assuming you're using default SSH key name. If you wanted to use a different name, you can use `-i` to specify it, or you can set up an SSH config so your terminal knows which SSH key to use with which host.
+Note that you don't need to use `-i` assuming you're using default SSH
+key name. If you wanted to use a different name, you can use `-i` to
+specify it, or you can set up an SSH config so your terminal knows which
+SSH key to use with which host.
 
-By default, SSH always uses port 22. If for some reason you want to use a different port, you can use the `-p` flag with your SSH command.
+By default, SSH always uses port 22. If for some reason you want to use
+a different port, you can use the `-p` flag with your SSH command.
 
-SSH has one of the neatest debugging modes of any command. If you can't connect via SSH for some reason, just add a `-v` to your command for **v**erbose mode. If that's not enough information, add another v for `-vv`, and even another! Every `v` you add (up to 3) will make the output more verbose.
+SSH has one of the neatest debugging modes of any command. If you can't
+connect via SSH for some reason, just add a `-v` to your command for
+**v**erbose mode. If that's not enough information, add another v for
+`-vv`, and even another! Every `v` you add (up to 3) will make the
+output more verbose.
 
-There's one more SSH trick that can be useful -- port forwarding, also called tunneling. SSH port forwarding allows you to take the output of a port on a remote server, route it through SSH, and display it *as if* it were on a local port. What this means, for example, is that you can connect to a server via SSH, and once you've set up port forwarding, you can access, for example, port 3939 on the remote server at `localhost:3939` from your laptop's browser.
+There's one more SSH trick that can be useful -- port forwarding, also
+called tunneling. SSH port forwarding allows you to take the output of a
+port on a remote server, route it through SSH, and display it *as if* it
+were on a local port. What this means, for example, is that you can
+connect to a server via SSH, and once you've set up port forwarding, you
+can access, for example, port 3939 on the remote server at
+`localhost:3939` from your laptop's browser.
 
-This can be helpful if you want to access a particular port on the remote server, but you haven't yet set up public networking to it.
+This can be helpful if you want to access a particular port on the
+remote server, but you haven't yet set up public networking to it.
 
-Port forwarding is, unfortunately, difficult to read and you'll almost certainly have to google every time you use it unless you're doing so on a daily basis.
+Port forwarding is, unfortunately, difficult to read and you'll almost
+certainly have to google every time you use it unless you're doing so on
+a daily basis.
 
-For the kind of port forwarding you'll use in debugging, you'll use the `-L` flag. The syntax looks like this:
+For the kind of port forwarding you'll use in debugging, you'll use the
+`-L` flag. The syntax looks like this:
 
 `ssh <local port>:<remote ip>:<remote port> <ssh hostname>`
 
 ## Lab: Setting up a user, configuring SSH, Installing R, Python, and More
 
-Now that you've SSH-ed into your server using the `pem` key, let's make things more secure.
+Now that you've SSH-ed into your server using the `pem` key, let's make
+things more secure.
 
-The first thing we're going to do is create a user so that you can login without running as root all the time.
+The first thing we're going to do is create a user so that you can login
+without running as root all the time.
 
-Let's create a user using the `adduser` command. If you want to just walk along, let's use the username `test-user`. Give the user a password when prompted to do so. Note that even though we're logged in as the base `ubuntu` user, we'll need to add `sudo` to do this command.
+Let's create a user using the `adduser` command. If you want to just
+walk along, let's use the username `test-user`. Give the user a password
+when prompted to do so. Note that even though we're logged in as the
+base `ubuntu` user, we'll need to add `sudo` to do this command.
 
 ``` {{bash}}
 sudo adduser test-user
 ```
 
-Let's get started by just running `useradd`. This will walk us through a set of prompts to create a new user with a home directory and a password. Feel free to add any information you want -- or to leave it blank -- when prompted.
+Let's get started by just running `useradd`. This will walk us through a
+set of prompts to create a new user with a home directory and a
+password. Feel free to add any information you want -- or to leave it
+blank -- when prompted.
 
 Now let's give our new user the ability to use sudo as well with
 
@@ -579,25 +957,38 @@ Now let's give our new user the ability to use sudo as well with
 sudo usermod -aG sudo test-user
 ```
 
-If you want to parse this command, we're adding the user to the group `sudo`, which is how people are allowed to use the `sudo` command.
+If you want to parse this command, we're adding the user to the group
+`sudo`, which is how people are allowed to use the `sudo` command.
 
 ### Creating an SSH Key for the user
 
 Ok, now that we've got the user, let's put an SSH key in place for them.
 
-In order to be able to connect as a new user, we need to add the *public key* as an authorized key for this user. We do so by putting the public key into the user's `.ssh/authorized_keys` directory.
+In order to be able to connect as a new user, we need to add the *public
+key* as an authorized key for this user. We do so by putting the public
+key into the user's `.ssh/authorized_keys` directory.
 
-If you've already got an SSH key you use, feel free to use that one. If you have to create one, there are plenty of walkthroughs on creating SSH keys available with a quick google search.
+If you've already got an SSH key you use, feel free to use that one. If
+you have to create one, there are plenty of walkthroughs on creating SSH
+keys available with a quick google search.
 
-You'll need to `scp` the public key to the server first.[^2-3-linux-admin-7]
+You'll need to `scp` the public key to the server
+first.[^2-3-linux-admin-10]
 
-[^2-3-linux-admin-7]: Yes, you could just copy/paste the contents of your public key into the public key in the authorized_keys directory, but this is a good chance to practice using `scp`.
+[^2-3-linux-admin-10]: Yes, you could just copy/paste the contents of
+    your public key into the public key in the authorized_keys
+    directory, but this is a good chance to practice using `scp`.
 
-    scp -i do4ds-lab-key.pem \\ \~/.ssh/id_ed25519.pub \\ #default name for ed25519 encrypted key ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com:/home/ubuntu
+    scp -i do4ds-lab-key.pem \\ \~/.ssh/id_ed25519.pub \\ #default name
+    for ed25519 encrypted key
+    ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com:/home/ubuntu
 
-See if you can parse this command. Note that we have to specify that we're using the `pem` key for the server, which file we're copying, which user we're connecting as, and where it's going on the server.
+See if you can parse this command. Note that we have to specify that
+we're using the `pem` key for the server, which file we're copying,
+which user we're connecting as, and where it's going on the server.
 
-Now our public key is up on the server. Let's move it into place on the server. Here are the commands to do so
+Now our public key is up on the server. Let's move it into place on the
+server. Here are the commands to do so
 
     ubuntu@ip-172-31-2-42:~$ sudo mv id_ed25519.pub /home/test-user/ #move to test-user
     ubuntu@ip-172-31-2-42:~$ su test-user #change user
@@ -608,42 +999,68 @@ Now our public key is up on the server. Let's move it into place on the server. 
     test-user@ip-172-31-2-42:~$ cat id_ed25519.pub > .ssh/authorized_keys #add public key to end of authorized_keys file
     test-user@ip-172-31-2-42:~$ chmod 600 .ssh/authorized_keys #set permissions
 
-Now we're all set up with SSH, and you can log in as a normal user from your laptop just using `ssh test-user@$SERVER_ADDRESS`.
+Now we're all set up with SSH, and you can log in as a normal user from
+your laptop just using `ssh test-user@$SERVER_ADDRESS`.
 
 ::: callout-tip
-If you run into trouble assuming `sudo` with your new user, try exiting SSH and coming back. Sometimes these changes aren't picked up until you restart the shell.
+If you run into trouble assuming `sudo` with your new user, try exiting
+SSH and coming back. Sometimes these changes aren't picked up until you
+restart the shell.
 :::
 
-Now that we're all set up, you should store the `pem` key somewhere safe and never use it to log in again.
+Now that we're all set up, you should store the `pem` key somewhere safe
+and never use it to log in again.
 
-If you ever want to exit SSH and get back to your machine, you can just type `exit`.
+If you ever want to exit SSH and get back to your machine, you can just
+type `exit`.
 
 ### Getting Data Science Tools Running
 
-Everything up to here has been preamble. We've been getting the right users into place and getting keys set up. Now starts the fun part -- let's get R, Python, RStudio Server, and Jupyter Lab configured on this server.
+Everything up to here has been preamble. We've been getting the right
+users into place and getting keys set up. Now starts the fun part --
+let's get R, Python, RStudio Server, and Jupyter Lab configured on this
+server.
 
 #### Installing R
 
-There are at least four different ways to install R on your server. Feel free to choose the one you want:
+There are at least four different ways to install R on your server. Feel
+free to choose the one you want:
 
 1.  Install from source
 2.  Install from apt-get
-3.  Install Posit compiled binaries - doesn't work with RStudio-server, doesn't search
+3.  Install Posit compiled binaries - doesn't work with RStudio-server,
+    doesn't search
 4.  Use `rig`
 
-This Ubuntu server has a version of Python configured for system use, but we're not going to want to use it for data science purposes, and it doesn't have R, so let's get them up and running.
+This Ubuntu server has a version of Python configured for system use,
+but we're not going to want to use it for data science purposes, and it
+doesn't have R, so let's get them up and running.
 
-There are a variety of different ways you can get R and Python running on this server. I am partial to installing the pre-compiled binaries Posit (formerly RStudio) makes available. These are minimal installs of just the base languages, allowing you to be more flexible later on.
+There are a variety of different ways you can get R and Python running
+on this server. I am partial to installing the pre-compiled binaries
+Posit (formerly RStudio) makes available. These are minimal installs of
+just the base languages, allowing you to be more flexible later on.
 
-If you want a challenge, feel free to try installing R from source and compiling it on your server. If you went with a t2.micro, compiling could take a minute.
+If you want a challenge, feel free to try installing R from source and
+compiling it on your server. If you went with a t2.micro, compiling
+could take a minute.
 
-There are two basic ways to install software on a Linux server. The first is to install from a system package repository. Each Linux distro has a utility for installing, updating, and removing sytem packages. In Ubuntu, that utility is called `apt`. Whenever you go to install a new system package, you'll almost always run an update first. The `update` command checks the various package mirrors so that your system knows what the currently available packages are when you go to install them.
+There are two basic ways to install software on a Linux server. The
+first is to install from a system package repository. Each Linux distro
+has a utility for installing, updating, and removing sytem packages. In
+Ubuntu, that utility is called `apt`. Whenever you go to install a new
+system package, you'll almost always run an update first. The `update`
+command checks the various package mirrors so that your system knows
+what the currently available packages are when you go to install them.
 
     sudo apt-get update
 
-The second is to manually download packages and install them on the system. We're going to do a mixture of both.
+The second is to manually download packages and install them on the
+system. We're going to do a mixture of both.
 
-There are a few different ways you can install R on your system. I'd recommend following the instructions on the Posit (formerly RStudio) website for installing R on a server.
+There are a few different ways you can install R on your system. I'd
+recommend following the instructions on the Posit (formerly RStudio)
+website for installing R on a server.
 
 For the simplest R install experience, use rig.
 
@@ -651,28 +1068,46 @@ For the simplest R install experience, use rig.
 
 Directions are here: https://posit.co/download/rstudio-server/
 
-Once you've installed, check status with `sudo systemctl status rstudio-server`.
+Once you've installed, check status with
+`sudo systemctl status rstudio-server`.
 
-SSH tunnel in with `ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`
+SSH tunnel in with
+`ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`
 
-Note that this starts a tunnel in the foreground. You can do it in the background, but then you need to find again, which is a pain.
+Note that this starts a tunnel in the foreground. You can do it in the
+background, but then you need to find again, which is a pain.
 
-Access RStudio Server using laptop browser at localhost:8787, use username `test-user` and password you set on the server. Because you're port forwarding, the browser on your laptop is actually connected to your server, but via SSH. We'll configure to connect directly without SSH in [Chapter @sec-networks-1].
+Access RStudio Server using laptop browser at localhost:8787, use
+username `test-user` and password you set on the server. Because you're
+port forwarding, the browser on your laptop is actually connected to
+your server, but via SSH. We'll configure to connect directly without
+SSH in [Chapter @sec-networks-1].
 
 RStudio Server runs as a system process -- R also needs to be installed.
 
 ### Installing JupyerHub + JupyterLab
 
-While RStudio uses R as it is running, you don't need to configure anything in R for it to run. In contrast, JupyterHub and JupyterLab *are* Python programs, so we're going to need to manage them in the context of a Python installation.
+While RStudio uses R as it is running, you don't need to configure
+anything in R for it to run. In contrast, JupyterHub and JupyterLab
+*are* Python programs, so we're going to need to manage them in the
+context of a Python installation.
 
-By default, our server came with a python install, but it's very barebones (e.g. no pip). In order to avoid messing with the system python, we're going to create a virtual environment for the purpose of installing and running JupyterHub.
+By default, our server came with a python install, but it's very
+barebones (e.g. no pip). In order to avoid messing with the system
+python, we're going to create a virtual environment for the purpose of
+installing and running JupyterHub.
 
     sudo su
     apt install python3.10-venv
     python3 -m venv /opt/jupyterhub
     source /opt/jupyterhub/bin/activate
 
-Now that we've done that, let's actually get JupyterHub itself installed and running. JupyterHub produces [docs that you can use](https://jupyterhub.readthedocs.io/en/stable/quickstart.html) to get up and running very quickly. If you have to stop for any reason, make sure to come back, assume sudo, and start the JupyterHub virtual environment we created.
+Now that we've done that, let's actually get JupyterHub itself installed
+and running. JupyterHub produces [docs that you can
+use](https://jupyterhub.readthedocs.io/en/stable/quickstart.html) to get
+up and running very quickly. If you have to stop for any reason, make
+sure to come back, assume sudo, and start the JupyterHub virtual
+environment we created.
 
 Here were the installation steps that worked for me:
 
@@ -684,37 +1119,62 @@ Here were the installation steps that worked for me:
 
     jupyterhub
 
-If all went well, you'll now have JupyterHub up and running on port `8000`!
+If all went well, you'll now have JupyterHub up and running on port
+`8000`!
 
-If you want to confirm, tunnel in with `ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS`.
+If you want to confirm, tunnel in with
+`ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS`.
 
 ### Running as a service
 
-By default, RStudio runs as a system service (remember we started it with `systemctl`?). In contrast, JupyterHub runs as a Python process. This is ok, but it means that we've got to remember the command to start it if we have to restart it, and that it won't auto restart if it were to fail for any reason.
+By default, RStudio runs as a system service (remember we started it
+with `systemctl`?). In contrast, JupyterHub runs as a Python process.
+This is ok, but it means that we've got to remember the command to start
+it if we have to restart it, and that it won't auto restart if it were
+to fail for any reason.
 
-A program that runs in the background on a machine, starting automatically, and controlled by `systemctl` is called a *daemon*. Luckily, it's pretty easy to add JupyterHub as a system daemon to our server.
+A program that runs in the background on a machine, starting
+automatically, and controlled by `systemctl` is called a *daemon*.
+Luckily, it's pretty easy to add JupyterHub as a system daemon to our
+server.
 
-Let's start by creating a config file for JupyterHub. JupyterHub has a default config file, but it'll be easier to manage later if we create the config file now so we can edit it as needed.
+Let's start by creating a config file for JupyterHub. JupyterHub has a
+default config file, but it'll be easier to manage later if we create
+the config file now so we can edit it as needed.
 
 You can create a config file using
 
     jupyterhub --generate-config
 
-Then, you should create a `/etc/jupyterhub` directory and move this file there. Later, when we start JupyterHub as a service, we'll use this as the configuration, so if we want to change configuration later, there's an easy way to do it.
+Then, you should create a `/etc/jupyterhub` directory and move this file
+there. Later, when we start JupyterHub as a service, we'll use this as
+the configuration, so if we want to change configuration later, there's
+an easy way to do it.
 
-There are basically two steps -- create a file describing the service for the server's daemon, and then start the service.
+There are basically two steps -- create a file describing the service
+for the server's daemon, and then start the service.
 
-To start with, end the existing JupyterHub process. If you've still got that terminal open, you can do so with `ctrl` + `c`. If not, you can use your `ps aux` and `grep` skills to find and kill the JupyterHub processes.
+To start with, end the existing JupyterHub process. If you've still got
+that terminal open, you can do so with `ctrl` + `c`. If not, you can use
+your `ps aux` and `grep` skills to find and kill the JupyterHub
+processes.
 
-On Ubuntu, adding a daemon file uses a tool called `systemd` and is really straightforward.
+On Ubuntu, adding a daemon file uses a tool called `systemd` and is
+really straightforward.
 
 First, add this file to `/etc/systemd/system/jupyterhub.service`.
 
-It should be pretty easy to parse. Two things to notice -- the `Environment` line adds `/opt/jupyterhub/bin` to the path -- that's where our virtual environment is.
+It should be pretty easy to parse. Two things to notice -- the
+`Environment` line adds `/opt/jupyterhub/bin` to the path -- that's
+where our virtual environment is.
 
-Second, the `ExecStart` line is the startup command. If you named your virtual environment something other than `jupyterhub`, you'll have to change it in both these places.
+Second, the `ExecStart` line is the startup command. If you named your
+virtual environment something other than `jupyterhub`, you'll have to
+change it in both these places.
 
-Note the `-f /etc/jupyterhub/jupyterhub_config.py` -- this is the command to start JupyterHub with the config we created a few seconds ago.
+Note the `-f /etc/jupyterhub/jupyterhub_config.py` -- this is the
+command to start JupyterHub with the config we created a few seconds
+ago.
 
 /etc/systemd/system/jupyterhub.service
 
@@ -730,27 +1190,40 @@ Note the `-f /etc/jupyterhub/jupyterhub_config.py` -- this is the command to sta
     [Install]
     WantedBy=multi-user.target
 
-Now we just need to reload the daemon tool so it picks up the new service it has available and start JupyterHub!
+Now we just need to reload the daemon tool so it picks up the new
+service it has available and start JupyterHub!
 
     systemctl daemon-reload
     systemctl start jupyterhub
 
-You should now be able to see that JupyterHub is running using `systemctl status jupyterhub` and can see it again by tunneling to it.
+You should now be able to see that JupyterHub is running using
+`systemctl status jupyterhub` and can see it again by tunneling to it.
 
-If you want JupyterHub to automatically restart when the server restarts, you can run `systemctl enable jupyterhub`.
+If you want JupyterHub to automatically restart when the server
+restarts, you can run `systemctl enable jupyterhub`.
 
 ## Comprehension Questions
 
-1.  Create a mind map of the following terms: Operating System, Windows, MacOS, Unix, Linux, Distro, Ubuntu
-2.  When you initially SSH-ed into your server using `ubuntu@$SERVER_ADDRESS`, what user were you and what directory did you enter? What about when you used `test_user@$SERVER_ADDRESS`?
-3.  What are the 3x3 options for Linux file permissions? How are they indicated in an `ls -l` command?
+1.  Create a mind map of the following terms: Operating System, Windows,
+    MacOS, Unix, Linux, Distro, Ubuntu
+2.  When you initially SSH-ed into your server using
+    `ubuntu@$SERVER_ADDRESS`, what user were you and what directory did
+    you enter? What about when you used `test_user@$SERVER_ADDRESS`?
+3.  What are the 3x3 options for Linux file permissions? How are they
+    indicated in an `ls -l` command?
 4.  How would you do the following?
-    1.  Find and kill the process IDs for all running `rstudio-server` processes.
+    1.  Find and kill the process IDs for all running `rstudio-server`
+        processes.
 
     2.  Figure out which port `JupyterHub` is running on.
 
-    3.  Create a file called `secrets.txt`, open it with vim, write something in, close and save it, and make it so that only you can read it.
+    3.  Create a file called `secrets.txt`, open it with vim, write
+        something in, close and save it, and make it so that only you
+        can read it.
 
 ### Questions for Alex
 
-We didn't actually make use of the EBS volume we mounted for home dirs. Should we do that? https://www.tecmint.com/move-home-directory-to-new-partition-disk-in-linux/
+We didn't actually make use of the EBS volume we mounted for home dirs.
+Should we do that?
+https://www.tecmint.com/move-home-directory-to-new-partition-disk-in-linux/
+
