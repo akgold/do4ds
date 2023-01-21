@@ -252,7 +252,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/sec2/2-3-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Administering a Linux Server</span></a>
+  <a href="../../chapters/sec2/2-3-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -328,11 +328,19 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#accessing-servers-via-ssh" id="toc-accessing-servers-via-ssh" class="nav-link" data-scroll-target="#accessing-servers-via-ssh"><span class="toc-section-number">7.2</span>  Accessing Servers via SSH</a></li>
   <li><a href="#understanding-bash-commands" id="toc-understanding-bash-commands" class="nav-link" data-scroll-target="#understanding-bash-commands"><span class="toc-section-number">7.3</span>  Understanding bash commands</a></li>
-  <li><a href="#lab-accessing-your-server" id="toc-lab-accessing-your-server" class="nav-link" data-scroll-target="#lab-accessing-your-server"><span class="toc-section-number">7.4</span>  Lab: Accessing your server</a>
+  <li><a href="#basic-navigation-and-interaction" id="toc-basic-navigation-and-interaction" class="nav-link" data-scroll-target="#basic-navigation-and-interaction"><span class="toc-section-number">7.4</span>  Basic navigation and interaction</a>
   <ul class="collapse">
-  <li><a href="#ssh-into-the-server" id="toc-ssh-into-the-server" class="nav-link" data-scroll-target="#ssh-into-the-server"><span class="toc-section-number">7.4.1</span>  SSH into the server</a></li>
+  <li><a href="#how-does-compare-to-c" id="toc-how-does-compare-to-c" class="nav-link" data-scroll-target="#how-does-compare-to-c"><span class="toc-section-number">7.4.1</span>  How does <code>/</code> compare to <code>C:</code>?</a></li>
+  <li><a href="#reading-text-files" id="toc-reading-text-files" class="nav-link" data-scroll-target="#reading-text-files"><span class="toc-section-number">7.4.2</span>  Reading text files</a></li>
+  <li><a href="#managing-files-and-directories" id="toc-managing-files-and-directories" class="nav-link" data-scroll-target="#managing-files-and-directories"><span class="toc-section-number">7.4.3</span>  Managing files and directories</a></li>
+  <li><a href="#moving-things-to-and-from-the-server" id="toc-moving-things-to-and-from-the-server" class="nav-link" data-scroll-target="#moving-things-to-and-from-the-server"><span class="toc-section-number">7.4.4</span>  Moving things to and from the server</a></li>
+  <li><a href="#writing-files-on-the-command-line" id="toc-writing-files-on-the-command-line" class="nav-link" data-scroll-target="#writing-files-on-the-command-line"><span class="toc-section-number">7.4.5</span>  Writing files on the command line</a></li>
   </ul></li>
-  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">7.5</span>  Comprehension Questions</a></li>
+  <li><a href="#lab-accessing-your-server" id="toc-lab-accessing-your-server" class="nav-link" data-scroll-target="#lab-accessing-your-server"><span class="toc-section-number">7.5</span>  Lab: Accessing your server</a>
+  <ul class="collapse">
+  <li><a href="#ssh-into-the-server" id="toc-ssh-into-the-server" class="nav-link" data-scroll-target="#ssh-into-the-server"><span class="toc-section-number">7.5.1</span>  SSH into the server</a></li>
+  </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">7.6</span>  Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-2-cmd-line.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -356,10 +364,12 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 </header>
 
-<p>The biggest difference between working on your desktop and working on a server is that almost all work on a server is done via the command line – an all-text interface where you’ll interact by typing commands rather than a point-and-click graphical user interface (GUI).</p>
+<p>The biggest difference between working on your desktop and working on a server is that servers generally do not have graphical user interfaces (GUIs).</p>
+<p>If you want to adjust the system settings on your laptop or navigate from directory to directory, you can click through a file tree or open up your preferences pane. On a server, interaction is via the command line – an all-text interface where you type commands.</p>
+<p><img src="images-servers/desktop-vs-server.drawio.svg" title="Desktop vs Server" class="img-fluid"></p>
 <p>Once nice thing is that once you feel comfortable using the command line on a server, you’ll probably find that there are many things that will get easier for you locally as well! Plus you get to feel like a real hacker.</p>
-<p>In this chapter we’ll walk through getting access to the command line on your computer and talk about how to connect to a remote server using a protocol called SSH.</p>
-<p>I’d recommend reading this chapter even if you’ve used SSH before. It’s probable you didn’t really understand <em>why</em> you took the steps you did. Hopefully, by the time you’ve finished this chapter you might have to google the exact commands, but you’ll never again confuse a public and a private key and what to do with each (we’ve all been there).</p>
+<p>In this chapter we’ll walk through getting access to the command line on your computer, using it to connect to your remote server, and how to do basic interactions with a Linux system from the command line.</p>
+<p>I’d recommend reading this chapter even if you’ve used SSH or the command line before. It’s probable you didn’t really understand <em>why</em> you took the steps you did. Hopefully, by the time you’ve finished this chapter you might have to google the exact commands, but you’ll never again confuse a public and a private key and what to do with each (we’ve all been there).</p>
 <section id="setting-up-the-command-line" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="setting-up-the-command-line"><span class="header-section-number">7.1</span> Setting up the command line</h2>
 <p>Before you start interacting with the command line on your machine, it’s helpful to have a mental model of what you’re interacting with.</p>
@@ -427,7 +437,23 @@ Note
 <p>Now that you’re set up with a terminal and shell, let’s dig into how to SSH into a remote server.</p>
 <p>SSH – short for Secure (Socket) Shell – facilitates secure two-way communication between your computer and the command line on a server. Using SSH, you can provide a server with commands and rest easy that they’re going where you think and that the output is securely coming back.</p>
 <p>When you’re interacting with a server using SSH, you’ll have a terminal open on your laptop, but all the commands are actually running off on the remote server. This means that if you are using a Windows machine, you’ll use Windows commands to open the SSH connection to the server and then switch to using Linux commands to actually administer the server.</p>
-<p>Logging into a server is straightforward once its configured, you’ll just use <code>ssh &lt;server url&gt;</code> to get an interactive shell on that server. But in order to get there, you’ll need to configure <em>ssh keys</em>. SSH keys are what allows your computer and the server to mutually verify identity and set up a secure connection.</p>
+<p>Logging into a server is straightforward once its configured, you’ll just use <code>ssh &lt;server url&gt;</code> to get an interactive shell on that server.</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Debugging SSH
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>SSH has one of my favorite debugging modes.</p>
+<p>If you’re ever struggling with SSH, just add a <code>-v</code> to your command for <strong>v</strong>erbose mode. If that’s not enough information, add another v for <code>-vv</code>, and even another!</p>
+<p>Every <code>v</code> you add (up to 3) will make the output more verbose.</p>
+</div>
+</div>
+<p>But in order to get there, you’ll need to configure <em>ssh keys</em>. SSH keys are what allows your computer and the server to mutually verify identity and set up a secure connection.</p>
 <p>SSH keys come in pairs with two components – the <em>public key</em> and the <em>private key</em>.</p>
 <p>I think these terms are somewhat of a misnomer. It would actually be better to call the private key the <strong>key</strong> and the public key the <strong>lock</strong>.</p>
 <p>This is why you can give your public key to a server or service that you might not fully control. Someone who has your public key can verify that your private key is the one that fits that public key – but it’s basically impossible to reverse engineer the private key with the public key in hand.</p>
@@ -465,6 +491,10 @@ Public key cryptography is cool
 <p>So, for example, running <code>ls -l -D %Y-%m-%dT%H:%M:%S /home/alex</code> will list all the files in <code>/home/alex</code> with the date-time of the last update formatted in ISO 8601 format (which is always the correct format for dates).</p>
 <p>It’s nice that this structure is standard. You always know that a bash command will be formatted as <code>&lt;command&gt; &lt;flags + flag args&gt; &lt;command args&gt;</code>. The downside is that having the main argument come all the way at the end, after all the flags, can make it really hard to mentally parse commands if you don’t know them super well. There’s no magic trick to make it easier, but you’re not alone – and there is help available!</p>
 <p>All of the flags and arguments for commands can be found in the program’s <em>man page</em> (short for manual). You can access the man page for any command with <code>man &lt;command&gt;</code>. You can scroll the man page with arrow keys and exit with <code>q</code>.</p>
+<p>Bash commands can get long, so it’s often nice to split them over multiple lines. You can tell bash you want it to keep reading after a line break by ending the line with a space and a <code>\</code>. Here’s what that might look like:</p>
+<pre><code>&gt; cmd1 arg1 \
+   arg2 \ 
+   arg3</code></pre>
 <table class="table">
 <thead>
 <tr class="header">
@@ -481,43 +511,382 @@ Public key cryptography is cool
 <td><code>q</code></td>
 <td>Exit man pages (and many other situations)</td>
 </tr>
+<tr class="odd">
+<td><code>\</code></td>
+<td>Continue command on new line</td>
+</tr>
 </tbody>
 </table>
 </section>
-<section id="lab-accessing-your-server" class="level2" data-number="7.4">
-<h2 data-number="7.4" class="anchored" data-anchor-id="lab-accessing-your-server"><span class="header-section-number">7.4</span> Lab: Accessing your server</h2>
+<section id="basic-navigation-and-interaction" class="level2" data-number="7.4">
+<h2 data-number="7.4" class="anchored" data-anchor-id="basic-navigation-and-interaction"><span class="header-section-number">7.4</span> Basic navigation and interaction</h2>
+<p>Being on the command line is different from having a desktop with a mouse or touchpad to click on things. So the first thing to learn is how to navigate around a Linux environment and interact with the things you find there using Linux commands.</p>
+<p>In Linux, <em>directories</em> define where you can be. A directory is just a container for files and other directories. In Linux, the entire file system is a tree (or perhaps an upside-down tree). The <em>root directory, <code>/</code></em> is the base of the tree and a <code>/</code> in between two directories means that it’s a sub-directory. So the directory <code>/home/alex</code> is the <code>alex</code> directory, which is contained in <code>home</code>, which is in the root directory.</p>
+<p>In Linux, every directory is a sub-directory of <code>/</code> or a sub-directory of a sub-directory of <code>/</code> or…you get the picture. The sequence of directories that defines a location is called a <em>file path</em>.</p>
+<p>Every Linux command happens <em>at a particular file path</em> – called the working directory – and <em>as a particular user</em>. It won’t always matter, but in some cases the commands you’re allowed to run and what happens when you do so might be really different for one user vs another or the same user in different places.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<section id="how-does-compare-to-c" class="level3" data-number="7.4.1">
+<h3 data-number="7.4.1" class="anchored" data-anchor-id="how-does-compare-to-c"><span class="header-section-number">7.4.1</span> How does <code>/</code> compare to <code>C:</code>?</h3>
+<p>If you’re a Windows person, you might think this is analogous to <code>C:</code>. You’re not wrong, but the analogy is imprecise.</p>
+<p>In Linux, <em>everything</em> is a sub-directory of <code>/</code>, irrespective of the configuration of physical or virtual drives that houses the storage. Frequently, people will put extra drives on their server – a process called mounting – and house them at <code>/mnt</code> (short for…you guessed it).</p>
+<p>That’s different from Windows. In Windows you can have multiple roots, one for each physical or logical disk you’ve got. That’s why your machine may have a <code>D:</code> drive, or if you have network shares, those will often be on <code>M:</code> or <code>N:</code> or <code>P:</code>, each with its own sub-directory.</p>
+<p>At any time, you can get the path where you’re sitting with the <code>pwd</code> command, which is an abbreviation for <em>print working directory</em>. When you’re writing out a file path, the working directory is at <code>.</code>.</p>
+<p>File paths can be either <em>absolute</em> – that is specified relative to the root – or <em>relative</em> to the working directory. You can always tell the difference because an absolute directory starts with <code>/</code> and a relative one will start with something else, often <code>.</code>.</p>
+<p>In <a href="#sec-cmd-line">Chapter&nbsp;<span>7</span></a>, we talked about the <code>ls</code> command, which lists what’s in a directory. Now, you can understand that <code>ls</code> just has a default argument of <code>.</code>, so <code>ls /home/alex</code> will always return the contents list of <code>/home/alex</code>. If you’ve navigated there, <code>ls</code> and <code>ls .</code> would also return exactly the same thing.</p>
+<p>Depending on what you’re doing, either absolute or relative paths make more sense. In general, absolute file paths make more sense when you want to access the same resource regardless of where the command is run, and relative file paths make more sense when you want to access a resource specific to where you run it.</p>
+<p>Along with being able to inspect directories, it’s useful to be able to relocate there. You can change your working directory with the <code>cd</code> command, short for <em>change directory</em>.</p>
+<p>Aside from <code>/</code> and <code>.</code>, there are two other special directories: <code>..</code> and <code>~</code>. <code>..</code> is the parent of the directory you’re in, so you can move to the parent of your current directory using <code>cd ..</code> and to it’s parent with <code>cd ../..</code>. <code>~</code> is the home directory of your user (assuming it has one). We’ll get more into what that means in a bit.</p>
+<p><strong>Recap of commands in this section</strong></p>
+<table class="table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it does/is</th>
+<th>Helpful options</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>/</code></td>
+<td>system root</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>.</code></td>
+<td>current working directory</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>ls</code></td>
+<td><strong>l</strong>i<strong>s</strong>t objects in a directory</td>
+<td><p><code>-l</code> - format as <strong>l</strong>ist</p>
+<p><code>-a</code> - <strong>a</strong>ll (include hidden files)</p></td>
+<td><p><code>$ ls .</code></p>
+<p><code>$ ls -la</code></p></td>
+</tr>
+<tr class="even">
+<td><code>pwd</code></td>
+<td><strong>p</strong>rints w<strong>orking</strong> <strong>d</strong>irectory</td>
+<td></td>
+<td><code>$ pwd</code></td>
+</tr>
+<tr class="odd">
+<td><code>cd</code></td>
+<td><strong>c</strong>hange <strong>d</strong>irectory</td>
+<td></td>
+<td><code>$ cd ~/ Documents</code></td>
+</tr>
+<tr class="even">
+<td><code>~</code></td>
+<td>home directory of the current user</td>
+<td></td>
+<td><code>$ ls ~</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reading-text-files" class="level3" data-number="7.4.2">
+<h3 data-number="7.4.2" class="anchored" data-anchor-id="reading-text-files"><span class="header-section-number">7.4.2</span> Reading text files</h3>
+<p>Many of the files you’ll interact with as a Linux admin are just text files. In particular, application configuration files and logs are usually just text files.</p>
+<p>A very common pattern in Linux administration is to read a log file to look for errors or clues, adjust a configuration setting as a result, and then restart a process.</p>
+<p>You’ll find that your skills in understanding the Linux file tree, moving around, and seeing what’s in directories will be very helpful in getting to the files. Once you’re there, it’ll be useful to know how to actually interact with files.</p>
+<p>The commands you’ll use most often will be <code>cat</code> and <code>tail</code>. <code>cat</code> is the command to print a file, starting at the beginning. It’s often helpful to read through text files. Sometimes you’ve got a really big file and you want to see just the beginning. <code>less</code> is useful if you just want to start at the top with the ability to scroll down. <code>head</code> is especially useful to peer at the beginning of a plain text data file (like <code>csv</code>) as it prints the first few rows and exits – so you can preview the beginning of a very large data file very quickly.</p>
+<p><code>tail</code> skips right to the <em>end</em> of a file. Log files usually are written so the newest part is <em>last</em> – so much so that “tailing a log file” is a synonym for looking at it. In some cases, you’ll want to tail a file as the process is still running and writing information to the log. You can get a live view of the end of the file using the <code>-f</code> flag (for <em>follow</em>).</p>
+<p>Sometimes you want to search around inside a text file. You’re probably familiar with the power of regular expressions (regex) to search for specific character sequences in text strings. The Linux command to do regex searches is <code>grep</code>, which returns results that match the regex pattern you specify.</p>
+<p>Using <code>grep</code> well requires being quite proficient in regex, so I usually just use it for simple searches.</p>
+<p>The true power of <code>grep</code> is unlocked in combination with the pipe. The Linux pipe operator – <code>|</code> – takes the output of the previous command and sends it into the next one.</p>
+<p>The pipe should feel extremely familiar to R users.</p>
+<p>The <code>{magrittr}</code> pipe, <code>%&gt;%,</code> has become extremely popular as part of the tidyverse since its introduction in 2013. A base R pipe, <code>|&gt;</code>, was released as a part of R 4.1 in 2021.</p>
+<p>sThe original pipe in <code>{magrittr}</code> took inspiration from both the Unix pipe and the pipe operator in the <code>F#</code> programming langauge.</p>
+<p>So, for example, a combination I do all the time is to pipe the output of <code>ls</code> into <code>grep</code> when searching for a file inside a directory. So if I was searching for a file that contained the word <code>data</code> somewhere in the filename inside a specific project directory, that might look something like <code>ls ~/projects/my-project | grep data</code>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 36%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it does</th>
+<th>Notes + Helpful options</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cat</code></td>
+<td>Prints a file.</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>less</code></td>
+<td>Prints a file, but just a little.</td>
+<td><p>Can be very helpful to look at a few rows of csv.</p>
+<p>Lazily reads lines, so can be <em>much</em> faster than <code>cat</code> for big files.</p></td>
+</tr>
+<tr class="odd">
+<td><code>tail</code></td>
+<td>Look at the end of a file.</td>
+<td><p>Useful for logs, where the newest part is <em>last</em>.</p>
+<p>The <code>-f</code> flag is useful for a live view.</p></td>
+</tr>
+<tr class="even">
+<td><code>head</code></td>
+<td>Look at the beginning of a file.</td>
+<td>Defaults to 10 lines, can specify a different number with <code>-n &lt;n&gt;</code>.</td>
+</tr>
+<tr class="odd">
+<td><code>grep</code></td>
+<td>Search a file using regex.</td>
+<td><p>Writing regex can be a pain. I suggest testing expressions on regex101.com.</p>
+<p>Often useful in combination with the pipe.</p></td>
+</tr>
+<tr class="even">
+<td><code>|</code></td>
+<td>the pipe</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="managing-files-and-directories" class="level3" data-number="7.4.3">
+<h3 data-number="7.4.3" class="anchored" data-anchor-id="managing-files-and-directories"><span class="header-section-number">7.4.3</span> Managing files and directories</h3>
+<p>You can copy a file from one place to another using the <code>cp</code> command. <code>cp</code> leaves behind the old file and adds the new one at the specified location. You can move a file with the <code>mv</code> command, which does not leave the old file behind.</p>
+<p>If you want to remove a file entirely, you can use the <code>rm</code> command. There is also a version to remove a directory, <code>rmdir</code>.</p>
+<div class="callout-warning callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Be very careful with the <code>rm</code> command.</p>
+<p>Unlike on your desktop there’s no recycle bin! Things that are deleted are instantly deleted forever.</p>
+</div>
+</div>
+<p>If you want to make a directory, <code>mkdir</code> makes a directory at the specified filepath. <code>mkdir</code> will only work if it’s creating the entire file path specified, so <code>mkdir dir/sub_dir</code> will only work if neither <code>dir</code> nor <code>dir/sub_dir</code> works. Using <code>mkdir -p dir/sub_dir</code>, will make whichever parts of the path don’t yet exist.</p>
+<p>If you want to operate on every file inside a directory, you can use the wildcard, <code>*</code>. So let’s say you’ve got a <code>/data</code> directory that has a bunch of CSV files in it. You could create a new data directory with <code>mkdir new_data</code> and copy all the files in using <code>cp data/* new_data</code>. You can also use the wildcard for partial matches, so if <code>/data</code> included a mixture of CSV and PDF files, and you only wanted to copy the CSVs, you could do <code>cp data/*.csv new_data</code>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 22%">
+<col style="width: 22%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it does/is</th>
+<th>Notes + Helpful Options</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>rm</code></td>
+<td><ul>
+<li><strong> r</strong>e<strong>m</strong>ove: delete</li>
+</ul>
+<p>permanently!</p></td>
+<td><p><code>-r</code> - recursively a directory and included files</p>
+<p><code>-f</code> - force - dont ask for each file</p></td>
+<td><p><code>$ r m  - rf old_docs/</code></p>
+<p>BE VERY CAREFUL WITH <code>-rf</code></p></td>
+</tr>
+<tr class="even">
+<td><code>cp</code></td>
+<td><strong>c</strong>o<strong>p</strong>y</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>mv</code></td>
+<td><strong>m</strong>o<strong>v</strong>e</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>*</code></td>
+<td>wildcard</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>mkdir</code></td>
+<td><strong>m</strong>a<strong>k</strong>e <strong>dir</strong>ectory</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="moving-things-to-and-from-the-server" class="level3" data-number="7.4.4">
+<h3 data-number="7.4.4" class="anchored" data-anchor-id="moving-things-to-and-from-the-server"><span class="header-section-number">7.4.4</span> Moving things to and from the server</h3>
+<p>It’s very common to have a file on your server you want to move to your desktop or vice versa. There are a few important commands to know to move things back and forth.</p>
+<p>It’s generally easier to move a single file rather than a whole bunch. The <code>tar</code> command turns a set of files or whole directory into a single archive file, usually with the file suffix <code>tar.gz</code>. It also does file compression when it creates the archive file. The amount of compression depends on the content.</p>
+<p>The <code>tar</code> command is used to both create and unpack (extract) archive files and telling it which one requires the use of several flags. I never remember them – this is a command I google every time I use it. The flags you’ll use most often are in the cheat sheet below.</p>
+<p>Once you’ve created an archive file, you’ve got to move it. The <code>scp</code> command is the way to do this. <code>scp</code> – short for <strong>s</strong>ecure <strong>c</strong>o<strong>p</strong>y – is basically a combo of SSH and copy.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Many <code>ssh</code> flags like <code>-i</code> to specify a particular SSH key apply to <code>scp</code>.</p>
+<p>Since <code>scp</code> establishes an SSH connection, you need to make the request to somewhere that is accepting SSH connections. Hopefully your server is receiving SSH connections and your laptop is not. You’ll almost certainly have the experience at some point of being on your server and wanting to <code>scp</code> something to or from your laptop. You need to do the <code>scp</code> command from a regular terminal on your laptop, not one that’s already SSH-ed into your server.</p>
+<table class="table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 36%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it does</th>
+<th>Notes + Helpful options</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>tar</code></td>
+<td>compress/decompress file/directory</td>
+<td><p>Almost always used with flags.</p>
+<p>Create is usually</p>
+<p><code>tar -czf  &lt;a rchive name&gt; &lt;file(s)&gt;</code></p>
+<p>Extract is usually</p>
+<p><code>t ar -xfv &lt;archive name&gt;</code></p></td>
+</tr>
+<tr class="even">
+<td><code>scp</code></td>
+<td>Copy across <code>ssh</code></td>
+<td>Can use most <code>ssh</code> flags</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="writing-files-on-the-command-line" class="level3" data-number="7.4.5">
+<h3 data-number="7.4.5" class="anchored" data-anchor-id="writing-files-on-the-command-line"><span class="header-section-number">7.4.5</span> Writing files on the command line</h3>
+<p>There will be many situations where writing into a text file will be handy while administering your server – for example, when changing config files. When you’re on the command line, you’ll use a command line tool for writing into those files – meaning you’ll only have your keyboard to navigate, save, and exit.</p>
+<p>There are times when you want to make files or directories with nothing in them – the <code>touch</code> command makes a blank file at the specified file path.</p>
+<table class="table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 33%">
+<col style="width: 45%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Command</th>
+<th>What it does</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>touch</code></td>
+<td>Creates file if doesn’t already exist.</td>
+<td>Updates timestamp to current time if it does exist</td>
+</tr>
+</tbody>
+</table>
+<section id="command-line-text-editors" class="level4" data-number="7.4.5.1">
+<h4 data-number="7.4.5.1" class="anchored" data-anchor-id="command-line-text-editors"><span class="header-section-number">7.4.5.1</span> Command line text editors</h4>
+<p>There are two command line text editors you’ll probably encounter – both extremely powerful text editing tools: <code>nano</code> and <code>vi</code>/<code>vim</code>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>You can open a file in either by typing <code>nano &lt;filename&gt;</code> or <code>vi &lt;filename&gt;</code>. Unfortunately for many newbie Linux Admins it’s extremely easy to get stuck inside a file with no hint of how to get out!</p>
+<p>In <code>nano</code> there will be helpful prompts along the bottom to tell you how to interact with the file, so you’ll see once you’re ready to go, you can exit with <code>^x</code>. But what is <code>^</code>? On most keyboards, you can insert the caret character, <code>^</code>, by pressing <code>Shift + 6</code>. Pressing that key doesn’t seem to have any effect.</p>
+<p>In this case, the <code>^</code> caret is short for <code>Ctrl</code> on Windows and for Command (<code>⌘</code>) on Mac. Phew!</p>
+<p>Where <code>nano</code> gives you helpful – if obscure – hints, <code>vim</code> leaves you all on your own. It doesn’t even tell you you’re inside <code>vim</code>!</p>
+<p>This is where many people get stuck and end up having to just exit and start a new terminal session. It’s not the end of the world if you do, but knowing a few <code>vim</code> commands can help you avoid that fate.</p>
+<p>One of the most confusing things about <code>vim</code> is that you can’t edit the file when you first enter. That’s because <code>vim</code> keybindings were (1) developed before keyboards uniformly had arrow keys and (2) are designed to minimize how much your hands need to move.</p>
+<p>When you enter, you’re in <em>normal mode</em>, which is for navigating through the file. If you feel like taking the time, learning <code>vim</code> keybindings can make navigating and editing text (code) files easier. I’d recommend spending some time learning! But if you don’t want to, you can skip all that by just pressing the <code>i</code> key.</p>
+<p>Pressing the <code>i</code> key activates <em>insert mode</em>. For those of us who are comfortable in a word processor like Word or Google Docs, insert mode will feel very natural. You can type and words will appear and you can navigate with the arrow keys.</p>
+<p>Once you’re done writing, you can go back to normal mode by pressing the <code>escape</code> key. In addition to navigating the file, normal mode allows you to do file operations like saving and quitting.</p>
+<p>File operations are prefixed with a colon <code>:</code>. The two most common commands you’ll use are save (<strong>w</strong>rite) and <strong>q</strong>uit. You can combine these together, so you can save and quit in one command using <code>:wq</code>.</p>
+<p>Sometimes you may want to exit without saving. In the course of administering a server, this can also happen if you open a file you’re allowed to read, but not to write.</p>
+<p>If you try to exit with <code>:q</code>, you’ll again find yourself trapped in an endless loop of warnings that your changes won’t be saved. You can tell <code>vim</code> you mean it with the exclamation mark and exit using <code>:q!</code>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 41%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Vim Command</th>
+<th>What it does</th>
+<th>Notes + Helpful options</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>^</code></td>
+<td>Prefix for file command in <code>nano</code> editor.</td>
+<td>Its the <code>⌘</code> or <code>Ctrl</code> key, not the caret symbol.</td>
+</tr>
+<tr class="even">
+<td><code>i</code></td>
+<td>Enter <strong>i</strong>nsert mode in <code>vim</code></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>escape</code></td>
+<td>Enter normal mode in <code>vim</code>.</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>:w</code></td>
+<td><strong>W</strong>rite the current file in <code>vim</code> (from normal mode)</td>
+<td>Can be combined to save and quit in one, <code>:wq</code></td>
+</tr>
+<tr class="odd">
+<td><code>:q</code></td>
+<td><strong>Q</strong>uit <code>vim</code> (from normal mode)</td>
+<td><code>:q!</code> quit without saving</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+<section id="lab-accessing-your-server" class="level2" data-number="7.5">
+<h2 data-number="7.5" class="anchored" data-anchor-id="lab-accessing-your-server"><span class="header-section-number">7.5</span> Lab: Accessing your server</h2>
 <p>If you followed the lab in <a href="2-1-cloud.html">Chapter&nbsp;<span>6</span></a>, you set up an EC2 server. In this lab, we’ll SSH in so you’re ready to start administering the server in the next chapter.</p>
-<section id="ssh-into-the-server" class="level3" data-number="7.4.1">
-<h3 data-number="7.4.1" class="anchored" data-anchor-id="ssh-into-the-server"><span class="header-section-number">7.4.1</span> SSH into the server</h3>
+<section id="ssh-into-the-server" class="level3" data-number="7.5.1">
+<h3 data-number="7.5.1" class="anchored" data-anchor-id="ssh-into-the-server"><span class="header-section-number">7.5.1</span> SSH into the server</h3>
 <p>The <code>.pem</code> key you downloaded when you set up the server is the skeleton key – it will automatically let you in with complete admin privleges. In <a href="2-3-linux-admin.html">Chapter&nbsp;<span>8</span></a>, we’ll set up a user with SSH on the server with more limited permissions.</p>
 <p>In the meantime, we’re going to use the <code>.pem</code> key to get started on the server, but be extremely careful with the power of the <code>.pem</code> key.</p>
 <p>Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in <a href="2-3-linux-admin.html">Chapter&nbsp;<span>8</span></a>). If you try to use the keypair without first changing the permissions, you’ll be unable to and get a warning that looks something like:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb1-1"><a href="#cb1-1"></a></span>
-<span id="cb1-2"><a href="#cb1-2"></a>\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span>
-<span id="cb1-3"><a href="#cb1-3"></a></span>
-<span id="cb1-4"><a href="#cb1-4"></a>\@ WARNING: UNPROTECTED PRIVATE KEY FILE! \@</span>
-<span id="cb1-5"><a href="#cb1-5"></a></span>
-<span id="cb1-6"><a href="#cb1-6"></a>\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span>
-<span id="cb1-7"><a href="#cb1-7"></a></span>
-<span id="cb1-8"><a href="#cb1-8"></a>Permissions 0644 for 'do4ds-lab-key.pem' are too open.</span>
-<span id="cb1-9"><a href="#cb1-9"></a></span>
-<span id="cb1-10"><a href="#cb1-10"></a>It is required that your private key files are NOT accessible by others.</span>
-<span id="cb1-11"><a href="#cb1-11"></a></span>
-<span id="cb1-12"><a href="#cb1-12"></a>This private key will be ignored.</span>
-<span id="cb1-13"><a href="#cb1-13"></a></span>
-<span id="cb1-14"><a href="#cb1-14"></a>Load key "do4ds-lab-key.pem": bad permissions</span>
-<span id="cb1-15"><a href="#cb1-15"></a></span>
-<span id="cb1-16"><a href="#cb1-16"></a>ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb2-1"><a href="#cb2-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2"></a>\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a>\@ WARNING: UNPROTECTED PRIVATE KEY FILE! \@</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a>\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span>
+<span id="cb2-7"><a href="#cb2-7"></a></span>
+<span id="cb2-8"><a href="#cb2-8"></a>Permissions 0644 for 'do4ds-lab-key.pem' are too open.</span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>It is required that your private key files are NOT accessible by others.</span>
+<span id="cb2-11"><a href="#cb2-11"></a></span>
+<span id="cb2-12"><a href="#cb2-12"></a>This private key will be ignored.</span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a>Load key "do4ds-lab-key.pem": bad permissions</span>
+<span id="cb2-15"><a href="#cb2-15"></a></span>
+<span id="cb2-16"><a href="#cb2-16"></a>ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Before we can use it to open the server, we’ll need to make a quick change to the permissions on the key.</p>
 <p>[QUESTION – does this happen on Windows? If so, what are commands to alter permissions?]</p>
 <p>So let’s change the file permissions.</p>
 <p>We’ll get into the details of how to use these commands in just a minute. For now, you’ll need to open a terminal window, navigate to the directory where the key is and change the file permissions.</p>
 <p>On my machine that looks like:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">$</span> cd ~/Documents/do4ds-lab</span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">$</span> chmod 600 do4ds-lab-key.pem</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">$</span> cd ~/Documents/do4ds-lab</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">$</span> chmod 600 do4ds-lab-key.pem</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>You can sub in the path to where your key is and the name you used for your key.</p>
 <p>In your terminal type the following</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">$</span> ssh <span class="at">-i</span> do4ds-lab-key.pem ubuntu@<span class="va">$SERVER_ADDRESS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">$</span> ssh <span class="at">-i</span> do4ds-lab-key.pem ubuntu@<span class="va">$SERVER_ADDRESS</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -535,8 +904,8 @@ SSH on Windows
 <p>Type <code>yes</code> when prompted, and you’re now logged in to your server!</p>
 </section>
 </section>
-<section id="comprehension-questions" class="level2" data-number="7.5">
-<h2 data-number="7.5" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">7.5</span> Comprehension Questions</h2>
+<section id="comprehension-questions" class="level2" data-number="7.6">
+<h2 data-number="7.6" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">7.6</span> Comprehension Questions</h2>
 <ol type="1">
 <li>Draw a mental map that includes the following: terminal, shell, operating system, my laptop, server, ssh public key, ssh private key</li>
 <li>If you don’t know the real commands for them, make up what you think the bash commands might be to do the following. So if you think you’d create a command called <code>cmd</code> with a flag <code>-p</code> and an argument <code>arg</code>, you’d write <code>cmd -p &lt;what p does&gt; &lt;arg&gt;</code>. In the next chapter you’ll get to see how close you got to the real thing:
@@ -553,6 +922,9 @@ SSH on Windows
 <hr>
 <ol>
 <li id="fn1"><p>It’s worth noting that modern encryption methods use substantially more convoluted mathematical operations than simple multiplication – but the idea is completely the same, and prime numbers are equally important.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>It’s interesting to note that this is also true on your computer - when you open a program, a particular user is running a program on your computer and opening a GUI window for you to interact with. The point-and-clicking obfuscates this, but it’s still true.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>It’s worth noting that <code>scp</code> is now considered “insecure and outdated”. The ways it is insecure are rather obscure and not terribly relevant for your workbench server. But if you’re moving a lot of data, you may want something faster. If so, I’d recommend more modern options like <code>sftp</code> and <code>rsync</code>. I probably wouldn’t bother if you’re not having issues with <code>scp</code> because these other commands have downsides like needing to learn an obscure syntax (<code>sftp</code>) or install an extra bit of software (<code>rsync</code>).<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><code>vi</code> is the original fullscreen text editor for Linux. <code>vim</code> is its successor (<code>vim</code> stands for <code>vi</code> i<strong>m</strong>proved). For our purposes, they’re completely interchangeable.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
@@ -698,7 +1070,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   </div>
   <div class="nav-page nav-page-next">
       <a href="../../chapters/sec2/2-3-linux-admin.html" class="pagination-link">
-        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Administering a Linux Server</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
