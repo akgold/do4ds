@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 12&nbsp; HTTP and Application Layer Protocols</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec3/3-5-dns.html" rel="next">
+<link href="../../chapters/sec3/3-3-networking.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">HTTP and Application Layer Protocols</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Code promotion and integration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-env-as-code.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-proj-components.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Science Project Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">Tools of the Trade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">chapters/sec2/3-0-sec-intro.qmd</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Intro to Network Transit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-http.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">HTTP and Application Layer Protocols</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-dns.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Things that only matter on the internet (DNS, HTTPS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-ssl.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">SSL/HTTPS are the most basic network security tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-7-servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">Making it Enterprise-Grade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-secure-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Logging in with auth</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">Appendices</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#http-is-the-most-common-application-layer-protocol" id="toc-http-is-the-most-common-application-layer-protocol" class="nav-link active" data-scroll-target="#http-is-the-most-common-application-layer-protocol"><span class="toc-section-number">12.0.1</span>  <code>http</code> is the most common application layer protocol</a></li>
+  <li><a href="#understand-http-traffic-by-inspecting-it" id="toc-understand-http-traffic-by-inspecting-it" class="nav-link" data-scroll-target="#understand-http-traffic-by-inspecting-it"><span class="toc-section-number">12.0.2</span>  Understand <code>http</code> traffic by inspecting it</a></li>
+  <li><a href="#things-that-only-matter-on-the-internet-dns-https" id="toc-things-that-only-matter-on-the-internet-dns-https" class="nav-link" data-scroll-target="#things-that-only-matter-on-the-internet-dns-https"><span class="toc-section-number">13</span>  Things that only matter on the internet (DNS, HTTPS)</a>
+  <ul class="collapse">
+  <li><a href="#what-happened-to-www" id="toc-what-happened-to-www" class="nav-link" data-scroll-target="#what-happened-to-www"><span class="toc-section-number">13.1</span>  What happened to www?</a>
+  <ul class="collapse">
+  <li><a href="#learning-to-hate-dns" id="toc-learning-to-hate-dns" class="nav-link" data-scroll-target="#learning-to-hate-dns"><span class="toc-section-number">13.1.1</span>  Learning to Hate DNS</a></li>
+  </ul></li>
+  <li><a href="#troubleshooting-networking" id="toc-troubleshooting-networking" class="nav-link" data-scroll-target="#troubleshooting-networking"><span class="toc-section-number">13.2</span>  Troubleshooting networking</a></li>
+  <li><a href="#you-should-always-use-https" id="toc-you-should-always-use-https" class="nav-link" data-scroll-target="#you-should-always-use-https"><span class="toc-section-number">13.3</span>  You should always use <code>https</code></a>
+  <ul class="collapse">
+  <li><a href="#how-ssltls-enhances-security" id="toc-how-ssltls-enhances-security" class="nav-link" data-scroll-target="#how-ssltls-enhances-security"><span class="toc-section-number">13.3.1</span>  How SSL/TLS Enhances Security</a></li>
+  <li><a href="#public-and-private-certificates" id="toc-public-and-private-certificates" class="nav-link" data-scroll-target="#public-and-private-certificates"><span class="toc-section-number">13.3.2</span>  Public and Private Certificates</a></li>
+  </ul></li>
+  <li><a href="#lab-getting-a-domain-and-ssl-for-your-server" id="toc-lab-getting-a-domain-and-ssl-for-your-server" class="nav-link" data-scroll-target="#lab-getting-a-domain-and-ssl-for-your-server"><span class="toc-section-number">13.4</span>  Lab: Getting a domain and SSL for your server</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">13.5</span>  Comprehension Questions</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/3-4-http.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-http" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">HTTP and Application Layer Protocols</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>TODO: add more on resources, query parameters, and anchors</p>
+<p>There are numerous application layer protocols. Some you will see in this book include <code>SSH</code> for direct server access, <code>(S)FTP</code> for file transfers, <code>SMTP</code> for email, <code>LDAP(S)</code> for authentication and authorization, and <code>websockets</code> for persistent bi-directional communication – used for interactive webapps created by the Shiny and Streamlit packages.</p>
+<p>We’ll talk more about some of those other protocols later in the book. For now, let’s focus on the one you’ll spend most of your time thinking about – <code>http</code>.</p>
+<section id="http-is-the-most-common-application-layer-protocol" class="level3" data-number="12.0.1">
+<h3 data-number="12.0.1" class="anchored" data-anchor-id="http-is-the-most-common-application-layer-protocol"><span class="header-section-number">12.0.1</span> <code>http</code> is the most common application layer protocol</h3>
+<p>Hyptertext transfer protocol (<code>http</code>) is the protocol that underlies a huge fraction of internet traffic. <code>http</code> defines how a computer can initiate a session with a server, request the server do something, and receive a response.</p>
+<p>So whenever you go to a website, <code>http</code> defines how your computer requests the website and the server sends back the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.</p>
+<p><code>http</code> is like the letter you’re sending to your friend. Just like it’s traditional to format a letter starting with the date and a greeting, followed by the letter body, and a signature, <code>http</code> requests and responses include both <em>headers</em> and a <em>body.</em></p>
+<p>The headers define particular metadata about the request or these response. These can include information like the request method, the type of machine that is sending the request, authentication credentials or tokens, and more.</p>
+<p>The body is the actual content of the message and what it says will be specific to what you’re trying to do. It’s worth noting that <code>GET</code> requests generally don’t include a body. Instead, any specifics on what is to be fetched are specified through <em>query parameters</em>, the part of the URL that shows up after the <code>?</code>. They’re often something like, <code>?first_name=alex&amp;last_name=gold</code>.</p>
+<p>Along with the address, there are two other special pieces of metadata in your traffic.</p>
+<p>The <em>request method</em> indicates how you’re trying to interact with the server. Most often, you’re fetching something with a <code>GET</code>, updating or changing something with a <code>POST</code> or <code>PUT</code>, or deleting something with a <code>DELETE</code>.</p>
+<p>The <em>status code</em> only appears on responses and indicates what happened with your request to the server. Some special codes you’ll quickly learn to recognize are below. The one you’ll (hopefully) see the most is 200, which is a successful response.</p>
+<section id="special-http-codes" class="level4" data-number="12.0.1.1">
+<h4 data-number="12.0.1.1" class="anchored" data-anchor-id="special-http-codes"><span class="header-section-number">12.0.1.1</span> Special HTTP Codes</h4>
+<p>As you work more with <code>http</code> traffic, you’ll learn some of the common codes. Here’s a cheatshet for some of the most frequent you’ll see.</p>
+<table class="table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 74%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>200</code></td>
+<td>Everyone’s favorite, a successful response.</td>
+</tr>
+<tr class="even">
+<td><code>3xx</code></td>
+<td>Your query was redirected somewhere else, usually ok.</td>
+</tr>
+<tr class="odd">
+<td><code>4xx</code></td>
+<td>Errors with the request</td>
+</tr>
+<tr class="even">
+<td><code>400</code></td>
+<td>Bad request. This isn’t a request the server can understand.</td>
+</tr>
+<tr class="odd">
+<td><code>401</code> and <code>403</code></td>
+<td>Unauthorized or forbidden. Often means required authentication hasn’t been provided.</td>
+</tr>
+<tr class="even">
+<td><code>404</code></td>
+<td>Not found. There isn’t any content at the address you’re trying to access.</td>
+</tr>
+<tr class="odd">
+<td><code>5xx</code></td>
+<td>Errors with the server once your request got there.</td>
+</tr>
+<tr class="even">
+<td><code>500</code></td>
+<td>Server-side error. Your request was received, but there was an error processing it.</td>
+</tr>
+<tr class="odd">
+<td><code>504</code></td>
+<td>Gateway timeout. This means that a proxy or gateway between you and the server you’re trying to access timed out before it got a response from the server.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="understand-http-traffic-by-inspecting-it" class="level3" data-number="12.0.2">
+<h3 data-number="12.0.2" class="anchored" data-anchor-id="understand-http-traffic-by-inspecting-it"><span class="header-section-number">12.0.2</span> Understand <code>http</code> traffic by inspecting it</h3>
+<p>The best way to understand <code>http</code> traffic is to take a close look at some. Luckily, you’ve got an easy tool – your web browser!</p>
+<p>Open a new tab in your browser and open your developer tools. How this works will depend on your browser. In Chrome, you’ll go to View &gt; Developer &gt; Developer Tools and then make sure the Network tab is open.</p>
+<p>Now, navigate to a URL in your browser (say google.com).</p>
+<p>As you do this, you’ll see the traffic pane fill up. These are the requests and responses going back and forth between your computer and the server.</p>
+<p>If you click on any of them, there are a few useful things you can learn.</p>
+<p><img src="images-traffic/network-monitor.png" class="img-fluid"></p>
+<p>At the top, you can see the timing. This can be helpful in debugging things that take a long time to load. Sometimes it’s helpful to see what stage in the process bogs down.</p>
+<p>In the pane below, you can inspect the actual content that is going back and forth between your computer and the server you’re accessing including the request methods, status codes, headers, and bodies.</p>
+</section>
+<section id="things-that-only-matter-on-the-internet-dns-https" class="level1 page-columns page-full" data-number="13">
+<h1 data-number="13"><span class="header-section-number">13</span> Things that only matter on the internet (DNS, HTTPS)</h1>
+<p>In <a href="3-3-networking.html">Chapter&nbsp;<span>11</span></a> you learned all about how IP addresses are where a resource lives on a computer network. But you’ve been using the internet for a long time and you’ve rarely – if ever – actually used an IP address. What gives?</p>
+<p>IP addresses are hard to remember. And worse, they can change when servers are replaced or changed.</p>
+<p>To make the internet a little more human-friendly, the creators of the internet built a system called the <em>domain name system</em> (DNS) that translates human-readable domains, like <span class="math inline">\(google.com\)</span> to the IP addresses where the resources actually are.</p>
+<section id="what-happened-to-www" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="what-happened-to-www"><span class="header-section-number">13.1</span> What happened to www?</h2>
+<p>When the internet was first started, it seemed quite important to differentiate the address where a website would live from, for example, the email domain people at that organization would use.</p>
+<p>The <code>www</code> subdomain, short for <em>world wide web</em>, was invented as a way to differentiate the website.</p>
+<p>These days, the <code>www</code> subdomain is still technically a subdomain of the main domain, but it is convention to make sure that the <code>www</code> subdomain and the bare domain go to the same place. More on how to do that in the lab.</p>
+<p>You can also have resources other the root at <code>/</code>. For example, on my personal website, $alexkgold.space$, the about me page is at <span class="math inline">\(alexkgold.space/about\)</span>. You also control all paths below a domain when you control the domain.</p>
+<p>The question of whether to host things on subdomains or paths is well beyond the scope of this book, but generally paths are things that are properly “below” whatever’s at the bare domain and subdomains are often entirely different entities. But that’s just a matter of style and SEO.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can get the</p>
+<p>An IP address really is the address of the resource. You can get the IP address of <span class="math inline">\(google.com\)</span> using the terminal command <code>nslookup</code>.</p>
+<p>At the time of this writing, one of the addresses that comes back is <code>172.253.115.102</code>. Assuming that address is still valid, you can just put that into your browser’s search bar and get right to <span class="math inline">\(google.com\)</span>.</p>
+<p>But that’s not usually what we do. Instead, we use <span class="math inline">\(google.com\)</span> to get to google. What gives?</p>
+</div>
+</div>
+<p>If you think back to how a packet gets to where it’s going, we talked about how the packet gets routed to successively higher-level routers until a router knows where the packet is going and sends it back down. It turns out that this process is actually repeated <em>twice</em> – once to lookup the IP address for the domain, and then to actually send the information.</p>
+<p>The details of translating a domain into an IP address are quite intricate, but the upshot of this process – called <em>DNS resolution</em> – is that your computer asks for the IP address of the domain you put in, and that query is routed to successively higher levels of DNS servers until it finds one that knows the IP address for the domain you’re trying to reach.</p>
+<p>There are two components to a domain, the <em>domain name</em> and the <em>top level domain</em>. A domain maps to an IP address. Many domains can map to one IP address, so you’ll notice that you can access google at either <span class="math inline">\(google.com\)</span> or <span class="math inline">\(google.net\)</span>.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+An aside about top-level domains
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The top level domain is whatever appears after the <code>.</code>. The internet was created with only a handful of top level domains – <code>.com</code>, <code>.net</code>, and <code>.org</code> were some of the first.</p>
+<p>Mmore were opened up over time. In 2013 ICANN – the group that controls how domains are assigned – decided to allow people to register their own top level domains. That’s why there’s been an explosion in websites at top level domains like <code>.io</code>, <code>.ai</code>, and <code>.fun</code> in the last decade or so.</p>
+<p>If you, like me, think it’d be fun to have your own top level domain, they are unfortunately not for normal humans. In 2012, the initial application fee was $185,000.</p>
+</div>
+</div>
+<section id="learning-to-hate-dns" class="level3" data-number="13.1.1">
+<h3 data-number="13.1.1" class="anchored" data-anchor-id="learning-to-hate-dns"><span class="header-section-number">13.1.1</span> Learning to Hate DNS</h3>
+<p>As you get deeper into using servers, you will learn to hate DNS with a fiery passion. While it’s necessary so we’re not running around trying to remember incomprehensible IP addresses, it’s also very hard to debug as a server admin.</p>
+<p>Let’s say I’ve got the public domain <code>example.com</code>, and I’m taking down the server and putting up a new one. I’ve got to alter the public DNS record so that everyone going to <code>example.com</code> gets routed to the new IP address, and not the old one.</p>
+<p>The thing that makes it particularly challenging is that the DNS system is highly decentralized. There are thousands of public DNS servers that a request could get routed to, and many of them may need updating.</p>
+<p>Moreover, the simplified description I gave of DNS left one important thing out – when your computer or an intermediate DNS server looks up an IP address for you, it caches it. This is because its likely that if you’ve looked up a domain once, you’re going to do it again soon. This is great if you are <em>using</em> the internet and don’t want to wait for DNS lookups, but when you’re changing the domains on servers you control, it means you need to wait for caches to expire for changes to propagate.</p>
+<p>Depending on the changes you’re making, those changes can take up to 24 hours to propagate. After you make a change, if it’s not working, you’re left in a guessing game of whether you made a mistake or it just hasn’t propagated yet. It’s very annoying.</p>
+<p>Sometimes, trying a private browsing window will sidestep DNS and other sorts of caches, but not always.</p>
+</section>
+</section>
+<section id="troubleshooting-networking" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="troubleshooting-networking"><span class="header-section-number">13.2</span> Troubleshooting networking</h2>
+<p>Networking can be difficult to manage because there are many places it can go awry. Let’s say you’ve configured a service on your server, but you just can’t seem to access it.</p>
+<p>The first thing you’ll want to check is whether it’s a networking issue.</p>
+<p>The <code>ping</code> command can be useful for checking whether your server is reachable on the network. For example, here’s what happens when I <code>ping</code> the domain where this book sits.</p>
+<pre><code>&gt; ping -o do4ds.com                                                                            
+
+PING do4ds.com (185.199.110.153): 56 data bytes
+64 bytes from 185.199.110.153: icmp_seq=0 ttl=57 time=13.766 ms
+
+--- do4ds.com ping statistics ---
+1 packets transmitted, 1 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 13.766/13.766/13.766/0.000 ms</code></pre>
+<p>This looks great – it sent 1 packet to the server and got one back. That’s exactly what I want. Seeing an unreachable host or packet loss would be an indication that my networking probably isn’t configured correctly somewhere between me and the server. I generally like to use <code>ping</code> with the <code>-o</code> option for sending just <strong>o</strong>ne packet – as opposed to continuously trying.</p>
+<p>If <code>ping</code> succeeds but I still can’t access the server, <code>curl</code> is good to check. <code>curl</code> actually attempts to fetch the website at a particular URL. At this point, I’m</p>
+<p>A simple way to check for a networking issue is with the <code>curl</code> command. <code>curl</code> attempts to reach a listening service at the URL specified and return what it finds. It’s often useful to use <code>curl</code> with the <code>-I</code> option so it just returns a simple status report, not the full contents of what it finds there.</p>
+<p>For example, here’s what I get when I <code>curl</code> CRAN from my machine.</p>
+<pre><code> &gt; curl https://cran.r-project.org/ -I                                                         
+ 
+HTTP/1.1 200 OK
+Date: Sun, 15 Jan 2023 15:34:19 GMT
+Server: Apache
+Last-Modified: Mon, 14 Nov 2022 17:33:06 GMT
+ETag: "35a-5ed71a1e393e7"
+Accept-Ranges: bytes
+Content-Length: 858
+Vary: Accept-Encoding
+Content-Type: text/html</code></pre>
+<p>The important thing here is that first line. The server is returning a <code>200</code> HTTP status code, which means all is well. For more on HTTP status codes and how to interpret them, see <a href="3-3-networking.html">Chapter&nbsp;<span>11</span></a>.</p>
+<p>There are a lot of reasons you might not get a <code>200</code> return. The main thing you’ll want to check from within the server is that your service is actually up and running on the port you think it is.</p>
+</section>
+<section id="you-should-always-use-https" class="level2 page-columns page-full" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="you-should-always-use-https"><span class="header-section-number">13.3</span> You should always use <code>https</code></h2>
+<p>When you go to a website on the internet, you’ll see the URL prefixed by the <code>https</code> (though it’s sometimes hidden by your browser because it’s assumed). <code>https</code> is actually a mashup that is short for <code>http</code> with secure sockets layer (SSL).</p>
+<p>These days, almost everyone actually uses the successor to SSL, transport layer security (TLS). However, because the experience of configuring TLS is identical to SSL, admins usually just talk about configuring SSL even when they mean TLS.</p>
+<p>These days, almost every bit of internet traffic is actually <code>https</code> traffic. You will occasionally see <code>http</code> traffic inside private networks where encryption might not be as important – but more and more organizations are requiring end-to-end use of SSL.</p>
+<p>Securing your website or server using SSL/TLS is one of the most basic things you can do to make sure your website traffic is safe. You should always configure <code>https</code> – full stop.</p>
+<p>SSL/TLS security is accomplished by configuring your site or server to use a SSL certificate (often abbreviated to cert). We’ll go through the details of how to get and configure an SSL certificate in this chapter – but first a little background on how SSL/TLS works.</p>
+<section id="how-ssltls-enhances-security" class="level3" data-number="13.3.1">
+<h3 data-number="13.3.1" class="anchored" data-anchor-id="how-ssltls-enhances-security"><span class="header-section-number">13.3.1</span> How SSL/TLS Enhances Security</h3>
+<p>SSL accomplishes two things for you – identity validation and traffic encryption.</p>
+<p>When you go to a website, SSL/TLS is the technology that verifies that you’re actually reaching the website you think you’re reaching. This prevents something called a man-in-the-middle attack where a malicious actor manages to get in between the server and the client of network traffic. So, for example, you might think you’re putting your bank login information into your normal bank website, but there’s a hacker sitting in the middle, reading all of the traffic back and forth.</p>
+<p>[TODO: Image of man-in-the-middle]</p>
+<p>You can see this in action in your web browser. When you go to a website protected by <code>https</code>, you’ll see a little lock icon to the left of the URL. That means that this website’s SSL certificate matches the website and therefore your computer can verify you’re actually at the website you mean to be at.</p>
+<p>But how does your computer know what a valid SSL certificate is? Your computer has a list of trusted Certificate Authorities (CAs) who create, sell, and validate SSL/TLS certificates. So when you navigate to a website, the website sends back a digital signature. Your computer checks the signature against the indicated CA to verify that it was issued to the site in question.</p>
+<p>[TODO: image of SSL validation]</p>
+<p>The second type of scary scenario SSL prevents is a snooping/sniffing attack. Even if you’re getting to the right place, your traffic travels through many different channels along the way – routers, network switches, and more. This means that someone could theoretically look at all your traffic along the way to its meaningful destination.</p>
+<p>When your computer gets back the digital signature to verify the site’s identity, it also prompts an exchange of encryption keys. These keys are used to encrypt traffic back and forth between you and the server so anyone snooping on your message will just see garbled nonsense and not your actual content. You can think of the SSL/TLS encryption as the equivalent of writing a message on a note inside an envelope, rather than on a postcard anyone could read along the way.</p>
+</section>
+<section id="public-and-private-certificates" class="level3 page-columns page-full" data-number="13.3.2">
+<h3 data-number="13.3.2" class="anchored" data-anchor-id="public-and-private-certificates"><span class="header-section-number">13.3.2</span> Public and Private Certificates</h3>
+<p>In order to configure your site or server with SSL, there are three steps you’ll want to take: getting an SSL certificate, putting the certificate on the server, and making sure the server <em>only</em> accepts <code>https</code> traffic.</p>
+<p>You can either buy an SSL certificate or make one yourself, using what’s called a <em>self-signed cert</em>.</p>
+<p>There are a variety of places you can buy an SSL/TLS certificate, in many cases, your domain name registrar can issue you one when you buy your domain.</p>
+<p>When you create or buy your cert, you’ll have to choose the scope. A basic SSL certificate covers just the domain itself, formally known as a fully qualified domain name (FQDN). So if you get a basic SSL certificate for <code>www.example.com</code>, <code>www.blog.example.com</code> will not be covered. You can get a <em>wildcard certificate</em> that would cover every subdomain of <code>*.example.com</code>.</p>
+<aside>
+<p>Note that basic SSL/TLS certification only validates that when you type <code>example.com</code> in your browser, that you’ve gotten the real <code>example.com</code>. It doesn’t in any way validate who owns <code>example.com</code>, whether they’re reputable, or whether you should trust them.</p>
+<p>There are higher levels of SSL certification that do validate that, for example, the company that owns <code>google.com</code> is actually the company Google.</p>
+</aside>
+<p>But sometimes it’s not feasible to buy certificates. While a basic SSL certificate for a single domain can cost $10 per year or less, wildcard certificates will all the bells and whistles can cost thousands per year. This can get particularly expensive if you’ve got a lot of domains for some reason.</p>
+<p>Moreover, there are times when you <em>can’t</em> buy a certificate. If you’re encrypting traffic inside a private network, you will need certificates for hosts or IP addresses that are only valid inside the private network, so there’s no public CA to validate them.</p>
+<p>There are two potential avenues to follow. In some cases, like inside a private network, you want SSL/TLS for the encryption, but don’t really care about the identity validation part. In this case, it’s usually possible to skip that identity validation part and automatically trust the certificate for encryption purposes.</p>
+<p>It’s also possible to create your own private CA, which would verify all your SSL certificates. This is pretty common in large organizations. At some point, every server and laptop needs to have the private CA added to its set of trusted certificate validators.</p>
+<p>A warning: it is deceptively easy to generate and configure a self-signed SSL certificate. It’s usually just a few lines of shell commands to create a certificate, and adding the certificate to your server or website is usually just a copy/paste affair.</p>
+<p>However, it’s pretty common to run into problems with self-signed certs or private CAs. Making sure the certificate chain is correct, or running into a piece of software that doesn’t ignore the identity validation piece right is pretty common. This shouldn’t dissuade you from using SSL/TLS. It’s an essential, and basic, component of any security plan – but using a self-signed cert probably isn’t as easy as it seems.</p>
+<p>When you configure your site or server, there will likely be an option to redirect all <code>http</code> traffic to <code>https</code> traffic. If your server or site is open to the internet, you should set this option.</p>
+</section>
+</section>
+<section id="lab-getting-a-domain-and-ssl-for-your-server" class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="lab-getting-a-domain-and-ssl-for-your-server"><span class="header-section-number">13.4</span> Lab: Getting a domain and SSL for your server</h2>
+<p>In this lab, we’re going to go from having to SSH tunnel to be able to use your data science workbench to making it available over the internet in general. That means we’re going to have to do 3 things: configure the networking to allow HTTP traffic, configure a real domain for our server, and configure SSL to keep our traffic safe.</p>
+<p>We know that right now our RStudio Server is ready to serve traffic inside our server on port 8787 and JupyterHub is on 8000, but nothing can get to them! So the first step is to allow traffic to get to them.</p>
+<p>Obviously, the easiest thing we could do would be to just open up ports 8787 and 8000 to the world. This works! If you want to try it, go to the settings for your server’s security group and just add a custom TCP rule allowing access to ports 8787 and 8000 from anywhere. If you visit &lt;server address&gt;:8787 you should get RStudio (login with <code>test-user</code> and your password) and if you visit 8000, you can get to Jupyter.</p>
+<p>It works!</p>
+<p>BUT now your users have to remember these arbitrary ports to use your server. It’s also insecure. There isn’t a good way to secure these ports with SSL.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>So we’re going to put a proxy in front of our two editors that will allow people to go to either RStudio or Jupyter on subpaths.</p>
+<p>There are two popular open source options for proxies – nginx and apache. We’re going to use nginx. Configuring nginx is generally a pretty painful experience – it’s a matter of making sure there are no typos, and debugging can be rather difficult. Until you get really comfortable with proxies, you’ll probably mostly just copy/paste config lines in. That’s what we’re going to do here.</p>
+<p>Here are the steps:</p>
+<ol type="1">
+<li>Install nginx with <code>sudo apt install nginx</code>.</li>
+<li>Save a copy of <code>nginx.conf</code>, <code>cp /etc/nginx/nginx.conf /etc/nginx/nginx-default.conf</code>.</li>
+<li>Replace the <code>http</code> block in the default nginx.conf with the following. Put the following into the config <code>sudo vim /etc/nginx/nginx.conf</code>.</li>
+<li>Test that your configuration is valid <code>sudo nginx -t</code>.</li>
+<li>Start nginx <code>sudo systemctl start nginx</code>. If you see nothing all is well.</li>
+</ol>
+<p>If you need to change anything, update the config and then restart with <code>sudo systemctl restart nginx</code>.</p>
+<p>QUESTION - is this too complicated? Should I make it an either/or and then allow people to do both as a challenge?</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>/etc/nginx/nginx.conf</strong></pre>
+</div>
+<pre><code>http {
+  
+  \# Enable websockets (needed for Shiny)
+  map \$http_upgrade \$connection_upgrade { 
+    default upgrade; '' close; 
+  }
+  
+  server { listen 80;
+    
+    location /rstudio/ {
+      # Needed only for a custom path prefix of /rstudio
+      rewrite ^/rstudio/(.*)$ /$1 break;
+      
+      # Use http here when ssl-enabled=0 is set in rserver.conf
+      proxy_pass http://localhost:8787;
+      
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_read_timeout 20d;
+      
+      # Not needed if www-root-path is set in rserver.conf
+      proxy_set_header X-RStudio-Root-Path /rstudio;
+      
+      # Optionally, use an explicit hostname and omit the port if using 80/443
+      proxy_set_header Host $host:$server_port;
+    }
+    
+    location /jupyter/ {
+      # NOTE important to also set base url of jupyterhub to /jupyter in its config
+      proxy_pass http://127.0.0a.1:8000;
+      
+      proxy_redirect   off;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      
+      # websocket headers
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+  }</code></pre>
+</div>
+<p>There’s one more thing you’ll have to do, which is to let RStudio and JupyterHub know that they’re on a subpath. Complex web experences like RStudio and JupyterHub frequently send people to a different subpath internally. In order to do so properly, they need to know to prepend all of those requests with the subpath.</p>
+<p>RStudio accepts a header from the proxy that lets it know what path it’s on (see the <code>X-RStudio-Root-Path</code> header line in the nginx config). Jupyter needs to be explicitly told.</p>
+<p>First we’ll need to get to the autogenerated config with</p>
+<pre><code> jupyterhub --generate-config
+ sudo mkdir /etc/jupyterhub
+ sudo mv jupyterhub_config.py /etc/jupyterhub</code></pre>
+<p>Find the line you want to change – you can search in vim with <code>/ &lt;thing you're searching for&gt;</code>. Go to the next hit with <code>n</code>.</p>
+<p>When you get to the line that reads <code># c.JupyterHub.bind_url = 'http://:8000'</code>, uncomment and add a <code>/jupyter</code> on the end, so it reads <code>c.JupyterHub.bind_url = 'http://:8000/jupyter</code>.</p>
+<p>Start jupyterhub with a specific config file.</p>
+<p>jupyterhub -f /etc/jupyterhub/jupyterhub_config.py</p>
+<p>### How to configure DNS for your server</p>
+<p>From the perspective of someone trying to set up their own website, there’s only one DNS server that matters to you personally – the DNS server for your <em>domain name registrar</em>.</p>
+<p>Domain name registrars are the companies that actually own domains. You can buy or rent one from them in order to have a domain on the internet. So let’s say you take the data science server you set up in lab 1 and decide that you want to host it at a real domain.</p>
+<p>Your first stop would be a domain name registrar where you’d find an available domain you like and pull out your credit card.</p>
+<p>Costs for domain names vary widely. Buying a meaningless domain in a less popular top-level domain, say <code>ladskfmlsdf.me</code> can cost as little as $3 per year. On the other hand, buying a <code>.com</code> domain that’s a real word or phrase can be a few thousand dollars – and there are articles every few years about some major company accidentally allowing their domain name to lapse and ransoming it back for stupid amounts of money.</p>
+<p>So, conceptually, it’s easy to understand how a domain comes to stand in for an IP address, with DNS being the directory that ties the two together.</p>
+<p>The harder part is the nitty gritty of how you accomplish that mapping yourself, which we’ll get into now.</p>
+<p>Configuration of DNS is done by way of <em>records</em>, of which there are a menagerie of types you <em>can</em> configure. Luckily, most simple configurations only need <em>CNAME</em> and <em>A</em> records.</p>
+<p>Here’s an imaginary DNS record table for the domain <code>example.com</code>:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Path/Host</th>
+<th>Type</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@</code></td>
+<td>A</td>
+<td><code>143.122.8.32</code></td>
+</tr>
+<tr class="even">
+<td><code>www</code></td>
+<td>CNAME</td>
+<td>example.com</td>
+</tr>
+<tr class="odd">
+<td><code>*</code></td>
+<td>A</td>
+<td><code>143.122.8.33</code></td>
+</tr>
+</tbody>
+</table>
+<p>Let’s go through how to read this table.</p>
+<p>Since we’re configuring <code>example.com</code>, the paths/hosts in this table are relative to <code>example.com</code>.</p>
+<p>In the first row we’re configuring an A record to go to the target IP address. <em>A records</em> (or their IPv6 cousin <em>AAAA records</em>) map a domain to an actual IP address. The path <code>@</code> is a special symbol meaning exact match. So by this configuration, any traffic to <code>example.com</code> will be passed straight through to the specified IP address.</p>
+<p>The second row deals with traffic to the <code>www</code> subdomain. <em>CNAME records</em> alias sub-domains. They’re most frequently used to map sub-domains to the main domain. Since this is a <code>CNAME</code> record for example.com, this record indicates that traffic to www.example.com should be treated exactly like traffic to <code>example.com</code>. Some domain providers do automatic redirection of <code>www</code> traffic, and so this row may not be necessary in some configurations.</p>
+<p>The last record uses the wildcard symbol <code>*</code> to send all subdomain traffic that’s not already spoken for – say <code>blog.example.com</code> or <code>info.example.com</code> directly to the IP address specified. In this case, I’m sending all of those subdomains to a different IP address, maybe a 404 (not found) page – or maybe I’m serving all the subdomains off a different server.</p>
+<p>So what happens is that your query goes through several layers of public DNS servers to get to the DNS entry for your domain name registrar. In many cases, you’ll directly configure your domain name registrar to point to your website or server – but you also can configure the domain name registrar to point at another set of DNS servers you actually control with an <em>NS record</em>.</p>
+<p>If you’re setting up your own server, this probably isn’t the case, but some large enterprises do run their own private DNS servers.</p>
+<section id="actually-doing-it" class="level4" data-number="13.4.0.1">
+<h4 data-number="13.4.0.1" class="anchored" data-anchor-id="actually-doing-it"><span class="header-section-number">13.4.0.1</span> Actually Doing It</h4>
+<p>Allocate an Elastic IP. If you’ve restarted your server, you’ve probably noticed that the IP address changed! This can be a real pain if you have to reconfigure your DNS every time. AWS offers a service called Elastic IP that gives you an IP address that won’t change that you can use with your instance, even if you restart it.</p>
+<p>As of this writing, Elastic IPs are free as long as it’s associated with a single running EC2 instance. You get charged if they’re not active – basically AWS doesn’t want you hoarding Elastic IPs. Great – just make sure to give back the elastic IP if you take down your instance.</p>
+<p>::: callout-note If you were doing this for real, and not in a somewhat arbitrary order that’s grouped by topic, it would’ve made sense to set up the elastic IP as soon as you brought the server up so you only would’ve used that IP address. :::</p>
+<pre><code>Go to Elastic IP and click allocate. Once it has been allocated, you'll need to associate it with the existing Instance you created. Choose the instance and the default private IP address.</code></pre>
+<p>I was given the Elastic IP <code>52.70.205.182</code>. So now if I go to <code>52.70.205.182</code>, I get my server.</p>
+<p>Note that once you make this change, your server will no longer be available at its old IP address, so you’ll have to ssh in at the new one. If you have SSH terminals open when you make the change, they will break.</p>
+<p>This part will not be free, but it can be very cheap. You’ll have to actually buy a domain name. The easiest way to do this is via AWS’s Route53 service. You can get domains on Route53 for as little as $9 per year. But there are cheaper services. For example, I was able to get the domain do4ds-lab.shop for $1.98 for a year on namecheap.com.</p>
+<p>Once you’ve got your domain, you have to configure your DNS. You’ll have to create 2 A records – one each for the @ host and the * host pointing to your IP and one for the CNAME at the www with the value being your bare domain.</p>
+<p>So in NameCheap, my Advanced DNS configuration looks like this:</p>
+<pre><code>![](images-traffic/namecheap-config.png)</code></pre>
+<p>Now you just have to be patient. Unfortunately DNS takes time to propagate. After a few minutes, your server should be reachable at your domain. Wow!</p>
+<pre><code>### Getting a cert of your own
+
+There's a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.</code></pre>
+<p>They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!</p>
+<p>For anyone who’s never dealt with self-signing certificates in the past, let me tell you, this is magical!</p>
+<pre><code>In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.</code></pre>
+<p>So inside the nginx configuration’s server block, add</p>
+<p>server_name do4ds-lab.shop www.do4ds-lab.shop;</p>
+<p>substituting in your domain for mine. Make sure to do both the bare domain and the <code>www</code> subdomain.</p>
+<p>At that point, you can just install certbot and let it go! As of this writing, that was as simple as running</p>
+<p>sudo su apt-get install certbot apt-get install python3-certbot-nginx systemctl restart nginx sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</p>
+<p>If you google “configure nginx with letsencrypt”, there’s a <a href="https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/">great article</a> by someone at Nginx walking you through the process if the commands above change.</p>
+<p>I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added. You’ll notice two things – one is inside the server block. You’ll notice that the <code>listen 80</code> is gone. We’re no longer listening for <code>HTTP</code> traffic. Instead there’s a <code>listen 443</code> – the default port for SSL, and a bunch of stuff that says <code># managed by Certbot</code> that tells nginx where to find the SSL certificate.</p>
+<p>Scrolling down a little, there’s a new server block that is listening on <code>80</code>. This block returns a <code>301</code>, which you might recall is a redirect code (specifically for a <em>permanent</em> redirect) sending all <code>HTTP</code> traffic to <code>HTTPS</code>.</p>
+<p>Before we exit and test it out, let’s do one more thing. RStudio does a bunch of sending traffic back to itself. For that reason, the <code>/rstudio</code> proxy location <em>also</em> needs to know to upgrade traffic from <code>HTTP</code> to <code>HTTPS</code>.</p>
+<p>So add the following line to the nginx config:</p>
+<pre><code>proxy_set_header X-Forwarded-Proto https; #redirect URLs back to https</code></pre>
+<p>Proto here is short for <em>protocol</em>. So this is letting RStudio Server know that when it forwards or redirects traffic, it should do so to <code>HTTPS</code>, not <code>HTTP</code>.</p>
+<hr>
+<pre><code>Ok -- let's try out our newly-secured workbench!</code></pre>
+<p>Go to the URL your server is hosted at, and you’ll find that…it’s broken again.</p>
+<p>Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn’t open?</p>
+<pre><code>If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.</code></pre>
+<p>Add a rule to allow <code>HTTPS</code> traffic on 443 from anywhere.</p>
+<p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio and <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub! Voila!</p>
+<pre><code>Note that you *also* can now SSH into `ssh test-user@&lt;domain&gt;`, so you don't ever need to remember IP Addresses for day-to-day operations.</code></pre>
+</section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="13.5">
+<h2 data-number="13.5" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">13.5</span> Comprehension Questions</h2>
+<ol type="1">
+<li>Write down the step-by-step procedure that is followed when you sit down at your laptop and type google.com into the search bar. Your explanation should include the following terms: URL, domain, DNS, protocol, HTTP, HTTPS, Default Address, Router</li>
+<li>Create a mind map of the following terms: Application Layer Protocol, HTTP, HTTPS, SSH, Port, 22, 80, 443</li>
+<li>In the following URLs, what are the domain, top-level domain, path, subdomain, query parameters?
+<ol type="1">
+<li><p>https://blog.example.com/2022-10-30</p></li>
+<li><p>facebook.com?search=alex.gold</p></li>
+<li><p>https://alexkgold.space/mfy.html</p></li>
+</ol></li>
+<li>Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA, Public Certificate, Private Certificate, 443</li>
+</ol>
+
+
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>As of this writing, JupyterHub supports configuring SSL in the product, but RStudio Server does not. Posit Workbench, the paid version of RStudio Server does support SSL configuration.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec3/3-3-networking.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Intro to Network Transit</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec3/3-5-dns.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Things that only matter on the internet (DNS, HTTPS)</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

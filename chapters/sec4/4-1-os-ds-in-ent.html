@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.313">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 16&nbsp; Open Source Data Science in the Enterprise</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec4/4-2-secure-networking.html" rel="next">
+<link href="../../chapters/sec4/4-0-sec-intro.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Code promotion and integration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-env-as-code.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-proj-components.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Science Project Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">Tools of the Trade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">chapters/sec2/3-0-sec-intro.qmd</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Intro to Network Transit</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-http.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">HTTP and Application Layer Protocols</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-dns.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Things that only matter on the internet (DNS, HTTPS)</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-ssl.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">SSL/HTTPS are the most basic network security tools</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-7-servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">Making it Enterprise-Grade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-secure-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Logging in with auth</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">Appendices</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#data-science-sandboxes" id="toc-data-science-sandboxes" class="nav-link active" data-scroll-target="#data-science-sandboxes"><span class="toc-section-number">16.1</span>  Data Science Sandboxes</a>
+  <ul class="collapse">
+  <li><a href="#creating-devtestprod" id="toc-creating-devtestprod" class="nav-link" data-scroll-target="#creating-devtestprod"><span class="toc-section-number">16.1.1</span>  Creating Dev/Test/Prod</a></li>
+  <li><a href="#infrastructure-as-code-tooling" id="toc-infrastructure-as-code-tooling" class="nav-link" data-scroll-target="#infrastructure-as-code-tooling"><span class="toc-section-number">16.1.2</span>  Infrastructure As Code Tooling</a></li>
+  </ul></li>
+  <li><a href="#foss-in-enterprise" id="toc-foss-in-enterprise" class="nav-link" data-scroll-target="#foss-in-enterprise"><span class="toc-section-number">16.2</span>  FOSS in Enterprise</a>
+  <ul class="collapse">
+  <li><a href="#legal-issues-with-open-source" id="toc-legal-issues-with-open-source" class="nav-link" data-scroll-target="#legal-issues-with-open-source"><span class="toc-section-number">16.2.1</span>  Legal issues with open source</a></li>
+  <li><a href="#package-management-in-the-enterprise" id="toc-package-management-in-the-enterprise" class="nav-link" data-scroll-target="#package-management-in-the-enterprise"><span class="toc-section-number">16.2.2</span>  Package Management in the Enterprise</a></li>
+  </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">16.3</span>  Comprehension Questions</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec4/4-1-os-ds-in-ent.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-osds-ent" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>This chapter is going to be devoted to two of the biggest challenges of doing data science in the enterprise - the relationship between IT/Admin and data scientists, and how to make free and open source software (FOSS) acceptable to enterprise IT/Admins.</p>
+<section id="data-science-sandboxes" class="level2" data-number="16.1">
+<h2 data-number="16.1" class="anchored" data-anchor-id="data-science-sandboxes"><span class="header-section-number">16.1</span> Data Science Sandboxes</h2>
+<p>In the chapter on environment as code tooling, we discussed how you want to create a version of your package environment in a safe place and then use code to share it with others and promote it into production.</p>
+<p>The IT/Admin group at your organization probably is thinking about something similar, but at a more basic level. They want to make sure that they’re providing a great experience to you – the users of the platform.</p>
+<p>So they probably want to make sure they can upgrade the servers you’re using, change to a newer operating system, or upgrade to a newer version of R or Python without interrupting your use of the servers.</p>
+<p>These are the same concerns you probably have about the users of the apps and reports you’re creating. In this case, I recommend a two-dimensional grid – one for promoting the environment itself into place for IT/Admins and another for promoting the data science assets into production.</p>
+<p>In order to differentiate the environments, I often call the IT/Admin development and testing area <em>staging</em>, and use dev/test/prod language for the data science promotion process.</p>
+<section id="creating-devtestprod" class="level3" data-number="16.1.1">
+<h3 data-number="16.1.1" class="anchored" data-anchor-id="creating-devtestprod"><span class="header-section-number">16.1.1</span> Creating Dev/Test/Prod</h3>
+<p>In <a href="../sec1/1-1-code-promotion.html">Chapter&nbsp;<span>1</span></a> on code promotion, we talked about wanting to create separate dev/test/prod environments for your data science assets. In many organizations, your good intentions to do dev/test/prod work for your data science assets are insufficient.</p>
+<p>In the enterprise, it’s often the case that IT/Admins are required to ensure that your dev work can’t wreak havoc on actual production systems are data. In many cases, this is actually a good thing!</p>
+<p>In this case, I recommend you work with your IT/Admins to create a data science sandbox - a place where you can have free access to the data and packages you need to develop new assets to your heart’s content.</p>
+<p>Then you need a promotion process to get into “higher lanes”.</p>
+<p>There are two items that are likely to raise friction between you and the IT/Admins as you’re trying to create a data science sandbox. The first is access to data, and the second is access to packages.</p>
+<p>Many IT/Admins are familiar with building workbenches for other sorts of software development tasks, which are fundamentally different from doing data science. Because so much of data science is exploratory, you need a safe place where you can work with real data, explore relationships in the data, and try out ways of modeling and visualizing the data to see what works.</p>
+<p>But for many software development tasks, access to fake or mock data is sufficient. Helping IT/Admin understand that you need access to real data, even if just a sample or in read-only mode is likely to be one of the highest hurdles to getting a data science sandbox that’s actually useful. In data science, the dev process looks less like test and prod – in software engineering you’re generally iterating on an app, writing code, and then promoting it into a testing lane. In data science, the dev activities are entirely different from the test or prod activities – you can’t start building a model or shiny app until you’ve really explored the data in depth.</p>
+<p>In many cases, creating a data science sandbox with <em>read-only</em> access to data is a great solution. If you’re creating a tool that also writes data, you can write the data only within the dev environment.</p>
+<p>The other issue that can be a tough sell is getting freer access to packages in the dev environment. As you probably know, part of the exploratory data process is trying out new packages – is it best to use this modeling package or that, best to use one type of visualization or another. If you can convince your IT/Admins to give you freer access to packages in dev, that’s ideal.</p>
+<p>You can work with them to figure out what the promotion process will look like. It’s easy to generate a list of the packages you’ll need to promote apps or reports into production with tools like <code>renv</code> or <code>venv</code>. Great collaborations with IT/Admin are possible if you can develop a procedure where you give them package manifests that they can compare to allow-lists and then make those packages available.</p>
+</section>
+<section id="infrastructure-as-code-tooling" class="level3" data-number="16.1.2">
+<h3 data-number="16.1.2" class="anchored" data-anchor-id="infrastructure-as-code-tooling"><span class="header-section-number">16.1.2</span> Infrastructure As Code Tooling</h3>
+<p>There are many, many varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won’t be covering them in any depth here. Instead, I’ll share a few of the different “categories” (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.</p>
+<p>To get from “nothing” to a usable server state, there are (at minimum) two things you need to do – provision the infrastructure you need, and configure that infrastructure to do what you want.</p>
+<p>For example, let’s say I’m standing up a server to deploy a simple shiny app. In order to get that server up, I’ll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I’ll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.</p>
+<p>So, for example, you might use AWS’s CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.</p>
+<p>In infrastructure as code tooling, there generally isn’t a clear dividing line between tools that do provisioning and tools that do configuration…but most tools lean one way or the other.</p>
+<p>Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).</p>
+<p>The other important division in IaC tools is declarative vs imperative. In declarative tooling, you simply enumerate the things you want, and the tool makes sure they get done in the right order. In contrast, an imperative tool requires that you provide actual instructions to get to where you want to go.</p>
+<p>In many cases, it’s easy to be declarative with provisioning servers, but it’s often useful to have a way to fall back to an imperative mode when configuring them because there may be dependencies that aren’t obvious to the provisioning tool, but are easy to put down in code. If the tool does have an imperative mode, it’s also nice if it’s compatible with a language you’d be comfortable with.</p>
+<p>One somewhat complicated addition to the IaC lineup is Docker and related orchestration tools. There’s a whole chapter on containerization and docker, so check that out if you want more details. The short answer is that docker can’t really do provisioning, but that you can definitely use docker as a configuration management IaC tool, as long as you’re disciplined about updating your Dockerfiles and redeployment when you want to make changes to the contents.</p>
+<p>Basically none of these tools will save you from your own bad habits, but they can give you alternatives.</p>
+<p>In short, exactly which tool you’ll need will depend a lot on what you’re trying to do. Probably the most important question in choosing a tool is whether you’ll be able to get help from other people at your organization on it. So if you’re thinking about heading into IaC tooling, I’d suggest doing a quick survey of some folks in DevOps and choosing something they already know and like.</p>
+</section>
+</section>
+<section id="foss-in-enterprise" class="level2" data-number="16.2">
+<h2 data-number="16.2" class="anchored" data-anchor-id="foss-in-enterprise"><span class="header-section-number">16.2</span> FOSS in Enterprise</h2>
+<p>Succeeding with Open Source in an enterprise context means forging a good partnership with IT/Admin. Many IT/Admins have only limited experience with FOSS at all and even if they’re used to FOSS, they probably have almost no experience with FOSS for data science, which looks a good bit different from many other applications of FOSS.</p>
+<section id="legal-issues-with-open-source" class="level3" data-number="16.2.1">
+<h3 data-number="16.2.1" class="anchored" data-anchor-id="legal-issues-with-open-source"><span class="header-section-number">16.2.1</span> Legal issues with open source</h3>
+<p>When using Free and Open Source Software (FOSS) in the enterprise, legal concerns may arise about the legality of using this software.</p>
+<p>FOSS is made such by the license applied to it. There are a variety of different open source licenses with different implications for the organization that wants to make use of them. I am not a lawyer and this is not legal advice, but here’s a little context on the issues at hand.</p>
+<p>There are some open source licenses that are called “permissive” because they allow broad use of the software licensed under them. For example, the MIT license allows anyone to, “use, copy, modify, merge, publish, distribute, sublicense, and/or sell” software that is licensed under MIT – and it doesn’t even require attribution!</p>
+<p>This means that you are broadly allowed to use something MIT-licensed and do what you want with it, without having to worry too much about the implications.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Other licenses (like some of the BSD variants) allow you to do basically whatever you want, but do require attribution.</p>
+<p>On the other hand, there are more restrictive or “copyleft” licenses – popular ones are GPL and AGPL. Aside from restrictions these licenses may place on the usage of the software, they also require that derivative works are released under <em>the same license</em>.</p>
+<p>R is released under GPL, a copyleft licenses. Python is released under a specialized Python Software Foundation (PSF) license, which is a permissive license.</p>
+<p>This means, for example, that you can not take the base R language, rewrite a section of it and create a proprietary version of R you want people to pay for.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>However, there is disagreement among lawyers about the scope of copyleft licenses. Many copyright lawyers believe that the extent of a derivative work for the purpose of a copyleft license is literally repackaging a bit of code and using it.</p>
+<p>Beyond the base languages themselves, packages in R and Python are released under whatever licenses the package authors decide.</p>
+<p>So, for example, the popular ggplot2 R package for plotting is released under an MIT license. But wait, you say, R is GPL, doesn’t that mean that derivative works also have to be a copyleft license? This is allowed because ggplot2 is uses R, but the source code of the R language doesn’t actually appear in the <code>ggplot2</code> package, so it isn’t bound by R’s GPL license.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>There is a grey area about using these packages. Say I create an app or plot in R and then share that plot with the public – is that app or plot bound by the license as well? Do I now have to release my source code to the public? Many would argue no – it uses R, but doesn’t derive from R in any way. Others have stricter concerns. Most interpretations of the very strict AGPL license is that running a service based on AGPL licensed code requires releasing the source code. Understandably, organizations that themselves sell software tend to be a little more concerned about these issues.</p>
+<p>There are disagreements on this among lawyers, and you should be sure to talk to a lawyer at your organization if you have concerns.</p>
+</section>
+<section id="package-management-in-the-enterprise" class="level3" data-number="16.2.2">
+<h3 data-number="16.2.2" class="anchored" data-anchor-id="package-management-in-the-enterprise"><span class="header-section-number">16.2.2</span> Package Management in the Enterprise</h3>
+<p>In the chapter on environments as code, we went in depth on how to manage a per-project package environment that moves around with that project. This is a best practice and you should do it.</p>
+<p>But in some Enterprise environments, there may be further requirements around how packages get into the environment, which packages are allowed, and how to validate those packages.</p>
+<p>The biggest difference between libraries and repositories is how many versions of packages are allowed. Because libraries can house (at most) one version of any given package, they should live as close to where they’re used as possible.</p>
+<p>In contrast, it’s nice to manage repositories at as general of a level as possible for convenience’s sake.</p>
+<p>In some cases, enterprises are happy to allow data scientists open access to any packages on CRAN, PyPI, GitHub, and elsewhere. But most enterprises have somewhat more restrictive stances for security reasons.</p>
+<p>In these cases, they have to do two things - make sure that public repositories are not available to users of their data science platforms, and use one of these repository tools to manage the set of packages that are available inside their environment. It often takes a bit of convincing, but a good division of labor here is generally that the IT/Admins manage the repository server and what’s allowed into the environment and the individual teams manage their own project libraries.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Amount of Space for Packages
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When admins hear about a package cache per-project, they start getting worried about storage space. I have heard this concern many times from admins who haven’t yet adopted this strategy, and almost never heard an admin say they were running out of storage space because of package storage.</p>
+<p>The reality is that most R and Python packages are very small, so storing many of them is reasonably trivial.</p>
+<p>Also, these package storage tools are pretty smart. They have a shared package cache across projects, so each package only gets installed once, but can be used in a variety of projects.</p>
+<p>It is true that each user then has their own version of the package. Again, because packages are small, this tends to be a minor issue. It is possible to make the package cache one that is shared across users, but the (small) risk this introduces of one user affecting other users on the server is probably not worth the very small cost of provisioning enough storage that this just isn’t an issue.</p>
+</div>
+</div>
+<p>Many enterprises run some sort of package repository software. Common package repositories used for R and Python include Jfrog Artifactory, Sonatype Nexus, Anaconda Business, and Posit Package Manager.</p>
+<p>Artifactory and Nexus are generalized library and package management solutions for all sorts of software, while Anaconda and Posit Package Manager are more narrowly tailored for data science use cases.</p>
+<p>There are two main concerns that come up in the context of managing packages for the enterprise. The first is how to manage package security vulnerabilities.</p>
+<p>In this context, the question of how to do security scanning comes up. What exactly security professionals mean by scanning varies widely, and what’s possible differs a good bit from language to language.</p>
+<p>It is possible to imagine a security scanner that actually reads in all of the code in a package and identifies potential security risks – like usage of insecure libraries, calls to external web services, or places where it accesses a database. The existence of tools at this level of sophistication exist roughly in proportion to how popular the language is and how much vulnerability there is.</p>
+<p>So javascript, which is both extremely popular and also makes up most public websites, has reasonably well-developed software scanning. Python, which is very popular, but is only rarely on the front end of websites has fewer scanners, and R, which is far less popular has even fewer. I am unaware of any actual code scanners for R code.</p>
+<p>One thing that can be done is to compare a packaged bit of software with known software vulnerabilities.</p>
+<p>New vulnerabilities in software are constantly being identified. When these vulnerabilities are made known to the public, the CVE organization attempts to catalog them all. One basic form of security checking is looking for the use of libraries with known CVE records inside of packages.</p>
+<p>The second thing your organization may care about is the licenses software is released under. They may want to disallow certain licenses – especially aggressive copyleft licenses – from being present in their codebases.</p>
+</section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="16.3">
+<h2 data-number="16.3" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">16.3</span> Comprehension Questions</h2>
+<ol type="1">
+<li>What is the purpose of creating a data science sandbox? Who benefits most from the creation of a sandbox?</li>
+<li>Why is using infrastructure as code an important prerequisite for doing Dev/Test/Prod?</li>
+<li>What is the difference between permissive and copyleft open source licenses? Why are some organizations concerned about using code that includes copyleft licenses?</li>
+<li>What are the key issues to solve for open source package management in the enterprise?</li>
+</ol>
+
+
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Again, not legal advice.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Again, not a lawyer, but I believe this is a pretty clear example.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>There are experts who would disagree and say this is not allowed. There isn’t actually much case law in this area, so it’s not entirely sure how this would shake out if it ever went to court.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec4/4-0-sec-intro.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Making it Enterprise-Grade</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec4/4-2-secure-networking.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
