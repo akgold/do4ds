@@ -1,0 +1,93 @@
+# Connecting Securely with SSH {#sec-ssh}
+
+SSH -- short for Secure (Socket) Shell -- facilitates secure two-way
+communication between your computer and the command line on a server.
+Using SSH, you can provide a server with commands and rest easy that
+they're going where you think and that the output is securely coming
+back.
+
+When you're interacting with a server using SSH, you'll have a terminal
+open on your laptop, but all the commands are actually running off on
+the remote server. This means that if you are using a Windows machine,
+you'll use Windows commands to open the SSH connection to the server and
+then switch to using Linux commands to actually administer the server.
+
+Logging into a server is straightforward once its configured, you'll
+just use `ssh <server url>` to get an interactive shell on that server.
+
+::: callout-tip
+## Debugging SSH
+
+SSH has one of my favorite debugging modes.
+
+If you're ever struggling with SSH, just add a `-v` to your command for
+**v**erbose mode. If that's not enough information, add another v for
+`-vv`, and even another!
+
+Every `v` you add (up to 3) will make the output more verbose.
+:::
+
+But in order to get there, you'll need to configure *ssh keys*. SSH keys
+are what allows your computer and the server to mutually verify identity
+and set up a secure connection.
+
+SSH keys come in pairs with two components -- the *public key* and the
+*private key*.
+
+I think these terms are somewhat of a misnomer. It would actually be
+better to call the private key the **key** and the public key the
+**lock**.
+
+This is why you can give your public key to a server or service that you
+might not fully control. Someone who has your public key can verify that
+your private key is the one that fits that public key -- but it's
+basically impossible to reverse engineer the private key with the public
+key in hand.
+
+::: callout-note
+## Public key cryptography is cool
+
+As an SSH user, you absolutely do not need to understand the underlying
+mathematics of public key cryptography, but conceptually quite simple.
+So forgive me this digression.
+
+Public key cryptography relies on mathematical operations that are easy
+in one direction, but really hard to reverse.
+
+Let's say I ask you to find two numbers to multiply to equal 91
+($1 * 91$ doesn't count). It'll probably take you at least a minute to
+discover that the only numbers that work are 7 and 13.
+
+But if I were to give you 7 and 13 from the beginning, it'd be quick to
+check that $7 * 13 = 91$.
+
+That's how public key cryptography works -- your public key is a number
+with only two factors and your private key is those two factors. Logging
+in with the private key is quick, because checking multiplication is
+easy, but you can share the public key as broadly as you want, because
+reverse-engineering the two factors is hard. The difference is that
+actual public key cryptography doesn't use small numbers like 91. It
+uses numbers with 91 or 9,191 *digits*.[^2-2-ssh-1]
+
+SSH public keys are *very* big numbers and modern encryption standards
+mean that it's basically impossible to break a public SSH key.
+:::
+
+[^2-2-ssh-1]: It's worth noting that modern encryption methods use
+    substantially more convoluted mathematical operations than simple
+    multiplication -- but the idea is completely the same, and prime
+    numbers are equally important.
+
+However, it is totally possible to compromise the security of an SSH
+connection by being sloppy with your private keys. So while SSH is
+cyptographically super secure, the whole system is only as secure as
+you. Always keep your private keys securely in the place where they were
+created and share only the public keys.
+
+So that means if you need to log in to your server from your laptop,
+you'll create a keypair on your laptop and share your public key to the
+server. If you need to SSH *from* the server to another server or to a
+service that uses SSH, like GitHub, you'll create another SSH key on the
+server and use that public key on the far end of the connection.
+
+## Comprehension Questions
