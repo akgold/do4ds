@@ -1,4 +1,4 @@
-# Intro to Network Transit {#sec-networks-1}
+# Intro to Computer Networks {#sec-networks-1}
 
 These days using a computer is basically synonymous with using a
 computer network. When you visit a website, print a document, or login
@@ -121,122 +121,33 @@ them.
 But what if you make it explicit? Try going to
 `https://google.com:443/`. What do you get?
 
-## IP Addresses identify where the mail is going
-
-The proper address of a server on a network is defined by the *Internet
-Protocol* (IP) and is called an *IP Address*. IP addresses are mapped to
-human-friendly domains like $google.com$ with the *Domain Name Service
-(DNS)*.
-
-::: callout-note
-In this chapter, we're going to set DNS aside and talk exclusively about
-IP Addresses. [Chapter @sec-dns-ssl] is all about DNS.
-:::
-
-There are both public and private versions of IP addresses. Private IP
-addresses are valid only within a private network. Every device attached
-to a network has a private IP address. Public IP addresses are valid
-across the entire internet and if you've got one, anyone on the internet
-can try to reach you there.
-
-There are a few reasons for this private/public split. The first is
-security. If you've got a public IP address, anyone on the internet can
-come knock on your virtual front door. You probably don't want this to
-be the case for your phone or your laptop, so they only have private IP
-addresses.
-
-The second reason is that in order for IP addresses to work, they have
-to be unique. If you needed a public IP address to just connect to the
-internet, you'd either need one permanently reserved for your laptop, or
-it would need a new one every time. Instead, because your home WiFi
-router is the only thing that needs to know about your laptop, it
-drastically lowers the amount of coordination needed.
-
-There are two main flavors of IP addresses.
-
-Most IP addresses you've probably seen before are IPv4 addresses.
-They're four blocks of 8-bit fields (numbers between `0` and `255`) with
-dots in between, so they look something like `65.77.154.233`.
-
-If you do the math, you'll realize there are "only" about 4 billion of
-these. While we can stretch those 4 billion IP addresses to many more
-devices since most devices only have private IPs, we are indeed running
-out of public IPv4 addresses.
-
-The good news is that smart people started planning for this a while
-ago. In the last few years, adoption of the new standard, IPv6, has
-started. IPv6 addresses are eight blocks of hexadecimal (`0-9` + `a-f`)
-digits separated by colons, with certain rules that allow them to be
-shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1`
-are both examples of valid IPv6 addresses.
-
-IPv6 will coexist with IPv4 for a few decades, and we'll eventually
-switch entirely to IPv6. There's no worry about running out of IPv6
-addresses any time soon, because the total quantity of IPv6 addresses is
-a number with 39 zeroes.
-
-Most IP addresses are freely available to be assigned, but there are a
-few that you'll see in particular contexts and it's useful to know what
-they are.
-
-The first IP address you'll see a lot is `127.0.0.1`, also known as
-`localhost` or loopback. This is the way a machine refers to itself. For
-example, if you open a Shiny app in RStudio Desktop, the app will pop up
-in a little window along with a notice that says
-
-`Listening on http://127.0.0.1:6311`
-
-That `http://127.0.0.1` is indicating that your computer is serving the
-Shiny app to itself on the localhost address.
-
-There are also a few blocks of addresses that are reserved for use on
-private networks, so they're never assigned in public.
-
-You don't really need to remember these, but it's very likely you've
-seen an address like `192.168.0.1` or `192.168.1.1` if you've ever tried
-to configure a router or modem for your home wifi.
-
-Now you know why.
-
-### Reserved IP Address Cheatsheet
-
-+----------------+---------------------------------------------------+
-| Code           | Meaning                                           |
-+================+===================================================+
-| 127.0.0.1      | `localhost` or loopback -- the machine that       |
-|                | originated the request                            |
-+----------------+---------------------------------------------------+
-| 1 92.168.x.x   | Protected address blocks used for private IP      |
-|                | addresses. More on public vs private addresses in |
-| 17 2.16.x.x.x  | chapter XX.                                       |
-|                |                                                   |
-| 10.x.x.x       |                                                   |
-+----------------+---------------------------------------------------+
-
 ## Ports get you to the right service
 
-Each server may be running many services -- for example, in the lab in
-[Chapter @sec-linux-admin], we set up three different services --
-RStudio, JupyterHub, and a plumber API -- on one server. The way to
-distinguish which one I mean is via a 1-1 mapping services to numeric
-ports.
+A port is a location on a server where a network connection is possible.
+It's like the apartment number for the mail. Each port has a unique
+number 1 to just over 65,000. By default, the overwhelming majority of
+the ports on the server are closed for security reasons.
 
-A port is identified by a number from 1 to just over 65,000. When URLs
-include ports, they appear after the address and a colon, `:`.
+Your computer automatically opens ports to make outgoing connections,
+but if you want to allow someone to make inbound connections -- like to
+access RStudio or a Shiny app on a server -- you need to manually
+configure and open a port.
+
+Any program that is running on a server and that you intend to be
+accessible from the outside is called a service. For example, we set up
+RStudio, JupyterHub, and a Plumber API as services in the lab in
+[Chapter @sec-linux-admin]. Each service lives on a unique port on the
+server.
 
 Since each service running on a server needs a unique port, it's common
 to choose a somewhat random relatively high-numbered port. That makes
 sure it's unlikely that the port will conflict with another service
 running on the server.
 
-For example RStudio Server runs on port 8787 by default. According to JJ
-Allaire, there's no special meaning to this port. It was chosen because
-it was easy to remember and not 8888, which some other popular projects
-had taken.
-
-By default, the overwhelming majority of the ports on the server are
-closed for security reasons. When you start a running service on a
-server, you also open the correct port for that service.
+For example RStudio Server runs on port `8787` by default. According to
+JJ Allaire, there's no special meaning to this port. It was chosen
+because it was easy to remember and not `8888`, which some other popular
+projects had taken.
 
 ### Special Port Cheatsheet
 
@@ -253,50 +164,76 @@ to indicate if it's using the default port.
 | HTTPS    | 443          |
 | SSH      | 22           |
 
-## How packets are routed
+## Assigning addresses
 
-Just as a letter gets routed from your local processing facility to
-centralized ones and then back to regional and local facilities before
-going into a carrier's mailbag, packets travel up to centralized
-facilities for routing network traffic, and then back down to more local
-ones. The pieces of hardware or software doing this traffic directing
-are called *routers.*
+The proper address of a server on a network is defined by the *Internet
+Protocol* (IP) and is called an *IP Address*. IP addresses are mapped to
+human-friendly domains like $google.com$ with the *Domain Name Service
+(DNS)*.
 
-It's not essential to understand routing for our purposes, but a general
-sense of how it works can be helpful.
+::: callout-note
+In this chapter, we're going to set DNS aside and talk exclusively about
+IP Addresses.
 
-Routers are hardware or software that keep track of the list of IP
-addresses it knows about -- either sub-networks or physical devices.
-When a packet comes in, the router checks if it's intended destination
-is on that list. If not, it just sends the packet to an upstream
-*default address* of a more general router.[^3-3-networking-5]
+[Chapter @sec-dns-ssl] is all about DNS.
+:::
 
-[^3-3-networking-5]: There are actually a few different types of
-    addresses used to do this. IP addresses are used for identifying
-    network resources and the MAC address used for physical hardware.
-    Your router is also responsible for assigning IP addresses to
-    devices as they join the network via the dynamic host configuration
-    protocol (DHCP). I'm glossing over all these details as they're
-    immaterial to the understanding important for this chapter.
+Every host on the internet has a public IP address.
 
-If you're thinking about the WiFi router in your house, the default
-address is probably one owned by your internet service provider (ISP)
-for your neighborhood. And that router's default address is probably
-also owned by your ISP, but for a broader network.
+A public IP address is an IP address that is valid across the entire
+internet. That means that each public IP address is unique across the
+entire internet. You can think of a public IP address like the public
+street address of a building.
 
-So your packet will get passed upstream to a sufficiently general
-network and then back downstream to the actual address you're trying to
-reach.
+But many hosts are not publicly accessible on the internet. Many are
+housed in private networks. A private network is one where the hosts
+aren't directly accessible to the public. You can think of a host in a
+private network like a building inside a gated community. You may still
+be able to get there from the public, but you can't just walk up to the
+building from the street. Instead you need to come in through the
+specific gates that have been permitted and approach only on the roads
+that are allowed.
 
-Meanwhile, your computer is waiting for a response from the server. Once
-the server has a response to send, it comes back using the same
-technique. Obviously a huge difference between sending a letter to a
-penpal and using a computer network is the speed. Where sending a
-physical letter takes a minimum of days, sending and receiving packets
-over a network is so fast that the delay is imperceptible when you're
-playing a multiplayer video game or collaborating on a document online.
+TODO: Image of public IPs like street address, private like cul-de-sac
 
-## Firewalls, allow-lists, and other security settings
+There are many different kinds of private networks. Some are small and
+enforced by connection to a physical endpoint, like the private network
+your WiFi router controls that houses your laptop, phone, TV, Xbox, and
+anything else you allow to connect to your router. In other cases, the
+network is a software network. Many organizations have virtual private
+networks (VPNs). In this case, you connect to the network via software.
+There may be resources you can only connect to inside your VPN and there
+also might be limitations about what you can go out and get.
+
+There are a few different reasons for this public/private network split.
+The first is security. If you've got a public IP address, anyone on the
+internet can come knock on your virtual front door. That's actually not
+so bad. What's more problematic is that they can go all the way around
+the building looking for an unlocked side door. Putting your host inside
+a private network is a way to ensure that people can only approach the
+host through on the pathways you intend.
+
+The second reason is convenience.
+
+Private networks provide a nice layer of abstraction for network
+addresses.
+
+You probably have a variety of network-enabled devices in your home,
+from your laptop and phone to your TV, Xbox, washing machine, and smart
+locks. But from the outside, your house has only one public IP address
+-- the address of the router in your home. That means that your router
+has to keep track of all the devices you've got, but they don't need to
+register with any sort of public service just to be able to use the
+internet.
+
+As we'll get into in [Chapter @sec-dns], keeping track of IP Addresses
+is best left to machines. If you're managing a complex private network,
+it's really nice to give *hostnames* to individual hosts. A nice feature
+of a private hostname compared to a public address is that you don't
+have to worry if the hostname is unique across the entire internet -- it
+just has to be unique inside your private network.
+
+### Firewalls, allow-lists, and other security settings
 
 One of the most basic ways to keep a server safe is to not allow traffic
 from the outside to come in. Generally that means that in addition to
@@ -322,6 +259,110 @@ on port 2943 instead of 22, that would be safer because it's harder to
 guess!" I guess so, but it's really just an illusion of security. There
 are ways to make your server safer. Choosing esoteric port numbers
 really isn't it.
+
+## How packets are routed
+
+The way packets travel from one computer to another is called routing. A
+router is a hardware or software device that route packets.
+
+You can think of routers and public networks as existing in trees. Each
+router knows about the IP addresses downstream of it and also the single
+upstream *default address*.[^3-3-networking-5]
+
+[^3-3-networking-5]: There are actually a few different types of
+    addresses used to do this. IP addresses are used for identifying
+    network resources and the MAC address used for physical hardware.
+    Your router is also responsible for assigning IP addresses to
+    devices as they join the network via the dynamic host configuration
+    protocol (DHCP). I'm glossing over all these details as they're
+    immaterial to the understanding important for this chapter.
+
+TODO: diagram of routers in trees
+
+For example, the router in your house just keeps track of the actual
+devices that are attached to it. So if you were to print something from
+your laptop, the data would just go to your router and then to your
+printer.
+
+On the other hand, when you look at a picture on Instagram, that traffic
+has to go over the public network. The default address for your home's
+router is probably one owned by your internet service provider (ISP) for
+your neighborhood. And that router's default address is probably also
+owned by your ISP, but for a broader network.
+
+So your packet will get passed upstream to a sufficiently general
+network and then back downstream to the actual address you're trying to
+reach.
+
+Meanwhile, your computer just waits for a response. Once the server has
+a response to send, it comes back using the same technique. Obviously a
+huge difference between sending a letter to a penpal and using a
+computer network is the speed. Where sending a physical letter takes a
+minimum of days, sending and receiving packets over a network is so fast
+that the delay is imperceptible when you're playing a multiplayer video
+game or collaborating on a document online.
+
+## How to recognize an IP address
+
+You've probably seen IPv4 addresses many times. They're four blocks of
+8-bit fields (numbers between `0` and `255`) with dots in between, so
+they look something like `65.77.154.233`.
+
+If you do the math, you'll realize there are "only" about 4 billion of
+these. While we can stretch those 4 billion IP addresses to many more
+devices since most devices only have private IPs, we are indeed running
+out of public IPv4 addresses.
+
+The good news is that smart people started planning for this a while
+ago. In the last few years, adoption of the new IPv6 standard has
+started. IPv6 addresses are eight blocks of hexadecimal (`0-9` + `a-f`)
+digits separated by colons, with certain rules that allow them to be
+shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1`
+are both examples of valid IPv6 addresses.
+
+IPv6 will coexist with IPv4 for a few decades and we'll eventually
+switch entirely to IPv6. There's no worry about running out of IPv6
+addresses any time soon, because the total quantity of IPv6 addresses is
+a number with 39 zeroes.
+
+### Reserved IP Addresses
+
+Most IPv4 addresses are freely available to be assigned, but there are a
+few that you'll see in particular contexts and it's useful to know what
+they are.
+
+The first IP address you'll see a lot is `127.0.0.1`, also known as
+`localhost` or loopback. This is the way a machine refers to itself.
+
+For example, if you open a Shiny app in RStudio Desktop, the app will
+pop up in a little window along with a notice that says
+
+`Listening on http://127.0.0.1:6311`
+
+That `http://127.0.0.1` is indicating that your computer is serving the
+Shiny app to itself on the localhost address.
+
+There are also a few blocks of addresses that are reserved for use on
+private networks, so they're never assigned in public.
+
++----------------------------------------------+-----------------------------------------------------------------+
+| Code                                         | Meaning                                                         |
++==============================================+=================================================================+
+| 127.0.0.1                                    | `localhost` or loopback -- the machine that originated the      |
+|                                              | request                                                         |
++----------------------------------------------+-----------------------------------------------------------------+
+| 192.168.x.x                                  | Protected address blocks used for private IP addresses.         |
+|                                              |                                                                 |
+| 172.16.x.x.x                                 |                                                                 |
+|                                              |                                                                 |
+| 10.x.x.x                                     |                                                                 |
++----------------------------------------------+-----------------------------------------------------------------+
+
+You don't really need to remember these, but it's very likely you've
+seen an address like `192.168.0.1` or `192.168.1.1` if you've ever tried
+to configure a router or modem for your home wifi.
+
+Now you know why.
 
 ## Comprehension Questions
 
