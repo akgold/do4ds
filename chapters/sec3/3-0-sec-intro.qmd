@@ -1,93 +1,67 @@
-# Making it Enterprise-Grade {#sec-3-intro}
+# The DIY Data Science Environment {#sec-2-intro}
 
-In the last section, we walked through getting set up with a server, accessing and managing the server via SSH, understanding DNS and getting a real URL, securing the server with SSL/HTTPS, and right-sizing the server for your needs.
+The first section of this book focused on how to move your data science
+practices closer to the DevOps ideal -- and mostly focused on the Dev
+side of the coin.
 
-And if you walked through the process with the labs, you've got a data science workbench running RStudio Server and JupyterHub all of your own. That's awesome!
+This section focuses more on Ops.
 
-That server is great if you're working alone on some data science projects you want to host in the cloud or if you've got a small team of data scientists in a small organization.
+In this section, you'll learn how to manage a server-based data science
+environment reasonably safely and securely. We're going to get into how
+to make use of Amazon Web Services (AWS) to host data science assets on
+the web.
 
-But if you work at a large organization or an organization with higher security needs, or if you're having to manage a server for a larger team of data scientists, you're going to need to start considering some more complex ways of managing your data science environment for security and stability.
+You're going to learn standard patterns to do simple administrative
+tasks for servers and apply those to a data science use-case.
 
-As a data scientist, you're primarily concerned with getting access to data to discover new exciting things and develop systems that can inform decisions at your organization. As you start trying to make systems more production-grade, security becomes more of an issue.
+But before you get too excited, it's also worth talking about the limits
+of this section.
 
-It's easy to think that security isn't really relevant for you because you don't think you're much of a target, but security encompasses more than just bad actors trying to kick in the virtual front door.
+There's a reason IT Administration is a career all to itself. There's so
+much to know about servers, networking, managing users, storage, and
+more. And it's scary -- it's easy to run into pitfalls that cause
+security vulnerabilities, system instability, and general annoyance.
 
-There are really two big concerns that IT/Admins are thinking about constantly -- access and availability.
+Moreover, hosting servers isn't your competitive advantage as a data
+scientist. You're probably great at writing R or Python code, cleaning
+and managing data, or building models. Managing servers isn't in your
+core skillset.
 
-Access is about making sure that the right people can interact with the systems they're supposed to and that unauthorized people aren't. It's easy to think about the grandest version of this -- you don't want people outside your organization getting to your data science workbench. But there are also versions of this inside your organization -- how do you assign and manage who's able to access different data sets? Who is able to make server-wide changes on your workbench?
+So this section is really targeting the student who wants to host a
+project for portfolio purposes, the hobbyist who's hosting a toy
+project, or the data science leader who has no choice but to host things
+for themselves because they just can't get IT/Admin support.
 
-Availability is about making sure that your enterprise-grade systems are around when people need them, and that they stand up under whatever load they face during the course of operating.
+The good news is that if that's you, you're in the right place.
 
-There are two main ways to ensure that systems remain accessible and available -- mainly they need to be secured from bad actors or accidental breakage, and they need proper resourcing to stay online.
+This section has five chapters, building towards having a data science
+workbench with R and Python in the cloud you could actually use for
+yourself or a small team.
 
-This section is about some of the most important ways IT/Admin professionals think about keeping their systems available and accessible.
+In addition to hosting those development environments, we'll also deploy
+a Shiny app on the server using Shiny Server Open Source and we'll host
+a vetiver-generated API using a Docker container.
 
-Hopefully you won't have to implement much of what's in this section yourself. Instead, the hope is that reading and understanding the content in this chapter will help make you a better partner to the teams at your organization who *are* responsible for these things. You'll be equipped with the language and mental models to ask good questions and give informative answers to the questions the IT/Admins have about your team's requirements.
+So how are we going to get there?
 
-## The deal with security
+In each of the five chapters, we'll go through a conceptual overview of
+an important aspect of acquiring, hosting, and managing a data science
+environment in the cloud. Once you've read the conceptual overview,
+we'll do a hands-on lab where you'll get to practice actually
+accomplishing something in AWS.
 
-Some organizations have standalone security teams -- I tend to think this is an anti-pattern. For example, your server could be unavailable because a bad actor broke in and took it offline, someone used up all the resources and it crashed, or because the networking broke and it can't be reached.
+It's worth saying that the way we're doing this is going to work with
+the most basic primitives of cloud computing. The first reason for that
+is that it's cheaper. Understandably, using simpler cloud services is
+cheaper than using more expensive ones. If you follow this all the way
+to the end, it won't be zero cost, but you could pay less than \$10.
 
-As a data scientist, you probably have a getting-things-done kind of mindset. And that's great!
+The second reason is that it's better for comprehension. All of cloud
+computing relies on the primitives we'll use here (at it's inception,
+the goal of AWS was to create an Operating System for the internet).
+Once you understand these primitives, you'll have no trouble using other
+services to accomplish the same ends if you'd prefer a less DIY
+experience.
 
-But if you're having to interact with security professionals at your organization, you're probably finding that they have a whole different set of concerns -- perhaps concerns that you're struggling to communicate with them about.
+Let's get started.
 
-As a data scientist, you're probably thinking that you've secured your server. After all, we protected the traffic to and from the server with SSL/HTTPS so no one can snoop on it or jump in the middle and we configured authentication in the server, so only your authorized users can get in.
-
-You're not wrong, but that's not how security professionals think about security. IT security professionals think about *security in layers*. And while you've done a good job setting your server up to comply with basic security best practices, there are no layers. That server front door is open to the internet. Literally anyone in the world can come to that authentication page for your RStudio Server or JupyterHub and start trying out passwords. That means you're just one person choosing the password `password` away from a bad actor getting access to your server.
-
-Lest you think you're immune because you're not an interesting target, there are plenty of bots out there randomly trying to break in to every existing IP address, not because they care about what's inside, but because they want to co-opt your resources for their own purposes like crypto mining or virtual attacks on Turkish banks.[^3-0-sec-intro-1]
-
-[^3-0-sec-intro-1]: Yes, these both really happened.
-
-Moreover, security and IT professionals aren't just concerned with bad actors from outside (called outsider threat) or even someone internal who decides to steal data or resources (insider threat). They are (or at least should be) also concerned with accidents and mistakes -- these are just as big a threat to accessibility and availability.
-
-For example, many basic data science workbenches give root access to everyone -- it's easy and simple! That obviously exposes the possibility that someone with access to your server could decide to steal data for their own ends (insider threat). But it also opens up the possibility that someone makes a mistake! What if they mean to just delete a project directory, but forget to add the whole path in and wipe your whole server. Yikes!
-
-In this section, we're going to address the topics that most often come up around the security and stability of a platform to do open source data science in an enterprise context.
-
-::: callout-note
-## What is enterprise?
-
-Enterprise is a term that gets thrown around a lot. In this context, Enterprise roughly translates to "a large organization with well-defined IT/Admin responsibilities and roles". If you're not in an Enterprise, you likely have the rights and ability to just stand up a data science workbench and use it, like we did in the last section.
-
-If you are in an Enterprise, you probably had to do all that on a personal account, and almost certainly couldn't connect to your real data sources.
-
-Doing open source data science in an Enterprise almost certainly means having to work across teams to get your workbench built and having to convince other people that you'll be a good actor at the end of the day.
-:::
-
-Section Outline (just for Alex, delete later):
-
-Open Source in the enterprise
-
--   Managing versions of R + Python
-
--   Managing packages
-
-Staging environments + Infra as Code
-
--   Data stance
-
--   Security + Sandboxing
-
-Resourcing/Scaling
-
-Auth
-
-Secure Networking
-
-### Proper Resourcing
-
-If you're a small data science team, you might not be too concerned if someone accidentally knocks your data science workbench offline for 30 minutes because they tried to run a job that was too big. You're probably all sitting in the same room and you can learn something from the experience.
-
-That's not the case when you get to enterprise-grade tooling. An enterprise-grade data science workbench probably supports dozens or hundreds of professionals across multiple teams. The server being down isn't a sorta funny occurrence you can all fix together -- it's a problem that must be fixed immediately -- or even better avoided altogether.
-
-That's why the third chapter in this section is going to get deep into how IT/Admins think about scaling a server to avoid hitting resource constraints. We'll also get into some of the tools, like load balancers and Kubernetes that they use to scale the servers so you can have an intelligent conversation with them about what you need.
-
-### Tooling to fit it all together
-
-Back in section one, we learned about environments as code -- using code to make sure that our data science environments are reproducible and can be re-created as needed.
-
-This idea isn't original -- in fact, DevOps has it's own set of practices and tooling around using code to manage DevOps tasks, broadly called Infrastructure As Code (IaC). This chapter will get broadly into some of the things you can do with IaC tooling, and will introduce some key concepts and some of the popular tooling options for doing IaC you can try out.
-
-TODO: developing relationships with IT/Admins
