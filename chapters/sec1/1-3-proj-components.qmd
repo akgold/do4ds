@@ -776,3 +776,113 @@ you can run against new data coming in.
 
 Create an app that visualizes what's coming out of the API using Dash or
 Streamlit (Python) or Shiny (either R or Python).
+
+# TODO: Separate API/HTTP into separate chapter.
+
+# HTTP and other Application Layer Protocols {#sec-http}
+
+TODO: add more on resources, query parameters, and anchors
+
+### `http` is *the* protocol of the web
+
+Hyptertext transfer protocol (`http`) is the protocol you'll encounter
+most commonly, as it is the way all web traffic is conducted. `http` is
+a request-response protocol -- one machine initiates a request and
+another one answers.
+
+Let's take a simple example -- going to visit a website in your browser.
+
+What you experience as visiting a website, your computer views as a
+handful of `http` requests to a server to fetch whatever is at that URL.
+The site owner's server responds with the various assets that make up
+the web page, which might include the HTML skeleton for the site, the
+CSS styling, interactive javascript elements, and more.
+
+Once your computer receives them, your browser reassembles them into a
+webpage for you to interact with. And when you click on a button in the
+site, one or more `http` requests go off and the responses dictate what
+happens next.
+
+Just as a physical letter has a prescribed format that starts with the
+date and a greeting and closes with a signature. Similarly, `http`
+requests and responses include metadata in the form of *headers.*
+
+Headers specify information about the request or response. These often
+include the type of machine that is sending the request, authentication
+credentials or tokens, cookies, and more.
+
+Then there's the *body* of your request. Like the body of a letter, this
+is the actual content of the message. The `http` protocol specifies how
+that body gets packaged up, but the contents are up to the service
+that's receiving the message.
+
+Along with the address, there are two other special pieces of metadata
+in your traffic.
+
+The *request method* indicates how you're trying to interact with the
+server. Most often, you're fetching something with a `GET`, updating or
+changing something with a `POST` or `PUT`, or deleting something with a
+`DELETE`.
+
+It's worth noting that `GET` requests generally don't include a body.
+
+Instead, specifics are specified through *query parameters*, the part of
+the URL that shows up after the `?`, like
+`?first_name=alex&last_name=gold`.
+
+The *status code* only appears on responses and indicates what happened
+with your request to the server. Some special codes you'll quickly learn
+to recognize are below. The one you'll (hopefully) see the most is 200,
+which is a successful response.
+
+#### Special HTTP Codes
+
+As you work more with `http` traffic, you'll learn some of the common
+codes. Here's a cheatshet for some of the most frequent you'll see.
+
+| Code            | Meaning                                                                                                                                                    |
+|------------------|-----------------------------------------------------|
+| `200`           | Everyone's favorite, a successful response.                                                                                                                |
+| `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
+| `4xx`           | Errors with the request                                                                                                                                    |
+| `400`           | Bad request. This isn't a request the server can understand.                                                                                               |
+| `401` and `403` | Unauthorized or forbidden. Required authentication hasn't been provided.                                                                                   |
+| `404`           | Not found. There isn't any content to access here.                                                                                                         |
+| `5xx`           | Errors with the server once your request got there.                                                                                                        |
+| `500`           | Generic server-side error. Your request was received, but there was an error processing it.                                                                |
+| `504`           | Gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
+
+### Understand `http` traffic by inspecting it
+
+The best way to understand `http` traffic is to take a close look at
+some. Luckily, you've got an easy tool -- your web browser!
+
+Open a new tab in your browser and open your developer tools. How this
+works will depend on your browser. In Chrome, you'll go to View \>
+Developer \> Developer Tools and then make sure the Network tab is open.
+
+Now, navigate to a URL in your browser (say google.com).
+
+As you do this, you'll see the traffic pane fill up. These are the
+individual requests and responses going back and forth between your
+computer and the server. You can see the response codes right next to
+each request, in chrome, codes other than 200s show up in other colors
+to make them easy to find.
+
+The other most useful part of the display is the waterfall chart on the
+far right. This shows how long each request took to come back. If you're
+finding that something is slow to load, inspecting the waterfall chart
+can help diagnose which requests are taking a long time.
+
+If you click into an individual request, you can see a variety of
+information, including the headers and the response. Very often,
+inspecting the headers is a great way to debug malfunctioning `http`
+requests.
+
+## Comprehension Questions
+
+1.  For each of the following, are they a concern of TCP/IP or an
+    application layer protocol: routing packets, defining a server API,
+    defining valid IP addresses, specifying maximum request size,
+    defining server error codes.
+2.  Can a server ever initiate an `http` request?

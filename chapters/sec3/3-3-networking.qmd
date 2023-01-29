@@ -24,10 +24,19 @@ There are two basic levels of protocols that are helpful to understand
 
 Just as you and your friend could communicate in any number of human
 languages, computers define what a valid message is with an *application
-layer protocol*. The most common application layer protocol, used for
-all standard web traffic, is **h**yper**t**ext **t**ransfer **p**rotocol
-(*http*). [Chapter @sec-http] is all about application layer protocols,
-and `http` in particular.
+layer protocol*.
+
+There are numerous application layer protocols. Some you will see in
+this book include `SSH` for access to the terminal on a remote machine,
+`(S)FTP` for file transfers, `SMTP` for email, `LDAP(S)` for
+authentication and authorization, and `websockets` for persistent
+bi-directional communication, which is what the Shiny and Streamlit
+packages use.
+
+The most common application layer protocol, used for all standard web
+traffic, is **h**yper**t**ext **t**ransfer **p**rotocol (*http*), which
+we discussed in some depth in [Chapter @sec-apis] on using APIs for data
+science purposes.
 
 For the purposes of this chapter, we're going to completely set aside
 physical network infrastructure. Yes, there are wires, cables,
@@ -345,18 +354,18 @@ Shiny app to itself on the localhost address.
 There are also a few blocks of addresses that are reserved for use on
 private networks, so they're never assigned in public.
 
-+----------------------------------------------+-----------------------------------------------------------------+
-| Code                                         | Meaning                                                         |
-+==============================================+=================================================================+
-| 127.0.0.1                                    | `localhost` or loopback -- the machine that originated the      |
-|                                              | request                                                         |
-+----------------------------------------------+-----------------------------------------------------------------+
-| 192.168.x.x                                  | Protected address blocks used for private IP addresses.         |
-|                                              |                                                                 |
-| 172.16.x.x.x                                 |                                                                 |
-|                                              |                                                                 |
-| 10.x.x.x                                     |                                                                 |
-+----------------------------------------------+-----------------------------------------------------------------+
++----------------------------+----------------------------------------+
+| Code                       | Meaning                                |
++============================+========================================+
+| 127.0.0.1                  | `localhost` or loopback -- the machine |
+|                            | that originated the request            |
++----------------------------+----------------------------------------+
+| 192.168.x.x                | Protected address blocks used for      |
+|                            | private IP addresses.                  |
+| 172.16.x.x.x               |                                        |
+|                            |                                        |
+| 10.x.x.x                   |                                        |
++----------------------------+----------------------------------------+
 
 You don't really need to remember these, but it's very likely you've
 seen an address like `192.168.0.1` or `192.168.1.1` if you've ever tried
@@ -364,20 +373,237 @@ to configure a router or modem for your home wifi.
 
 Now you know why.
 
+## Basic network troubleshooting
+
+Networking can be difficult to manage because there are so many layers
+where it can go awry. Let's say you've configured a service on your
+server, but you just can't seem to access it.
+
+The `ping` command can be useful for checking whether your server is
+reachable on the network. For example, here's what happens when I `ping`
+the domain where this book sits.
+
+    > ping -o do4ds.com                                                                        
+    PING do4ds.com (185.199.110.153): 56 data bytes
+    64 bytes from 185.199.110.153: icmp_seq=0 ttl=57 time=13.766 ms
+
+    --- do4ds.com ping statistics ---
+    1 packets transmitted, 1 packets received, 0.0% packet loss
+    round-trip min/avg/max/stddev = 13.766/13.766/13.766/0.000 ms
+
+This looks great -- it sent 1 packet to the server and got one back.
+That's exactly what I want. Seeing an unreachable host or packet loss
+would be an indication that my networking probably isn't configured
+correctly somewhere between me and the server. I generally like to use
+`ping` with the `-o` option for sending just **o**ne packet -- as
+opposed to continuously trying.
+
+If `ping` fails, it means that my server isn't reachable. The things I'd
+want to check is that I have the URL for the server correct, that DNS is
+configured correctly (see [Chapter @sec-dns]), that I've correctly
+configured any firewalls to have the right ports open (Security Groups
+in AWS), and that any intermediate networking devices are properly
+configured (see more on proxies in [Chapter @sec-networks-2]).
+
+If `ping` succeeds but I still can't access the server, `curl` is good
+to check. `curl` actually attempts to fetch the website at a particular
+URL. It's often useful to use `curl` with the `-I` option so it just
+returns a simple status report, not the full contents of what it finds
+there.
+
+For example, here's what I get when I `curl` CRAN from my machine.
+
+     > curl -I https://cran.r-project.org/                                                         
+     
+    HTTP/1.1 200 OK
+    Date: Sun, 15 Jan 2023 15:34:19 GMT
+    Server: Apache
+    Last-Modified: Mon, 14 Nov 2022 17:33:06 GMT
+    ETag: "35a-5ed71a1e393e7"
+    Accept-Ranges: bytes
+    Content-Length: 858
+    Vary: Accept-Encoding
+    Content-Type: text/html
+
+The important thing here is that first line. The server is returning a
+`200` HTTP status code, which means all is well. For more on HTTP status
+codes and how to interpret them, see [Chapter @sec-apis].
+
+If `ping` succeeds, but `curl` does not, it means that the server is up
+at the expected IP address, but the service is not accessible. At that
+point, you might check whether the right ports are accessible -- it's
+possible to (for example) have port 443 or 80 accessible on your server,
+but not the port you actually need for your service. You also might
+check on the server itself that the service is running and that it is
+running on the port you think it is.
+
+If you're running inside a container, you should check that you've
+properly configured the port inside container to be forwarded to the
+outside.
+
 ## Comprehension Questions
 
-1.  Write down the step-by-step procedure that is followed when you sit
-    down at your laptop and type google.com into the search bar. Your
-    explanation should include the following terms: URL, domain, DNS,
-    protocol, HTTP, HTTPS, Default Address, Router
-2.  Create a mind map of the following terms: Application Layer
-    Protocol, HTTP, HTTPS, SSH, Port, 22, 80, 443
-3.  In the following URLs, what are the domain, top-level domain, path,
-    subdomain, query parameters?
-    1.  https://blog.example.com/2022-10-30
+1.  What are the 4 components of a URL? What's the significance of each?
+2.  What are the two things a router keeps track of? How does it use
+    each of them?
+3.  Are there any inherent differences between public and private IP
+    addresses?
+4.  What is the difference between an IP address and a port?
+5.  Let's say you've got a server at 54.33.115.12. Draw a mind map of
+    what happens when you try to SSH into the server. Your explanation
+    should include the terms: IP Address, port, 22, default address,
+    router, sever.
 
-    2.  facebook.com?search=alex.gold
+## Lab: Making it accessible in one place
 
-    3.  https://alexkgold.space/mfy.html
-4.  Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA,
-    Public Certificate, Private Certificate, 443
+::: callout-note
+This lab is somewhat advanced. If you just wanted to run one service on
+your server -- say just RStudio or just the Plumber API, you could skip
+this lab and just configure the service to be available on port 80
+and/or 443.
+:::
+
+In this lab, we're going to go from having to SSH tunnel to be able to
+use your data science workbench to making it available over the
+internet. That means we're going to have to do 2 things: configure the
+networking to allow HTTP traffic and configure a real domain for our
+server.
+
+Right now RStudio Server is ready to serve traffic inside our server on
+port `8787`, JupyterHub is on `8000`, and our Palmer Penguins API is on
+`8555`. But right now nothing can get to them. So the first step is to
+allow traffic in.
+
+The easiest thing we could do would be to just open up ports `8787` and
+`8000` to the world. It's not the right answer, but it will "work".
+
+::: callout-tip
+If you do want to try it to prove to yourself, go to the settings for
+your server's security group and just add a custom TCP rule allowing
+access to ports `8787`, `8000`, and `8555` from anywhere. If you visit
+`$SERVER_ADDRESS:8787` you should get RStudio, similarly with JupyterHub
+at `$SERVER_ADDRESS:8000`, and the API at `$SERVER_ADDRESS:8555`.
+
+Ok, now close those ports back up so we can do this the right way.
+:::
+
+If you did it this way, your users would have to remember these
+arbitrary ports to use your server. It's also insecure because there
+isn't a good way to secure these ports with SSL.[^3-3-networking-6]
+
+[^3-3-networking-6]: As of this writing, JupyterHub supports configuring
+    SSL in the product, but RStudio Server does not. Posit Workbench,
+    the paid version of RStudio Server does support SSL configuration.
+
+The common solution to wanting to serve multiple services off of one
+server is to use a proxy. A proxy is a network device that reroutes
+traffic in various ways. [Chapter @sec-networks-2] has more detail on
+proxies and why they're a pain.
+
+For the purpose of this lab, I'm going to give you a pre-built proxy to
+use.
+
+Here are the steps to take on your server:
+
+1.  Install nginx with `sudo apt install nginx`.
+2.  Save a backup of `nginx.conf`,
+    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-3-networking-7]
+3.  Edit the nginx configuration with `sudo vim /etc/nginx/nginx.conf`
+    and replace it with:
+
+[^3-3-networking-7]: This is generally a good practice before you start
+    messing with config files. Bad configuration is usually preferable
+    to a service that can't start at all because you've messed up the
+    config so badly. It happens.
+
+``` {filename="/etc/nginx/nginx.conf"}
+http {
+  
+  \# Enable websockets (needed for Shiny)
+  map \$http_upgrade \$connection_upgrade { 
+    default upgrade; '' close; 
+  }
+  
+  server { listen 80;
+    
+    location /rstudio/ {
+      # Needed only for a custom path prefix of /rstudio
+      rewrite ^/rstudio/(.*)$ /$1 break;
+      
+      # Use http here when ssl-enabled=0 is set in rserver.conf
+      proxy_pass http://localhost:8787;
+      
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_read_timeout 20d;
+      
+      # Not needed if www-root-path is set in rserver.conf
+      proxy_set_header X-RStudio-Root-Path /rstudio;
+      
+      # Optionally, use an explicit hostname and omit the port if using 80/443
+      proxy_set_header Host $host:$server_port;
+    }
+    
+    location /jupyter/ {
+      # NOTE important to also set base url of jupyterhub to /jupyter in its config
+      proxy_pass http://127.0.0a.1:8000;
+      
+      proxy_redirect   off;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      
+      # websocket headers
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+    
+    location /palmer/ {
+    #TODO
+    }
+  }
+```
+
+4.  Test that your configuration is valid `sudo nginx -t`.
+5.  Start nginx `sudo systemctl start nginx`. If you see nothing all is
+    well.
+
+If you need to change anything, update the config and then restart with
+`sudo systemctl restart nginx`.
+
+There's one more thing you'll have to do, which is to let RStudio and
+JupyterHub know that they're on a subpath. Complex web apps like RStudio
+and JupyterHub frequently send people to a different subpath internally.
+In order to do so properly, they need to know to prepend all of those
+requests with the subpath.
+
+RStudio accepts a header from the proxy that lets it know what path it's
+on (see the `X-RStudio-Root-Path` header line in the nginx config).
+Jupyter needs to be explicitly told.
+
+If you recall, we autogenerated the JupyterHub config with
+
+     jupyterhub --generate-config
+     sudo mkdir /etc/jupyterhub
+     sudo mv jupyterhub_config.py /etc/jupyterhub
+
+So you can go edit it with
+`sudo vim /etc/jupyterhub/jupyterhub_config.py`.
+
+Find the line that reads `# c.JupyterHub.bind_url = 'http://:8000'`.
+
+::: callout-tip
+You can search in vim from normal mode with
+`/ <thing you're searching for>`. Go to the next hit with `n`.
+:::
+
+Uncomment that line and add a `/jupyter` on the end, so it reads
+`c.JupyterHub.bind_url = 'http://:8000/jupyter'`.
+
+Start jupyterhub with a specific config file.
+
+We already daemonized JupyterHub, you restarting it with
+`sudo systemctl restart jupyterhub` should pick up the new config.
+
