@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>DevOps for Data Science - 13&nbsp; SSL/HTTPS are the most basic network security tools</title>
+<title>DevOps for Data Science - 13&nbsp; You should use SSL/HTTPS</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -69,7 +69,11 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());
 gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 </script>
+<script src="../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -80,7 +84,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <header id="quarto-header" class="headroom fixed-top">
   <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
     <div class="container-fluid d-flex justify-content-between">
-      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">SSL/HTTPS are the most basic network security tools</span></h1>
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></h1>
       <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
         <i class="bi bi-chevron-right"></i>
       </button>
@@ -221,7 +225,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">SSL/HTTPS are the most basic network security tools</span></a>
+  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -285,19 +289,19 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#how-ssltls-enhances-security" id="toc-how-ssltls-enhances-security" class="nav-link active" data-scroll-target="#how-ssltls-enhances-security"><span class="toc-section-number">13.0.1</span>  How SSL/TLS Enhances Security</a></li>
-  <li><a href="#public-and-private-certificates" id="toc-public-and-private-certificates" class="nav-link" data-scroll-target="#public-and-private-certificates"><span class="toc-section-number">13.0.2</span>  Public and Private Certificates</a></li>
-  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">13.1</span>  Comprehension Questions</a></li>
-  <li><a href="#lab-configure-ssl" id="toc-lab-configure-ssl" class="nav-link" data-scroll-target="#lab-configure-ssl"><span class="toc-section-number">13.2</span>  Lab: Configure SSL</a></li>
+  <li><a href="#the-problems-https-solves" id="toc-the-problems-https-solves" class="nav-link active" data-scroll-target="#the-problems-https-solves"><span class="toc-section-number">13.1</span>  The problems <code>https</code> solves</a></li>
+  <li><a href="#configuring-https" id="toc-configuring-https" class="nav-link" data-scroll-target="#configuring-https"><span class="toc-section-number">13.2</span>  Configuring <code>https</code></a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">13.3</span>  Comprehension Questions</a></li>
+  <li><a href="#lab-configure-ssl" id="toc-lab-configure-ssl" class="nav-link" data-scroll-target="#lab-configure-ssl"><span class="toc-section-number">13.4</span>  Lab: Configure SSL</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/3-5-ssl.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
 <!-- main -->
-<main class="content page-columns page-full" id="quarto-document-content">
+<main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="sec-ssl" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">SSL/HTTPS are the most basic network security tools</span></span></h1>
+<h1 class="title"><span id="sec-ssl" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></span></h1>
 </div>
 
 
@@ -312,80 +316,140 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 </header>
 
-<p>When you go to a website on the internet, you’ll see the URL prefixed by the <code>https</code> (though it’s sometimes hidden by your browser because it’s assumed). <code>https</code> is actually a mashup that is short for <code>http</code> with secure sockets layer (SSL).</p>
-<p>These days, almost everyone actually uses the successor to SSL, transport layer security (TLS). However, because the experience of configuring TLS is identical to SSL, admins usually just talk about configuring SSL even when they mean TLS.</p>
-<p>These days, almost every bit of internet traffic is actually <code>https</code> traffic. You will occasionally see <code>http</code> traffic inside private networks where encryption might not be as important – but more and more organizations are requiring end-to-end use of SSL.</p>
-<p>Securing your website or server using SSL/TLS is one of the most basic things you can do to make sure your website traffic is safe. You should always configure <code>https</code> – full stop.</p>
-<p>SSL/TLS security is accomplished by configuring your site or server to use a SSL certificate (often abbreviated to cert). We’ll go through the details of how to get and configure an SSL certificate in this chapter – but first a little background on how SSL/TLS works.</p>
-<section id="how-ssltls-enhances-security" class="level3" data-number="13.0.1">
-<h3 data-number="13.0.1" class="anchored" data-anchor-id="how-ssltls-enhances-security"><span class="header-section-number">13.0.1</span> How SSL/TLS Enhances Security</h3>
-<p>SSL accomplishes two things for you – identity validation and traffic encryption.</p>
-<p>When you go to a website, SSL/TLS is the technology that verifies that you’re actually reaching the website you think you’re reaching. This prevents something called a man-in-the-middle attack where a malicious actor manages to get in between the server and the client of network traffic. So, for example, you might think you’re putting your bank login information into your normal bank website, but there’s a hacker sitting in the middle, reading all of the traffic back and forth.</p>
-<p>[TODO: Image of man-in-the-middle]</p>
-<p>You can see this in action in your web browser. When you go to a website protected by <code>https</code>, you’ll see a little lock icon to the left of the URL. That means that this website’s SSL certificate matches the website and therefore your computer can verify you’re actually at the website you mean to be at.</p>
-<p>But how does your computer know what a valid SSL certificate is? Your computer has a list of trusted Certificate Authorities (CAs) who create, sell, and validate SSL/TLS certificates. So when you navigate to a website, the website sends back a digital signature. Your computer checks the signature against the indicated CA to verify that it was issued to the site in question.</p>
-<p>[TODO: image of SSL validation]</p>
-<p>The second type of scary scenario SSL prevents is a snooping/sniffing attack. Even if you’re getting to the right place, your traffic travels through many different channels along the way – routers, network switches, and more. This means that someone could theoretically look at all your traffic along the way to its meaningful destination.</p>
-<p>When your computer gets back the digital signature to verify the site’s identity, it also prompts an exchange of encryption keys. These keys are used to encrypt traffic back and forth between you and the server so anyone snooping on your message will just see garbled nonsense and not your actual content. You can think of the SSL/TLS encryption as the equivalent of writing a message on a note inside an envelope, rather than on a postcard anyone could read along the way.</p>
-</section>
-<section id="public-and-private-certificates" class="level3 page-columns page-full" data-number="13.0.2">
-<h3 data-number="13.0.2" class="anchored" data-anchor-id="public-and-private-certificates"><span class="header-section-number">13.0.2</span> Public and Private Certificates</h3>
-<p>In order to configure your site or server with SSL, there are three steps you’ll want to take: getting an SSL certificate, putting the certificate on the server, and making sure the server <em>only</em> accepts <code>https</code> traffic.</p>
-<p>You can either buy an SSL certificate or make one yourself, using what’s called a <em>self-signed cert</em>.</p>
-<p>There are a variety of places you can buy an SSL/TLS certificate, in many cases, your domain name registrar can issue you one when you buy your domain.</p>
-<p>When you create or buy your cert, you’ll have to choose the scope. A basic SSL certificate covers just the domain itself, formally known as a fully qualified domain name (FQDN). So if you get a basic SSL certificate for <code>www.example.com</code>, <code>www.blog.example.com</code> will not be covered. You can get a <em>wildcard certificate</em> that would cover every subdomain of <code>*.example.com</code>.</p>
-<aside>
-<p>Note that basic SSL/TLS certification only validates that when you type <code>example.com</code> in your browser, that you’ve gotten the real <code>example.com</code>. It doesn’t in any way validate who owns <code>example.com</code>, whether they’re reputable, or whether you should trust them.</p>
+<p>Throughout the book to this point, we’ve been talking a lot about the <code>http</code> application layer protocol. But these days you rarely see <code>http</code> when you go to a website. Instead, you see <code>https</code>.</p>
+<p><code>https</code> is the secured version of <code>http</code>. It’s a mashup of <code>http</code> and secure sockets layer/transport layer security (SSL/TLS). It’s one of a number of application layer protocols that are just secured versions of other protocols, like (S)FTP and LDAP(S).</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+SSL and TLS
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>These days, almost everyone actually uses the successor to SSL, transport layer security (TLS). In fact, we’re now on the 4th version to TLS – version 1.3.</p>
+<p>However, because the experience of configuring TLS is identical to SSL, admins usually just talk about configuring SSL even when they mean TLS.</p>
+</div>
+</div>
+<p>Securing your website or server using SSL/TLS is one of the most basic things you can do to make sure your website traffic is safe. You should always configure <code>https</code> for a public website – full stop.</p>
+<p>In this chapter we’ll go through why using <code>https</code> is so important, how it works, and how to configure <code>https</code> for yourself on your website.</p>
+<section id="the-problems-https-solves" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="the-problems-https-solves"><span class="header-section-number">13.1</span> The problems <code>https</code> solves</h2>
+<p>For a long time, most web traffic was just plain <code>http</code> traffic.</p>
+<p>If you recall, there used to be a lot of warnings around that you shouldn’t just connect to and use the WiFi at your neighborhood Starbucks. That was (mostly) because of the risks of using plain <code>http</code> traffic.</p>
+<p>Over the last 10 years or so, almost all web traffic has migrated to <code>https</code>, particularly since 2015 when Google Chrome began the process of marking any site using plain <code>http</code> as insecure. These days it’s actually pretty safe to use any random WiFi network you want – because of <code>https</code>.</p>
+<p>The biggest risk with those public WiFi networks was that someone could compromise the router. If the router was compromised, there were two things a bad actor could do.</p>
+<p><code>http</code> has no way to verify that the website you <em>think</em> you’re interacting with is actually that website. So a bad actor could mess with the router’s DNS resolution, and make it so that <span class="math inline">\(bankofamerica.com\)</span> went to a lookalike website to capture your banking login. That’s called a <em>man-in-the-middle attack</em>.</p>
+<p><code>http</code> traffic is also completely unencrypted. So that packet you’re sending would be just as readable by someone who installed spyware on the router that’s passing it along as by the website you intended to send it to. This is called a <em>packet sniffing</em> attack.</p>
+<p>Both of these risks are defanged when you’re using <code>https</code> rather than plain <code>http</code>.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+What doesn’t <code>https</code> do?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using SSL/TLS helps a lot with security – but it’s worth noting that it ends at the domain. Using <code>https</code> validates that you’ve gotten to the real <code>example.com</code> if that’s the website you think you’re visiting. It doesn’t in any way validate who owns <code>example.com</code>, whether they’re reputable, or whether you should trust them.</p>
 <p>There are higher levels of SSL certification that do validate that, for example, the company that owns <code>google.com</code> is actually the company Google.</p>
-</aside>
-<p>But sometimes it’s not feasible to buy certificates. While a basic SSL certificate for a single domain can cost $10 per year or less, wildcard certificates will all the bells and whistles can cost thousands per year. This can get particularly expensive if you’ve got a lot of domains for some reason.</p>
-<p>Moreover, there are times when you <em>can’t</em> buy a certificate. If you’re encrypting traffic inside a private network, you will need certificates for hosts or IP addresses that are only valid inside the private network, so there’s no public CA to validate them.</p>
-<p>There are two potential avenues to follow. In some cases, like inside a private network, you want SSL/TLS for the encryption, but don’t really care about the identity validation part. In this case, it’s usually possible to skip that identity validation part and automatically trust the certificate for encryption purposes.</p>
-<p>It’s also possible to create your own private CA, which would verify all your SSL certificates. This is pretty common in large organizations. At some point, every server and laptop needs to have the private CA added to its set of trusted certificate validators.</p>
-<p>A warning: it is deceptively easy to generate and configure a self-signed SSL certificate. It’s usually just a few lines of shell commands to create a certificate, and adding the certificate to your server or website is usually just a copy/paste affair.</p>
-<p>However, it’s pretty common to run into problems with self-signed certs or private CAs. Making sure the certificate chain is correct, or running into a piece of software that doesn’t ignore the identity validation piece right is pretty common. This shouldn’t dissuade you from using SSL/TLS. It’s an essential, and basic, component of any security plan – but using a self-signed cert probably isn’t as easy as it seems.</p>
-<p>When you configure your site or server, there will likely be an option to redirect all <code>http</code> traffic to <code>https</code> traffic. If your server or site is open to the internet, you should set this option.</p>
+</div>
+</div>
+<p>Here’s the process of connecting to a website that uses <code>https</code>. Before your browser starts exchanging any real data with the website, the website sends over its signature, which is generated with its private certificate.</p>
+<p>Your computer checks this signature with a trusted <em>certificate authority</em> (CA) who has a copy of the site’s public certificate. Once your browser has verified that the signature is valid, you know that you’re actually communicating with <span class="math inline">\(bankofamerica.com\)</span> and you’re not victim to a man-in-the-middle attack.</p>
+<p>Once the verification process is done, your browser then establishes an encryption routine with the website on the other end. Only then does it start sending real data – now encrypted so that only the website on the other end can read the contents.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<p>
+</p><pre class="mermaid mermaid-js" data-tooltip-selector="#mermaid-tooltip-1">graph TD
+    A[Browser] --&gt;|Request| B[SSL Certificate]
+    B --&gt; |Sent| A
+    C[Certificate Authority] --&gt; |Verifies| B
+    A --&gt; |Consults| C
+</pre>
+<div id="mermaid-tooltip-1" class="mermaidTooltip">
+
+</div>
+<p></p>
+</div>
+</div>
+</div>
 </section>
-<section id="comprehension-questions" class="level2" data-number="13.1">
-<h2 data-number="13.1" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">13.1</span> Comprehension Questions</h2>
+<section id="configuring-https" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="configuring-https"><span class="header-section-number">13.2</span> Configuring <code>https</code></h2>
+<p>There are three steps to configuring <code>https</code> on a website you control – getting an SSL certificate, putting the certificate on the server, and making sure the server <em>only</em> accepts <code>https</code> traffic.</p>
+<p>It used to be that getting an SSL certificate was somewhat of a pain. While it could cost less than $10 per year to get a basic SSL certificate for particular subdomains, getting a wildcard certificate that covered all the subdomains of a root domain could be quite pricey.</p>
+<p>The main alternative at the time was to use a <em>self-signed cert</em>. With a self-signed cert, you would create a certificate yourself and add the certificate directly to any machine that needed to access that site. This is a pain. You need to share the certificate with everyone and get them to install it on their machine. Certificates do expire and so this would have to be periodically repeated. The alternative is just to ignore the scary warning that you might be the victim of a man-in-the-middle attack – and some software doesn’t even allow that.</p>
+<p>Luckily there’s now another option. With the rise of <code>https</code> everywhere, there’s now an organization called letsencrypt. It’s a free CA that issues basic SSL/TLS certificates for free. They even have some nice tooling that makes it super easy to create and configure your certificate right on your server.</p>
+<p>When you’re talking about communications that run entirely inside private networks, you have a choice to make. Large organizations often run their own private CA that verifies all the certificates inside your private network.</p>
+<p>This is a bit of a hassle, since you’ve got to maintain the CA and configure every host inside the network to trust your private CA. Many organizations decide they’re fine with plain <code>http</code> communication within private networks.</p>
+<p>Either way, once you’ve configured your server with <code>https</code>, you generally want to shut down access via plain <code>http</code>, usually by redirecting <code>http</code> traffic, which comes in on port <code>80</code> to come in over <code>https</code> via port <code>443</code>.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="13.3">
+<h2 data-number="13.3" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">13.3</span> Comprehension Questions</h2>
 <ol type="1">
-<li>Write down the step-by-step procedure that is followed when you sit down at your laptop and type google.com into the search bar. Your explanation should include the following terms: URL, domain, DNS, protocol, HTTP, HTTPS, Default Address, Router</li>
-<li>Create a mind map of the following terms: Application Layer Protocol, HTTP, HTTPS, SSH, Port, 22, 80, 443</li>
-<li>In the following URLs, what are the domain, top-level domain, path, subdomain, query parameters?
-<ol type="1">
-<li><p>https://blog.example.com/2022-10-30</p></li>
-<li><p>facebook.com?search=alex.gold</p></li>
-<li><p>https://alexkgold.space/mfy.html</p></li>
-</ol></li>
-<li>Write a mind map of the following terms: HTTP, HTTPS, SSL, TLS, CA, Public Certificate, Private Certificate, 443</li>
+<li>What are the two risks of using plain <code>http</code> and how does <code>https</code> mitigate that?</li>
+<li>Write down a mental map of how SSL secures your web traffic. Include the following: public certificate, private certificate, certificate authority, encrypted traffic, port 80, port 443</li>
 </ol>
 </section>
-<section id="lab-configure-ssl" class="level2" data-number="13.2">
-<h2 data-number="13.2" class="anchored" data-anchor-id="lab-configure-ssl"><span class="header-section-number">13.2</span> Lab: Configure SSL</h2>
-<p>There’s a wonderful service called letsencrypt that is trying to make the world more secure, acting as a free CA, and handing out free SSL certificates to anyone who needs one.</p>
-<p>They have a utility called certbot, which you just install on your server and it can autogenerate an SSL certificate, install it on the server, and even update your nginx configuration!</p>
-<p>For anyone who’s never dealt with self-signing certificates in the past, let me tell you, this is magical!</p>
-<pre><code>In our nginx configuration, we'll need to add a line certbot will use to know which site to generate the certificate for.</code></pre>
-<p>So inside the nginx configuration’s server block, add</p>
-<p>server_name do4ds-lab.shop www.do4ds-lab.shop;</p>
+<section id="lab-configure-ssl" class="level2" data-number="13.4">
+<h2 data-number="13.4" class="anchored" data-anchor-id="lab-configure-ssl"><span class="header-section-number">13.4</span> Lab: Configure SSL</h2>
+<p>We’re going to use letsencrypt’s certbot utility to automatically generate an SSL certificate, share it with the CA, install it on the server, and even update your nginx configuration.</p>
+<p>For anyone who’s never dealt with self-signing certificates in the past, let me tell you, the fact that it does this all automatically is magical!</p>
+<p>In our nginx configuration, we’ll need to add a line certbot will use to know which site to generate the certificate for.</p>
+<p>Somewhere inside the nginx configuration’s server block, add</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>/etc/nginx/nginx.conf</strong></pre>
+</div>
+<pre><code>server_name do4ds-lab.shop www.do4ds-lab.shop;</code></pre>
+</div>
 <p>substituting in your domain for mine. Make sure to do both the bare domain and the <code>www</code> subdomain.</p>
-<p>At that point, you can just install certbot and let it go! As of this writing, that was as simple as running</p>
-<p>sudo su apt-get install certbot apt-get install python3-certbot-nginx systemctl restart nginx sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</p>
-<p>If you google “configure nginx with letsencrypt”, there’s a <a href="https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/">great article</a> by someone at Nginx walking you through the process if the commands above change.</p>
-<p>I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added. You’ll notice two things – one is inside the server block. You’ll notice that the <code>listen 80</code> is gone. We’re no longer listening for <code>HTTP</code> traffic. Instead there’s a <code>listen 443</code> – the default port for SSL, and a bunch of stuff that says <code># managed by Certbot</code> that tells nginx where to find the SSL certificate.</p>
-<p>Scrolling down a little, there’s a new server block that is listening on <code>80</code>. This block returns a <code>301</code>, which you might recall is a redirect code (specifically for a <em>permanent</em> redirect) sending all <code>HTTP</code> traffic to <code>HTTPS</code>.</p>
-<p>Before we exit and test it out, let’s do one more thing. RStudio does a bunch of sending traffic back to itself. For that reason, the <code>/rstudio</code> proxy location <em>also</em> needs to know to upgrade traffic from <code>HTTP</code> to <code>HTTPS</code>.</p>
+<p>At that point, you can just install certbot and let it do its thing!</p>
+<p>If you google “configure nginx with letsencrypt”, there’s a <a href="https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/">great article</a> by someone at Nginx walking you through the process.</p>
+<p>As of this writing, that was as simple as running these lines</p>
+<pre><code>&gt; sudo apt-get install certbot python3-certbot-nginx 
+&gt; sudo systemctl restart nginx 
+&gt; sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop</code></pre>
+<p>Before you move along, I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added.</p>
+<p>You’ll notice two things. You’ll notice that the <code>listen 80</code> is gone from inside the server block. We’re no longer listening for <code>http</code> traffic.</p>
+<p>Instead there’s a <code>listen 443</code> – the default port for <code>https</code>, and a bunch of stuff that tells nginx where to find the certificate on the server.</p>
+<p>Scrolling down a little, there’s a new server block that <em>is</em> listening on <code>80</code>. This block returns a <code>301</code>, which you might recall is a redirect code (specifically for a <em>permanent</em> redirect) sending all <code>http</code> traffic to <code>https</code>.</p>
+<p>Before we exit and test it out, let’s do one more thing. RStudio does a bunch of sending traffic back to itself. For that reason, the <code>/rstudio</code> proxy location <em>also</em> needs to know to upgrade traffic from <code>http</code> to <code>https</code>.</p>
 <p>So add the following line to the nginx config:</p>
-<pre><code>proxy_set_header X-Forwarded-Proto https; #redirect URLs back to https</code></pre>
-<p>Proto here is short for <em>protocol</em>. So this is letting RStudio Server know that when it forwards or redirects traffic, it should do so to <code>HTTPS</code>, not <code>HTTP</code>.</p>
-<hr>
-<pre><code>Ok -- let's try out our newly-secured workbench!</code></pre>
-<p>Go to the URL your server is hosted at, and you’ll find that…it’s broken again.</p>
-<p>Before you read along, think for just a moment. Why is it broken? Maybe scroll up to the image of the different layers of networking. Which one still isn’t open?</p>
-<pre><code>If you thought of the AWS instance security group, you're right! You'll remember that by default it was open to SSH traffic on port `22`, and we opened it to `HTTP` traffic on `80`. But now that we're sending it `HTTPS` traffic on `443`, you'll have to open it to that traffic as well.</code></pre>
-<p>Add a rule to allow <code>HTTPS</code> traffic on 443 from anywhere.</p>
-<p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio and <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub! Voila!</p>
-<pre><code>Note that you *also* can now SSH into `ssh test-user@&lt;domain&gt;`, so you don't ever need to remember IP Addresses for day-to-day operations.</code></pre>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>/etc/nginx/nginx.conf</strong></pre>
+</div>
+<pre><code>proxy_set_header X-Forwarded-Proto https;</code></pre>
+</div>
+<p>This line adds a header to the traffic the proxy forwards specifying the protocol to be <code>https</code>. RStudio Server uses this header to know that it should send traffic back to itself using <code>https</code>, not <code>http</code>.</p>
+<p>Ok, now try it by going to the URL your server is hosted at, and you’ll find that…it’s broken again.</p>
+<p>Before you read along, think for just a moment. Why is it broken?</p>
+<p>If your thoughts went to something involving ports and AWS security groups, you’re right!</p>
+<p>By default, our server was open to SSH traffic on port <code>22</code>. Since then, we may have opened or closed port <code>80</code>, <code>8000</code>, <code>8787</code>, and/or <code>8555</code>.</p>
+<p>But now that we’re exclusively sending <code>https</code> traffic into the proxy on <code>443</code> and letting the proxy redirect things elsewhere. So you have to go into the security group settings and change it so there are only 2 rules – one that allows SSH traffic on <code>22</code> from anywhere and one that allows <code>https</code> traffic on <code>443</code> from anywhere.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you decided to only configure <em>one</em> service on the server, you could have a much simpler setup. Neither RStudio Server nor Plumber support direct configuration of a SSL certificate, so you would still need a proxy – though it could be a much simpler configuration that just passes traffic at the root <code>/</code> on to your service at a different port.</p>
+<p>JupyterHub can be configured directly with an SSL certificate, so you would just configure JupyterHub to be aware of the SSL certificate and put itself on port <code>443</code>.</p>
+</div>
+</div>
+<p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio, <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub, and <code>&lt;your-domain&gt;/palmer</code> to get the API! Voila!</p>
+<p>And you should still be able to SSH into your server on your domain.</p>
+<p>At this point your server is fully configured. You have a server hosting three real data science services available on a domain of your choosing protected by <code>https</code>. You can really use this server to do real data science work.</p>
+<p>Now, that’s not to say this is fully enterprise-ready. If you’re working on a small team or at a small organization, this may be sufficient. But if you’re working at a large organization, your IT/Admin group is going to have other concerns. Section 4 of this book gets into some of those concerns and how you might discuss them with the relevant teams.</p>
 
 
 </section>
