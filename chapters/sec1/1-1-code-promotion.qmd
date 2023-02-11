@@ -330,20 +330,14 @@ prod:
   url: "www.my-external-system.com"
 ```
 
-Then you can use an environment variable to the correct config and apply
-that configuration inside the app.[^1-1-code-promotion-4]
-
-[^1-1-code-promotion-4]: By default, the `R_CONFIG_ACTIVE` variable is
-    used to determine which config to get. If you're deploying to
-    RStudio Connect, this value is locked to equal `rsconnect` , and you
-    may want to use a different value, which you can do like
-    `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
+Then you can switch to the correct config and apply that configuration
+inside the app.
 
 ```{r}
 #| eval: false
 
 library(shiny)
-config <- config::get()
+config <- config::get("prod")
 
 # UI that's just a button
 ui <- fluidPage(
@@ -363,6 +357,85 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+```
+
+## The power of environment variables  {#sec-env-vars}
+
+Environment variables are an extremely powerful way to manage the
+context in which your code is running.
+
+Whenever your code is running, your system maintains a number of
+different values to be used by processes running on the system. These
+variables are not specific to the R or Python process on the system --
+but they are usable by R or Python to powerful ends.
+
+It is convention to make environment variable names in all caps, words
+separated by underscores. The values are always simple character values,
+though these can be cast to some other type inside R or Python.
+
+In R, you can set environment variables in an `.Renviron` file or using
+`Sys.setenv(VAR_NAME = VALUE)` in a `.Rprofile`. These files are sourced
+on process startup, so the values are always available inside the
+running process with `Sys.getenv("VAR_NAME")`. You can have user and/or
+project level files and even server-level ones with `.Renviron.site` and
+`.Rprofile.site`.
+
+In Python, environment variables are accessible one-by-one using the
+`os.getenv` function or as a dictionary in `os.environ`. If you're using
+a lot of environment variables, it's common to import them using a
+statement like `from os import environ as env`.
+
+There is no equivalent of the `.Rprofile` that's sourced before startup
+in Python, but it's common to use the `python-dotenv` package to
+manually load the contents of a `.env` file into the environment as one
+of the first few lines in your code.
+
+You should not commit these files to git, but should manually move them
+across environments, so they never appear anywhere centrally accessible.
+
+Once you're using environment variables, they're extremely powerful.
+It's very common to set the default value of a function argument to be
+the value of an environment variable. For example, in the example using
+the R `{config}` package, `config::get()` uses the value of the
+`R_CONFIG_ACTIVE` environment variable to choose which configuration to
+use.
+
+That means that switching from the dev to the prod version of the app is
+as easy as making sure you've got the correct environment variable set
+on your system.[^1-1-code-promotion-4]
+
+[^1-1-code-promotion-4]: If you're deploying to Posit Connect,
+    `R_CONFIG_ACTIVE` is locked to `rsconnect`. If you've got multiple
+    deployments to Connect that you want to differentiate, you may want
+    to use a different environment variable, which you would specify
+    manually like `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
+
+It can also be a great way to safely store secrets on your system. If
+you've got a function that, for example, creates a database connection,
+it's a good idea to have the `username` and `password` arguments of your
+function default to reading from an environment variable so you don't
+ever have to expose them in your code.
+
+That might look something like this in R:
+
+```{r}
+#| eval: false
+
+my_db_con <- function(user = Sys.getenv("DB_USER"), pw = Sys.getenv("DB_PW")) {
+  make_db_con(user, pw)
+}
+```
+
+and in Python
+
+TODO: Check python version works
+
+```{python}
+#| eval: false
+
+def my_db_con(user = os.getenv("db_user"), pw = os.getenv("db_pw")):
+  make_db_con(user, pw)
+
 ```
 
 ## Creating and Maintaining Identical Environments
@@ -448,3 +521,4 @@ Here are a few suggestions on components you might use:
     website. The GitHub repo for this book
     ([akgold/do4ds](github.com/akgold/do4ds)) may prove useful as a
     reference.
+
