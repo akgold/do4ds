@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 4&nbsp; Designing Your Application Layers</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec1/1-5-monitor-log.html" rel="next">
+<link href="../../chapters/sec1/1-3-data-arch.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Designing Your Application Layers</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Code promotion and integration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-env-as-code.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-arch.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Pipeline Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-apis.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Designing Your Application Layers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-monitor-log.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin Tools</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-dns.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">Making it Enterprise-Grade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-secure-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Upgraded Networking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Logging in with auth</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">Appendices</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#separate-business-and-interaction-logic" id="toc-separate-business-and-interaction-logic" class="nav-link active" data-scroll-target="#separate-business-and-interaction-logic"><span class="toc-section-number">4.1</span>  Separate business and interaction logic</a>
+  <ul class="collapse">
+  <li><a href="#consider-using-an-api-for-long-running-processes" id="toc-consider-using-an-api-for-long-running-processes" class="nav-link" data-scroll-target="#consider-using-an-api-for-long-running-processes"><span class="toc-section-number">4.1.1</span>  Consider using an API for long-running processes</a></li>
+  </ul></li>
+  <li><a href="#querying-apis" id="toc-querying-apis" class="nav-link" data-scroll-target="#querying-apis"><span class="toc-section-number">4.2</span>  Querying APIs</a>
+  <ul class="collapse">
+  <li><a href="#an-api-query-is-the-same-as-an-http-call" id="toc-an-api-query-is-the-same-as-an-http-call" class="nav-link" data-scroll-target="#an-api-query-is-the-same-as-an-http-call"><span class="toc-section-number">4.2.1</span>  An API query is the same as an <code>http</code> call</a></li>
+  <li><a href="#what-does-an-api-in-r-or-python-look-like" id="toc-what-does-an-api-in-r-or-python-look-like" class="nav-link" data-scroll-target="#what-does-an-api-in-r-or-python-look-like"><span class="toc-section-number">4.2.2</span>  What does an API in R or Python look like?</a></li>
+  </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">4.3</span>  Comprehension Questions</a></li>
+  <li><a href="#portfolio-exercise-standing-up-a-loosely-coupled-app" id="toc-portfolio-exercise-standing-up-a-loosely-coupled-app" class="nav-link" data-scroll-target="#portfolio-exercise-standing-up-a-loosely-coupled-app"><span class="toc-section-number">4.4</span>  Portfolio Exercise: Standing Up a Loosely Coupled App</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/1-4-apis.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-apis" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Designing Your Application Layers</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>As a data scientist, you’re probably well familiar with the concept of functions in your chosen programming language. The advantage of functions is that once you’ve written one, you can focus exclusively on what’s happening inside the function. When you’re not, you can logically abstract away what the function does and just assume that you’ll write a function to do that thing.</p>
+<p>You should be thinking similarly about the architecture of your data science project.</p>
+<p>As you’re building out your app, report, or API, you should be thinking about how to architect your project so that you can do updates in the future in a way that is painless. You want to modularize your app so that you can apply the other best practices in this book – like using CI/CD easily and painlessly.</p>
+<p>One of the key concepts is of <em>app layers</em>. In traditional software engineering, the most common architecture is a <em>three-layer app</em>. In a three layer app, the <em>front-end</em> or <em>presentation layer</em>, is divided up from the <em>back-end</em> or the <em>application layer</em> and <em>data layer</em>.</p>
+<p>In data science, there are rough equivalents to each of these layers as the table below shows.</p>
+<table class="table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 16%">
+<col style="width: 20%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Front/Back End?</th>
+<th>Layer</th>
+<th>Software Engineering</th>
+<th>Data Science</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Front End</td>
+<td>Pre sentation</td>
+<td>Javascript</td>
+<td><p>Shiny/Dash/Streamlit</p>
+<p>Quarto/R Markdown/Jupyter</p></td>
+</tr>
+<tr class="even">
+<td>Back End</td>
+<td>Ap plication</td>
+<td>API</td>
+<td>Functions <em>or</em> API</td>
+</tr>
+<tr class="odd">
+<td>Back End</td>
+<td>Data</td>
+<td>Database</td>
+<td>Data</td>
+</tr>
+</tbody>
+</table>
+<p>As we got into in <a href="1-3-data-arch.html">Chapter&nbsp;<span>3</span></a>, there are a variety of different ways to architect your data layer, you may or may not choose to actually use a database.</p>
+<p>This chapter is all about how to make the Application layer work for you.</p>
+<section id="separate-business-and-interaction-logic" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="separate-business-and-interaction-logic"><span class="header-section-number">4.1</span> Separate business and interaction logic</h2>
+<p>All too often, I see monolithic Shiny apps of thousands or tens of thousands of lines of code, with button definitions, UI bits, and user interaction definitions mixed in among the actual work of the app.</p>
+<p>There are two reasons this doesn’t work particularly well.</p>
+<p>It’s much easier to read through your app or report code and understand what it’s doing when the app itself is only concerned with displaying UI elements to the user, passing choices and actions to the backend, and then displaying the result back to the user.</p>
+<p>The application tier is where your business logic should live. The business logic is that actual work that the application does. For a data science app, this is often slicing and dicing data, computing statistics on that data, generating model predictions, and constructing plots.</p>
+<p>Separating presentation from business layers means that you want to encapsulate the business logic somehow so that you can work on how the business logic works independently from changing the way users might interact with the app. For example, this might mean creating standalone functions to write plots or create statistics.</p>
+<p>If you’re using Shiny, R Markdown, or Quarto, this will mean passing values to those functions that are no longer reactive and that have been generated from input parameters.</p>
+<p>Let’s start with a counterexample.</p>
+<p>Here’s a simple app in Shiny for R that visualizes certain data points from the Palmer Penguins data set. This is an example of bad app architecture.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">library</span>(palmerpenguins)</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb1-5"><a href="#cb1-5"></a></span>
+<span id="cb1-6"><a href="#cb1-6"></a>all_penguins <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7"></a></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># Define UI</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a>ui <span class="ot">&lt;-</span> <span class="fu">fluidPage</span>(</span>
+<span id="cb1-10"><a href="#cb1-10"></a>  <span class="fu">sidebarLayout</span>(</span>
+<span id="cb1-11"><a href="#cb1-11"></a>    <span class="fu">sidebarPanel</span>(</span>
+<span id="cb1-12"><a href="#cb1-12"></a>      <span class="co"># Select which species to include</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a>      <span class="fu">selectInput</span>(</span>
+<span id="cb1-14"><a href="#cb1-14"></a>        <span class="at">inputId =</span> <span class="st">"species"</span>, </span>
+<span id="cb1-15"><a href="#cb1-15"></a>        <span class="at">label =</span> <span class="st">"Species"</span>, </span>
+<span id="cb1-16"><a href="#cb1-16"></a>        <span class="at">choices =</span> all_penguins, </span>
+<span id="cb1-17"><a href="#cb1-17"></a>        <span class="at">selected =</span> all_penguins,</span>
+<span id="cb1-18"><a href="#cb1-18"></a>        <span class="at">multiple =</span> <span class="cn">TRUE</span></span>
+<span id="cb1-19"><a href="#cb1-19"></a>      )</span>
+<span id="cb1-20"><a href="#cb1-20"></a>    ),</span>
+<span id="cb1-21"><a href="#cb1-21"></a>    <span class="co"># Show a plot of penguin data</span></span>
+<span id="cb1-22"><a href="#cb1-22"></a>    <span class="fu">mainPanel</span>(</span>
+<span id="cb1-23"><a href="#cb1-23"></a>      <span class="fu">plotOutput</span>(<span class="st">"penguinPlot"</span>)</span>
+<span id="cb1-24"><a href="#cb1-24"></a>    )</span>
+<span id="cb1-25"><a href="#cb1-25"></a>  )</span>
+<span id="cb1-26"><a href="#cb1-26"></a>)</span>
+<span id="cb1-27"><a href="#cb1-27"></a></span>
+<span id="cb1-28"><a href="#cb1-28"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb1-29"><a href="#cb1-29"></a>  </span>
+<span id="cb1-30"><a href="#cb1-30"></a>  output<span class="sc">$</span>penguinPlot <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>({</span>
+<span id="cb1-31"><a href="#cb1-31"></a>    <span class="co"># Filter data</span></span>
+<span id="cb1-32"><a href="#cb1-32"></a>    dat <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb1-33"><a href="#cb1-33"></a>      dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb1-34"><a href="#cb1-34"></a>        species <span class="sc">%in%</span> input<span class="sc">$</span>species</span>
+<span id="cb1-35"><a href="#cb1-35"></a>      )</span>
+<span id="cb1-36"><a href="#cb1-36"></a>    </span>
+<span id="cb1-37"><a href="#cb1-37"></a>    <span class="co"># Render Plot</span></span>
+<span id="cb1-38"><a href="#cb1-38"></a>    dat <span class="sc">%&gt;%</span></span>
+<span id="cb1-39"><a href="#cb1-39"></a>      <span class="fu">ggplot</span>(</span>
+<span id="cb1-40"><a href="#cb1-40"></a>        <span class="fu">aes</span>(</span>
+<span id="cb1-41"><a href="#cb1-41"></a>          <span class="at">x =</span> flipper_length_mm,</span>
+<span id="cb1-42"><a href="#cb1-42"></a>          <span class="at">y =</span> body_mass_g,</span>
+<span id="cb1-43"><a href="#cb1-43"></a>          <span class="at">color =</span> sex</span>
+<span id="cb1-44"><a href="#cb1-44"></a>        )</span>
+<span id="cb1-45"><a href="#cb1-45"></a>      ) <span class="sc">+</span></span>
+<span id="cb1-46"><a href="#cb1-46"></a>      <span class="fu">geom_point</span>()</span>
+<span id="cb1-47"><a href="#cb1-47"></a>  })</span>
+<span id="cb1-48"><a href="#cb1-48"></a>  </span>
+<span id="cb1-49"><a href="#cb1-49"></a>}</span>
+<span id="cb1-50"><a href="#cb1-50"></a></span>
+<span id="cb1-51"><a href="#cb1-51"></a><span class="co"># Run the application </span></span>
+<span id="cb1-52"><a href="#cb1-52"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The structure of this Shiny app is bad. Now, it’s not a huge deal, because this is a simple Shiny app that’s pretty easy to parse if you are reasonably comfortable with R and Shiny.</p>
+<p>Why is this bad? Look at the app’s server block. Because all of the app’s logic is contained inside a single <code>plotRender</code> statement.</p>
+<p><code>plotRender</code> is a presentation function – it renders plots. But I’ve got logic in there that generates the data set I need and generates the plot.</p>
+<p>Again, because this app is simple, it’s not a huge deal here. But imagine if this app had several tabs, multiple input dropdowns, a dozen or more plots, and complicated logic dictating how to process the dropdown choices into the plots. It would be a mess!</p>
+<p>Instead, we should separate the presentation logic from the business logic. That is, let’s separate the code for generating the UI, taking the user’s choice of penguin</p>
+<p>The business logic – what those decisions mean, and the resulting calculations – should, at minimum, be moved into standalone functions.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">library</span>(palmerpenguins)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a>all_penguins <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)</span>
+<span id="cb2-7"><a href="#cb2-7"></a></span>
+<span id="cb2-8"><a href="#cb2-8"></a><span class="co"># Define UI</span></span>
+<span id="cb2-9"><a href="#cb2-9"></a>ui <span class="ot">&lt;-</span> <span class="fu">fluidPage</span>(</span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="fu">sidebarLayout</span>(</span>
+<span id="cb2-11"><a href="#cb2-11"></a>    <span class="fu">sidebarPanel</span>(</span>
+<span id="cb2-12"><a href="#cb2-12"></a>      <span class="co"># Select which species to include</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>      <span class="fu">selectInput</span>(</span>
+<span id="cb2-14"><a href="#cb2-14"></a>        <span class="at">inputId =</span> <span class="st">"species"</span>, </span>
+<span id="cb2-15"><a href="#cb2-15"></a>        <span class="at">label =</span> <span class="st">"Species"</span>, </span>
+<span id="cb2-16"><a href="#cb2-16"></a>        <span class="at">choices =</span> all_penguins, </span>
+<span id="cb2-17"><a href="#cb2-17"></a>        <span class="at">selected =</span> all_penguins,</span>
+<span id="cb2-18"><a href="#cb2-18"></a>        <span class="at">multiple =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-19"><a href="#cb2-19"></a>      )</span>
+<span id="cb2-20"><a href="#cb2-20"></a>    ),</span>
+<span id="cb2-21"><a href="#cb2-21"></a>    <span class="co"># Show a plot of penguin data</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a>    <span class="fu">mainPanel</span>(</span>
+<span id="cb2-23"><a href="#cb2-23"></a>      <span class="fu">plotOutput</span>(<span class="st">"penguinPlot"</span>)</span>
+<span id="cb2-24"><a href="#cb2-24"></a>    )</span>
+<span id="cb2-25"><a href="#cb2-25"></a>  )</span>
+<span id="cb2-26"><a href="#cb2-26"></a>)</span>
+<span id="cb2-27"><a href="#cb2-27"></a></span>
+<span id="cb2-28"><a href="#cb2-28"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output) {</span>
+<span id="cb2-29"><a href="#cb2-29"></a>  </span>
+<span id="cb2-30"><a href="#cb2-30"></a>  <span class="co"># Filter data</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a>  dat <span class="ot">&lt;-</span> <span class="fu">reactive</span>(</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="fu">filter_data</span>(input<span class="sc">$</span>species)</span>
+<span id="cb2-33"><a href="#cb2-33"></a>    )</span>
+<span id="cb2-34"><a href="#cb2-34"></a>  </span>
+<span id="cb2-35"><a href="#cb2-35"></a>  <span class="co"># Render Plot</span></span>
+<span id="cb2-36"><a href="#cb2-36"></a>  output<span class="sc">$</span>penguinPlot <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>(</span>
+<span id="cb2-37"><a href="#cb2-37"></a>    <span class="fu">make_penguin_plot</span>(<span class="fu">dat</span>())</span>
+<span id="cb2-38"><a href="#cb2-38"></a>    )</span>
+<span id="cb2-39"><a href="#cb2-39"></a>}</span>
+<span id="cb2-40"><a href="#cb2-40"></a></span>
+<span id="cb2-41"><a href="#cb2-41"></a><span class="co"># Run the application </span></span>
+<span id="cb2-42"><a href="#cb2-42"></a><span class="fu">shinyApp</span>(<span class="at">ui =</span> ui, <span class="at">server =</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now you can see that the app itself had gotten much simpler. The UI hasn’t changed at all, but the server block is effectively now just two lines! And since I used descriptive function names, it’s really easy to understand what happens in each of the places where my app has reactive behavior.</p>
+<p>Either in the same file, or in another file I can source in, I can now include the two functions that include my business logic:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">#' Get the penguin data</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co">#'</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">#' @param species character, which penguin species</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">#' @return data frame</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">#'</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">#' @examples</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#' filter_data("Adelie")</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>filter_data <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">species =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)) {</span>
+<span id="cb3-9"><a href="#cb3-9"></a>  palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb3-11"><a href="#cb3-11"></a>      species <span class="sc">%in%</span> <span class="sc">!!</span>species</span>
+<span id="cb3-12"><a href="#cb3-12"></a>    )</span>
+<span id="cb3-13"><a href="#cb3-13"></a>}</span>
+<span id="cb3-14"><a href="#cb3-14"></a></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">#' Create a plot of the penguin data</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co">#'</span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">#' @param data data frame</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">#'</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="co">#' @return ggplot object</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="co">#'</span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="co">#' @examples</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="co">#' filter_data("Adelie") |&gt; plot_gen()</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a>plot_gen <span class="ot">&lt;-</span> <span class="cf">function</span>(data) {</span>
+<span id="cb3-24"><a href="#cb3-24"></a>  data <span class="sc">%&gt;%</span></span>
+<span id="cb3-25"><a href="#cb3-25"></a>    <span class="fu">ggplot</span>(</span>
+<span id="cb3-26"><a href="#cb3-26"></a>      <span class="fu">aes</span>(</span>
+<span id="cb3-27"><a href="#cb3-27"></a>        <span class="at">x =</span> flipper_length_mm,</span>
+<span id="cb3-28"><a href="#cb3-28"></a>        <span class="at">y =</span> body_mass_g,</span>
+<span id="cb3-29"><a href="#cb3-29"></a>        <span class="at">color =</span> sex</span>
+<span id="cb3-30"><a href="#cb3-30"></a>      )</span>
+<span id="cb3-31"><a href="#cb3-31"></a>    ) <span class="sc">+</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a>    <span class="fu">geom_point</span>()</span>
+<span id="cb3-33"><a href="#cb3-33"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that somewhere along the way, I also added function definitions and comments using ROxygen. This isn’t an accident! Writing standalone functions is a great way to force yourself to be clear about what should happen, and writing examples is the first step towards writing tests for your code.</p>
+<section id="consider-using-an-api-for-long-running-processes" class="level3" data-number="4.1.1">
+<h3 data-number="4.1.1" class="anchored" data-anchor-id="consider-using-an-api-for-long-running-processes"><span class="header-section-number">4.1.1</span> Consider using an API for long-running processes</h3>
+<p>In the case of a true three-layer app, it is almost always the case that the middle tier will be an application programming interface (API). In a data science app, separating business logic into functions is often sufficient. But if you’ve got a long-running bit of business logic, it’s often helpful to separate it into an API.</p>
+<p>You can basically think of an API as a “function as a service”. That is, an API is just one or more functions, but instead of being called within the same process that your app is running or your report is processing, it will run in a completely separate process.</p>
+<p>For example, let’s say you’ve got an app that allows users to feed in input data and then generate a model based on that data. If you generate the model inside the app, the user will have the experience of pressing the button to generate the model and having the app seize up on them while they’re waiting. Moreover, other users of the app will find themselves affected by this behavior.</p>
+<p>If, instead, the button in the app ships the long-running process to a separate API, it gives you the ability to think about scaling out the presentation layer separate from the business layer.</p>
+<p>Luckily, if you’ve written functions for your app, turning them into an API is trivial.</p>
+<p>Let’s take that first function for getting the appropriate data set and turn it into an API using the <code>plumber</code> library in R. The <code>FastAPI</code> library is a popular Python library for writing APIs.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">library</span>(plumber)</span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co">#* @apiTitle Penguin Explorer</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co">#* @apiDescription An API for exploring palmer penguins.</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co">#* Get data set based on parameters</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co">#* @param species character, which penguin species</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">#* @get /data</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="cf">function</span>(<span class="at">species =</span> <span class="fu">c</span>(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)) {</span>
+<span id="cb4-10"><a href="#cb4-10"></a>  palmerpenguins<span class="sc">::</span>penguins <span class="sc">%&gt;%</span></span>
+<span id="cb4-11"><a href="#cb4-11"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(</span>
+<span id="cb4-12"><a href="#cb4-12"></a>      species <span class="sc">%in%</span> <span class="sc">!!</span>species</span>
+<span id="cb4-13"><a href="#cb4-13"></a>    )</span>
+<span id="cb4-14"><a href="#cb4-14"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You’ll notice that there are no changes to the actual code of the function. The commented lines that provide the function name and arguments are now prefixed by <code>#*</code> rather than <code>#'</code>, and there are a few more arguments, including the type of query this function accepts and the path.</p>
+<p>I’ll also need to change my function in the app somewhat to actually call the API, but it’s pretty easy using a package like <code>httr2</code> in R or <code>requests</code> in Python.</p>
+</section>
+</section>
+<section id="querying-apis" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="querying-apis"><span class="header-section-number">4.2</span> Querying APIs</h2>
+<p>Before we get any deeper into building your own APIs, let’s understand how an API works. If you’re using R, you’ll use the <code>httr2</code> package to query an API. In Python, you’ll use <code>requests</code>. Both of these packages have great documentation and you can look at the specifics of <em>how</em> to use them in those packages.</p>
+<p>But both of those packages are just wrappers to help you write idiomatic R or Python that gets passed along to the system <code>curl</code> command to actually get information from an API via an <code>http</code> call.</p>
+<p>In this section, we’re going to focus on what happens at that level. What is an <code>http</code> call <code>curl</code> might make and how to understand what it requests and what comes back.</p>
+<section id="an-api-query-is-the-same-as-an-http-call" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="an-api-query-is-the-same-as-an-http-call"><span class="header-section-number">4.2.1</span> An API query is the same as an <code>http</code> call</h3>
+<p>An API call asks for an endpoint to do something.</p>
+<p>Your computer communicates with an API via a request-response model. Your computer requests a resource and the API sends it back. Your computer actually does this constantly as your navigate across the web.</p>
+<p>What you experience as visiting a website, your computer views as a handful of <code>http</code> requests to a server to fetch whatever is at that URL. The site owner’s server responds with the various assets that make up the web page, which might include the HTML skeleton for the site, the CSS styling, interactive javascript elements, and more.</p>
+<p>Once your computer receives them, your browser reassembles them into a webpage for you to interact with. And when you click on a button in the site, one or more <code>http</code> requests go off and the responses dictate what happens next.</p>
+<p>So when you manually query an API via <code>httr2</code> or <code>requests</code>, you’re just manually making the kind of requests your computer is already making constantly.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+What about REST?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You may have heard the term REST API or REST-ful.</p>
+<p>REST is a set of architectural standards for how to build an API. An API that conforms to those standards is called REST-ful or a REST API.</p>
+<p>If you’re using standard methods for constructing an API like R’s <code>{plumber}</code> package or <code>FastAPI</code> in Python, they’re going to be REST-ful – or at least close enough for standard usage.</p>
+<p>In this section, I’m using the term API and REST API interchangeably.</p>
+</div>
+</div>
+<p>The best way to understand <code>http</code> traffic is to take a close look at some. Luckily, you’ve got an easy tool – your web browser!</p>
+<p>Open a new tab in your browser and open your developer tools. How this works will depend on your browser. In Chrome, you’ll go to View &gt; Developer &gt; Developer Tools and then make sure the Network tab is open.</p>
+<p>Now, navigate to a URL in your browser (say google.com).</p>
+<p>As you do this, you’ll see the traffic pane fill up. These are the individual requests and responses going back and forth between your computer and the server.</p>
+<p>There are a few parts of the requests and responses that are worth understanding in some depth. The first is the <em>status code</em>. Status codes appear only on responses and indicate what happened with your request to the server. In your browser, you’re probably seeing mostly 200 codes, which indicates a successful response. There’s a cheatsheet below of some other codes and what they mean.</p>
+<p>If you click on an individual line in the traffic pane, you can see some additional details. One key component is the <em>request method</em>. The <code>http</code> protocol specifies a number of verbs or request methods you’re allowed to use.</p>
+<p>When you’re just loading a page on the web, it’ll be almost entirely <code>GET</code> requests, which fetch something. The other three basic <code>http</code> methods are <code>POST</code> or <code>PUT</code> to change or update something or a <code>DELETE</code> to (you guessed it) delete something. There are also a number of more esoteric <code>http</code> methods, but I’ve never seen a need for one.</p>
+<p>You can see the response codes right next to each request, in chrome, codes other than 200s show up in other colors to make them easy to find.</p>
+<p>The other most useful part of the display is the waterfall chart on the far right. This shows how long each request took to come back. If you’re finding that something is slow to load, inspecting the waterfall chart can help diagnose which requests are taking a long time.</p>
+<p>If you click into an individual request, you can see a variety of information, including the headers and the response. Very often, inspecting the headers is a great way to debug malfunctioning <code>http</code> requests.</p>
+<p>Another important component of both requests and responses are the <em>headers.</em></p>
+<p>Headers specify metadata information about the request or response. These often include the type of machine that is sending the request, authentication credentials or tokens, cookies, and more. Making sure you’ve got the correct headers on requests and responses is an important thing to check if you’re running into trouble with API calls – especially with authentication.</p>
+<p>Lastly, requests and responses often include a <em>body</em>.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Bodies are <em>allowed</em> for <code>GET</code> and <code>DELETE</code> requests, but they generally are not used. Instead, the request endpoint should fully specify the resource for a <code>DELETE</code>, and details for <code>GET</code> requests are specified via <em>query parameters</em>, the part of the URL that shows up after the <code>?</code>, like <code>?first_name=alex&amp;last_name=gold</code>.</p>
+</div>
+</div>
+<p>In a request, the body is going to provide details on what you’re trying to do with your request. In a response, the body is the information that is being sent back. JSON is the most common body response types for an API you might build, but a website is likely to have other types of bodies, like images.</p>
+<section id="special-http-codes" class="level4" data-number="4.2.1.1">
+<h4 data-number="4.2.1.1" class="anchored" data-anchor-id="special-http-codes"><span class="header-section-number">4.2.1.1</span> Special HTTP Codes</h4>
+<p>As you work more with <code>http</code> traffic, you’ll learn some of the common codes. Here’s a cheatshet for some of the most frequent you’ll see.</p>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 70%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>200</code></td>
+<td>Everyone’s favorite, a successful response.</td>
+</tr>
+<tr class="even">
+<td><code>3xx</code></td>
+<td>Your query was redirected somewhere else, usually ok.</td>
+</tr>
+<tr class="odd">
+<td><code>4xx</code></td>
+<td>Errors with the request</td>
+</tr>
+<tr class="even">
+<td><code>400</code></td>
+<td>Bad request. This isn’t a request the server can understand.</td>
+</tr>
+<tr class="odd">
+<td><code>401</code> and <code>403</code></td>
+<td>Unauthorized or forbidden. Required authentication hasn’t been provided.</td>
+</tr>
+<tr class="even">
+<td><code>404</code></td>
+<td>Not found. There isn’t any content to access here.</td>
+</tr>
+<tr class="odd">
+<td><code>5xx</code></td>
+<td>Errors with the server once your request got there.</td>
+</tr>
+<tr class="even">
+<td><code>500</code></td>
+<td>Generic server-side error. Your request was received, but there was an error processing it.</td>
+</tr>
+<tr class="odd">
+<td><code>504</code></td>
+<td>Gateway timeout. This means that a proxy or gateway between you and the server you’re trying to access timed out before it got a response from the server.</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="what-does-an-api-in-r-or-python-look-like" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="what-does-an-api-in-r-or-python-look-like"><span class="header-section-number">4.2.2</span> What does an API in R or Python look like?</h3>
+<p>A great mental model for an API is as a “function as a service”. So if we think about our Palmer Penguins endpoint, it’s just a function for filtering the Palmer Penguins dataset that we can access over a network.</p>
+<p>A single API may have many different functions available – each function is available at an <em>endpoint</em>.</p>
+<p>An endpoint is denoted by a path. So for example, if I had an API available at <code>my-api.com</code>, I might have my penguins function available at the <code>/penguins</code> endpoint and it would be accessible by querying <code>my-api.com/penguins</code>.</p>
+<p><code>{plumber}</code> and <code>FastAPI</code> both include frameworks for auto-generating documentation and interactive testing facilities for your API using the Swagger framework. Most often, these docs are available on the root path <code>/</code> of your API, though they may default to another path like <code>/__docs__</code>.</p>
+</section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">4.3</span> Comprehension Questions</h2>
+<ol type="1">
+<li>What are the layers of a three-layer application architecture? What libraries could you use to implement a three-layer architecture in R or Python?</li>
+<li>What is the relationship between an R or Python function and an API?</li>
+<li>What information goes in each of the following: request method, response code, headers, body, query parameters</li>
+</ol>
+</section>
+<section id="portfolio-exercise-standing-up-a-loosely-coupled-app" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="portfolio-exercise-standing-up-a-loosely-coupled-app"><span class="header-section-number">4.4</span> Portfolio Exercise: Standing Up a Loosely Coupled App</h2>
+<p>Find a public data source you like that’s updated on a regular candence. Some popular ones include weather, public transit, and air travel.</p>
+<p>Create a job that uses R or Python to access the data and create a job to put it into a database (make sure this is compliant with the data use agreement).</p>
+<p>Create an API in Plumber (R) or Flask or FastAPI (Python) that allows you to query the data – or maybe create a machine learning model that you can run against new data coming in.</p>
+<p>Create an app that visualizes what’s coming out of the API using Dash or Streamlit (Python) or Shiny (either R or Python).</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec1/1-3-data-arch.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Pipeline Architecture</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec1/1-5-monitor-log.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
