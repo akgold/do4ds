@@ -1,131 +1,119 @@
 # Logging and Monitoring {#sec-log-monitor}
 
-Say something goes wrong with your ETL job today, or your app fails for
-some reason. It would be much better to find out from an email or slack
-message rather than from an angry message about wrong numbers ending up
-in front of your company's CTO. And when you do catch it, wouldn't it be
-nice to have some documentation of what happened so you can reconstruct
-the sequence of events and figure out what actually went wrong?
+Jobs fail. Apps mysteriously quit. These things happen.
 
-Obviously, the answer is yes to both of these.
+When they do, I'd much rather find out from an automated email or slack
+message than an angry message from the CTO.
 
-Observability is the DevOps term for generally whether you can peer
-inside the operations of your system to see what's going on and figure
-out what happened when something goes awry.
-
-In general, people talk about two sides of observability: *logging* and
-*monitoring*.
-
-Logging is the process of documenting and saving a record of what
-happened when a piece of software ran. The output of the logging process
-is a log. Logs are useful for documenting what's happening inside a
-software system under both normal operations and reconstructing the
-sequence of events prior to a failure.
-
-Monitoring is the process of keeping live metrics of how the system is
-doing. Metrics are quantitative measurements of system resources --
-things like CPU, RAM, and disk usage as well as numbers of users and
-response times. Monitoring is the process of generating those metrics,
-making sure they're within normal parameters, and alerting the
-appropriate people or systems if something goes awry.
-
-There are four things you might try to learn from your observations of
-your app, job, API, or report.
-
-The first is to understand what your job or model is doing. Are your
-data joins correct? Is the data quality about the same as you expect, or
-is it deteriorating? Is your model performing as well as you need and as
-well as it usually does, or is something strange happening?
-
-The second is to understand access patterns. Are people visiting your
-app or report? Are they visiting particular parts more than others? This
-is useful both for understanding the dynamics of your app and what parts
-are most useful and also making the case inside your organization that
-you are doing valuable work.
-
-The third is to create a trail of who accessed or did what. In some
-organizations, creating an *audit trail* is mandatory if your app
-actually creates or writes data. In other cases it's just useful to know
-if particular users are using the app in particular ways.
-
-And lastly, it's useful to have logging in your app to reconstruct what
-happened just prior to an error. In general, the only way to fix an
-error is going to be re-creating the state of the system just before the
-error occurred. Logging enough information that you can do so is
-extremely useful. Moreover, having enough instrumentation that you can
-turn on more aggressive logging and just run through that app state is a
-way you can be really kind to future you.
-
-For both monitoring and logging, there are two separate things to think
-about: how does your system *emit* logs and metrics, and how are you
-consuming those logs and metrics to make them useful.
-
-TODO: diagram of monitoring + logging emission vs aggregation
-
-For data scientists, the main concerns you'll have around observability
-are emitting logs from any products you've created and emitting
-performance metrics in a machine-learning context. There are
-industry-standard tools you can use for consuming those logs and
-metrics.
-
-## Observing data science
+The state of knowing how things are going with your system and being
+able to reconstruct what happened when something (inevitably) does go
+awry is generally called *observability* in DevOps lingo.
 
 When software engineers think about observability, they're generally
-thinking about observing the *operational* qualities of their app.
-They're trying to answer questions like are people using it? Is the app
-operational or are users experiencing errors? Is performance good
-enough?
+thinking about observing the *operational* qualities of their app. When
+they think about errors or performance, they're thinking in terms of
+actual code error states that crash the app and performance is basically
+synonymous with the app being fast enough for users. As a data
+scientist, you should care about these things.
 
-As data scientists, we likely have another level of logging to think
-about, which is the level of the actual data science operations,
-especially when machine learning models are involved. How are our models
-performing? Is the level of model performance stable, or is it changing
-over time? Are our data queries still working or has the data collection
-process found some new exciting way to mess up our ETL pipeline?
+Understanding *access patterns* for your app is important. It's useful
+to know if your app is getting usage and if so whether people are using
+certain parts. You want to make sure they're having a good experience
+when they do so.
 
-But there's good news -- you're probably already pretty used to data
-science logging.
+Knowing that people are using your project is important to understand if
+there are extensions to your project that might be useful and also to
+make the case inside your organization that you are doing valuable work.
+It's also useful in the case that your organization requires an *audit
+trail* or who read or wrote particular data.
+
+Unlike when you're running code right in your terminal, you're not going
+to be paying close attention to code running in production. If (when,
+really) there's an error, you may not get to it right away, and you'll
+want the necessary information to re-create the state of the system just
+before the error occurred. Knowing that an error has occurred and what
+the system looked like when an error occurred is extremely useful to
+figure out why it happened.
+
+In addition to these operational concerns you share with software
+engineers, there's an additional level of complexity to observability
+related to the actual data science profile of your app. An error doesn't
+always mean that your app crashes -- it could just return an incorrect
+result, which is often scarier. For example, your ETL pipeline could
+complete on time, but data quality could've deteriorated so much that
+the output data is basically meaningless. Or your machine learning model
+could have fallen out of alignment, so it's still returning predictions
+-- just wrong ones.
+
+There are two general practices that enable observability of software --
+*logging* and *monitoring.*
+
+Logging is the process of documenting and saving a record of what
+happened when a piece of software ran in the form of a *log*. Logs are
+useful for documenting what's happening inside a software system under
+both normal operations and reconstructing the sequence of events prior
+to a failure.
+
+Monitoring is the process of generating and tracking *metrics* of how
+the system is doing. Metrics are quantitative measurements of the
+system, which include things like CPU, RAM, and disk usage as well as
+numbers of users and response times. Monitoring involves making sure
+those metrics are within normal operating parameters, and alerting the
+right people when -- or ideally before -- something goes wrong.
+
+For both monitoring and logging, there are two separate things to think
+about: how does your system *emit* logs and metrics and how do you
+consume those logs and metrics to make them useful?
+
+The good news it that as a data scientist, you're probably very familiar
+with one form of logging.
 
 A lot of data science work is done in a literate programming format --
 Jupyter Notebooks, R Markdown Documents, and Quarto Documents. If used
-right, the beauty of these documents is that they are self-logging on
-the data science side!
+right, the beauty of these documents is that they are self-logging in
+most cases!
 
-And in my opinion, you should do *all* your jobs in a literate
-programming format. Some people really like running jobs as `.R` or
-`.py` files -- that's fine, but then you also need to make sure your job
-is emitting the right logs and metrics. On the other hand, if you write
-your code in a literate programming format and keep an archive of a few
-runs, you've got a self-logging job.
+In one of my spicier opinions, data scientists should do *all* jobs in a
+literate programming format. If you write your code in a literate
+programming format and include metrics in the document, you've got a
+self-logging job.
 
-Now it's worth spending a few minutes thinking about the things you'll
-want to make sure you note in a job to make sure its useful as a log.
-The number one thing I log is the quality of data joins. When these go
-awry, your downstream data can get really confusing. It's also often
-worthwhile to do cross tabulations of recodes, to make sure your recode
-logic is working like you think it is. And obviously, if you're doing
-modeling, you'll want to log some metrics around model quality.
+::: callout-note
+## Literate ETL Jobs
+
+For ETL jobs in particular, there are two things I find are always
+essential to log.
+
+The first is the quality of data joins. If you suddenly have a lot of
+non-matches -- or duplicate matches, things can get very, very weird.
+
+The second is cross-tabulations before and after recoding the values of
+a variable. Making sure your recode logic does what you think and that
+the values coming in aren't changing over time has saved my butt many
+times.
+:::
 
 But we don't get to ignore the software engineering concerns of a good
 service experience for our users. This makes observability *even more*
 important in a data science context than in a pure software engineering
-one.
-
-In the data science context, you'll need to do more than literate
-programming. You'll want to get comfortable with how and what to log
-from your jobs, apps, and APIs, and how to emit metrics in a way that
-can be consumed by the kinds of services you want.
+one. You'll still need to think about monitoring metrics and how to log
+in the event of an actual code failure, but you've at least documented
+the data science qualities of your work.
 
 ## Working with logs and metrics
 
-Emitting logs can be straightforward. It can be as simple as just
-putting `print` statements throughout your code. Now, there are much
-better ways to do logging, but print statements are a start.
+I'm assuming you already have a good sense of how to include helpful
+tabulations in your literate programming formats, so the rest of this
+chapter is going to be able logging and monitoring as distinct from just
+including the right output in your Jupyter Notebook, Quarto document, or
+R Markdown document.
 
-Whether you need to emit metrics is a more subtle question. In many data
-science contexts, you aren't going to do monitoring on a real-time
-basis, so emitting metrics that can be used by a real-time monitoring
-system is less important than for other types of software.
+Monitoring and logging are somewhat nascent practices for data
+scientists. Part of the purpose of this chapter is to convince you they
+shouldn't be! And to show you that they're really not that hard.
+
+Emitting logs can be as simple as just putting `print` statements
+throughout your code -- but there are much better ways.
 
 And you're a data scientist -- if you're putting information into your
 logs, it's probably not hard to scrape that data into structured metrics
@@ -134,60 +122,80 @@ actually emitting metrics is way lower than you might realize, and most
 data scientists should probably pay more attention to emitting metrics
 than they do.
 
-### How to write logs
+Whether you need to emit metrics is a more subtle question. It really
+depends on the criticality of your system. In many data science
+contexts, you aren't going to do monitoring on a real-time basis, so
+emitting metrics that can be used by a real-time monitoring system is
+less important than for other types of software.
 
-As I mentioned, logging can be as simple as a bunch of print statements
-in your code. However, there are tools that make it way easier and more
-pleasant to create and use logs than just a bunch of manual print
-statements.
+### How to write logs
 
 Python has a standard logging package that is excellent and you should
 use that. R does not have a standard logging package, but there are a
 number of excellent CRAN packages for logging. My personal favorite is
 [`log4r`](https://cran.r-project.org/web/packages/log4r/index.html).
 
-Let's develop a quick mental model of how logging works inside software.
+Every time you log something, that is a *log entry*. Every log entry has
+*log data* -- that would be a description of what's being logged,
+perhaps something like "Button A Pressed". Every entry also has a *log
+level*. The log level describes how scary the thing you're logging is.
 
-Let's say you've decided that you should log every time the user presses
-a particular button. In your code, you're going to do the following.
-First you're going to call a *logger*. The logger is the runtime object
-that actually does the logging. When you call the logger, you're going
-to specify the *log data* as well as a *log level*. In this case, the
-message would be something like, "Button pressed". The logger aggregates
-the data, the level, and anything you've already specified should be
-added to each record -- like a timestamp or the user -- and turns that
-into a *log record*.
+Most logging libraries have 5-7 levels of logging. Both the Python
+`logging` library and `log4r` use these five levels from most to least
+scary:
 
-Now, you've got to *do* something with the log record. The logging
-software does this via a *handler* (called an *appender* in the `log4r`
-package). There are three general options for what might happen to your
-log record. The first (and most common) option is to save the log record
-to a file on disk. This file is saved somewhere where you can access it
-later. Many logging consumers are very comfortable watching a file
-somewhere and aggregating lines of the log as they are written to the
-file.
+1.  *Critical*: an error so big that the app itself shuts down. For
+    example, if your app cannot run without a connection to an outside
+    service, you might log an inability to connect as a Critical error.
+2.  *Error*: an issue that will make an operation not work, but that
+    won't bring down your app. In the language of software engineering,
+    you might think of this as a caught exception. An example might be a
+    user submitting invalid input.
+3.  *Warn/Warning*: an unexpected application issue that isn't fatal.
+    For example, you might include having to retry doing something or
+    noticing that resource usage is high. If something were to go wrong
+    later, these might be helpful breadcrumbs to look at.
+4.  *Info*: something normal happened in the app. These record things
+    like starting and stopping, successfully making database and other
+    connections, and configuration options that are used.
+5.  *Debug*: a deep record of what the app was doing. The debug log is
+    meant for people who understand the app code to be able to
+    understand what functions ran and with what arguments.
 
-You may additionally -- or instead -- want your log emitted somewhere on
-the system. In Linux, there are two common places to emit logs: *stdout*
-(standard output) and *stderr* (standard error). These are the typical
-places that messages are emitted -- normal ones to *stdout* and errors
-to *stderr*.
+The nice thing about using a logger as opposed to just print statements
+is that they make it easy to consistently use these log levels. They
+also can automatically append other helpful information to each log
+record -- like the timestamp or the active user.
 
-::: callout-note
-## Emitting to stdout
+As the log record is written, it has to be formatted using a *formatter*
+or *layout*. In most cases, the default log format is in plain text.
 
-These days, the most common reason to emit to standard outputs rather
-than save to a file on disk is because you're running inside a Docker
-container. As we'll get into more in [Chapter @sec-docker], anything
-that lives inside a Docker container is ephemeral. This is obviously bad
-if it's possible that the things you're trying to log will be important
-in the event the Docker container is unexpectedly killed.
+So if you log "Button pressed" at the info level, your log record might
+look something like this in the file:
 
-For running inside a Docker container (including in Kubernetes), a
-common pattern is to emit logs on *stdout* and *stderr* and have a
-service outside the container that consumes them and writes them
-somewhere more permanent and/or aggregates them.
-:::
+    2022-11-18 21:57:50 INFO Button Pressed
+
+But if you're shipping your logs off to have them consumed by some other
+service, you might prefer to have a highly structured log file. The most
+common structured logging format is JSON, though it's also possible to
+use something like YAML or XML. If you used JSON logging, the same
+record might be emitted as:
+
+    {
+      "time": "2022-11-18 21:57:50",
+      "level": "INFO", 
+      "data": "Button Pressed"
+    }
+
+Once your log record is created, it needs to be put somewhere for you to
+get it later via a *handler* in `logger` or an *appender* in `log4r`.
+
+The first (and most common) way to handle logs is just to append them to
+a file on disk. Many logging consumers are very comfortable watching a
+file somewhere and aggregating lines of the log as they are written to
+the file. If you're not already familiar with how to consume log files,
+you'll learn a lot more about this in [Chapter @sec-cmd-line] on using
+the command line.
 
 If you are emitting logs to file, you may also want to consider how long
 those logs stay around. *Log rotation* is the process of storing logs
@@ -211,234 +219,75 @@ rotation itself. `log4r` does not, but there is a Linux library called
     anything about the log rotation. It's just always writing to
     `my-log.log`.
 
-Lastly, it's possible you want to do something else completely different
-with your logs. This is most typical when you want logs of a certain
-level of criticality sent to an outside system immediately. For example,
-maybe you want to send the log as a slack message or text in the event a
-production system goes down.
+In some cases, you may not want to write to a file on disk. This is most
+common because you're running in a Docker container -- perhaps in a
+Kubernetes cluster. As you'll learn more about in [Chapter @sec-docker],
+anything that lives inside a Docker container is ephemeral. This is
+obviously bad if you're writing a log that might contain clues for why a
+Docker container was unexpectedly killed.
 
-As the log record is written, it has to be formatted using a *formatter*
-or *layout*. In most cases, the default log format is in plain text. So
-if you log "Button pressed" at the info level, your log record might
-look something like this in the file:
+In that case, you may want to direct log entries somewhere alternative
+or additional to a log file. Linux provides one facility specifically
+for receiving normal output called *stdout* (usually pronounced standard
+out) and one for errors called *stderr* (standard error).
 
-    2022-11-18 21:57:50 INFO Button Pressed
+In a Docker/Kubernetes context, you'll usually emit your logs inside the
+running container to stdout/stderr and then have some sort of more
+permanent service collecting the logs outside.
 
-But if you're shipping your logs off to have them consumed by some other
-service, you might prefer to have a highly structured log file. The most
-common structured logging format is JSON, though it's also possible to
-use something like YAML or XML. If you used JSON logging, the same
-record might be emitted as:
+Lastly, it's possible you want to do something else completely custom
+with your logs. This is most common for critical or error logs. For
+example, you may want to send an email, slack, or text message
+immediately if your system emits a high-level log message.
 
-    {
-      "time": "2022-11-18 21:57:50",
-      "level": "INFO", 
-      "data": "Button Pressed"
-    }
+Both `logger` and `log4r` have various ways of sending arbitrary
+messages to other services.
 
-Most logging libraries have 5-7 levels of logging. Both the Python
-`logging` library and `log4r` use the five levels below:
+The last piece to logging is configuring your logging environment. When
+you initialize your logger, you'll set the default level at which to log
+events. In `log4r`, the default level is INFO. For `logger`, it's
+WARNING. This means that, by default, any log less critical than those
+levels won't be logged.
 
-1.  Critical: an error so big that the app itself shuts down. For
-    example, if your app cannot run without a connection to an outside
-    service, you might log an inability to connect as a Critical error.
-2.  Error: an issue that will make an operation not work, but that won't
-    bring down your app. In the language of software engineering, you
-    might think of this as a caught exception. An example might be a
-    user submitting invalid input.
-3.  Warn/Warning: an unexpected application issue that isn't fatal. For
-    example, you might include having to retry doing something or
-    noticing that resource usage is high. If something were to go wrong
-    later, these might be helpful breadcrumbs to look at.
-4.  Info: something normal happened in the app. These record things like
-    starting and stopping, successfully making database and other
-    connections, and configuration options that are used.
-5.  Debug: a deep record of what the app was doing. The debug log is
-    meant for people who understand the app code to be able to
-    understand what functions ran and with what arguments.
-
-#### A Shiny App that logs
-
-Here's a silly function. It counts normally up to 5, but returns `NaN`
-starting at 5 and then forevermore if you use the output as the new
-input.
-
-``` {r}}
-counter <- function(n) {
-  # Do some math
-  n <- n %% 5 # Do a modulous for no reason
-  n <- n + n/n # Add n/n (it's always 1, right?)
-  n
-}
-```
-
-And here's a Shiny app that renders a number and a button you can use to
-"Count to Infinity!" Unfortunately, it uses our fatally flawed `counter`
-function, so it will stop working after 5.
-
-You can see in the app that I've already implemented some logging. At
-the beginning, I create a logger using the standard defaults and then
-log that the app is starting. You can also see that I log every time the
-button gets pressed.
-
-``` {r}}
-library(shiny)
-library(log4r)
-
-# Create log object
-log <- logger()
-# Log startup
-info(log, paste("App starting"))
-n <- reactiveVal(1)
-
-ui <- fluidPage(
-  titlePanel(
-    "Count to Infinity!"
-  ),
-  mainPanel(
-    actionButton(
-      "button", "Next Number"
-    ),
-    textOutput("number")
-  )
-)
-
-server <- function(input, output) {
-  observeEvent(
-    input$button, {
-      info(log, "Button Pressed")
-      # Increment value of count reactive
-      n(counter(n(), log))
-    })
-
-  output$number <- renderText(n())
-}
-
-# Run the application
-shinyApp(ui = ui, server = server)
-```
-
-If you're eagle-eyed, you'll also notice that I'm passing the log object
-into the counter function. I've modified it to do some logging, allowing
-me to debug log the value of `n` after I take the modulo and logging an
-error if `n` isn't a number.
-
-``` {r}}
-counter <- function(n, log) {
-  # Do some math
-  n <- n %% 5 # Do a modulous for no reason
-  debug(log, paste("n:", n))
-  n <- n + n/n # Add n/n (it's always 1, right?)
-
-  # Error if it's not a number
-  if (is.nan(n)) error(log, "n is not a number")
-
-  n
-}
-```
-
-So if I launch this app, here's what comes out in the logs. Note that by
-default, it's just printing to the console. In a production setting, I
-might want to configure where the log goes in the call to the `logger`
-function.
-
-    > runApp()
-    INFO  [2022-11-19 12:06:43] App starting
-    INFO  [2022-11-19 12:06:46] Button Pressed
-    INFO  [2022-11-19 12:06:47] Button Pressed
-    INFO  [2022-11-19 12:06:48] Button Pressed
-    INFO  [2022-11-19 12:06:50] Button Pressed
-    ERROR [2022-11-19 12:06:50] n is not a number
-
-If this was deployed in production and I got a call that my app was
-consistently returning `NaN`, this is pretty helpful. I can see that the
-app started normally, the button got pressed a few times just fine and
-then it started returning something that isn't a number.
-
-You'll notice that my debug printing of `n` doesn't appear anywhere
-though. That's because it's standard for logging packages only to print
-down to the `INFO` level by default. If I want `DEBUG` logging, I'll
-have to turn that on by changing the logger creator line to read
-
-``` {r}}
-log <- logger("DEBUG")
-```
-
-::: callout-note
-One nice thing about having a dev environment like we discussed in
-[Chapter @sec-code-promotion] is that you can have that environment
-configured to *always* do debug logging using a config setting to set
-the log level.
-:::
-
-Now when I run my app, I get the following logs:
-
-    > runApp()
-    INFO  [2022-11-19 12:18:57] App starting
-    INFO  [2022-11-19 12:19:00] Button Pressed
-    DEBUG [2022-11-19 12:19:00] n: 2
-    INFO  [2022-11-19 12:19:00] Button Pressed
-    DEBUG [2022-11-19 12:19:00] n: 3
-    INFO  [2022-11-19 12:19:01] Button Pressed
-    DEBUG [2022-11-19 12:19:01] n: 4
-    INFO  [2022-11-19 12:19:01] Button Pressed
-    DEBUG [2022-11-19 12:19:01] n: 0
-    ERROR [2022-11-19 12:19:01] n is not a number
-
-Aha! Now it might be obvious to me that I'm dividing 0 by 0 in my code
-and I can go fix it, all without having to actually step through my code
-line-by-line.
+This is a great use case for environment variables, as explained in
+[Section @sec-env-vars]. It's likely that you'll want to configure
+different levels of logging in production vs development apps.
 
 ### How to emit metrics
 
-Emitting metrics is somewhat more complicated than emitting logs, and
-for many use cases it won't be necessary. As I mentioned above, in many
-cases just scraping logs for any metrics you need is good enough. But if
-you need to do more complex metrics emission and aggregation, you've
-still got great options.
-
-::: callout-note
-## Metrics for ModelOps
-
-It's worth noting that the most common reasons Data Scientists need
-metrics is if they're running ML models in production. As I'm writing,
-there are a variety of frameworks and tools vying to be the top in this
-arena.
-
-Each of the major cloud providers has their own model hosting solution
-that includes monitoring capabilities, and there are many other paid
-options as well.
-
-For open source usage, I am (perhaps unsurprisingly) partial to the
-[vetiver](https://rstudio.github.io/vetiver-r/index.html) package being
-developed for both R and python by my colleagues at Posit.
-:::
+Monitoring is a much more nascent practice in Data Science than logging.
+The main place metrics have a footprint is in the MLOps/ModelOps domain.
+For many data science use cases, emitting metrics may not be necessary.
 
 These days, most people use the Prometheus/Grafana stack for open source
-monitoring. [Prometheus](https://prometheus.io/) is an open source
-monitoring tool that makes it easy to store metrics data, query that
-data, and alert based on it. [Grafana](https://grafana.com/) is an open
-source dashboarding tool that sits on top of Prometheus to do
-visualization of the metrics. They are usually used together to do
-monitoring and visualization of metrics.
+monitoring of servers and their resources.
+
+[Prometheus](https://prometheus.io/) is an open source monitoring tool
+that makes it easy to store metrics data, query that data, and alert
+based on it. [Grafana](https://grafana.com/) is an open source
+dashboarding tool that sits on top of Prometheus to do visualization of
+the metrics. They are usually used together to do monitoring and
+visualization of metrics.
 
 It's very easy to monitor the server your data science asset might sit
 on. Prometheus includes something called a *node exporter*, which makes
 it extremely easy to monitor the system resources of your server.
 
-The way this works is that your Data Science asset emits metrics in a
-format that Prometheus recognizes, Prometheus watches the metrics and
-stores them and alerts if necessary, and you have a Grafana dashboard
-available for visualizing those metrics as needed.
-
 Python has an official Prometheus client you can use for emitting
 metrics from a Python asset, and the
 [openmetrics](https://github.com/atheriel/openmetrics) package in R
-makes it easy to emit metrics from a Plumber API or (experimentally) a
-Shiny app.
+makes it easy to emit metrics from a Plumber API or Shiny app.
 
-QUESTION FOR READERS - do I need to do an example that includes emitting
-metrics?
+This means that you can instrument your Python or R asset to emits
+metrics in a format that Prometheus recognizes, Prometheus watches the
+metrics and stores them and alerts if necessary, and you have a Grafana
+dashboard available for visualizing those metrics as needed.
+
+For ModelOps in particular, there are also many specialized platforms
+for monitoring the performance of models over time. The open source
+`vetiver` package in R and Python is a model deployment framework that
+offers built-in facilities for extracting model metrics and putting them
+in a dashboard (there is currently no prometheus integration).
 
 ### Consuming Logs and Metrics
 
