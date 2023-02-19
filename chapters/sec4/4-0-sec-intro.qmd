@@ -1,71 +1,53 @@
 # Making it Enterprise-Grade {#sec-3-intro}
 
-In the last section, we walked through getting set up with a server,
-accessing and managing the server via SSH, understanding DNS and getting
-a real URL, securing the server with SSL/HTTPS, and right-sizing the
-server for your needs.
+Over the last few chapters, we walked through getting set up with a
+server, accessing and managing the server via SSH, understanding DNS and
+getting a real URL, securing the server with SSL/HTTPS, and right-sizing
+the server for your needs.
 
 And if you walked through the process with the labs, you've got a data
-science workbench running RStudio Server and JupyterHub all of your own.
-That's awesome!
+science workbench running RStudio Server, JupyterHub, and a
+model-serving API all of your own. That's awesome!
 
 That server is great if you're working alone on some data science
 projects you want to host in the cloud or if you've got a small team of
 data scientists in a small organization.
 
-But if you work at a large organization or an organization with higher
-security needs, or if you're having to manage a server for a larger team
-of data scientists, you're going to need to start considering some more
-complex ways of managing your data science environment for security and
-stability.
+But if you work at a large organization, an organization with
+more-stringent security needs, or a larger team of data scientists,
+you're going to need to start considering some more complex ways of
+managing your data science environment for security and stability.
 
-As a data scientist, you're primarily concerned with getting access to
-data to discover new exciting things and develop systems that can inform
-decisions at your organization. As you start trying to make systems more
-production-grade, security becomes more of an issue.
+Broadly speaking, these concerns fall under the context of *enterprise*.
+In this context, Enterprise roughly translates to "a large organization
+with well-defined IT/Admin responsibilities and roles". If you're not in
+an Enterprise, you likely have the rights and ability to just stand up a
+data science workbench and use it, like we did in the last section.
 
-It's easy to think that security isn't really relevant for you because
-you don't think you're much of a target, but security encompasses more
-than just bad actors trying to kick in the virtual front door.
+If you are in an Enterprise, you probably had to do all that on a
+personal account, and almost certainly couldn't connect to your real
+data sources.
 
-There are really two big concerns that IT/Admins are thinking about
-constantly -- access and availability.
+Doing open source data science in an Enterprise almost certainly means
+having to work across teams to get your workbench built and having to
+convince other people that you'll be a good actor at the end of the day.
 
-Access is about making sure that the right people can interact with the
-systems they're supposed to and that unauthorized people aren't. It's
-easy to think about the grandest version of this -- you don't want
-people outside your organization getting to your data science workbench.
-But there are also versions of this inside your organization -- how do
-you assign and manage who's able to access different data sets? Who is
-able to make server-wide changes on your workbench?
+The goal of the next few chapters is to help you understand the ways
+your data science workbench isn't enterprise and how to communicate with
+the IT/Admins at your organization who are responsible for such things.
+We'll get into how to integrate open-source data science into an
+organization, what more complex network architecture might look like,
+how auth works, and how to scale your environment.
 
-Availability is about making sure that your enterprise-grade systems are
-around when people need them, and that they stand up under whatever load
-they face during the course of operating.
-
-There are two main ways to ensure that systems remain accessible and
-available -- mainly they need to be secured from bad actors or
-accidental breakage, and they need proper resourcing to stay online.
-
-This section is about some of the most important ways IT/Admin
-professionals think about keeping their systems available and
-accessible.
-
-Hopefully you won't have to implement much of what's in this section
-yourself. Instead, the hope is that reading and understanding the
-content in this chapter will help make you a better partner to the teams
-at your organization who *are* responsible for these things. You'll be
-equipped with the language and mental models to ask good questions and
-give informative answers to the questions the IT/Admins have about your
-team's requirements.
+Hopefully you won't have to implement much of this yourself. Instead,
+the hope is that reading and understanding the content in this chapter
+will help make you a better partner to the teams at your organization
+who *are* responsible for these things. You'll be equipped with the
+language and mental models to ask good questions and give informative
+answers to the questions the IT/Admins have about your team's
+requirements.
 
 ## The deal with security
-
-Some organizations have standalone security teams -- I tend to think
-this is an anti-pattern. For example, your server could be unavailable
-because a bad actor broke in and took it offline, someone used up all
-the resources and it crashed, or because the networking broke and it
-can't be reached.
 
 As a data scientist, you probably have a getting-things-done kind of
 mindset. And that's great!
@@ -75,26 +57,37 @@ organization, you're probably finding that they have a whole different
 set of concerns -- perhaps concerns that you're struggling to
 communicate with them about.
 
-As a data scientist, you're probably thinking that you've secured your
-server. After all, we protected the traffic to and from the server with
-SSL/HTTPS so no one can snoop on it or jump in the middle and we
-configured authentication in the server, so only your authorized users
-can get in.
+So maybe you're frustrated to notice that there *isn't* a chapter in
+this section on security. That's because security isn't just one
+particular set of practices or decision. Instead, security is about
+negotiating tradeoffs and making the best decision for your
+organization.
 
-You're not wrong, but that's not how security professionals think about
-security. IT security professionals think about *security in layers*.
-And while you've done a good job setting your server up to comply with
-basic security best practices, there are no layers. That server front
-door is open to the internet. Literally anyone in the world can come to
-that authentication page for your RStudio Server or JupyterHub and start
-trying out passwords. That means you're just one person choosing the
-password `password` away from a bad actor getting access to your server.
+Indeed, this entire part of the book is really about security and the
+closely-related topic of stability.
+
+Broadly, security for a data science platform is about ensuring its
+usefulness. And it's true that a data science platform that allows bad
+actors to break in and steal data is not useful. But it's also the case
+that a platform that doesn't function because its too locked down or
+because someone used all the system resources and crashed the server
+also is not useful.
+
+A great security team is constantly considering tradeoffs regarding
+*access* and *availability*.
+
+Access is about making sure that the right people can interact with the
+systems they're supposed to and that unauthorized people can't.
+Availability is about making sure that your enterprise-grade systems are
+around when people need them, and that they are stable during whatever
+load they face during the course of operating.
 
 Lest you think you're immune because you're not an interesting target,
 there are plenty of bots out there randomly trying to break in to every
 existing IP address, not because they care about what's inside, but
 because they want to co-opt your resources for their own purposes like
-crypto mining or virtual attacks on Turkish banks.[^4-0-sec-intro-1]
+crypto mining or virtual DDOS attacks on Turkish
+banks.[^4-0-sec-intro-1]
 
 [^4-0-sec-intro-1]: Yes, these both really happened.
 
@@ -112,49 +105,9 @@ that someone makes a mistake! What if they mean to just delete a project
 directory, but forget to add the whole path in and wipe your whole
 server. Yikes!
 
-In this section, we're going to address the topics that most often come
-up around the security and stability of a platform to do open source
-data science in an enterprise context.
-
-::: callout-note
-## What is enterprise?
-
-Enterprise is a term that gets thrown around a lot. In this context,
-Enterprise roughly translates to "a large organization with well-defined
-IT/Admin responsibilities and roles". If you're not in an Enterprise,
-you likely have the rights and ability to just stand up a data science
-workbench and use it, like we did in the last section.
-
-If you are in an Enterprise, you probably had to do all that on a
-personal account, and almost certainly couldn't connect to your real
-data sources.
-
-Doing open source data science in an Enterprise almost certainly means
-having to work across teams to get your workbench built and having to
-convince other people that you'll be a good actor at the end of the day.
-:::
-
-Section Outline (just for Alex, delete later):
-
-Open Source in the enterprise
-
--   Managing versions of R + Python
-
--   Managing packages
-
-Staging environments + Infra as Code
-
--   Data stance
-
--   Security + Sandboxing
-
-Resourcing/Scaling
-
-Auth
-
-Secure Networking
-
-### Proper Resourcing
+Stability is also a big concern that rises along with the scale of the
+team and the centrality of their operations to the functioning of your
+organization.
 
 If you're a small data science team, you might not be too concerned if
 someone accidentally knocks your data science workbench offline for 30
@@ -169,13 +122,8 @@ isn't a sorta funny occurrence you can all fix together -- it's a
 problem that must be fixed immediately -- or even better avoided
 altogether.
 
-That's why the third chapter in this section is going to get deep into
-how IT/Admins think about scaling a server to avoid hitting resource
-constraints. We'll also get into some of the tools, like load balancers
-and Kubernetes that they use to scale the servers so you can have an
-intelligent conversation with them about what you need.
-
-### Tooling to fit it all together
+IT/Admins think hard about how to provide resources in a way that avoids
+having servers go down because they're hitting resource constraints.
 
 Back in section one, we learned about environments as code -- using code
 to make sure that our data science environments are reproducible and can
@@ -188,4 +136,7 @@ some of the things you can do with IaC tooling, and will introduce some
 key concepts and some of the popular tooling options for doing IaC you
 can try out.
 
-TODO: developing relationships with IT/Admins
+There is no one-size-fits-all (or even most) position for security.
+Instead, great security teams are constantly articulating and making
+decisions about tradeoffs.
+
