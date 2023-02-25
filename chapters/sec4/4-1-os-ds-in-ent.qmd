@@ -1,148 +1,393 @@
 # Open Source Data Science in the Enterprise {#sec-osds-ent}
 
-This chapter is going to be devoted to two of the biggest challenges of doing data science in the enterprise - the relationship between IT/Admin and data scientists, and how to make free and open source software (FOSS) acceptable to enterprise IT/Admins.
+If you're working in an enterprise, there is almost certainly an
+experienced IT/Admin organization nearby. They probably know a lot about
+auth, scaling, storage, networking, and more. But they most likely know
+very little about open source, and they likely know even less about the
+work of a data scientist.
+
+This chapter explains a few of the most common things IT/Admins usually
+don't understand about how data scientists work. By the end of this
+chapter, you will understand what IT/Admins need to understand about
+these topics to be able to better support you as a user of the
+environment they maintain.
 
 ## Data Science Sandboxes
 
-In the chapter on environment as code tooling, we discussed how you want to create a version of your package environment in a safe place and then use code to share it with others and promote it into production.
+In [Chapter @sec-code-promotion] on code promotion, we talked about
+wanting to create separate dev/test/prod environments for your data
+science assets. In many organizations, your good intentions to do
+dev/test/prod work for your data science assets are insufficient.
 
-The IT/Admin group at your organization probably is thinking about something similar, but at a more basic level. They want to make sure that they're providing a great experience to you -- the users of the platform.
+In the enterprise, it's often the case that IT/Admins are required to
+ensure that your dev work can't wreak havoc on actual production
+systems. If you can work with your organization's IT/Admins to get a
+place to work, this is a good thing! It's nice to have a sandbox where
+you can do whatever you want with no concern of breaking anything real.
 
-So they probably want to make sure they can upgrade the servers you're using, change to a newer operating system, or upgrade to a newer version of R or Python without interrupting your use of the servers.
+There are three components to a data science sandbox:
 
-These are the same concerns you probably have about the users of the apps and reports you're creating. In this case, I recommend a two-dimensional grid -- one for promoting the environment itself into place for IT/Admins and another for promoting the data science assets into production.
+1.  Free read-only access to real data
+2.  Relatively broad access to packages
+3.  A process to promote data science projects into production
 
-In order to differentiate the environments, I often call the IT/Admin development and testing area *staging*, and use dev/test/prod language for the data science promotion process.
+Many IT/Admins are familiar with building workbenches for other sorts of
+software development tasks, so they may believe they understand what you
+need.
 
-### Creating Dev/Test/Prod
+#### Read-Only Data Access
 
-In [Chapter @sec-code-promotion] on code promotion, we talked about wanting to create separate dev/test/prod environments for your data science assets. In many organizations, your good intentions to do dev/test/prod work for your data science assets are insufficient.
+In software engineering, the shape of the data in the system matters a
+lot, but the content doesn't matter much. If you're building software to
+do inventory tracking, you're perfectly fine testing on data that isn't
+of a real inventory as long as it's formatted the same as real inventory
+data. That means that a software engineering dev environment doesn't
+require access to any real data.
 
-In the enterprise, it's often the case that IT/Admins are required to ensure that your dev work can't wreak havoc on actual production systems are data. In many cases, this is actually a good thing!
+IT/Admins may believe that providing a standalone or isolated
+environment for you to work in is sufficient. You're probably wincing
+reading this knowing that it's not the case.
 
-In this case, I recommend you work with your IT/Admins to create a data science sandbox - a place where you can have free access to the data and packages you need to develop new assets to your heart's content.
+As you know, data science isn't like that. In data science, what you're
+doing in dev environments -- exploring relationships between variables,
+visualizing, training models, looks much more different from test and
+prod than for software engineering. You need a place where you can work
+with real data, explore relationships in the data, and try out ways of
+modeling and visualizing the data to see what works.
 
-Then you need a promotion process to get into "higher lanes".
+In many cases, creating a data science sandbox with *read-only* access
+to data is a great solution. If you're creating a tool that also writes
+data, you can write the data only within the dev environment.
 
-There are two items that are likely to raise friction between you and the IT/Admins as you're trying to create a data science sandbox. The first is access to data, and the second is access to packages.
+If you're able to do this, you can explore the data to your heart's
+content without the IT/Admin team having to worry you're going to mess
+up production data.
 
-Many IT/Admins are familiar with building workbenches for other sorts of software development tasks, which are fundamentally different from doing data science. Because so much of data science is exploratory, you need a safe place where you can work with real data, explore relationships in the data, and try out ways of modeling and visualizing the data to see what works.
+Depending on your organization, they may also be worried about data
+exfiltration -- people intentionally or accidentally removing data from
+the sandbox environment. In that case, you may want to run your sandbox
+without the ability to connect to the internet, sometimes called
+*airgapped* or *offline*. More on how to work in an airgapped
+environment is in [Chapter @sec-networks-2].
 
-But for many software development tasks, access to fake or mock data is sufficient. Helping IT/Admin understand that you need access to real data, even if just a sample or in read-only mode is likely to be one of the highest hurdles to getting a data science sandbox that's actually useful. In data science, the dev process looks less like test and prod -- in software engineering you're generally iterating on an app, writing code, and then promoting it into a testing lane. In data science, the dev activities are entirely different from the test or prod activities -- you can't start building a model or shiny app until you've really explored the data in depth.
+#### Package Availability
 
-In many cases, creating a data science sandbox with *read-only* access to data is a great solution. If you're creating a tool that also writes data, you can write the data only within the dev environment.
+Your organization may not have any restrictions on the packages you can
+install and use in your environment. If so, that's great! You should
+still use environment as code tooling as we explored in [Chapter
+@sec-env-as-code].
 
-The other issue that can be a tough sell is getting freer access to packages in the dev environment. As you probably know, part of the exploratory data process is trying out new packages -- is it best to use this modeling package or that, best to use one type of visualization or another. If you can convince your IT/Admins to give you freer access to packages in dev, that's ideal.
+But other organizations don't allow free-and-open access to packages
+inside their environments for security or other reasons. They may have
+restrictive networking rules that don't allow you to reach our to CRAN,
+BioConductor, PyPI, or GitHub to install packages publicly.
 
-You can work with them to figure out what the promotion process will look like. It's easy to generate a list of the packages you'll need to promote apps or reports into production with tools like `renv` or `venv`. Great collaborations with IT/Admin are possible if you can develop a procedure where you give them package manifests that they can compare to allow-lists and then make those packages available.
+There may also be rules about having to validate packages -- for
+security and/or correctness -- before they can be used in a production
+context.
 
-### Infrastructure As Code Tooling
+This is difficult, since the exploratory dev process often involves
+trying out new packages -- is it best to use this modeling package or
+that, best to use one type of visualization or another. If you can
+convince your IT/Admins to give you freer access to packages in dev,
+that's ideal.
 
-There are many, many varieties of infrastructure as code tooling. There are many books on infrastructure as code tooling and I won't be covering them in any depth here. Instead, I'll share a few of the different "categories" (parts of the stack) of infrastructure as code tooling and suggest a few of my favorites.
+You can work with them to figure out what the promotion process will
+look like. It's easy to generate a list of the packages you'll need to
+promote apps or reports into production with tools like `renv` or
+`venv`. Great collaborations with IT/Admin are possible if you can
+develop a procedure where you give them package manifests that they can
+compare to allow-lists and then make those packages available.
 
-To get from "nothing" to a usable server state, there are (at minimum) two things you need to do -- provision the infrastructure you need, and configure that infrastructure to do what you want.
+#### A Promotion Process
 
-For example, let's say I'm standing up a server to deploy a simple shiny app. In order to get that server up, I'll need to stand up an actual server, including configuring the security settings and networking that will allow the proper people to access the server. Then I'll need to install a version of R on the server, the Shiny package, and a piece of hosting software like Shiny Server.
+The last thing you'll need is a process to promote content out of the
+dev environment into test or prod. The parameters of this process will
+vary a lot depending on your organization.
 
-So, for example, you might use AWS's CloudFormation to stand up a virtual private cloud (VPC), put an EC2 server instance inside that VPC, attach an appropriately-sized storage unit, and attach the correct networking rules. Then you might use Chef to install the correct software on the server and get your Shiny app up-and-running.
+In many organizations, data scientists won't have permissions to deploy
+into the prod environment -- only a small group of admins will have the
+ability to verify changes and submit them to the prod environment.
 
-In infrastructure as code tooling, there generally isn't a clear dividing line between tools that do provisioning and tools that do configuration...but most tools lean one way or the other.
+In this case, a code promotion strategy (see [Chapter
+@sec-code-promotion]) co-designed with your IT/Admins is the way to go.
+You want to hand off a fully-baked production asset so all they need to
+do is put it into the right place, preferably with CI/CD tooling.
 
-Basically any tool does provisioning will directly integrate into the APIs of the major cloud providers to make it easy to provision cloud servers. Each of the cloud providers also has their own IaC tool, but many people prefer to use other tools when given the option (to be delicate).
+## Dev/Test/Prod for Admins
 
-The other important division in IaC tools is declarative vs imperative. In declarative tooling, you simply enumerate the things you want, and the tool makes sure they get done in the right order. In contrast, an imperative tool requires that you provide actual instructions to get to where you want to go.
+In the chapter on environment as code tooling, we discussed how you want
+to create a version of your package environment in a safe place and then
+use code to share it with others and promote it into production.
 
-In many cases, it's easy to be declarative with provisioning servers, but it's often useful to have a way to fall back to an imperative mode when configuring them because there may be dependencies that aren't obvious to the provisioning tool, but are easy to put down in code. If the tool does have an imperative mode, it's also nice if it's compatible with a language you'd be comfortable with.
+The IT/Admin group at your organization probably is thinking about
+something similar, but at a more basic level. They want to make sure
+that they're providing a great experience to you -- the users of the
+platform.
 
-One somewhat complicated addition to the IaC lineup is Docker and related orchestration tools. There's a whole chapter on containerization and docker, so check that out if you want more details. The short answer is that docker can't really do provisioning, but that you can definitely use docker as a configuration management IaC tool, as long as you're disciplined about updating your Dockerfiles and redeployment when you want to make changes to the contents.
+So they probably want to make sure they can upgrade the servers you're
+using, change to a newer operating system, or upgrade to a newer version
+of R or Python without interrupting your use of the servers.
 
-Basically none of these tools will save you from your own bad habits, but they can give you alternatives.
+These are the same concerns you probably have about the users of the
+apps and reports you're creating. In this case, I recommend a
+two-dimensional grid -- one for promoting the environment itself into
+place for IT/Admins and another for promoting the data science assets
+into production.
 
-In short, exactly which tool you'll need will depend a lot on what you're trying to do. Probably the most important question in choosing a tool is whether you'll be able to get help from other people at your organization on it. So if you're thinking about heading into IaC tooling, I'd suggest doing a quick survey of some folks in DevOps and choosing something they already know and like.
+In order to differentiate the environments, I often call the IT/Admin
+development and testing area *staging*, and use dev/test/prod language
+for the data science promotion process.
 
-## FOSS in Enterprise
+Back in section one, we learned about environments as code -- using code
+to make sure that our data science environments are reproducible and can
+be re-created as needed.
 
-Succeeding with Open Source in an enterprise context means forging a good partnership with IT/Admin. Many IT/Admins have only limited experience with FOSS at all and even if they're used to FOSS, they probably have almost no experience with FOSS for data science, which looks a good bit different from many other applications of FOSS.
+This idea isn't original -- in fact, DevOps has it's own set of
+practices and tooling around using code to manage DevOps tasks, broadly
+called Infrastructure As Code (IaC).
 
-### Legal issues with open source
+To get from "nothing" to a usable server state, there are (at minimum)
+two things you need to do -- provision the infrastructure you need, and
+configure that infrastructure to do what you want.
 
-When using Free and Open Source Software (FOSS) in the enterprise, legal concerns may arise about the legality of using this software.
+For example, let's say I'm standing up a server to deploy a simple shiny
+app. In order to get that server up, I'll need to stand up an actual
+server, including configuring the security settings and networking that
+will allow the proper people to access the server. Then I'll need to
+install a version of R on the server, the Shiny package, and a piece of
+hosting software like Shiny Server.
 
-FOSS is made such by the license applied to it. There are a variety of different open source licenses with different implications for the organization that wants to make use of them. I am not a lawyer and this is not legal advice, but here's a little context on the issues at hand.
+So, for example, you might use AWS's CloudFormation to stand up a
+virtual private cloud (VPC), put an EC2 server instance inside that VPC,
+attach an appropriately-sized storage unit, and attach the correct
+networking rules. Then you might use Chef to install the correct
+software on the server and get your Shiny app up-and-running.
 
-There are some open source licenses that are called "permissive" because they allow broad use of the software licensed under them. For example, the MIT license allows anyone to, "use, copy, modify, merge, publish, distribute, sublicense, and/or sell" software that is licensed under MIT -- and it doesn't even require attribution!
+In infrastructure as code tooling, there generally isn't a clear
+dividing line between tools that do provisioning and tools that do
+configuration...but most tools lean one way or the other.
 
-This means that you are broadly allowed to use something MIT-licensed and do what you want with it, without having to worry too much about the implications.[^3-1-os-ds-in-ent-1] Other licenses (like some of the BSD variants) allow you to do basically whatever you want, but do require attribution.
+Basically any tool does provisioning will directly integrate into the
+APIs of the major cloud providers to make it easy to provision cloud
+servers. Each of the cloud providers also has their own IaC tool, but
+many people prefer to use other tools when given the option (to be
+delicate).
 
-[^3-1-os-ds-in-ent-1]: Again, not legal advice.
+It's worth noting that Docker by itself is not an IaC tool. A Dockerfile
+is a reliable way to re-create the container, but that doesn't get you
+all the way to a deployed container that's reliable. You'll need to
+combine a container with a deployment framework like Docker Compose or
+Kubernetes, as well as a way to stand up the servers that underlie that
+cluster.
 
-On the other hand, there are more restrictive or "copyleft" licenses -- popular ones are GPL and AGPL. Aside from restrictions these licenses may place on the usage of the software, they also require that derivative works are released under *the same license*.
+It's also worth noting that IaC may or may not be deployed using CI/CD.
+It's generally a good practice to do so, but you can have IaC tooling
+that's deployed manually.
 
-R is released under GPL, a copyleft licenses. Python is released under a specialized Python Software Foundation (PSF) license, which is a permissive license.
+Basically none of these tools will save you from your own bad habits,
+but they can give you alternatives.
 
-This means, for example, that you can not take the base R language, rewrite a section of it and create a proprietary version of R you want people to pay for.[^3-1-os-ds-in-ent-2]
+## Package Management in the Enterprise
 
-[^3-1-os-ds-in-ent-2]: Again, not a lawyer, but I believe this is a pretty clear example.
+In the chapter on environments as code, we went in depth on how to
+manage a per-project package environment that moves around with that
+project. This is a best practice and you should do it.
 
-However, there is disagreement among lawyers about the scope of copyleft licenses. Many copyright lawyers believe that the extent of a derivative work for the purpose of a copyleft license is literally repackaging a bit of code and using it.
+But in some Enterprise environments, there may be further requirements
+around how packages get into the environment, which packages are
+allowed, and how to validate those packages.
 
-Beyond the base languages themselves, packages in R and Python are released under whatever licenses the package authors decide.
+### Open Source in Enterprise
 
-So, for example, the popular ggplot2 R package for plotting is released under an MIT license. But wait, you say, R is GPL, doesn't that mean that derivative works also have to be a copyleft license? This is allowed because ggplot2 is uses R, but the source code of the R language doesn't actually appear in the `ggplot2` package, so it isn't bound by R's GPL license.[^3-1-os-ds-in-ent-3]
+Open Souce software is the water code-first data science swims in. R and
+Python are open source. Any package you'll access on CRAN, BioConductor,
+or PyPI is open source.
 
-[^3-1-os-ds-in-ent-3]: There are experts who would disagree and say this is not allowed. There isn't actually much case law in this area, so it's not entirely sure how this would shake out if it ever went to court.
+Even if you don't know the details, you're probably already a big
+believer in the power of Free and Open Source Software (FOSS) to help
+people get stuff done.
 
-There is a grey area about using these packages. Say I create an app or plot in R and then share that plot with the public -- is that app or plot bound by the license as well? Do I now have to release my source code to the public? Many would argue no -- it uses R, but doesn't derive from R in any way. Others have stricter concerns. Most interpretations of the very strict AGPL license is that running a service based on AGPL licensed code requires releasing the source code. Understandably, organizations that themselves sell software tend to be a little more concerned about these issues.
+In the enterprise, it is sometimes the case that people are more
+acquainted with the risks of open source than the benefits.
 
-There are disagreements on this among lawyers, and you should be sure to talk to a lawyer at your organization if you have concerns.
+FOSS is defined by a legal license. When you put something out on the
+internet, you can provide no licensing at all. That means that people
+can do whatever they want with it, but they also have no reassurances
+you might not come to sue them later.
 
-### Package Management in the Enterprise
+I am not a lawyer and this is not legal advice, but hopefully this is
+helpful context on the legal issues around FOSS software.
 
-In the chapter on environments as code, we went in depth on how to manage a per-project package environment that moves around with that project. This is a best practice and you should do it.
+Putting a license on a piece of software makes clear what is and isn't
+allowed with that piece of software.
 
-But in some Enterprise environments, there may be further requirements around how packages get into the environment, which packages are allowed, and how to validate those packages.
+The type of license you're probably most familiar with is a copyright. A
+copyright gives the owner exclusivity to do certain things with whatever
+falls under the copyright. FOSS licenses are the opposite -- they
+guarantee that you're freely allowed to do what you want with the
+software, though there may be other obligations as well.
 
-The biggest difference between libraries and repositories is how many versions of packages are allowed. Because libraries can house (at most) one version of any given package, they should live as close to where they're used as possible.
+The point of FOSS is to allow people to build on each other's work. So
+the *free* in FOSS is about *freedom*, not about zero cost. As a common
+saying goes -- it means free as in free speech, not free as in free
+beer.
 
-In contrast, it's nice to manage repositories at as general of a level as possible for convenience's sake.
+There are many different flavors of open-source licenses, and all of
+them I'm aware of (even the
+[anti-capitalist](https://anticapitalist.software/) one) allows you to
+charge for access. The question is what you're allowed to do *after* you
+acquire the software.
 
-In some cases, enterprises are happy to allow data scientists open access to any packages on CRAN, PyPI, GitHub, and elsewhere. But most enterprises have somewhat more restrictive stances for security reasons.
+Basically all open source licenses guarantee *four freedoms*. These are
+the freedom to view and inspect the source code, to run the software, to
+modify the software, and to redistribute the software as you see fit.
 
-In these cases, they have to do two things - make sure that public repositories are not available to users of their data science platforms, and use one of these repository tools to manage the set of packages that are available inside their environment. It often takes a bit of convincing, but a good division of labor here is generally that the IT/Admins manage the repository server and what's allowed into the environment and the individual teams manage their own project libraries.
+Within those parameters, there are many different kinds of open source
+licenses. The [Open Source Initiative](https://opensource.org/licenses/)
+lists dozens of different licenses with slightly different parameters,
+but they fall into two main categories -- *permissive* and *copyleft*.
+
+Permissive licenses allow you to do basically whatever you want with the
+software.
+
+For example, the common MIT license allows you to, "use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell" MIT-licensed
+software without attribution. The most important implication of this is
+that you can take MIT-licenses software, incorporate it into some other
+piece of code, and keep *that* code completely closed.
+
+Copyleft or *viral* licenses require that any derivative works are
+released under *the same license*. The idea is that open source software
+should beget more open source software and not silently be used by big
+companies to make megabucks.
+
+The biggest concern with copyleft licenses is that they might propagate
+into the private work you are doing inside your company. This concern is
+especially keen at organizations that themselves sell proprietary
+software. For example, what if a court were to rule that Apple or Google
+had to suddenly open source all their software?
+
+This is a subtle concern and largely revolves around what it means to
+*include* another piece of software. Many organizations deem that
+inclusion only happens if you were to literally copy/paste open source
+code into your code. In this view, the things *created* with open source
+software *are not themselves* open source.
+
+The reality is that there have been basically no legal cases on this
+topic and nobody knows how it would shake out if it did get to court, so
+some organizations err on the side of caution.
+
+So one of the concerns around open source software is the mixure of
+licenses involved. R is released under a copyleft GPL license, Python
+under a permissive Python Software Foundation (PSF) license, RStudio
+under a copyleft AGPL, and Jupyter Notebook under a permissive modified
+BSD. And every single package author can choose a license for
+themselves.
+
+Say I create an app or plot in R and then share that plot with the
+public -- is that app or plot bound by the license as well? Do I now
+have to release my source code to the public? Many would argue no -- it
+uses R, but doesn't derive from R in any way. Others have concerns that
+stricter interpretations of copyleft might hold up in court if it were
+to come to that.
+
+There are disagreements on this among lawyers, and you should be sure to
+talk to a lawyer at your organization if you have concerns.
+
+### Dealing with Package Restrictions
+
+[Chapter @sec-env-as-code] on environments as code dealt with how to
+create a reproducible version of your package library for any given
+piece of content. But in some enterprises, you won't be able to freely
+create a library. Instead, your organization may have restrictions on
+package installation and will need to gate the packages that are allowed
+into your environment.
+
+In order to enact these restrictions, IT/Admins have to do two things -
+make sure that public repositories are not available to users of their
+data science platforms, and use one of these repository tools to manage
+the set of packages that are available inside their environment. It
+often takes a bit of convincing, but a good division of labor here is
+generally that the IT/Admins manage the repository server and what's
+allowed into the environment and the individual teams manage their own
+project libraries.
 
 ::: callout-note
 ## Amount of Space for Packages
 
-When admins hear about a package cache per-project, they start getting worried about storage space. I have heard this concern many times from admins who haven't yet adopted this strategy, and almost never heard an admin say they were running out of storage space because of package storage.
+When admins hear about a package cache per-project, they start getting
+worried about storage space. I have heard this concern many times from
+admins who haven't yet adopted this strategy, and almost never heard an
+admin say they were running out of storage space because of package
+storage.
 
-The reality is that most R and Python packages are very small, so storing many of them is reasonably trivial.
+The reality is that most R and Python packages are very small, so
+storing many of them is reasonably trivial.
 
-Also, these package storage tools are pretty smart. They have a shared package cache across projects, so each package only gets installed once, but can be used in a variety of projects.
+Also, these package storage tools are pretty smart. They have a shared
+package cache across projects, so each package only gets installed once,
+but can be used in a variety of projects.
 
-It is true that each user then has their own version of the package. Again, because packages are small, this tends to be a minor issue. It is possible to make the package cache one that is shared across users, but the (small) risk this introduces of one user affecting other users on the server is probably not worth the very small cost of provisioning enough storage that this just isn't an issue.
+It is true that each user then has their own version of the package.
+Again, because packages are small, this tends to be a minor issue. It is
+possible to make the package cache one that is shared across users, but
+the (small) risk this introduces of one user affecting other users on
+the server is probably not worth the very small cost of provisioning
+enough storage that this just isn't an issue.
 :::
 
-Many enterprises run some sort of package repository software. Common package repositories used for R and Python include Jfrog Artifactory, Sonatype Nexus, Anaconda Business, and Posit Package Manager.
+Many enterprises run some sort of package repository software. Common
+package repositories used for R and Python include Jfrog Artifactory,
+Sonatype Nexus, Anaconda Business, and Posit Package Manager.
 
-Artifactory and Nexus are generalized library and package management solutions for all sorts of software, while Anaconda and Posit Package Manager are more narrowly tailored for data science use cases.
+Artifactory and Nexus are generalized library and package management
+solutions for all sorts of software, while Anaconda and Posit Package
+Manager are more narrowly tailored for data science use cases.
 
-There are two main concerns that come up in the context of managing packages for the enterprise. The first is how to manage package security vulnerabilities.
+There are two main concerns that come up in the context of managing
+packages for the enterprise. The first is how to manage package security
+vulnerabilities.
 
-In this context, the question of how to do security scanning comes up. What exactly security professionals mean by scanning varies widely, and what's possible differs a good bit from language to language.
+In this context, the question of how to do security scanning comes up.
+What exactly security professionals mean by scanning varies widely, and
+what's possible differs a good bit from language to language.
 
-It is possible to imagine a security scanner that actually reads in all of the code in a package and identifies potential security risks -- like usage of insecure libraries, calls to external web services, or places where it accesses a database. The existence of tools at this level of sophistication exist roughly in proportion to how popular the language is and how much vulnerability there is.
+It is possible to imagine a security scanner that actually reads in all
+of the code in a package and identifies potential security risks -- like
+usage of insecure libraries, calls to external web services, or places
+where it accesses a database. The existence of tools at this level of
+sophistication exist roughly in proportion to how popular the language
+is and how much vulnerability there is.
 
-So javascript, which is both extremely popular and also makes up most public websites, has reasonably well-developed software scanning. Python, which is very popular, but is only rarely on the front end of websites has fewer scanners, and R, which is far less popular has even fewer. I am unaware of any actual code scanners for R code.
+So javascript, which is both extremely popular and also makes up most
+public websites, has reasonably well-developed software scanning.
+Python, which is very popular, but is only rarely on the front end of
+websites has fewer scanners, and R, which is far less popular has even
+fewer. I am unaware of any actual code scanners for R code.
 
-One thing that can be done is to compare a packaged bit of software with known software vulnerabilities.
+One thing that can be done is to compare a packaged bit of software with
+known software vulnerabilities.
 
-New vulnerabilities in software are constantly being identified. When these vulnerabilities are made known to the public, the CVE organization attempts to catalog them all. One basic form of security checking is looking for the use of libraries with known CVE records inside of packages.
+New vulnerabilities in software are constantly being identified. When
+these vulnerabilities are made known to the public, the CVE organization
+attempts to catalog them all. One basic form of security checking is
+looking for the use of libraries with known CVE records inside of
+packages.
 
-The second thing your organization may care about is the licenses software is released under. They may want to disallow certain licenses -- especially aggressive copyleft licenses -- from being present in their codebases.
+The second thing your organization may care about is the licenses
+software is released under. They may want to disallow certain licenses
+-- especially aggressive copyleft licenses -- from being present in
+their codebases.
 
 ## Comprehension Questions
 
-1.  What is the purpose of creating a data science sandbox? Who benefits most from the creation of a sandbox?
-2.  Why is using infrastructure as code an important prerequisite for doing Dev/Test/Prod?
-3.  What is the difference between permissive and copyleft open source licenses? Why are some organizations concerned about using code that includes copyleft licenses?
-4.  What are the key issues to solve for open source package management in the enterprise?
+1.  What is the purpose of creating a data science sandbox? Who benefits
+    most from the creation of a sandbox?
+2.  Why is using infrastructure as code an important prerequisite for
+    doing Dev/Test/Prod?
+3.  What is the difference between permissive and copyleft open source
+    licenses? Why are some organizations concerned about using code that
+    includes copyleft licenses?
+4.  What are the key issues to solve for open source package management
+    in the enterprise?
