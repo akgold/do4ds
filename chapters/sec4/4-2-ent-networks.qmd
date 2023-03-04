@@ -1,0 +1,441 @@
+# Enterprise Networking {#sec-ent-networks}
+
+In [Chapter @sec-basic-networks] we went over a general introduction to
+networking, including an introduction to DNS, how to get and use a real
+URL, and making sure your servers are secure with SSL/HTTPS.
+
+These are requirements for *any* server configuration, so it's great
+that you understand them now. If you're in an environment where you're
+configuring your own server, this is probably enough. But if you're
+working with an enterprise IT/Admin team -- or a standalone networking
+team -- they've got a much more complicated setup in mind. This chapter
+aims to equip you with an understanding of the kind of networking setup
+they're going to configure for you and how to talk to them about it.
+
+In [Chapter @sec-basic-networks], we talked about the analogy of a server as
+an apartment building. That's a great analogy to your server -- the
+front door sits on a public street and people can knock on the door as
+they please. You have to check in with the front desk guard to get in,
+so there's a good amount of security. But there isn't security in
+layers. If someone were to overwhelm or fool the front door guard, or
+find a side door left open, they can run amok inside the building.
+
+In enterprises, this isn't acceptable. Instead, the setup of an
+enterprise network looks like a castle keep behind a drawbridge and a
+front gate.
+
+TODO: image of apartment building vs castle
+
+Relative to a front door that's on the internet, a drawbridge provides
+two big advantages.
+
+First, the drawbridge reduces the attack surface for malicious attacks.
+Assuming it's set up right, now there's only one way in or out. You
+still want to make sure every side door to your castle keep is closed,
+but if you were to accidentally mess up, you've got an extra layer of
+security. Additionally, if you are doing work on your server, it's easy
+to temporarily close the drawbridge and know everything is secure while
+work is in progress.
+
+Because all of the traffic is funneled through this one point of entry,
+it gives you an obvious place to monitor incoming traffic and check if
+it's malicious. If it is, closing the drawbridge is much easier than
+trying to run around double check that every entrance to the building is
+closed. Additionally, if the drawbridge were to get damaged by something
+malicious, it's way easier to replace compared to the actual building
+inside.
+
+For example, let's say you are targeted by a distributed denial of
+service (DDOS) attack. This is a type of attack where someone uses a
+fleet of bots to send a flood of traffic to your servers for the sole
+purpose of overwhelming them -- usually for ransom. It's not great for
+your actual data science server to go down as a result of being
+overwhelmed.
+
+You probably don't have monitoring directly on the landing page of
+RStudio Server about how many people are trying to login -- so you
+wouldn't know that something bad had happened until they succeeded in
+overwhelming the server. On the other hand, it's really easy to put a
+traffic load monitor on a proxy to alert if something seems
+out-of-0whack.
+
+## Enterprise Networking Terminology
+
+Hopefully the analogy of a basic server as an apartment building and an
+enterprise server as a castle keep behind a drawbridge makes basic
+sense. But let's get into the way you'll actually talk about this with
+the IT/Admins at your organization -- I promise they won't talk about
+castles and apartments.
+
+When you stand up a server in the cloud, it's inside a *private
+network*. In AWS, the private network that houses the servers is called
+a *virtual private cloud (VPC)*, which you probably saw somewhere in the
+AWS console.
+
+For our workbench server, we took that private network and made it
+public so every server (there was just one) inside our private network
+also has a public IP address so it was accessible from the internet.
+
+In an enterprise configuration you won't do that. Instead, you'll take
+your private network and divide it into *subnets* -- most often two of
+them.
+
+Now you'll take the subnets and put all the stuff you actually care
+about in a private subnet. Private networks generally host all of the
+servers that actually *do things*. Your data science workbench server,
+your databases, server for hosting shiny apps -- all these things should
+live inside the private network. Nothing in the private subnet will be
+directly accessible from the public internet.
+
+::: callout-note
+#### Defining private networks and subnets
+
+Private networks and subnets are defined by something called a Classless
+Inter-Domain Routing (CIDR) block. A CIDR block is basically an IP
+address range, so a private network is a CIDR block and each subnet is
+CIDR blocks within the private network's block.
+
+Each CIDR block is defined by a starting address and the size of the
+network. For example, the address `10.33.0.0` and the `/26` CIDR defines
+the block of 64 addresses from `10.33.0.0` to `10.33.0.63`.
+
+Larger CIDR numbers indicate a *smaller* block, so you could take the
+`10.33.0.0/26` CIDR and split it into the `10.33.0.0/27` block that
+includes `10.33.0.0` to `10.33.0.31` and `10.33.0.32/27` for
+`10.33.0.32` through `10.33.0.63`.
+
+As you've probably guessed, the number of IPs in each CIDR have to do
+with powers of two. But the rules are hard to remember and there are
+online calculators if you ever have to figure a block out for yourself.
+:::
+
+The only things you'll put in the public subnet -- often called a
+*demilitarized zone (DMZ)* -- are servers that exist solely for the
+purpose of relaying traffic back and forth to the servers in your
+private network. These servers are called *proxy servers* or *proxies*
+-- more on them in a moment.
+
+This means that the traffic actually coming to your workbench comes only
+*from other servers you control*. It's easy to see why this is more
+secure.
+
+\[TODO: image of private networks + proxies\]
+
+In most cases, you'll have minimum two servers in the DMZ. You'll
+usually have one or more proxies to handle the incoming HTTPS traffic
+that comes in from the outside world. You'll also usually have a proxy
+that is just for passing SSH traffic along to hosts in the private
+network, often called a *bastion host* or *jump box*.
+
+The other benefit of using a private network for the things you actually
+care about is that you can manage the IP addresses and hostnames of
+those servers without having to worry about getting public addresses. If
+you want to name one of the servers in your private subnet *google.com*,
+you can do that (I wouldn't recommend it), because the only time that
+name will be used is when traffic is coming past your proxy servers and
+into the private network.
+
+There's a device sitting on the boundary of all networks that provide
+translations between private IP addresses and public ones. For your
+private subnet, you'll only have an outbound one available. In AWS, it's
+called a Network Address Translation (NAT) Gateway. For your private
+network as a whole, there'll be another gateway that provides both
+inbound and outbout support, it's called an Internet Gateway by AWS.
+
+### What proxies do
+
+As a data scientist, this may be the first time you're encountering the
+term proxy, but for IT/Admins -- especially ones who specialize in
+networking -- configuring proxies is an everyday activity.
+
+Proxies can be either in software or hardware. For example, in our
+workbench server, we installed the *nginx* software proxy on the same
+server as our workbench to allow people to go to any of the different
+services we installed on that server. In enterprise use cases, proxies
+are most often on standalone pieces of hardware. They may run *nginx* or
+*Apache* -- the other popular open source option. Popular paid
+enterprise options include *F5, Citrix*, *Fortinet*, and *Cloudflare*.
+
+Proxies can deal with traffic coming into the private network, called an
+*inbound* proxy or they can deal with traffic going out from the private
+network, called an *outbound* proxy.
+
+::: callout-note
+*Inbound* and *outbound* are not industry standard terms for proxies.
+The terms you'll hear from IT/Admins are *forward* and *reverse*.
+Proxies are discussed from the perspective of being *inside* the
+network, so forward equals outbound and reverse equals inbound.
+
+I find it nearly impossible to remember which is which and IT/Admins
+will absolutely know what you mean with the terms inbound and outbound,
+so I recommend you use them instead.
+:::
+
+Proxies are usually used for redirection, port management and
+firewalling.
+
+Redirection is when the proxy accepts traffic at the public DNS record
+and passes (proxies) it along to the actual server. One great thing
+about this configuration is that only the proxy needs to know the real
+hostname for your server. For example, you could configure the proxy so
+`example.com/rstudio` routes to the RStudio Server that's at
+`my-rstudio-1` inside the private network. If you want to change it to
+`my-rstudio-2` later on, you just change the proxy routing, which is
+much easier than changing the public DNS record.
+
+One advantage of doing redirection is making it easy to manage ports.
+For example, RStudio Server runs on port `8787` by default. Generally,
+you don't want people to have to remember to go to a random port to
+access RStudio Server so it's standard practices to keep standard ports
+(`80` for HTTP, `443` for HTTPS, and `22` for SSH) open on the proxy and
+have the proxy just redirect the traffic coming into it on `443` to
+`8787` on the server with RStudio Server.
+
+::: callout-note
+For our workbench server, we did path rewriting and port management in
+our *nginx* proxy.
+
+If you recall, by the time we were done, our `nginx` config was set to
+only allow HTTPS traffic on `443`, redirect all HTTP traffic on `80` to
+HTTPS on `443`, and to take traffic at `/rstudio` to port `8787` on the
+same server, `/jupyter` to port `8000`, and `/palmer` to `8555`.
+:::
+
+\[TODO: image of path rewriting + load-balancing\]
+
+Proxies are additionally sometimes configured to block traffic that
+isn't explicitly allowed. In a data science environment, this means that
+you'll have to configure the inbound proxy with all the locations you
+need. If you've got an outbound proxy that blocks traffic, you're in an
+airgapped/offline situation, and you should see [section @sec-offline]
+on that.
+
+There are a few other things a proxy *may* be used for. These use cases
+are less common in a data science environment.
+
+Sometimes proxies *terminate SSL*. Because the proxy is the last server
+that is accessible from the public network, many organizations don't
+bother to implement SSL/HTTPS inside the private network so they don't
+have to worry about managing SSL certificates inside their private
+network. This is getting rarer as tooling for managing SSL certificates
+gets better, but it's common enough that you might start seeing HTTP
+addresses if you're doing server-to-server things inside the private
+network.
+
+Occasionally proxies also do *authentication*. In most cases, proxies
+pass along any traffic that comes in to where it's supposed to go. If
+there's authentication, it's often at the server itself.
+
+Sometimes the proxy is actually where authentication happens, so you
+have to provide the credentials at the edge of the network. Once those
+credentials have been supplied, the proxy will let you through.
+Depending on the configuration, the proxy may also add some sort of
+token or header to your incoming traffic to let the servers inside know
+that your authentication is good and to pass along identification for
+authorization purposes.
+
+TODO: image of auth at proxy
+
+Lastly, there's a special kind of reverse proxy called a load-balancer.
+A load-balancer is used to scale a service across a pool of servers on
+the back end. We'll get more into how this works in [Chapter
+@sec-scaling].
+
+## What data science needs from the network
+
+As you've probably grasped, enterprise networking can be complex. And
+your IT/Admin group knows a lot about it. What they don't know a lot
+about is the interaction of networking and data science, so it's helpful
+for you to be able to clearly state what you need.
+
+::: callout-note
+### What ports do I need?
+
+One of the first questions IT/Admins ask is what ports need to be open.
+Depending on what ports you choose for the services you're running those
+ports need to be open.
+
+The good news is that almost all traffic for data science purposes is
+standard `HTTP(S)` traffic, so it *can* happily run over `80` or `443`
+if there are limitations on what ports can be open.
+:::
+
+One of the most common issues with data science environments in an
+enterprise is proxy behavior. If you're experiencing weird behavior in
+your data science environment -- files failing to upload or download,
+sessions getting cutoff strangely, or data not transferring right --
+asking your IT/Admin about whether there are proxies and their behavior
+should be suspect number one.
+
+When you're talking to your IT/Admin about the proxies, it's really
+helpful to have a good mental model of what traffic might be hitting an
+inbound proxy and what traffic might be hitting an outbound one.
+
+As we went over in [Chapter @sec-basic-networks], network traffic *always*
+operates on a call and response model. So whether your traffic is
+inbound or outbound is dependent on *who makes the call*. Inbound means
+that the call is coming from a computer *outside* the private network
+directed to a server *inside* the private network, and outbound is the
+opposite.
+
+TODO: image inbound vs outbound connection
+
+So basically, anything that originates on your laptop -- including the
+actual session into the server is an inbound connection, while anything
+that originates on the server -- including *everything* in code that
+runs on the server is an outbound connection.
+
+### Issues with inbound proxies
+
+Inbound proxies affect the connection you're making from your personal
+computer to the server. There are two ways this might affect your
+experience doing data science on a server.
+
+It's reasonably common for organizations to have settings that limit
+file sizes for uploads and downloads or implementing timeouts on file
+uploads, downloads, and sessions. In data science contexts, files tend
+to be big and session lengths long.
+
+If you're trying to work in a data science context and weird things are
+happening with file uploads or downloads or sessions ending
+unexpectedly, checking on inbound proxy settings is a good first step.
+
+Some data science app frameworks (including Shiny and Streamlit) use a
+technology called *Websockets* for maintaining the connection between
+the user and the app session. Most modern proxies (including those
+you'll get from a cloud provider) support Websockets, but some older
+on-prem proxies don't and you may have to figure out a workaround if you
+can't get Websockets enabled on your proxy.
+
+### Issues with forward/outbound proxies
+
+Almost all enterprise networks have inbound proxies. Outbound ones are
+somewhat rarer. That's because outbound proxies limit connections made
+from inside the network to the outside. It's obvious why you'd need to
+protect your data science environment from the entire outside world.
+
+Many organizations don't feel the need to limit what external resources
+people can interact with from inside their firewall, but limitations on
+outbound access have long been common in highly regulated industries
+with strong requirements around data security and governance and are
+becoming increasingly common in many different industries. Many
+organizations have these proxies to reduce the risk of someone getting
+in and then being able to exfiltrate valuable resource.
+
+Organizations who limit outbound access from their data science
+environment usually refer to the environment as offline or airgapped.
+The term airgapped indicates that there is a physical gap -- air --
+between the internet and the environment. It is very rare for this to be
+the case. In most cases, airgapping is accomplished by putting in an
+outbound proxy that disallows (nearly) all connections.
+
+The good news is that once you're working on your data science server,
+you don't need to go out *much*. The bad news is that you will *have* to
+go out sometimes. It's important you work with your IT/Admin to develop
+a plan for how to handle when outbound connectivity is needed.
+
+Here are the four most common reasons you'll need to make outbound
+connections from inside your data science environment.
+
+-   **Downloading Packages** Downloading a package from a public
+    repository requires a network connection to that repository. So
+    you'll need outbound access when you want to install R or Python
+    packages from CRAN, BioConductor, public Posit Package Manager,
+    Conda, PyPI, or GitHub.
+
+-   **Accessing External Data** In most data science work, you're mostly
+    just working on data from databases or files inside your private
+    network, so you don't really need access to data or resources
+    outside. On the other hand, if you're consuming data from public
+    APIs or scraping data from the web, that may require external
+    connections. You also may need an external connection if you're
+    accessing private data that lives in an external location -- for
+    example you might have data in an AWS S3 bucket you need to access
+    from an on-prem workbench or data in Google Sheets that you need to
+    access from AWS.
+
+-   **System Libraries** In addition to the R and Python packages, there
+    are also system libraries you'll need installed, like the versions
+    of R and Python themselves, and other packages used by the system.
+    Generally it'll be the IT/Admin managing and installing these, so
+    they probably have a strategy for doing it. This comes up in the
+    context of data science if you're using R or Python packages that
+    are basically just wrappers around system libraries, like the R and
+    Python packages that use the `GDAL` system library for geospatial
+    work.
+
+-   **Software Licensing** If you're using all open source software,
+    this probably won't be an issue. But if you're buying licenses to a
+    professional product, you'll have to figure out how to activate the
+    software licensing. This usually involves reaching out to servers
+    owned by the software vendor. They should have a method for
+    activating servers that can't reach the internet, but your IT/Admins
+    will appreciate if you've done your homework on this before asking
+    them to activate some new software.
+
+What if your organization doesn't default to allowing all of these
+things to be available? In some cases, ameliorating these issues is as
+easy as talking to your IT/Admin and asking them to open the outbound
+proxy to the right server.
+
+Before you go ahead treating your environment as truly
+offline/airgapped, it's almost always worth asking if narrow exceptions
+can be made to a network that is offline/airgapped. The answer may
+surprise you. Especially if it's just a URL or two that are protected by
+HTTPS -- for example CRAN, PyPI, or public RStudio Package Manager, it's
+generally pretty safe and many organizations are happy to allow-list a
+limited number of outbound addresses.
+
+If not, you'll have to have a deeper conversation with the IT/Admin.
+
+Your organization probably has standard practices around managing system
+libraries and software licenses in their environment.
+
+External data connections and package management are the areas where
+you'll have to have a conversation to make them accessible.
+
+IT/Admins often do not understand how crucial R and Python packages are
+to doing data science work. It will be on you to make them understand
+that your offline environment is useless if you can't come up with a
+plan to manage packages together.
+
+The best plans for offline package operations involve the IT/Admin
+curating a repository of allowed packages inside the private network
+using a professional tool like Posit Package Manager, Jfrog Artifactory,
+or Sonatype Nexus and then giving data scientists free reign to install
+those packages as needed inside the environment.
+
+This can take a lot of convincing. Good luck.
+
+## Comprehension Questions
+
+1.  What is the advantage of adopting a more complex networking setup
+    than a server just deployed directly on the internet? Are there
+    advantages other than security?
+2.  Draw a mental map with the following entities: inbound traffic,
+    outbound traffic, proxy, DMZ, private subnet, public subnet, VPC
+3.  Our workbench server has an *nginx* proxy that redirects inbound
+    traffic on a few different paths to the right port on the same
+    server. Looking at your `nginx.conf`, what would have to change if
+    you moved each of those services to different servers? Is there
+    anything you'd have to check on the server itself?
+4.  Let's say you've got a private VPC that hosts an instance of RStudio
+    Server, an instance of JupyterHub, and a Shiny Server that has an
+    app deployed. Here are a few examples of traffic -- are they
+    outbound, inbound, or within the network?
+    1.  Someone connecting to and starting a session on RStudio Server.
+
+    2.  Someone SFTP-ing an app and packages from RStudio Server to
+        Shiny Server.
+
+    3.  Someone installing a package to the Shiny Server.
+
+    4.  Someone uploading a file to JupyterHub.
+
+    5.  A call in a Shiny app using `httr2` or `requests` to a public
+        API that hosts data.
+
+    6.  Accessing a private corporate database from a Shiny for Python
+        app using `sqlalchemy`.
+5.  What are the most likely pain points for running a data science
+    workbench that is fully offline/airgapped?
