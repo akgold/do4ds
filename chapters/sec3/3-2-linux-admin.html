@@ -402,7 +402,10 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 
 </header>
 
-<p>In the last chapter, we went over using the command line, which empowers you with <em>how</em> you’ll interact with your server. This chapter is an intro to basic Linux server administration. By the end of this chapter, you’ll have a much better idea of <em>what to do</em> once you get there.</p>
+<p>Administering a personal computer is something you’re probably already used to. You know how to access files and folders on your computer and install software.</p>
+<p>There are three additional wrinkles that come up when you’re administering a server. First, you don’t have a graphical interface. Unlike the administration on your personal computer, where you work through pointing-and-clicking, a server has no such interface.</p>
+<p>Second, a server is almost always a multi-user environment. This means from the ground up, the server needs to be designed to serve the needs of several people at once.</p>
+<p>You should already know some basics of how to use the Command line from <a href="../sec2/2-3-cmd-line.html">Chapter&nbsp;<span>8</span></a>. In this chapter, we’ll get into what to do to make your server run smoothly.</p>
 <p>It’s worth saying that you can make a whole career out of Linux System Administration, so this chapter is going to be really focused on the things you need to know to successfully run a data science environment (and fun asides I feel like sharing).</p>
 <p>In the lab for this chapter, we’re going to finally get started with something that is recognizably about data science – we’re going to configure R and Python on our EC2 instance and configure both RStudio Server and JupyterHub. By the end of the chapter you’ll have a running – though still inaccessible – data science workbench.</p>
 <section id="linux-is-an-operating-system-with-a-long-history" class="level2" data-number="11.1">
@@ -425,12 +428,12 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <h2 data-number="11.2" class="anchored" data-anchor-id="a-tiny-intro-to-linux-administration"><span class="header-section-number">11.2</span> A tiny intro to Linux administration</h2>
 <p>We’ll get into <em>how</em> to administer a Linux server just below, but before we get there, let’s introduce <em>what</em> you’ll be doing as a Linux server admin. There are three main things you’ll manage as a Linux server admin:</p>
 <ul>
-<li><p><strong>System resources</strong> Each server has a certain amount of resources available. In particular, you’ve got CPU, RAM, and storage. Keeping track of how much you’ve got of these things, how they’re being used, and making sure no one is gobbling up all the resources is an important part of system administration.</p></li>
+<li><p><strong>System resources</strong> Each server has a certain amount of resources available. In particular, you’ve got CPU, RAM, and storage. Keeping track of how much you’ve got of these things and how they’re being used – and making sure no one is gobbling up all the resources – is an important part of system administration.</p></li>
 <li><p><strong>Networking</strong> Your server is only valuable if you and others can connect to it, so managing how your server can connect to the environment around it is an important part of Linux administration.</p></li>
-<li><p><strong>Permissions</strong> Servers generally exist to allow a number of people to access the same machine. Creating users and groups and managing what they’re allowed to do them is a huge part of server administration.</p></li>
+<li><p><strong>Permissions</strong> Servers generally exist to allow a number of people to access the same machine. Creating users and groups – and managing what they’re allowed to do – is a huge part of server administration.</p></li>
 <li><p><strong>Applications</strong> Generally you want to <em>do</em> something with your server, so being able to interact with applications that are running, debug issues, and fix things that aren’t going well is an essential Linux admin skill.</p></li>
 </ul>
-<p>When you log into a Linux server, you’ll be interacting exclusively via the command line, so all of the commands in this chapter are going to be terminal commands. If you haven’t yet figured out how to open the terminal on your laptop and got it themed and customized so it’s perfect, I’d advise going back to <a href="../sec2/2-3-cmd-line.html">Chapter&nbsp;<span>8</span></a> to get it all configured.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>When you log into a Linux server, you’ll be interacting exclusively via the command line, so all of the commands in this chapter are going to be terminal commands. If you haven’t yet figured out how to open the terminal on your laptop (and gotten it themed and customized so it’s perfect), I’d advise going back to <a href="../sec2/2-3-cmd-line.html">Chapter&nbsp;<span>8</span></a> to get it all configured.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -441,9 +444,9 @@ Windows, Mac, and Linux
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>MacOS is based on BSD, a Unix clone, so any terminal commands you’ve used before will be very similar to Linux commands.</p>
-<p>Windows, on the other hand, is basically the only popular operating system that <em>isn’t</em> a Unix clone. Over time, the Windows command line has gotten more Unix like, so the differences aren’t as big as they used to be, but there will be some differences in the commands that work on Windows vs Linux. There will be some differences in the exact commands that work on Windows vs on Linux.</p>
-<p>The most obvious difference is the types of slashes used in file paths. Unix-like systems use forward slashes <code>/</code> to denote file hierarchies, while Windows uses back slashes <code>\</code>.</p>
+<p>MacOS is based on BSD, a Unix clone, so any terminal commands you’ve used before on Mac will be very similar to Linux commands.</p>
+<p>Windows, on the other hand, is basically the only popular operating system that <em>isn’t</em> a Unix clone. Over time, the Windows command line has gotten more Unix-like, so the differences aren’t as big as they used to be, but there will be some differences in the exact commands that work on Windows vs Linux.</p>
+<p>The most obvious difference is the types of slashes used in file paths. Unix-like systems use forward slashes <code>/</code> to denote file hierarchies, while Windows historically uses back slashes <code>\</code>. These days Windows deals just fine with either.</p>
 </div>
 </div>
 </section>
@@ -454,9 +457,9 @@ Windows, Mac, and Linux
 <pre><code> ❯ whoami                                                       
 alexkgold</code></pre>
 <p><code>whoami</code> returns the <em>username</em> of my user.</p>
-<p>Usernames have to be unique on the system – but their not the true identifier for a Linux user. A user is uniquely (and permanently) identified by their <em>user id (<code>uid</code>)</em>. All other attributes including username, password, home directory, groups, and more are malleable – but <code>uid</code> is forever.</p>
-<p>Many of the users on a Linux server correspond to actual humans. But there are more users than that. Most programs that run on a Linux server run as a <em>service account</em> that represent the set of permissions allowed to that program.</p>
-<p>For example, installing RStudio Server will create a user with username <code>rstudio-server</code>. Then when <code>rstudio-server</code> goes to do something – start an <code>R</code> session for example – it will do so <em>as</em> <code>rstudio-server</code>.</p>
+<p>Usernames have to be unique on the system – but they’re not the true identifier for a Linux user. A user is uniquely (and permanently) identified by their <em>user id (<code>uid</code>)</em>. All other attributes (including username, password, home directory, groups, and more) are malleable, but <code>uid</code> is forever.</p>
+<p>Many of the users on a Linux server correspond to actual humans, but there are more users than that. Most programs that run on a Linux server run as a <em>service account</em> that represent the set of permissions allowed to that program.</p>
+<p>For example, installing RStudio Server will create a user with username <code>rstudio-server</code>. Then, when <code>rstudio-server</code> goes to do something – start an <code>R</code> session for example – it will do so <em>as</em> <code>rstudio-server</code>.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -467,7 +470,7 @@ A few details on UIDs
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><code>uid</code>s are just numbers from 0 to over 2,000,000,000. <code>uid</code>s are assigned by the system at the time the user is created. You should probably keep <code>uid</code>s below 2,000,000 or so if you happen to be assigning <code>uid</code>s manually – some programs can’t deal with <code>uid</code>s any bigger.</p>
+<p><code>uid</code>s are just numbers from 0 to over 2,000,000,000. <code>uid</code>s are assigned by the system at the time the user is created. You should probably keep <code>uid</code>s below 2,000,000 or so if you are ever assigning <code>uid</code>s manually – some programs can’t deal with <code>uid</code>s any bigger.</p>
 <p>10,000 is the the lowest <code>uid</code> that’s available for use by a user account. Everything below that is reserved for predefined system accounts or application accounts.</p>
 </div>
 </div>
@@ -478,11 +481,11 @@ A few details on UIDs
 uid=501(alexkgold) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),701(com.apple.sharepoint.group.1),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),400(com.apple.access_remote_ae)</code></pre>
 <p>On my laptop, I’m a member of a number of different groups.</p>
 <p>There’s one extra special user – called the admin, root, sudo, or super user. They get the ultra-cool <code>uid</code> 0. That user has permission to do <em>anything</em> on the system. You almost never want to actually log in as the <code>root</code> user. Instead, you make users and add them to the <code>admin</code> or <code>sudo</code> group so that they have the ability to temporarily assume those admin powers.</p>
-<p>The easiest way to make users is with the <code>useradd</code> command. Once you have a user, you may need to change the password, which you can do at any time with the <code>passwd</code>. Both <code>useradd</code> and <code>passwd</code> start interactive prompts, so you don’t need to do much more than run those commands.</p>
+<p>The easiest way to make users is with the <code>useradd</code> command. Once you have a user, you may need to change the password, which you can do at any time with the <code>passwd</code> command. Both <code>useradd</code> and <code>passwd</code> start interactive prompts, so you don’t need to do much more than run those commands.</p>
 <table class="table">
 <colgroup>
-<col style="width: 29%">
-<col style="width: 62%">
+<col style="width: 25%">
+<col style="width: 74%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -527,7 +530,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The question of who’s allowed to do what – authorization – is an extremely deep one. There’s a chapter all about authorization, how it differs from authentication, and the different ways your IT/Admins might want to manage it <a href="sec3/3-3auth">later in the book</a>.</p>
+<p>The question of who’s allowed to do what – authorization – is an extremely deep one. There’s a chapter all about authorization, how it differs from authentication, and the different ways your IT/Admins might want to manage it <a href="sec4/4-3auth">later in the book</a>.</p>
 <p>This is just going to be a high-level overview of basic Linux authorization.</p>
 </div>
 </div>
@@ -568,21 +571,21 @@ Note
 </table>
 <p>To understand better, let’s look at the permissions on an actual file.</p>
 <p>Running <code>ls -l</code> on a directory gives you the list of files in that directory, along with their permissions. The first few columns of the list give you the full set of file permissions – though they can be a little tricky to read.</p>
-<p>So, for example, here’s a few lines of the output of running <code>ls -l</code> on a python project I’ve got.</p>
+<p>So, for example, here’s a few lines of the output of running <code>ls -l</code> on a python project I have.</p>
 <pre><code>❯ ls -l                                                           
 -rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
 -rw-r--r--  1 alexkgold  staff   2330 May  8  2017 credentials.json
 -rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
 drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests</code></pre>
-<p>This readout has a series of 10 characters: the file permissions, followed by a number, then the file’s owner, and the file’s group.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Let’s learn how to read these.</p>
+<p>This readout has the file permissions (a series of ten characters), followed by a number<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, then the file’s owner, and the file’s group. Let’s learn how to read these.</p>
 <p>The file’s owner and group are the easiest to understand. In this case, I <code>alexkgold</code> own all the files, and the group of all the files is <code>staff</code>.</p>
-<p>The 10 character file permissions are relative to that user and group.</p>
-<p>The first character indicates the type of file – <code>-</code> for normal and <code>d</code> for a directory.</p>
-<p>The next 9 characters are indicators for the three permissions – <code>r</code> for read, a <code>w</code> for write, and a <code>x</code> for execute or <code>-</code> for not – first for the user, then the group, then any other user on the system.</p>
-<p>So, for example, my <code>config.py</code> file with permissions of <code>rw-r-r--</code> indicates the user (<code>alexkgold</code>) can read and write the file, and everyone else – including in the file’s group <code>staff</code> – has read only.</p>
+<p>The ten-character file permissions are relative to that user and group.</p>
+<p>The first character indicates the type of file: <code>-</code> for normal and <code>d</code> for a directory.</p>
+<p>The next nine characters are indicators for the three permissions – <code>r</code> for read, <code>w</code> for write, and <code>x</code> for execute (or <code>-</code> for in place of any of those for not) – first for the user, then for the group, then for any other user on the system.</p>
+<p>So, for example, my <code>config.py</code> file with permissions of <code>rw-r-r--</code> indicates the user (<code>alexkgold</code>) can read and write the file, and everyone else – including in the file’s group <code>staff</code> – has read-only permission.</p>
 <p>In the course of administering a server, you will probably need to change a file’s permissions. You can do so using the <code>chmod</code> command.</p>
-<p>For <code>chmod</code>, you permissions are indicated with only 3 numbers – one for the user, group, and everyone else. The way this works is pretty clever – you just sum up the permissions as follows: 4 for read, 2 for write, and 1 for execute. You can check for yourself, but any set of permissions can be uniquely identified by a number between 1 and 7.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
-<p>So <code>chmod 765 &lt;filename&gt;</code> would give the user full permissions, read and write to the group, and read and execute to everyone else. This would be a strange set of permissions to give a file, but it’s a perfectly valid <code>chmod</code> command.</p>
+<p>For <code>chmod</code>, permissions are indicated with only three numbers – one for the user, one for the group, and one for everyone else. The way this works is pretty clever – you just sum up the permissions as follows: 4 for read, 2 for write, and 1 for execute. You can check for yourself, but any set of permissions can be uniquely identified by a number between 1 and 7.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<p>So <code>chmod 765 &lt;filename&gt;</code> would give the user full permissions (4 + 2 + 1), read and write (4 + 2) to the group, and read and execute (4 + 1) to everyone else. This would be a strange set of permissions to give a file, but it’s a perfectly valid <code>chmod</code> command.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -593,7 +596,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you spend any time administering a Linux server, you almost certainly will at some point find yourself running into a problem and frustratedly applying <code>chmod 777</code> to rule out a permissions issue.</p>
+<p>If you spend any time administering a Linux server, you almost certainly will at some point find yourself running into a problem and applying <code>chmod 777</code> out of frustration to rule out a permissions issue.</p>
 <p>I can’t in good faith tell you not to do this – we’ve all been there. But if it’s something important, be sure you change it back once you’re finished figuring out what’s going on.</p>
 </div>
 </div>
@@ -606,9 +609,9 @@ Note
 <p>So if I want to change this configuration file, I’d need to temporarily assume my root powers to make changes. Instead of switching to be the root user, I would run <code>sudo vim config.conf</code> and open the file for editing with root permissions.</p>
 <table class="table">
 <colgroup>
+<col style="width: 42%">
 <col style="width: 23%">
-<col style="width: 23%">
-<col style="width: 37%">
+<col style="width: 32%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -619,27 +622,22 @@ Note
 </thead>
 <tbody>
 <tr class="odd">
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr class="even">
-<td><code>chm o d &lt;pe r m i s sions&gt; &lt;file&gt;</code></td>
+<td><code>chmod &lt;permissions&gt; &lt;file&gt;</code></td>
 <td>Modifies permissions on a file.</td>
 <td>Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing.</td>
 </tr>
-<tr class="odd">
-<td><code>ch o wn &lt;u s e r / group&gt; &lt;file&gt;</code></td>
-<td>Change the owner of a file.</td>
-<td>Can be used for user or group. , e.g. <code>:my-group</code>.</td>
-</tr>
 <tr class="even">
+<td><code>chown &lt;user/group&gt; &lt;file&gt;</code></td>
+<td>Change the owner of a file.</td>
+<td>Can be used for user or group, e.g.&nbsp;<code>:my-group</code>.</td>
+</tr>
+<tr class="odd">
 <td><code>su &lt;username&gt;</code></td>
 <td>Change active user.</td>
 <td></td>
 </tr>
-<tr class="odd">
-<td><code>s udo &lt;command&gt;</code></td>
+<tr class="even">
+<td><code>sudo &lt;command&gt;</code></td>
 <td>Adopt super user permissions for the following command.</td>
 <td></td>
 </tr>
@@ -669,8 +667,8 @@ Note
 <p>You can also install packages that aren’t from the central package repository. Doing that will generally involve downloading a file directly from a URL – usually with <code>wget</code> and then installing it from the file you’ve downloaded – often with the <code>gdebi</code> command.</p>
 <table class="table">
 <colgroup>
-<col style="width: 38%">
-<col style="width: 36%">
+<col style="width: 56%">
+<col style="width: 30%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -680,11 +678,11 @@ Note
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>apt-g e t u p d ate &amp;&amp; apt-get upgrade y</code></td>
+<td><code>apt-get update  &amp;&amp; apt-get upgrade y</code></td>
 <td>Fetch and install upgrades to system packages</td>
 </tr>
 <tr class="even">
-<td><code>a pt-get install &lt;package&gt;</code></td>
+<td><code>apt-get install &lt;package&gt;</code></td>
 <td>Install a system package.</td>
 </tr>
 <tr class="odd">
@@ -733,7 +731,7 @@ Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
 <colgroup>
 <col style="width: 20%">
 <col style="width: 20%">
-<col style="width: 31%">
+<col style="width: 27%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -746,7 +744,7 @@ Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
 <tr class="odd">
 <td><code>du</code></td>
 <td>Check size of files.</td>
-<td><p>Most likely to be used <code>du  -h &lt;dir&gt; | sort -h</code> <a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+<td><p>Most likely to be used <code>du  -h  &lt;dir&gt; | sort -h</code> [^3 -2-linux-admin-9]</p>
 <p>Also useful to combine with <code>head</code>.</p></td>
 </tr>
 <tr class="even">
@@ -761,7 +759,7 @@ Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
 <h3 data-number="11.5.2" class="anchored" data-anchor-id="monitoring-processes"><span class="header-section-number">11.5.2</span> Monitoring processes</h3>
 <p>Every program your computer runs is a process. For example, when you type <code>python</code> on the command line to open a REPL, that’s a process. Running more complicated programs usually involves more than one process.</p>
 <p>For example, running RStudio involves (at minimum) one process for the IDE itself and one for the R session that it uses in the background. The relationships between these different processes is mostly hidden from you – the end user.</p>
-<p>As a server admin, finding runaway processes, killing them, and figuring out how to prevent it from happening again is a pretty common task. Runaway processes usually misbehave by using up the entire CPU, filling up the entire machine’s RAM.</p>
+<p>As a server admin, finding runaway processes, killing them, and figuring out how to prevent the them from happening again is a pretty common task. Runaway processes usually misbehave by using up the entire CPU, filling up the entire machine’s RAM.</p>
 <p>Like users and groups have ids, each process has a numeric <strong>p</strong>rocess <strong>id</strong> (<code>pid</code>). Each process also has an owner – this can be either a service account or a real user. If you’ve got a rogue process, the pattern is to try to find the process and make note of its <code>pid</code>. Then you can immediately end the process by <code>pid</code> with the <code>kill</code> command.</p>
 <p>So, how do you find a troublesome process?</p>
 <p>The <code>top</code> command is a good first stop. <code>top</code> shows the top CPU-consuming processes in real time. Here’s the <code>top</code> output from my machine as I write this sentence.</p>
@@ -788,11 +786,11 @@ So much CPU?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For <code>top</code> (and most other commands), CPU is expressed as a percent of <em>single core</em> availability. So on a modern machine, it’s very common to see CPU totals well over 100%. Seeing a single process using over 100% of CPU is rarer.</p>
+<p>For <code>top</code> (and most other commands), CPU is expressed as a percent of <em>single core</em> availability. So, on a modern machine (with multiple cores), it’s very common to see CPU totals well over 100%. Seeing a single process using over 100% of CPU is rarer.</p>
 </div>
 </div>
 <p>The <code>top</code> command takes over your whole terminal. You can exit with <code>Ctrl + c</code>.</p>
-<p>Another useful command for finding runaway processes is <code>ps aux</code>.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> It lists all processes currently running on the system, along with how much CPU and RAM they’re using. You can sort the output with the <code>--sort</code> flag and specify sorting my cpu with <code>--sort -%cpu</code> or by memory with <code>--sort -%mem</code>.</p>
+<p>Another useful command for finding runaway processes is <code>ps aux</code>.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> It lists all processes currently running on the system, along with how much CPU and RAM they’re using. You can sort the output with the <code>--sort</code> flag and specify sorting by cpu with <code>--sort -%cpu</code> or by memory with <code>--sort -%mem</code>.</p>
 <p>Because <code>ps aux</code> returns <em>every</em> running process on the system, you’ll probably want to pipe the output into <code>head</code>.</p>
 <p>Another useful way to use <code>ps aux</code> is in combination with <code>grep</code>. If you pretty much know what the problem is – often this might be a runaway R or Python process – <code>ps aux | grep &lt;name&gt;</code> can be super useful to get the <code>pid</code>.</p>
 <p>For example, here are the RStudio processes currently running on my system.</p>
@@ -810,14 +808,14 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The <code>grep</code> command above looks a little weird because I used a little trick. I wanted to keep the header in the output, so the regex I used matches both a the header line (<code>USER</code>) and the thing I actually care about (<code>RStudio</code>).</p>
+<p>The <code>grep</code> command above looks a little weird because I used a little trick. I wanted to keep the header in the output, so the regex I used matches both the header line (<code>USER</code>) and the thing I actually care about (<code>RStudio</code>).</p>
 </div>
 </div>
 <table class="table">
 <colgroup>
 <col style="width: 23%">
 <col style="width: 23%">
-<col style="width: 37%">
+<col style="width: 36%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -848,13 +846,13 @@ Tip
 <section id="managing-networking" class="level3" data-number="11.5.3">
 <h3 data-number="11.5.3" class="anchored" data-anchor-id="managing-networking"><span class="header-section-number">11.5.3</span> Managing networking</h3>
 <p>Networking is a complicated topic, which we’ll approach with great detail in <a href="3-3-networking.html">Chapter&nbsp;<span>12</span></a>. For now, it’s important to be able to see what’s running on your server that is accessible from the outside world on a particular port.</p>
-<p>The main command to help you see what ports are being used and by what services is the <code>netstat</code> command. <code>netstat</code> returns the services are running and the ports associated. <code>netstat</code> is generally most useful with the <code>-tlp</code> flags to show programs that are listening and the programs associated.</p>
+<p>The main command to help you see what ports are being used and by what services is the <code>netstat</code> command. <code>netstat</code> returns the services that are running and their associated ports. <code>netstat</code> is generally most useful with the <code>-tlp</code> flags to show programs that are listening and the programs associated.</p>
 <p>TODO: get netstat example</p>
 <table class="table">
 <colgroup>
 <col style="width: 23%">
 <col style="width: 23%">
-<col style="width: 34%">
+<col style="width: 33%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -871,7 +869,7 @@ Tip
 </tr>
 </tbody>
 </table>
-<p>Sometimes you <em>know</em> you’ve got a service running on your machine, but you just can’t seem to get the networking working. It can be useful to access the service directly without having to deal with networking. You can do this with – port forwarding, also called tunneling.</p>
+<p>Sometimes you <em>know</em> you’ve got a service running on your machine, but you just can’t seem to get the networking working. It can be useful to access the service directly without having to deal with networking. You can do this with port forwarding, also called tunneling.</p>
 <p>SSH port forwarding allows you to take the output of a port on a remote server, route it through SSH, and display it <em>as if</em> it were on a local port. For example, let’s say I’ve got RStudio Server running on my server. Maybe I don’t have networking set up yet, or I just can’t get it working. If I’ve got SSH to my server working properly, I can double check that the service is working as I expect and the issue really is somewhere in the network.</p>
 <p>I find that the syntax for port forwarding completely defies my memory and I have to google it every time I use it. For the kind of port forwarding you’ll use most often in debugging, you’ll use the <code>-L</code> flag.</p>
 <p><code>ssh -L &lt;local port&gt;:&lt;remote ip&gt;:&lt;remote port&gt; &lt;ssh hostname&gt;</code></p>
@@ -904,13 +902,13 @@ Type 'q()' to quit R.
 
 &gt;</code></pre>
 <p>But how does the operating system know what you mean when you type <code>R</code>? If you’ve been reading carefully, you’ve realized that running the command means opening a particular runnable file, and <code>R</code> isn’t a file path on my system.</p>
-<p>You can actually just type the a complete filename of a runnable binary into your command line. For example, on my MacBook, my version of R is at <code>/usr/bin/local/R</code>, so I could open an R session by typing that full path. Sometimes it can be handy to be precise about exactly which executable you’re opening (looking at you, multiple versions of Python), so you may want to use full paths to executables.</p>
+<p>You can actually just type the complete filename of a runnable binary into your command line. For example, on my MacBook, my version of R is at <code>/usr/bin/local/R</code>, so I could open an R session by typing that full path. Sometimes it can be handy to be precise about exactly which executable you’re opening (I’m looking at you, multiple versions of Python), so you may want to use full paths to executables.</p>
 <p>If you ever want to check which actual executable is being used by a command, you can use the <code>which</code> command. For example, on my system this is the result of <code>which R</code>.</p>
 <pre><code> ❯ which R                                                    
 /usr/local/bin/R</code></pre>
-<p>Most of that time you don’t want to have to bother with full paths for executables. You want to just type <code>R</code> on the command line and have R open. Moreover, there are cases where functionality relies on another executable being able to find R and run it – think of running RStudio Server, which starts a version of R under the hood.</p>
+<p>Most of the time you don’t want to have to bother with full paths for executables. You want to just type <code>R</code> on the command line and have R open. Moreover, there are cases where functionality relies on another executable being able to find R and run it – think of running RStudio Server, which starts a version of R under the hood.</p>
 <p>The operating system knows how to find the actual runnable programs on your system via something called the <em>path</em>. When you type <code>R</code> into the command line, it searches along the path to find a version of R it can run.</p>
-<p>You can check your path at any time by just echoing the <code>PATH</code> environment variable with <code>echo $PATH</code>. On my MacBook, this is what the path looks like.</p>
+<p>You can check your path at any time by echoing the <code>PATH</code> environment variable with <code>echo $PATH</code>. On my MacBook, this is what the path looks like.</p>
 <pre><code> ❯ echo $PATH                                                      
 /opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin</code></pre>
 <p>Later, when we get into running versions of programs that aren’t the system versions, we may have to append locations to the path so that we can run them easily.</p>
@@ -932,12 +930,12 @@ Type 'q()' to quit R.
 </section>
 <section id="lab-a-working-data-science-workbench" class="level2" data-number="11.7">
 <h2 data-number="11.7" class="anchored" data-anchor-id="lab-a-working-data-science-workbench"><span class="header-section-number">11.7</span> Lab: A working Data Science Workbench</h2>
-<p>In this lab, we’re going to take your server and take it from an empty server that you can access to one with users and useful software installed and running – even if it’s not yet accessible to the outside world.</p>
+<p>In this lab, we’re going to take your server from an empty server that only you can access to one with users and useful software installed and running – even if it’s not yet accessible to the outside world.</p>
 <section id="step-1-log-on-with-the-.pem-key" class="level4" data-number="11.7.0.1">
 <h4 data-number="11.7.0.1" class="anchored" data-anchor-id="step-1-log-on-with-the-.pem-key"><span class="header-section-number">11.7.0.1</span> Step 1: Log on with the <code>.pem</code> key</h4>
-<p>The <code>.pem</code> key you downloaded when you set up the server is the skeleton key – it will automatically let you in with complete admin privleges. In <a href="#sec-linux-admin">Chapter&nbsp;<span>11</span></a>, we’ll set up a user with SSH on the server with more limited permissions.</p>
+<p>The <code>.pem</code> key you downloaded when you set up the server is the skeleton key – it will automatically let you in with complete admin privileges. In <a href="#sec-linux-admin">Chapter&nbsp;<span>11</span></a>, we’ll set up a user with SSH on the server with more limited permissions.</p>
 <p>In the meantime, we’re going to use the <code>.pem</code> key to get started on the server, but be extremely careful with the power of the <code>.pem</code> key.</p>
-<p>Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in <a href="#sec-linux-admin">Chapter&nbsp;<span>11</span></a>). If you try to use the keypair without first changing the permissions, you’ll be unable to and get a warning that looks something like:</p>
+<p>Because the keypair is so powerful, AWS requires that you restrict the access pretty severely (more on what that means in <a href="#sec-linux-admin">Chapter&nbsp;<span>11</span></a>). If you try to use the keypair without first changing the permissions, you’ll be unable to, and you’ll get a warning that looks something like this:</p>
 <div class="sourceCode" id="cb12"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb12-1"><a href="#cb12-1"></a></span>
 <span id="cb12-2"><a href="#cb12-2"></a>\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span>
 <span id="cb12-3"><a href="#cb12-3"></a></span>
@@ -955,7 +953,6 @@ Type 'q()' to quit R.
 <span id="cb12-15"><a href="#cb12-15"></a></span>
 <span id="cb12-16"><a href="#cb12-16"></a>ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Before we can use it to open the server, we’ll need to make a quick change to the permissions on the key.</p>
-<p>[QUESTION – does this happen on Windows? If so, what are commands to alter permissions?]</p>
 <p>So let’s change the file permissions.</p>
 <p>We’ll get into the details of how to use these commands in just a minute. For now, you’ll need to open a terminal window, navigate to the directory where the key is and change the file permissions.</p>
 <p>On my machine that looks like:</p>
@@ -979,13 +976,14 @@ Type 'q()' to quit R.
 <div class="sourceCode" id="cb15"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb15-1"><a href="#cb15-1"></a>sudo adduser test-user</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>We want this new user to be able to adopt root privileges. Remember that the way that is determined is whether the user is part of the <code>sudo</code> group.</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode numberSource {{bash}} number-lines code-with-copy"><code class="sourceCode"><span id="cb16-1"><a href="#cb16-1"></a>sudo usermod -aG sudo test-user</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Hopefully it’s reasonably intuitive that <code>-aG</code> stands for add to group.</p>
+<p>As you might have guessed, <code>-aG</code> stands for <strong>a</strong>dd to <strong>g</strong>roup.</p>
 </section>
 <section id="step-3-add-an-ssh-key-for-your-user" class="level3" data-number="11.7.2">
 <h3 data-number="11.7.2" class="anchored" data-anchor-id="step-3-add-an-ssh-key-for-your-user"><span class="header-section-number">11.7.2</span> Step 3: Add an SSH Key for your user</h3>
-<p>If you’ve already got an SSH key you use, feel free to use that one. If you don’t have one, google how to create an SSH key and do it on your laptop.</p>
+<p>The first thing you should do is check if you have an SSH key on your system (try <code>ls ~/.ssh</code>). If you’ve got one already, I’d recommend just using that key so you don’t have to mess around with multiple keys.</p>
+<p>If you don’t have one, google how to create an SSH key and do it on your laptop.</p>
 <p>The first step is going to be adding your public key to the end of the <code>authorized_users</code> file.</p>
-<p>First, you need to get your public key to the server. I might recommend using <code>scp</code>.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a></p>
+<p>First, you need to get your public key to the server. I recommend using <code>scp</code>.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a></p>
 <p>For me, the command looks something like this</p>
 <pre><code>scp -i do4ds-lab-key.pem \ # scp w/ pem key
   ~/.ssh/id_ed25519.pub \ # local public key
@@ -1009,7 +1007,7 @@ test-user@ip-172-31-2-42:~$ chmod 600 .ssh/authorized_keys #set permissions</cod
 </section>
 <section id="step-4-install-r-and-python" class="level3" data-number="11.7.3">
 <h3 data-number="11.7.3" class="anchored" data-anchor-id="step-4-install-r-and-python"><span class="header-section-number">11.7.3</span> Step 4: Install R and Python</h3>
-<p>Everything until now has been generic server administration. Now let’s get into some data science specific work – setting up R and Python.</p>
+<p>Everything until now has been generic server administration. Now let’s get into some data-science-specific work – setting up R and Python.</p>
 <div class="callout-tip callout callout-style-default callout-captioned">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1042,15 +1040,15 @@ Note
 <p>TODO: confirm that installing into <code>/opt/R</code> works for RStudio Server OSS.</p>
 </div>
 </div>
-<p>There are good instructions on downloading <code>rig</code> and using it to install R on the GitHub repo – https://github.com/r-lib/rig.</p>
-<p>Once you’ve got R installed on your server, you can check that it’s running by just typing <code>R</code> into the command line. If that works, you’re good to move on to the next step.</p>
+<p>There are good instructions on downloading <code>rig</code> and using it to install R on the GitHub repo – https://github.com/r-lib/rig. Use those instructions to install the current R release on your AWS server.</p>
+<p>Once you’ve installed R on your server, you can check that it’s running by just typing <code>R</code> into the command line. If that works, you’re good to move on to the next step.</p>
 </section>
 </section>
 <section id="step-5-installing-rstudio-server" class="level3" data-number="11.7.4">
 <h3 data-number="11.7.4" class="anchored" data-anchor-id="step-5-installing-rstudio-server"><span class="header-section-number">11.7.4</span> Step 5: Installing RStudio Server</h3>
-<p>Once you’ve got R installed, let’s download and install RStudio Server. This should be a very easy process. The basic process is to install the <code>gdebi</code> package from <code>apt</code>, which is used for installing downloaded packages, download the RStudio Server package, and install it.</p>
+<p>Once R is installed, let’s download and install RStudio Server. This should be a very easy process. The basic process is to install the <code>gdebi</code> package from <code>apt</code>, which is used for installing downloaded packages, download the RStudio Server package, and install it.</p>
 <p>I’m not going to reproduce the commands here because the RStudio Server version numbers change frequently and you probably want the most recent one.</p>
-<p>You can find the exact commands on the Posit website at https://posit.co/download/rstudio-server/. Make sure to pick the version that matches your operating system. Since you’ve already installed R, you can skip down to actually installing the server.</p>
+<p>You can find the exact commands on the Posit website at https://posit.co/download/rstudio-server/. Make sure to pick the version that matches your operating system. Since you’ve already installed R, you can skip down to the “Install RStudio Server” step.</p>
 <p>Once you’ve installed, you can check the status with <code>sudo systemctl status rstudio-server</code>. If it says <code>running</code>, you’re good to go!</p>
 <p>But knowing it’s good to go isn’t nearly as fun as actually trying it. We don’t have a stable public URL for the server yet, so we can’t just access it from our browser. This is a perfect use case for an SSH tunnel.</p>
 <p>By default, RStudio Server is on port <code>8787</code>, so we’ll tunnel port <code>8787</code> on the server to <code>localhost:8787</code> on our laptop. The command to do that is <code>ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS</code>.</p>
@@ -1122,17 +1120,19 @@ systemctl start jupyterhub</code></pre>
 <section id="step-7-running-a-plumber-api-in-a-container" class="level3" data-number="11.7.6">
 <h3 data-number="11.7.6" class="anchored" data-anchor-id="step-7-running-a-plumber-api-in-a-container"><span class="header-section-number">11.7.6</span> Step 7: Running a Plumber API in a Container</h3>
 <p>In addition to running a development workbench on your server, you might want to run a data science project. If you’re running a Shiny app, Shiny Server is easy to configure along the lines of RStudio Server.</p>
-<p>However, if you put an API in a container like we did in <a href="../sec2/2-4-docker.html">Chapter&nbsp;<span>9</span></a>, you might want to just deploy that somewhere on your server as a running container.</p>
-<p>The first step is just to install docker on your system with <code>sudo apt-get install docker.io</code>. You can check that you can run docker with <code>docker ps</code>. You may need to adopt <code>sudo</code> privileges to do so.</p>
-<p>Once we’ve got docker installed, getting the API running is almost trivially easy using the command we used back in <a href="../sec2/2-4-docker.html">Chapter&nbsp;<span>9</span></a> to run our container.</p>
-<pre><code>docker run --rm -d \
+<p>However, if you put an API in a container like we did in <a href="../sec2/2-4-docker.html">Chapter&nbsp;<span>9</span></a>, you might want to deploy that somewhere on your server as a running container.</p>
+<p>The first step is to install docker on your system with <code>sudo apt-get install docker.io</code>. You can check that you can run docker with <code>docker ps</code>. You may need to adopt <code>sudo</code> privileges to do so.</p>
+<p>Once we have docker installed, getting the API running is almost trivially easy using the command we used back in <a href="../sec2/2-4-docker.html">Chapter&nbsp;<span>9</span></a> to run our container.</p>
+<pre><code>sudo docker run --rm -d \
   -p 8555:8000 \
   --name palmer-plumber \
   alexkgold/plumber</code></pre>
-<p>The one change you might note is that I’ve changed the port on the server to be 8555, since we’ve already got JupyterHub running on 8000.</p>
+<p>The one change you might note is that I’ve changed the port on the server to be 8555, since we already have JupyterHub running on 8000.</p>
 <p>Now, we can SSH tunnel into our server and view our running API at <code>localhost:8555/__docs__/</code>.</p>
-<p>This was easy to get something up and running quickly. But you should notice that this isn’t daemonized – if we restart the server or the container dies for any reason, it won’t auto-restart.</p>
-<p>It’s not generally a best practice to daemon-ize a docker container by just putting the <code>run</code> command into systemd. Instead, you should use a container management system like Docker Compose or Kubernetes that are designed specifically to manage running containers. Getting deeper into those is beyond the scope of this book.</p>
+<p>This is why people love docker – it’s wildly easy to get something simple running. But getting Docker hardened for production takes a bit more work.</p>
+<p>The first thing to notice is that there’s no auth on our API. Anyone can hit this API as much as they want if they have the URL. Needless to say, this is not a security best practice unless you intend to host a public service.</p>
+<p>The other issue is that we haven’t daemonized the API. If we restart the server or the container dies for any reason, it won’t auto-restart.</p>
+<p>It’s not generally a best practice to daemon-ize a docker container by just putting the <code>run</code> command into <code>systemd</code>. Instead, you should use a container management system that is designed specifically to manage running containers, like Docker Compose or Kubernetes. Getting deeper into those systems is beyond the scope of this book.</p>
 </section>
 <section id="questions-for-alex" class="level3" data-number="11.7.7">
 <h3 data-number="11.7.7" class="anchored" data-anchor-id="questions-for-alex"><span class="header-section-number">11.7.7</span> Questions for Alex</h3>
@@ -1148,16 +1148,16 @@ systemctl start jupyterhub</code></pre>
 <hr>
 <ol>
 <li id="fn1"><p>Or at least they weren’t supposed to. There’s an interesting history of lawsuits around the BSD operating system including Unix code. BSD is a Unix clone that was the predecessor of MacOS.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>People who are pedantic about operating systems or the history of computing will scream that the original release of Linux was just the operating system <em>kernel</em>, not a full operating system like Unix. I’ve noted it here to satisfy pedants, but it doesn’t matter much in practice.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Check out the <a href="https://en.wikipedia.org/wiki/History_of_Linux">History of Linux Wikipedia article</a> for the posting.</p>
+<p>Pedants will scream that the original release of Linux was just the operating system <em>kernel</em>, not a full operating system like Unix. Duly noted, now go away.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>The remainder are almost entirely Windows servers. There are a few other Unix-like systems that you might encounter, like Oracle Solaris. There is no MacOS server. There is a product called <em>Mac Server</em>, but it’s just a program for managing Mac desktops and iOS devices.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>CentOS (short for Community ENTerprise Operating System) is an open source operating system maintained by Red Hat. The relationship between RHEL and CentOS is changing. The details are somewhat complicated, but most people expect less adoption of CentOS in enterprise settings going forward.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>My goal here is to be useful not precise, so I’m intermingling <code>bash</code> commands and Linux system commands because they’re useful. If you know the difference and are pedantic enough to care, this list isn’t for you anyway.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn6"><p>Depending on your version of Linux, there <em>may</em> be a limit of 16 groups per user.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn7"><p>You can generally ignore the number, which is the number of links to the file.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>Clever eyes may realize that this is just the base 10 representation of a 3 digit binary number.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>Note that if you’re using <code>du</code> with <code>-h</code>, <code>sort</code> also needs a <code>-h</code> so it knows to sort by human-readable attributes. Otherwise the sorting gets weird.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>This is another one where you’ll almost never use <code>ps</code> without <code>aux</code>.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>Alternatively, you could open a file of the right name and just copy/paste the contents of your public key in there. Either way works.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Clever eyes may realize that this is just the base-10 representation of a three-digit binary number.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>This is another one where you’ll almost never use <code>ps</code> without <code>aux</code>.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>Alternatively, you could open a file of the right name and just copy/paste the contents of your public key in there. Either way works.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
