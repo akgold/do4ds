@@ -1,9 +1,21 @@
 # Basic Linux SysAdmin {#sec-linux-admin}
 
-In the last chapter, we went over using the command line, which empowers
-you with *how* you'll interact with your server. This chapter is an
-intro to basic Linux server administration. By the end of this chapter,
-you'll have a much better idea of *what to do* once you get there.
+Administering a personal computer is something you're probably already
+used to. You know how to access files and folders on your computer and
+install software.
+
+There are three additional wrinkles that come up when you're
+administering a server. First, you don't have a graphical interface.
+Unlike the administration on your personal computer, where you work
+through pointing-and-clicking, a server has no such interface.
+
+Second, a server is almost always a multi-user environment. This means
+from the ground up, the server needs to be designed to serve the needs
+of several people at once.
+
+You should already know some basics of how to use the Command line from
+[Chapter @sec-cmd-line]. In this chapter, we'll get into what to do to
+make your server run smoothly.
 
 It's worth saying that you can make a whole career out of Linux System
 Administration, so this chapter is going to be really focused on the
@@ -65,11 +77,13 @@ In 1991, Linus Torvalds -- then a 21 year-old Finnish grad student --
 released Linux, an open source Unix clone via a amusingly nonchalant
 newsgroup posting.[^3-2-linux-admin-2]
 
-[^3-2-linux-admin-2]: People who are pedantic about operating systems or
-    the history of computing will scream that the original release of
-    Linux was just the operating system *kernel*, not a full operating
-    system like Unix. I've noted it here to satisfy pedants, but it
-    doesn't matter much in practice.
+[^3-2-linux-admin-2]: Check out the [History of Linux Wikipedia
+    article](https://en.wikipedia.org/wiki/History_of_Linux) for the
+    posting.
+
+    Pedants will scream that the original release of Linux was just the
+    operating system *kernel*, not a full operating system like Unix.
+    Duly noted, now go away.
 
 Since then, Linux has seen tremendous adoption. A large majority of the
 world's servers run on Linux.[^3-2-linux-admin-3] Along with most of the
@@ -121,17 +135,17 @@ admin:
 
 -   **System resources** Each server has a certain amount of resources
     available. In particular, you've got CPU, RAM, and storage. Keeping
-    track of how much you've got of these things, how they're being
-    used, and making sure no one is gobbling up all the resources is an
-    important part of system administration.
+    track of how much you've got of these things and how they're being
+    used -- and making sure no one is gobbling up all the resources --
+    is an important part of system administration.
 
 -   **Networking** Your server is only valuable if you and others can
     connect to it, so managing how your server can connect to the
     environment around it is an important part of Linux administration.
 
 -   **Permissions** Servers generally exist to allow a number of people
-    to access the same machine. Creating users and groups and managing
-    what they're allowed to do them is a huge part of server
+    to access the same machine. Creating users and groups -- and
+    managing what they're allowed to do -- is a huge part of server
     administration.
 
 -   **Applications** Generally you want to *do* something with your
@@ -142,8 +156,8 @@ admin:
 When you log into a Linux server, you'll be interacting exclusively via
 the command line, so all of the commands in this chapter are going to be
 terminal commands. If you haven't yet figured out how to open the
-terminal on your laptop and got it themed and customized so it's
-perfect, I'd advise going back to [Chapter @sec-cmd-line] to get it all
+terminal on your laptop (and gotten it themed and customized so it's
+perfect), I'd advise going back to [Chapter @sec-cmd-line] to get it all
 configured.[^3-2-linux-admin-5]
 
 [^3-2-linux-admin-5]: My goal here is to be useful not precise, so I'm
@@ -155,18 +169,18 @@ configured.[^3-2-linux-admin-5]
 ## Windows, Mac, and Linux
 
 MacOS is based on BSD, a Unix clone, so any terminal commands you've
-used before will be very similar to Linux commands.
+used before on Mac will be very similar to Linux commands.
 
 Windows, on the other hand, is basically the only popular operating
 system that *isn't* a Unix clone. Over time, the Windows command line
-has gotten more Unix like, so the differences aren't as big as they used
-to be, but there will be some differences in the commands that work on
-Windows vs Linux. There will be some differences in the exact commands
-that work on Windows vs on Linux.
+has gotten more Unix-like, so the differences aren't as big as they used
+to be, but there will be some differences in the exact commands that
+work on Windows vs Linux.
 
 The most obvious difference is the types of slashes used in file paths.
 Unix-like systems use forward slashes `/` to denote file hierarchies,
-while Windows uses back slashes `\`.
+while Windows historically uses back slashes `\`. These days Windows
+deals just fine with either.
 :::
 
 ## Managing who can do what
@@ -183,19 +197,19 @@ MacBook.
 
 `whoami` returns the *username* of my user.
 
-Usernames have to be unique on the system -- but their not the true
+Usernames have to be unique on the system -- but they're not the true
 identifier for a Linux user. A user is uniquely (and permanently)
-identified by their *user id (`uid`)*. All other attributes including
-username, password, home directory, groups, and more are malleable --
-but `uid` is forever.
+identified by their *user id (`uid`)*. All other attributes (including
+username, password, home directory, groups, and more) are malleable, but
+`uid` is forever.
 
-Many of the users on a Linux server correspond to actual humans. But
+Many of the users on a Linux server correspond to actual humans, but
 there are more users than that. Most programs that run on a Linux server
 run as a *service account* that represent the set of permissions allowed
 to that program.
 
 For example, installing RStudio Server will create a user with username
-`rstudio-server`. Then when `rstudio-server` goes to do something --
+`rstudio-server`. Then, when `rstudio-server` goes to do something --
 start an `R` session for example -- it will do so *as* `rstudio-server`.
 
 ::: callout-note
@@ -203,7 +217,7 @@ start an `R` session for example -- it will do so *as* `rstudio-server`.
 
 `uid`s are just numbers from 0 to over 2,000,000,000. `uid`s are
 assigned by the system at the time the user is created. You should
-probably keep `uid`s below 2,000,000 or so if you happen to be assigning
+probably keep `uid`s below 2,000,000 or so if you are ever assigning
 `uid`s manually -- some programs can't deal with `uid`s any bigger.
 
 10,000 is the the lowest `uid` that's available for use by a user
@@ -238,24 +252,23 @@ admin powers.
 
 The easiest way to make users is with the `useradd` command. Once you
 have a user, you may need to change the password, which you can do at
-any time with the `passwd`. Both `useradd` and `passwd` start
+any time with the `passwd` command. Both `useradd` and `passwd` start
 interactive prompts, so you don't need to do much more than run those
 commands.
 
-+--------------------+--------------------------------------------+
-| Command            | What it does                               |
-+====================+============================================+
-| `su <username>`    | Change to be a different user.             |
-+--------------------+--------------------------------------------+
-| `whoami`           | Get username of current user.              |
-+--------------------+--------------------------------------------+
-| `id`               | Get full user + group info on current      |
-|                    | user.                                      |
-+--------------------+--------------------------------------------+
-| `passwd`           | Change password.                           |
-+--------------------+--------------------------------------------+
-| `useradd`          | Add a new user.                            |
-+--------------------+--------------------------------------------+
++--------------------+-----------------------------------------------------------+
+| Command            | What it does                                              |
++====================+===========================================================+
+| `su <username>`    | Change to be a different user.                            |
++--------------------+-----------------------------------------------------------+
+| `whoami`           | Get username of current user.                             |
++--------------------+-----------------------------------------------------------+
+| `id`               | Get full user + group info on current user.               |
++--------------------+-----------------------------------------------------------+
+| `passwd`           | Change password.                                          |
++--------------------+-----------------------------------------------------------+
+| `useradd`          | Add a new user.                                           |
++--------------------+-----------------------------------------------------------+
 
 ### File Permissions
 
@@ -270,7 +283,7 @@ file.
 The question of who's allowed to do what -- authorization -- is an
 extremely deep one. There's a chapter all about authorization, how it
 differs from authentication, and the different ways your IT/Admins might
-want to manage it [later in the book](sec3/3-3auth).
+want to manage it [later in the book](sec4/4-3auth).
 
 This is just going to be a high-level overview of basic Linux
 authorization.
@@ -308,7 +321,7 @@ list give you the full set of file permissions -- though they can be a
 little tricky to read.
 
 So, for example, here's a few lines of the output of running `ls -l` on
-a python project I've got.
+a python project I have.
 
     ❯ ls -l                                                           
     -rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
@@ -316,9 +329,9 @@ a python project I've got.
     -rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
     drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests
 
-This readout has a series of 10 characters: the file permissions,
-followed by a number, then the file's owner, and the file's
-group.[^3-2-linux-admin-7] Let's learn how to read these.
+This readout has the file permissions (a series of ten characters),
+followed by a number[^3-2-linux-admin-7], then the file's owner, and the
+file's group. Let's learn how to read these.
 
 [^3-2-linux-admin-7]: You can generally ignore the number, which is the
     number of links to the file.
@@ -327,41 +340,43 @@ The file's owner and group are the easiest to understand. In this case,
 I `alexkgold` own all the files, and the group of all the files is
 `staff`.
 
-The 10 character file permissions are relative to that user and group.
+The ten-character file permissions are relative to that user and group.
 
-The first character indicates the type of file -- `-` for normal and `d`
+The first character indicates the type of file: `-` for normal and `d`
 for a directory.
 
-The next 9 characters are indicators for the three permissions -- `r`
-for read, a `w` for write, and a `x` for execute or `-` for not -- first
-for the user, then the group, then any other user on the system.
+The next nine characters are indicators for the three permissions -- `r`
+for read, `w` for write, and `x` for execute (or `-` for in place of any
+of those for not) -- first for the user, then for the group, then for
+any other user on the system.
 
 So, for example, my `config.py` file with permissions of `rw-r-r--`
 indicates the user (`alexkgold`) can read and write the file, and
-everyone else -- including in the file's group `staff` -- has read only.
+everyone else -- including in the file's group `staff` -- has read-only
+permission.
 
 In the course of administering a server, you will probably need to
 change a file's permissions. You can do so using the `chmod` command.
 
-For `chmod`, you permissions are indicated with only 3 numbers -- one
-for the user, group, and everyone else. The way this works is pretty
-clever -- you just sum up the permissions as follows: 4 for read, 2 for
-write, and 1 for execute. You can check for yourself, but any set of
-permissions can be uniquely identified by a number between 1 and
-7.[^3-2-linux-admin-8]
+For `chmod`, permissions are indicated with only three numbers -- one
+for the user, one for the group, and one for everyone else. The way this
+works is pretty clever -- you just sum up the permissions as follows: 4
+for read, 2 for write, and 1 for execute. You can check for yourself,
+but any set of permissions can be uniquely identified by a number
+between 1 and 7.[^3-2-linux-admin-8]
 
-[^3-2-linux-admin-8]: Clever eyes may realize that this is just the base
-    10 representation of a 3 digit binary number.
+[^3-2-linux-admin-8]: Clever eyes may realize that this is just the
+    base-10 representation of a three-digit binary number.
 
-So `chmod 765 <filename>` would give the user full permissions, read and
-write to the group, and read and execute to everyone else. This would be
-a strange set of permissions to give a file, but it's a perfectly valid
-`chmod` command.
+So `chmod 765 <filename>` would give the user full permissions (4 + 2 +
+1), read and write (4 + 2) to the group, and read and execute (4 + 1) to
+everyone else. This would be a strange set of permissions to give a
+file, but it's a perfectly valid `chmod` command.
 
 ::: callout-note
 If you spend any time administering a Linux server, you almost certainly
-will at some point find yourself running into a problem and frustratedly
-applying `chmod 777` to rule out a permissions issue.
+will at some point find yourself running into a problem and applying
+`chmod 777` out of frustration to rule out a permissions issue.
 
 I can't in good faith tell you not to do this -- we've all been there.
 But if it's something important, be sure you change it back once you're
@@ -395,31 +410,23 @@ assume my root powers to make changes. Instead of switching to be the
 root user, I would run `sudo vim config.conf` and open the file for
 editing with root permissions.
 
-+----------------+----------------+--------------------------+
-| Command        | What it does   | Helpful options + notes  |
-+================+================+==========================+
-|                |                |                          |
-+----------------+----------------+--------------------------+
-| `chm o         | Modifies       | Number indicates         |
-| d <pe r m i s  | permissions on | permissions for user,    |
-| sions> <file>` | a file.        | group, others: add 4 for |
-|                |                | read, 2 for write, 1 for |
-|                |                | execute, 0 for nothing.  |
-+----------------+----------------+--------------------------+
-| `ch o          | Change the     | Can be used for user or  |
-| wn <u s e r /  | owner of a     | group. , e.g.            |
-| group> <file>` | file.          | `:my-group`.             |
-+----------------+----------------+--------------------------+
-| `              | Change active  |                          |
-| su <username>` | user.          |                          |
-+----------------+----------------+--------------------------+
-| `s             | Adopt super    |                          |
-| udo <command>` | user           |                          |
-|                | permissions    |                          |
-|                | for the        |                          |
-|                | following      |                          |
-|                | command.       |                          |
-+----------------+----------------+--------------------------+
++---------------------------------------+---------------------+------------------------------+
+| Command                               | What it does        | Helpful options + notes      |
++=======================================+=====================+==============================+
+| `chmod <permissions> <file>`          | Modifies            | Number indicates permissions |
+|                                       | permissions on a    | for user, group, others: add |
+|                                       | file.               | 4 for read, 2 for write, 1   |
+|                                       |                     | for execute, 0 for nothing.  |
++---------------------------------------+---------------------+------------------------------+
+| `chown <user/group> <file>`           | Change the owner of | Can be used for user or      |
+|                                       | a file.             | group, e.g. `:my-group`.     |
++---------------------------------------+---------------------+------------------------------+
+| `su <username>`                       | Change active user. |                              |
++---------------------------------------+---------------------+------------------------------+
+| `sudo <command>`                      | Adopt super user    |                              |
+|                                       | permissions for the |                              |
+|                                       | following command.  |                              |
++---------------------------------------+---------------------+------------------------------+
 
 ## Installing Stuff
 
@@ -451,22 +458,22 @@ repository. Doing that will generally involve downloading a file
 directly from a URL -- usually with `wget` and then installing it from
 the file you've downloaded -- often with the `gdebi` command.
 
-+---------------------------+-------------------------+
-| Command                   | What it does            |
-+===========================+=========================+
-| `apt-g e t u p d          | Fetch and install       |
-| ate && apt-get upgrade y` | upgrades to system      |
-|                           | packages                |
-+---------------------------+-------------------------+
-| `a                        | Install a system        |
-| pt-get install <package>` | package.                |
-+---------------------------+-------------------------+
-| `wget`                    | Download a file from a  |
-|                           | URL.                    |
-+---------------------------+-------------------------+
-| `gdebi`                   | Install local `.deb`    |
-|                           | file.                   |
-+---------------------------+-------------------------+
++----------------------------------------+---------------------+
+| Command                                | What it does        |
++========================================+=====================+
+| `apt-get update  && apt-get upgrade y` | Fetch and install   |
+|                                        | upgrades to system  |
+|                                        | packages            |
++----------------------------------------+---------------------+
+| `apt-get install <package>`            | Install a system    |
+|                                        | package.            |
++----------------------------------------+---------------------+
+| `wget`                                 | Download a file     |
+|                                        | from a URL.         |
++----------------------------------------+---------------------+
+| `gdebi`                                | Install local       |
+|                                        | `.deb` file.        |
++----------------------------------------+---------------------+
 
 ## Debugging and troubleshooting
 
@@ -534,23 +541,25 @@ So you can see that the chapters folder lives on a disk called
 problem. On a server this can be really useful to know, because it's
 quite easy to switch a disk out for a bigger one in the same spot.
 
-+--------------+--------------+----------------------+
-| Command      | What it does | Helpful options      |
-+==============+==============+======================+
-| `du`         | Check size   | Most likely to be    |
-|              | of files.    | used                 |
-|              |              | `du                  |
-|              |              |  -h <dir> | sort -h` |
-|              |              | [^3-2-linux-admin-9] |
-|              |              |                      |
-|              |              | Also useful to       |
-|              |              | combine with `head`. |
-+--------------+--------------+----------------------+
-| `df`         | Check        | `-h`                 |
-|              | storage      |                      |
-|              | space on     |                      |
-|              | device.      |                      |
-+--------------+--------------+----------------------+
++--------------+--------------+-------------------+
+| Command      | What it does | Helpful options   |
++==============+==============+===================+
+| `du`         | Check size   | Most likely to be |
+|              | of files.    | used              |
+|              |              | `du  -h           |
+|              |              |  <dir> | sort -h` |
+|              |              | [^3               |
+|              |              | -2-linux-admin-9] |
+|              |              |                   |
+|              |              | Also useful to    |
+|              |              | combine with      |
+|              |              | `head`.           |
++--------------+--------------+-------------------+
+| `df`         | Check        | `-h`              |
+|              | storage      |                   |
+|              | space on     |                   |
+|              | device.      |                   |
++--------------+--------------+-------------------+
 
 [^3-2-linux-admin-9]: Note that if you're using `du` with `-h`, `sort`
     also needs a `-h` so it knows to sort by human-readable attributes.
@@ -569,9 +578,9 @@ relationships between these different processes is mostly hidden from
 you -- the end user.
 
 As a server admin, finding runaway processes, killing them, and figuring
-out how to prevent it from happening again is a pretty common task.
-Runaway processes usually misbehave by using up the entire CPU, filling
-up the entire machine's RAM.
+out how to prevent the them from happening again is a pretty common
+task. Runaway processes usually misbehave by using up the entire CPU,
+filling up the entire machine's RAM.
 
 Like users and groups have ids, each process has a numeric **p**rocess
 **id** (`pid`). Each process also has an owner -- this can be either a
@@ -608,9 +617,9 @@ take notice of its `pid` to kill it with `kill`.
 ### So much CPU?
 
 For `top` (and most other commands), CPU is expressed as a percent of
-*single core* availability. So on a modern machine, it's very common to
-see CPU totals well over 100%. Seeing a single process using over 100%
-of CPU is rarer.
+*single core* availability. So, on a modern machine (with multiple
+cores), it's very common to see CPU totals well over 100%. Seeing a
+single process using over 100% of CPU is rarer.
 :::
 
 The `top` command takes over your whole terminal. You can exit with
@@ -619,7 +628,7 @@ The `top` command takes over your whole terminal. You can exit with
 Another useful command for finding runaway processes is
 `ps aux`.[^3-2-linux-admin-10] It lists all processes currently running
 on the system, along with how much CPU and RAM they're using. You can
-sort the output with the `--sort` flag and specify sorting my cpu with
+sort the output with the `--sort` flag and specify sorting by cpu with
 `--sort -%cpu` or by memory with `--sort -%mem`.
 
 [^3-2-linux-admin-10]: This is another one where you'll almost never use
@@ -644,52 +653,52 @@ system.
 ::: callout-tip
 The `grep` command above looks a little weird because I used a little
 trick. I wanted to keep the header in the output, so the regex I used
-matches both a the header line (`USER`) and the thing I actually care
+matches both the header line (`USER`) and the thing I actually care
 about (`RStudio`).
 :::
 
-+----------------+----------------+--------------------------+
-| Command        | What it does   | Helpful options          |
-+================+================+==========================+
-| `top`          | See what's     |                          |
-|                | running on the |                          |
-|                | system.        |                          |
-+----------------+----------------+--------------------------+
-| `ps aux`       | See all system | Consider using `--sort`  |
-|                | processes.     | and pipe into `head` or  |
-|                |                | `grep`                   |
-+----------------+----------------+--------------------------+
-| `kill`         | Kill a system  | `-9` to force kill       |
-|                | process.       | immediately              |
-+----------------+----------------+--------------------------+
++----------------+----------------+-------------------------+
+| Command        | What it does   | Helpful options         |
++================+================+=========================+
+| `top`          | See what's     |                         |
+|                | running on the |                         |
+|                | system.        |                         |
++----------------+----------------+-------------------------+
+| `ps aux`       | See all system | Consider using `--sort` |
+|                | processes.     | and pipe into `head` or |
+|                |                | `grep`                  |
++----------------+----------------+-------------------------+
+| `kill`         | Kill a system  | `-9` to force kill      |
+|                | process.       | immediately             |
++----------------+----------------+-------------------------+
 
 ### Managing networking
 
 Networking is a complicated topic, which we'll approach with great
-detail in [Chapter @sec-basic-networks]. For now, it's important to be able
-to see what's running on your server that is accessible from the outside
-world on a particular port.
+detail in [Chapter @sec-basic-networks]. For now, it's important to be
+able to see what's running on your server that is accessible from the
+outside world on a particular port.
 
 The main command to help you see what ports are being used and by what
-services is the `netstat` command. `netstat` returns the services are
-running and the ports associated. `netstat` is generally most useful
-with the `-tlp` flags to show programs that are listening and the
+services is the `netstat` command. `netstat` returns the services that
+are running and their associated ports. `netstat` is generally most
+useful with the `-tlp` flags to show programs that are listening and the
 programs associated.
 
 TODO: get netstat example
 
-+----------------+----------------+------------------------+
-| Command        | What it does   | Helpful options        |
-+================+================+========================+
-| `netstat`      | See ports and  | Usually used with      |
-|                | services using | `-tlp`                 |
-|                | them.          |                        |
-+----------------+----------------+------------------------+
++----------------+----------------+-----------------------+
+| Command        | What it does   | Helpful options       |
++================+================+=======================+
+| `netstat`      | See ports and  | Usually used with     |
+|                | services using | `-tlp`                |
+|                | them.          |                       |
++----------------+----------------+-----------------------+
 
 Sometimes you *know* you've got a service running on your machine, but
 you just can't seem to get the networking working. It can be useful to
 access the service directly without having to deal with networking. You
-can do this with -- port forwarding, also called tunneling.
+can do this with port forwarding, also called tunneling.
 
 SSH port forwarding allows you to take the output of a port on a remote
 server, route it through SSH, and display it *as if* it were on a local
@@ -753,12 +762,12 @@ If you've been reading carefully, you've realized that running the
 command means opening a particular runnable file, and `R` isn't a file
 path on my system.
 
-You can actually just type the a complete filename of a runnable binary
+You can actually just type the complete filename of a runnable binary
 into your command line. For example, on my MacBook, my version of R is
 at `/usr/bin/local/R`, so I could open an R session by typing that full
 path. Sometimes it can be handy to be precise about exactly which
-executable you're opening (looking at you, multiple versions of Python),
-so you may want to use full paths to executables.
+executable you're opening (I'm looking at you, multiple versions of
+Python), so you may want to use full paths to executables.
 
 If you ever want to check which actual executable is being used by a
 command, you can use the `which` command. For example, on my system this
@@ -767,7 +776,7 @@ is the result of `which R`.
      ❯ which R                                                    
     /usr/local/bin/R
 
-Most of that time you don't want to have to bother with full paths for
+Most of the time you don't want to have to bother with full paths for
 executables. You want to just type `R` on the command line and have R
 open. Moreover, there are cases where functionality relies on another
 executable being able to find R and run it -- think of running RStudio
@@ -778,9 +787,9 @@ your system via something called the *path*. When you type `R` into the
 command line, it searches along the path to find a version of R it can
 run.
 
-You can check your path at any time by just echoing the `PATH`
-environment variable with `echo $PATH`. On my MacBook, this is what the
-path looks like.
+You can check your path at any time by echoing the `PATH` environment
+variable with `echo $PATH`. On my MacBook, this is what the path looks
+like.
 
      ❯ echo $PATH                                                      
     /opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
@@ -810,15 +819,14 @@ can run them easily.
 
 ## Lab: A working Data Science Workbench
 
-In this lab, we're going to take your server and take it from an empty
-server that you can access to one with users and useful software
-installed and running -- even if it's not yet accessible to the outside
-world.
+In this lab, we're going to take your server from an empty server that
+only you can access to one with users and useful software installed and
+running -- even if it's not yet accessible to the outside world.
 
 #### Step 1: Log on with the `.pem` key
 
 The `.pem` key you downloaded when you set up the server is the skeleton
-key -- it will automatically let you in with complete admin privleges.
+key -- it will automatically let you in with complete admin privileges.
 In [Chapter @sec-linux-admin], we'll set up a user with SSH on the
 server with more limited permissions.
 
@@ -828,8 +836,8 @@ server, but be extremely careful with the power of the `.pem` key.
 Because the keypair is so powerful, AWS requires that you restrict the
 access pretty severely (more on what that means in [Chapter
 @sec-linux-admin]). If you try to use the keypair without first changing
-the permissions, you'll be unable to and get a warning that looks
-something like:
+the permissions, you'll be unable to, and you'll get a warning that
+looks something like this:
 
 ``` {{bash}}
 
@@ -852,9 +860,6 @@ ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey)
 
 Before we can use it to open the server, we'll need to make a quick
 change to the permissions on the key.
-
-\[QUESTION -- does this happen on Windows? If so, what are commands to
-alter permissions?\]
 
 So let's change the file permissions.
 
@@ -919,19 +924,22 @@ group.
 sudo usermod -aG sudo test-user
 ```
 
-Hopefully it's reasonably intuitive that `-aG` stands for add to group.
+As you might have guessed, `-aG` stands for **a**dd to **g**roup.
 
 ### Step 3: Add an SSH Key for your user
 
-If you've already got an SSH key you use, feel free to use that one. If
-you don't have one, google how to create an SSH key and do it on your
+The first thing you should do is check if you have an SSH key on your
+system (try `ls ~/.ssh`). If you've got one already, I'd recommend just
+using that key so you don't have to mess around with multiple keys.
+
+If you don't have one, google how to create an SSH key and do it on your
 laptop.
 
 The first step is going to be adding your public key to the end of the
 `authorized_users` file.
 
-First, you need to get your public key to the server. I might recommend
-using `scp`.[^3-2-linux-admin-11]
+First, you need to get your public key to the server. I recommend using
+`scp`.[^3-2-linux-admin-11]
 
 [^3-2-linux-admin-11]: Alternatively, you could open a file of the right
     name and just copy/paste the contents of your public key in there.
@@ -975,7 +983,7 @@ just type `exit`.
 ### Step 4: Install R and Python
 
 Everything until now has been generic server administration. Now let's
-get into some data science specific work -- setting up R and Python.
+get into some data-science-specific work -- setting up R and Python.
 
 ::: callout-tip
 If you run into trouble assuming `sudo` with your new user, try exiting
@@ -1008,16 +1016,17 @@ OSS.
 :::
 
 There are good instructions on downloading `rig` and using it to install
-R on the GitHub repo -- https://github.com/r-lib/rig.
+R on the GitHub repo -- https://github.com/r-lib/rig. Use those
+instructions to install the current R release on your AWS server.
 
-Once you've got R installed on your server, you can check that it's
-running by just typing `R` into the command line. If that works, you're
-good to move on to the next step.
+Once you've installed R on your server, you can check that it's running
+by just typing `R` into the command line. If that works, you're good to
+move on to the next step.
 
 ### Step 5: Installing RStudio Server
 
-Once you've got R installed, let's download and install RStudio Server.
-This should be a very easy process. The basic process is to install the
+Once R is installed, let's download and install RStudio Server. This
+should be a very easy process. The basic process is to install the
 `gdebi` package from `apt`, which is used for installing downloaded
 packages, download the RStudio Server package, and install it.
 
@@ -1028,7 +1037,7 @@ one.
 You can find the exact commands on the Posit website at
 https://posit.co/download/rstudio-server/. Make sure to pick the version
 that matches your operating system. Since you've already installed R,
-you can skip down to actually installing the server.
+you can skip down to the "Install RStudio Server" step.
 
 Once you've installed, you can check the status with
 `sudo systemctl status rstudio-server`. If it says `running`, you're
@@ -1191,37 +1200,45 @@ want to run a data science project. If you're running a Shiny app, Shiny
 Server is easy to configure along the lines of RStudio Server.
 
 However, if you put an API in a container like we did in [Chapter
-@sec-docker], you might want to just deploy that somewhere on your
-server as a running container.
+@sec-docker], you might want to deploy that somewhere on your server as
+a running container.
 
-The first step is just to install docker on your system with
+The first step is to install docker on your system with
 `sudo apt-get install docker.io`. You can check that you can run docker
 with `docker ps`. You may need to adopt `sudo` privileges to do so.
 
-Once we've got docker installed, getting the API running is almost
+Once we have docker installed, getting the API running is almost
 trivially easy using the command we used back in [Chapter @sec-docker]
 to run our container.
 
-    docker run --rm -d \
+    sudo docker run --rm -d \
       -p 8555:8000 \
       --name palmer-plumber \
       alexkgold/plumber
 
 The one change you might note is that I've changed the port on the
-server to be 8555, since we've already got JupyterHub running on 8000.
+server to be 8555, since we already have JupyterHub running on 8000.
 
 Now, we can SSH tunnel into our server and view our running API at
 `localhost:8555/__docs__/`.
 
-This was easy to get something up and running quickly. But you should
-notice that this isn't daemonized -- if we restart the server or the
-container dies for any reason, it won't auto-restart.
+This is why people love docker -- it's wildly easy to get something
+simple running. But getting Docker hardened for production takes a bit
+more work.
+
+The first thing to notice is that there's no auth on our API. Anyone can
+hit this API as much as they want if they have the URL. Needless to say,
+this is not a security best practice unless you intend to host a public
+service.
+
+The other issue is that we haven't daemonized the API. If we restart the
+server or the container dies for any reason, it won't auto-restart.
 
 It's not generally a best practice to daemon-ize a docker container by
-just putting the `run` command into systemd. Instead, you should use a
-container management system like Docker Compose or Kubernetes that are
-designed specifically to manage running containers. Getting deeper into
-those is beyond the scope of this book.
+just putting the `run` command into `systemd`. Instead, you should use a
+container management system that is designed specifically to manage
+running containers, like Docker Compose or Kubernetes. Getting deeper
+into those systems is beyond the scope of this book.
 
 ### Questions for Alex
 
