@@ -1,422 +1,347 @@
-# Logging in with auth {#sec-auth}
+# Who gets to do what in enterprise {#sec-auth}
 
-Unless you're a special kind of nerd, you've probably never thought hard about auth. But you do it all the time -- every time you log into your bank to check your account or open Instagram on your phone or access RStudio via your corporate Okta account, there's auth happening under the hood.
+One of the core responsibilities of an IT/Admin group is managing how
+people are able to log into the different systems they need to do their
+work. This is obviously a security issue -- making sure people are able
+to access the systems they're supposed to -- and not others -- is a core
+part of enterprise security.
 
-Auth is shorthand for two different things -- authentication and authorization.
+It's also a logistical issue, and as enterprises get larger, managing
+the flow of permissions into and out of systems can become a major
+hassle.
 
-Authentication is the process of verifying identites. When I show up at a website that isn't just open to the internet, how do I prove that I am who I say I am.
+A large organization might have dozens of people joining and leaving
+each week. And they probably have dozens or hundreds of services.
+There's just no way the IT/Admin team could reasonably manage services
+one-by-one. And for users, having a different username and password for
+each system is a nightmare. That is why almost all organizations with
+more than a few users have centrally managed auth.
 
-Authorization is the process of managing and checking permissions. Once you know that it's me at the front door, am I allowed to come in?
+We'll start by talking about the issues that are likely to come up
+around auth in a data science context. Then we'll get generally into
+some background on how IT/Admins think about managing users and
+permissions. Last, we'll talk about the technologies they use to
+accomplish these goals so you can have an intelligent conversation with
+them about it.
 
-![](images-auth/auth.png)
+## How IT/Admins think about auth
 
-For the most part, this chapter is designed to help you talk to the folks who manage auth at your organization. Unless you've got a small organization with only a few data scientists, you probably won't have to manage this yourself. But it can be extremely helpful to understand how auth works when you're trying to ask for something from the organization's admins.
+Let's start with a broad introduction to what auth is and how IT/Admins
+think about it in order to build up a mental model.
 
-In order to talk concretely about logging into systems, it's helpful to clarify some terms. For the most part, these terms are industry standard, but I'm also going to generalize some terms because they're used for certain types of auth, and they're really useful.
+I find a real-world analogy to be helpful in understanding how auth
+works. Think of all the different services your company's IT/Admin team
+manages as rooms in a building. Email, database, data science workbench,
+social media accounts, HR systems, and more. Each one is a room in the
+building.
 
-For the purposes of this document, we're going to be talking about trying to login to a **service**. A service is something you want to login to -- it could be your phone or your email, or a server, a database, or software like RStudio Server or JupyterHub.
+In order to comply with the principle of least privilege, these doors
+are locked and guarded. Anyone who needs to access a particular door is
+given access, but only to the doors they need.
 
-When you go to login to a service, there are two things that have to happen. First, you have to assert and verify who you are. This process is called **authentication**, and the assertion and proof of identity are your **credentials** or **creds**. The most common credentials are a username and password, but there are other options including SSH keys, multi-factor authentication, or biometrics.
+In order to understand how an IT/Admin thinks about auth, put yourself
+in the shoes of the person who has to manage security for the building.
 
-Once you've proven who you are, then the system needs to determine what you're supposed to have access to. This process is called **authorization.**
+When someone comes up to the door of a room, the guard for that door
+will need to do two things. First, they'll need to know who that person
+is. This process of identifying someone and validating that they are who
+they say they are is called *authentication*.
 
-Often, the authentication + authorization process is referred to collectively as **auth**.
+Authentication is done by providing some sort of *credential* (or cred)
+that verifies that the person actually is who they say they are. The
+most common type of credential for computer systems is a username and
+password combination.
 
-\[#TODO: Image of Auth\]
+Increasingly, organizations are moving towards other kinds of
+credentials instead of or in addition to usernames and passwords,
+including biometrics like fingerprints and facial identification,
+multi-factor codes or a push notification on your phone, or ID cards of
+some sort.
 
-So, to summarize when you go to login to a service, the service reaches out to some sort of system to verify your identity. Depending on the method, it may also check your authorization. The name of that system varies by the auth method, but for the purposes of this chapter, we'll refer to it generally as the identity store. Depending on the auth method, the identity store may store just authentication records, or both authentication and authorization.
+Once the guard knows who they are, they'll need to verify that the
+person is allowed to enter the room. The process of checking what you're
+allowed to do -- what *permissions* you have in IT-speak -- is called
+*authorization*.
 
-## The many flavors of auth (or what does SSO mean?)
+Together, the whole system of authenticating and authorizing people to
+take actions inside a computer system are called *auth*.
 
-Single Sign On (SSO) is a slippery term, so it is almost always necessary to clarify what is meant by the term when you hear it. At some organizations, identity management isn't centralized at all. This means that usernames and passwords are unique to each service, onboarding and offboarding of users has to be handled independently for each service, and users have to login frequently. In short, it's often not a great system. This is never referred to as SSO.
+Let's start by thinking about the case where auth isn't
+centrally-managed. The guards for each room don't talk to each other, so
+each guard issues a credential to the people who are allowed in and
+maintains a list of who's allowed to enter. Maybe one has a keycard,
+another has a passcode that changes weekly, and another just remembers
+faces really well. This is obviously a huge pain for the user and also
+isn't great for any organization that wants to set and meet central
+security standards.
 
-![](images-auth/sso.jpeg)
+In the labs in section 3, this is how we configured our server. We
+created a standalone server with standalone credentials. And while
+that's secure enough on its own, it doesn't integrate with any central
+IT/Admin capabilities.
 
-Most organizations of a meaningful size have centralized identity management. This means that identities, credentials, authorization, onboarding, and offboarding are handled centrally. However, you may still need to independently login to each system. For example, in this system, every service might take the same username and password as your credentials, but if you go to RStudio Server followed by JupyterHub, you'll need to provide that username and password independently to each service. This system is often facilitated by PAM, and LDAP/AD. Some organizations call this SSO, because there's only one set of credentials.
+This is common in small organizations without much central IT/Admin
+expertise. Among enterprise organizations it is much rarer, mostly
+because of the hassle for users and the risk to the system of having to
+maintain so many separate credentials.
 
-In true SSO, users login once and are given a token or ticket.[^3-3-auth-1] Then, when they go to the next service, they don't have to login again because that service can just look at the token or ticket to do auth for that user. For example, in this system, I could go to RStudio Server and login, and then go to JupyterHub and get in without being prompted again for my password. This type of auth is facilitated by Kerberos, SAML, or OAuth.
+So let's start thinking about how we could make the management of this
+system simpler and easier.
 
-[^3-3-auth-1]: Depending on the system, this token or ticket can live in various places.
+The first, and most obvious, thing would be to simplify things so all
+the guards know to accept the same credentials. Maybe we just issue
+everyone a keycard and passcode that they tell the guards. Then, the
+guard can look at the person's keycard and radio in the passcode to
+double check that it's valid.
 
-## Auth Techniques
+But it's still not trivial to do authorization. The guards are still
+going to have to maintain lists of who's allowed into their room. This
+is called an Access Control List (ACL).[^4-3-auth-1]
 
-If you have five data scientists in your group, and the only shared resource you have is an RStudio Server instance, you probably don't need to think terribly hard about auth. It's pretty straightforward to just make users on a server and give them access to everything.
+[^4-3-auth-1]: Standard Linux permissions (POSIX permissons) that were
+    discussed in [Chapter @sec-linux-admin] are basically a special case
+    of ACLs. ACLs allow setting individual-level permissions for any
+    number of users and groups, as opposed to the one owner, one group,
+    and everyone else permissions set for POSIX.
 
-But as organizations get larger with hundreds or thousands of users, there's constant churn of people joining and leaving. The number of services can creep into the dozens or hundreds and people may have very different authorization levels to different services. Trying to manage auth on the individual services is a nightmare -- as is trying to keep that many usernames and passwords straight for users. That is why almost all organizations with more than a few users have centrally managed auth.
+    Linux distros now have support for ACLs on top of the standard POSIX
+    permissions.
 
-### You get a permission and you get a permission!
+That'll make it way easier for the people using the system, and also
+make it much somewhat more secure. Now we know all of the doors are
+using a similar level of security and if someone loses their card or
+gets it stolen, we just have to do one trade.
 
-For the most part, we think of people being authenticated and authorized into services. However, it's sometimes useful to consider the broader class of entities that could do auth. There are two common non-human entities that are included in auth systems that are worth considering.
+This is basically the situation that many companies have been in from
+the mid 1990s onwards. An open protocol called Lightweight Directory
+Access Protocol (LDAP -- pronounced ell-dap) and the Microsoft
+implementation of LDAP called Active Directory (AD) allowed
+organizations to maintain central lists of users and the groups to which
+they belong.
 
-**Service Accounts** are accounts given to non-human entities when you want it to be able to do something on its own behalf. For example, maybe you've got a Shiny app that users use to visualize data that's in a database. Very often, you don't want the app to have the same permisions as the app's author, or to inherit the permissions of the people viewing the app. Instead, you want the app to be able to have permissions to do certain database operations. In that case, you would create a service account to give to the Shiny app that has exactly those permissions.
+They'd configure server-based services to query their LDAP/AD servers.
+LDAP/AD would send back information on the user including their username
+and groups and the service could use that information to authorize the
+user.
 
-There are also times where it's useful to go one level up and give permissions to an entire instance or service. In that case, you might assign permissions to an instance. For example, you could make it the case that anyone who is logged into the JupyterHub server is allowed to read from the database.
+From the perspective of securely and centrally managing services,
+LDAP/AD is obviously a huge improvement over a world where each service
+maintains completely independent auth systems.
 
-Instance permissions are rather broad, and so they are usually only applied when you've got multiple resources inside a private network. In that case, authentication and authorization are only done at a single point and authorization is pretty broad.
+But it clearly starts breaking down as the building starts getting
+bigger.
 
-### Authorization is kinda hard
+In enterprises where there are dozens of people onboarding and
+offboarding to dozens or hundreds of services each week, the virtual
+equivalent of having to run around the building telling each guard to
+add or subtract names from the list is a pain and is error prone.
 
-From a management perspective, authentication is pretty simple. A person is given a set of credentials, and they have to supply those credentials when prompted to prove they are who they say they are.
+You might think that the solution would be to just centrally manage the
+allow-lists for all the rooms. That partially solves the problem, but
+there are still a few remaining.
 
-Authorization is a whole other can of worms. There is a meaningful literature on varieties of authorization and how they work. We're not going to get too deep into the weeds, other than to define some common terms and how they're used.
+There's also a security issue here -- you have to trust all the guards.
+What if the guard is secretly writing down all the passcodes somewhere
+to use for themselves?
 
-The atomic basis for authorization is a **permission**. Permissions are a binary switch that answers the question *is this person allowed to do the thing they are trying to do?*[^3-3-auth-2]
+It's also annoying to have to maintain guards at each door. Wouldn't it
+be nice to instead just verify the person's identity when they entered
+the building and then have them let themselves into each door as they
+need?
 
-[^3-3-auth-2]: As we'll see in a second, permissions can actually belong to entities other than people...but that's a little complicated for the moment.
+These issues with LDAP/AD led to the origination of Single-Sign On
+(SSO).
 
-The simplest way of assigning permissions is called an **access control list** (ACL). In systems that use ACLs, each piece of content has a list of users who are allowed access. Sometimes, ACLs are also assigned to groups, which are simply sets of users -- think `data-scientists`.
+SSO works like this. When you come in, you stop at the security booth
+and exchange your credentials for a building access pass. This building
+access pass has your name on it and a way to validate that its genuine.
+Then you get rid of the guards and equip each door with a keycard lock.
+Each door accepts only its own keycard.
 
-![](images-auth/acls.jpeg){width="572"}
+Every time you want to go into a different door, you have to go back to
+the security booth and show them your building access pass. They'll
+check that it's still valid, check that you're allowed to enter the room
+you want to go into, and issue you a keycard for the room. Then you can
+go use that keycard and go about your business.
 
-One ACL implementation with which you may be familiar is file permissions on a Linux server. For example, if you have a Mac or are on a Linux server, you can open your terminal, navigate to a directory and do the following:
+While this roundtrip to the security booth sounds a little complicated,
+it actually drastically simplifies things, because the door you're
+trying to get into doesn't ever need to know anything about you. It just
+needs to know how to accept its own specific keycard. And while it might
+seem slow for a human, it's nearly instantaneous for a computer.
 
-``` bash
-$ ls -l
--rwxr-xr-x   1 alexkgold  staff   2274 May 10 12:09 README.md
-```
+There are a few different technologies that can be used to accomplish
+SSO including SAML and OIDC/OAuth, which are open technologies, and
+Kerberos, which is an older Windows-based way to do SSO.
 
-That first set of characters describes the ACL for the `README.md` file. The first character `-` indicates this is a file, as opposed to a directory of files (which would be `d`). Then there are three sets of 3 characters, `rwx`, which are short for `read`, `write`, and `execute`, with the first group for the owner, `alexkgold`, the second group for anyone else in the group `staff`, and the third set for anyone else.
+These days, almost all enterprises are moving quickly towards
+implementing SSO using either SAML or OAuth (or both).
 
-So you can read `-rwxr-xr-x` as, *this is a file that `alexkgold` can read, write or execute, and anyone else can read or execute, but not edit*.
+If you -- for some reason -- actually have to configure your server with
+a particular authentication scheme, there's more information in
+[Appendix @sec-append-auth].
 
-ACLs are pretty intuitive, but it turns out that when you are managing a lot of users across a lot of files, directories, and services, they can get pretty difficult to manage, so many organizations use Role Based Access Control (RBAC).
+### Managing permissions
 
-RBAC adds a layer of abstraction between users and permissions, which makes it a little harder to understand, but ultimately results in a much more flexible system. In RBAC, permissions are not assigned to individual pieces of content or to users or groups. Instead, permissions are assigned to *roles*, and roles are given to users or groups.[^3-3-auth-3]
+Now, let's talk a little bit about how the permissions themselves are
+managed. You could start by just collecting up all the ACLs from each
+room around the building and managing them out of the central booth.
 
-[^3-3-auth-3]: If you think about this for a minute, it may occur to you "isn't RBAC basically the same as doing ACLs at the group level?" Yes, yes it is, but it can be helpful to have groups and roles be separated, even if there's a 1-1 mapping.
+This is a simple kind of permissions management that makes a lot of
+intuitive sense.
+
+But, as you can imagine, if your building has hundreds of rooms, that's
+a lot of different rooms to keep individual lists for. Additionally, if
+you have permissions changing a lot, having to change individual user
+permissions is a pain.
+
+Instead, you might want to create a role that has certain permissions
+and then assign people to that role. For example, maybe there's the role
+of `manager`, who has access to certain rooms. There might be another
+role that's `executive` who has access to different rooms. Managing
+permissions in this way is called *Role Based Access Control (RBAC)*.
 
 ![](images-auth/RBAC.png)
 
-There are also further iterations on the RBAC model, like Attribute Based Access Control (ABAC) or Policy Based Access Control (PBAC) in which there's a long list of attributes that could be considered for a user to compute their permissions for a given service.
-
-## Auth Technologies
-
-### Username + Password
-
-Many pieces of software come with integrated authentication. When you use those system, the product stores encrypted username and password pairs in a database.
-
-These setups are often really easy from an admin perspective -- you just set up individual users on the server. However, the flip side is that users have one more username and password to remember, which is annoying for them. Moreover, if you have more than a few users, or the system is one of more than a few, it's hard to manage users on a lot of different systems. It can be a real pain to create accounts on a ton of different systems when a new person joins the organization, or to remove their permissions one-by-one when they leave.
-
-For this reason, most IT/Admin organizations strongly prefer using some sort of centralized identity store.
-
-### PAM
-
-Pluggable Authentication Modules (PAM) is a Linux system for doing authentication. As of this writing, PAM is the default authentication method for both RStudio Server and JupyterHub.
-
-![](images-auth/auth-pam.jpeg){width="539"}
-
-Conceptually PAM is pretty straightforward. You install a service on a Linux machine and configure it to use PAM authentication from the underlying host. By default, PAM just authenticates against the users configured on the Linux server, but it can also be configured to use other sorts of "modules" to authenticate against other systems -- most commonly LDAP/AD or Kerberos. PAM can also be used to do things when users login -- the most common being initializing tokens or tickets to other systems, like a database.
-
-PAM is often paired with **System Security Services Daemon (**SSSD), which is most commonly used to automatically create Linux users on a server based on the identities stored in an LDAP/AD instance.
-
-Though conceptually simple, reading, writing, and managing PAM modules is kinda painful.
-
-#TODO: Add PAM example
-
-### LDAP/AD
-
-Lightweight Directory Access Protocol (LDAP) is a relatively old, open, protocol used for maintaining a set of entities and their attributes. To be precise, LDAP is actually a protocol for maintaining and accessing entities and their attributes in a tree. It happens that this is a really good structure for maintaining permissions and roles of users at an organization, and it's the main thing LDAP is used for.
-
-Active Directory (AD) is Microsoft's implementation of LDAP, and is by-far the most common LDAP "flavor" out there. AD so thoroughly owns the LDAP enterprise market, that LDAP is often referred to as LDAP/AD. There are other implementations you may run across, the most common being OpenLDAP.
-
-<aside>Azure, Microsoft's cloud provider, offers an authentication service called *Azure Active Directory (AAD)*. Confusingly, AAD is usually used in combination with SAML, not LDAP.</aside>
-
-It's worth distinguishing the use of LDAP as an identity store from its use as an authentication technology. As a tree-based database, LDAP is uniquely well-suited to storing the identities, and other attributes of people at the organization. However, as discussed below, using LDAP to authenticate into actual services has security and convenience drawbacks, and many organizations consider it outdated and insecure.
-
-A lot of organizations are moving away from LDAP for authentication in favor of token-based technologies like SAML or OAuth, but many are keeping LDAP as their identity "source of truth" that is referenced by the SAML or OAuth Identity Provider.
-
-LDAP has three main disadvantages relative to other technologies. First, LDAP requires that your credentials (username and password, usually) actually be provided to the service you're trying to use. This is fundamentally insecure relative to a system where your credentials are provided only to the identity provider, and the service just gets a token verifying who you are. In token-based systems, adding additional requirements like MFA or biometrics are easy, as they're simply added at the IdP layer. In contrast, doing those things in LDAP would require the service to implement them, which usually is not the case, so you're usually limited to username and password.
-
-The second disadvantage of LDAP is that it does not allow for central administration of permissions. LDAP directly records only objects and their attributes. Say, for example, you want only users of a particular group to have access to a certain resource. In LDAP, you would have to specify *in that resource* that it should only allow in users of that group. This is in contrast to SAML/OAuth, where the authorization is centrally managed.
-
-Lastly, LDAP authentication is based on each service authenticating. Once you authenticate, the service might give you a cookie so that your login persists, but there is no general-purpose token that will allow you to login to multiple services.
-
-#### How LDAP Works
-
-While the technical downsides of LDAP are real, the technical operations of LDAP are pretty straightforward. In short, you try to login to a service, the service collects your username and password, sends it off to the LDAP server, and checks that your username and password are valid.
-
-![](images-auth/LDAP.png)
-
-Note that LDAP is purely for authentication. When you're using LDAP, authorization has to be handled separately, which is one of the disadvantages.
-
-#### Deeper Than You Need on LDAP
-
-LDAP is a tree-based entity and value store. This means that LDAP stores things and their attributes, which include a name and one or more values. For example, my entry in a corporate LDAP directory might look like this:
-
-    cn: Alex Gold
-    mail: alex.gold@example.com
-    mail: alex.gold@example.org
-    department: solutions
-    mobile: 555-555-5555
-    objectClass = Person
-
-Most of these attributes should be pretty straightforward. `cn` is short for common name, and is part of the way you look up an entity in LDAP (more on that below). Each entity in LDAP must have an `objectClass`, which determines the type of entity it is. In this case, I am a `Person` , as opposed to a device, domain, organizationalRole, or room -- all of which are standard `objectClass`es.
-
-Let's say that your corporate LDAP looks like the tree below:
-
-![](images-auth/ldap-tree.jpeg){width="503"}
-
-#TODO: make solutions an OU in final
-
-The most common way to look up LDAP entities is with their *distinguished name (DN)*, which is the path of names from the point you're starting all the way back to the root of the tree. In the tree above, my DN would be `cn=alex,ou=solutions,dc=example,dc=com`.
-
-Note that you read the DN from right to left to work your way down the tree. Aside from `cn` for common name, other common fields include `ou` for organizational unit, and `dc` for domain component.
-
-#### Trying out LDAP
-
-Now that we understand in theory how LDAP works, let's try out an actual example.
-
-To start, let's stand up LDAP in a docker container:
-
-#TODO: update ldif
-
-``` bash
-docker network create ldap-net
-docker run -p 6389:389 \
-  --name ldap-service \
-  --network ldap-net \
-  --detach alexkgold/auth
-```
-
-`ldapsearch` is a utility that lets us run queries against the LDAP tree. Let's try it out against the LDAP container we just stood up.
-
-Let's say I want to return everything in the subtree under `example.org`. In that case, I would run `ldapsearch -b dc=example,dc=org`, where `b` indicates my search base, which is a `dn`. But in order to make this actually work, we'll need to include a few more arguments, including
-
--   the host where the LDAP server is, indicated by `-H`
-
--   the bind DN we'll be using, flagged with `-D`
-
--   the bind password we'll be using, indicated by `-w`
-
-Since we're testing, we're also going to provide the flag `-x` to use whatever certificate is present on the server. Putting it altogether, along with the commands to reach the docker container, let's try:
-
-``` bash
-ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
-
-# extended LDIF
-#
-# LDAPv3
-# base <dc=example,dc=org> with scope subtree
-# filter: (objectclass=*)
-# requesting: ALL
-#
-
-# example.org
-dn: dc=example,dc=org
-objectClass: top
-objectClass: dcObject
-objectClass: organization
-o: Example Inc.
-dc: example
-
-# admin, example.org
-dn: cn=admin,dc=example,dc=org
-objectClass: simpleSecurityObject
-objectClass: organizationalRole
-cn: admin
-description: LDAP administrator
-userPassword:: e1NTSEF9d3IyVFp6SlAyKy9xT2RsQ0owTDYzR0RzNFo0NUFrQ00=
-
-# search result
-search: 2
-result: 0 Success
-
-# numResponses: 3
-# numEntries: 2
-```
-
-You should be able to read what got returned pretty seamlessly. One thing to notice is that the user password is returned, so it can be compared to a password provided. It is encrypted, so it doesn't appear in plain text.
-
-Note that `ldap` is a protocol -- so it takes the place of the `http` you're used to in normal web operations. Like there's `https`, there is also a protocol called `LDAPS`, which is `ldap` + `tls` for the same reason you've got `https`. LDAP is (almost) always running in the same private network as the service, so many organizations don't require using LDAPS, but others do require it.
-
-Running the ldapadmin
-
-``` bash
-docker run -p 6443:443 \
-        --name ldap-admin \
-        --env PHPLDAPADMIN_LDAP_HOSTS=ldap-service \
-        --network ldap-net \
-        --detach osixia/phpldapadmin
-```
-
-dn for admin `cn=admin,dc=example,dc=org` pw: `admin`
-
-<https://localhost:6443>
-
-``` bash
-# Replace with valid license
-export RSC_LICENSE=XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX
-
-# Run without persistent data and using default configuration
-docker run -it --privileged \
-    --name rsc \
-    --volume $PWD/rstudio-connect.gcfg:/etc/rstudio-connect/rstudio-connect.gcfg \
-    -p 3939:3939 \
-    -e RSC_LICENSE=$RSC_LICENSE \
-    --network ldap-net \
-    rstudio/rstudio-connect:latest
-```
-
-#### Single vs Double Bind
-
-There are two different ways to establish a connection between your server and the LDAP server. The first method is called *Single Bind*. In a single bind authentication, the user credentials are used **both** to authenticate to the LDAP server, and to query the server.
-
-In a *Double Bind* configuration, there is a separate administrative service account, used to authenticate to the LDAP server. Once authentication is complete, then the user is queried in the system.
-
-Single bind configurations are often more limited than double bind ones. For example, in most cases you'll only be able to see the single user as well as the groups they're a part of. This can limit application functionality in some cases. On the other hand, there need be no master key maintained on your server, and some admins may prefer it for security reasons.
-
-We can see this really concretely. In the example above, you used a double bind by supplying admin credentials to LDAP. Let's say instead, you just provide a single user's credentials. In that case, I don't get anything back if I just do a general search.
-
-``` bash
-ldapsearch -x -H ldap://localhost:6389 -b dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                                       
-# extended LDIF
-#
-# LDAPv3
-# base <dc=example,dc=org> with scope subtree
-# filter: (objectclass=*)
-# requesting: ALL
-#
-
-# search result
-search: 2
-result: 32 No such object
-
-# numResponses: 1
-```
-
-But just searching for information about Joe does return his own information.
-
-``` bash
-ldapsearch -x -H ldap://localhost:6389 -b cn=joe,dc=engineering,dc=example,dc=org -D "cn=joe,dc=engineering,dc=example,dc=org" -w joe                    32 ✘
-# extended LDIF
-#
-# LDAPv3
-# base <cn=joe,dc=engineering,dc=example,dc=org> with scope subtree
-# filter: (objectclass=*)
-# requesting: ALL
-#
-
-# joe, engineering.example.org
-dn: cn=joe,dc=engineering,dc=example,dc=org
-cn: joe
-gidNumber: 500
-givenName: Joe
-homeDirectory: /home/joe
-loginShell: /bin/sh
-mail: joe@example.org
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: top
-sn: Golly
-uid: test\joe
-uidNumber: 1000
-userPassword:: e01ENX1qL01raWZrdk0wRm1sTDZQM0MxTUlnPT0=
-
-# search result
-search: 2
-result: 0 Success
-
-# numResponses: 2
-# numEntries: 1
-```
-
-### Kerberos Tickets
-
-Kerberos is a relatively old ticket-based auth technology. In Kerberos, encrypted tickets are passed around between servers. Because these tickets live entirely on servers under the control of the organization, they are generally quite secure.
-
-Though Kerberos is freely available, it was widely adopted along with Active Directory, and it's used almost exclusively in places that are running a lot of Microsoft products. A frequent use of Kerberos tickets is to establish database connections.
-
-Because the tickets are passed around from server to server, Kerberos can be used to create a true SSO experience for users.
-
-#### How Kerberos Works
-
-All of Kerberos works by sending information to and from the central *Kerberos Domain Controller* (KDC)*.* In Kerberos, authentication and authorization are handled independently.
-
-When a Kerberos session is initialized, the service sends the users credentials off to the KDC and requests something called the Ticket Granting Ticket (TGT) from the KDC. TGTs have a set expiration period. When they expire, the client has to request an updated TGT. This is one reason why Kerberos is considered quite secure - even if someone managed to steal a TGT, they'd only be able to use it for a little while before it went stale and could be revoked.
-
-When the user wants to actually do something, they send the TGT back to the KDC again and get a *session key* (sometimes referred to as a *service ticket*) that allows access to the service, usually with a specified expiration period.
-
-![](images-auth/auth-kerberos.jpeg){width="553"}
-
-#### Try out Kerberos
-
-#TODO
-
-### SAML
-
-These days Security Assertion Markup Language (SAML) is probably the most common system that provides true SSO -- including single login and centrally-managed permissions. SAML does this by passing around XML tokens.[^3-3-auth-4]
-
-[^3-3-auth-4]: XML is a markup language, much like HTML. The good thing about XML is that it's very flexible. The bad thing is that it's relatively hard for a human to easily read.
-
-The way this generally works is that a user attempts to login to a *Service Provider* (SP). The SP redirects the user to an Identity Provider (IdP), which checks either for a preexisting token in the users browser, or verifies the users credentials. The IdP checks for the user's authorization to access the SP in question, and sends an authorization token back to the SP.
-
-![](images-auth/auth-saml.jpeg){width="551"}
-
-Relative to LDAP/AD, which is from the early 1990s, SAML is a new kid on the block. SAML 1.0 was introduced in 2002, and SAML 2.0, which is the current standard, came out in 2005. Many large enterprises are switching their systems over to use SAML or have already done so.
-
-One superpower of SAML IdPs is that many of them can *federate* identity management to other systems. So, it's pretty common for large enterprises to maintain their user base in one or more LDAP/AD system, but actually use a SAML IdP to do authentication and authorization. In fact, this is what Azure Active Directory (AAD), which is Microsoft Azure's hosted authentication offering does. It is possible to use LDAP/AD with AAD, but most organizations use it with SAML.
-
-One of the nice things about SAML is that credentials are never shared directly with the SP. This is one of the ways in which SAML is fundamentally more secure than LDAP/AD -- the users credentials are only ever shared with the IdP.
-
-There are two different ways logins can occur -- starting from the SP, or starting from the IdP.
-
-In SAML, the XML tokens that are passed back and forth are called assertions.
-
-#### Try SAML
-
-We're going to use a simple SAML IdP to try out SAML a bit. This container only supports a single SP. Any IdP that might be used in an enterprise environment is going to support many SPs simultaneously.
-
-Let's go through the environment variables we're providing to this `docker run` command. We're providing three different arguments:
-
--   The `SP_ENTITY_ID` is the URL of the
-
--   `SP_ASSERTION_CONSUMER_SERVICE` is the URL of the SP that is prepared to receive the authorized responses coming back from the SAML IdP.
-
--   `SP_SINGLE_LOGOUT_SERVICE` is the URL where the SP will receive a logout command once someone has been logged out at the IdP level. Many SPs do not implement single logout.
-
-``` bash
-docker run --name=saml_idp \
--p 8080:8080 \
--p 8443:8443 \
--e SIMPLESAMLPHP_SP_ENTITY_ID=http://app.example.com \
--e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp \
--e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp \
--d kristophjunge/test-saml-idp:1.15
-```
-
-<http://localhost:8080/simplesaml>
-
-admin/secret
-
-### OIDC/OAuth2.0
-
-OIDC/OAuth is slightly newer than SAML, created in 2007 by engineers at Google and Twitter. OAuth 2.0 -- the current standard was released in 2012. If you're being pedantic, OAuth is a authorization protocol, and OpenID Connect (OIDC) is an authorization protocol that uses OAuth. In most cases, people will just call it OAuth.
-
-![](images-auth/auth-oauth.jpeg)
-
-#TODO: this picture is bad
-
-In an enterprise context, OAuth/OIDC is conceptually very similar to SAML -- but instead of passing around XML tokens, it's based on JSON Web Tokens (JWT, usually pronounced "jot").
-
-<aside>The fact that JSON is much more human-readable than XML is one of the big advantages of OIDC/OAuth compared to SAML.</aside>
-
-#TODO: try it out
-
-#### OAuth/OIDC vs SAML
-
-From a practical perspective, the biggest difference between OAuth/OIDC and SAML is that SAML is quite strict about what SPs are allowed. Each SP needs to be registered at a specific web address that the IdP knows it's allowed to receive requests from.
-
-In contrast, OAuth/OIDC was designed to be used to delegate authentication and authorization to different kinds of services that might be widely available on the internet. If you've ever allowed a website to *Login with Apple/Google/Facebook/Github*, that has been an application of OAuth/OIDC.
-
-Because the set of allowable SPs is fixed under SAML, it's more common in enterprise settings. Some admins consider SAML more secure for that reason as well.
-
-In some situations, SAML is used for authentication and OAuth is used for access to other services. Most commonly in the data science world, this can come up when a user logs into a service like RStudio Server and is then authorized to a database using an OAuth JWT.
-
-Resources: <https://www.okta.com/identity-101/saml-vs-oauth/> <https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/> <https://phoenixnap.com/blog/kerberos-authentication> <https://www.dnsstuff.com/rbac-vs-abac-access-control>
+It has the advantage of allowing more flexibility in creating roles and
+managing them relative to ACLs. You can also see how it'd be relatively
+simple to hook up something like your centralized HR database to an RBAC
+system by mapping actual users to a set of roles that is appropriate for
+them.
+
+But RBAC has its own drawbacks. RBAC can also result in role explosion
+over time -- if people need specialized permissions, it's easier to
+create tons and tons of special roles rather than figure out how to
+harmonize them into a system.
+
+It also can't accommodate certain kinds of highly specific permissions
+scenarios. For example, what if you have a situation where room 4242
+should only allow managers except from 9-12 on Tuesdays when it should
+allow maintenance services? That's not something RBAC can accommodate.
+
+If you have the need for even more granular permissions than RBAC can
+provide, you can create rules based on the room, the person, and the
+environment. This highly-flexible system is called *Attribute Based
+Access Control (ABAC)*. The downside of ABAC is that it can be a real
+pain to set up because it is so powerful.
+
+TODO: ABAC diagram (mapping room 4242 to person/manager to environment)
+
+The most well-known ABAC system is the AWS Identity and Access
+Management (IAM) system. If you've ever been utterly befuddled by
+applying permissions to resources in AWS, you can thank the complexity
+of ABAC. That complexity is the tradeoff for the very high degree of
+flexibility ABAC provides.
+
+## Data Science Auth Concerns
+
+The first and simplest concern that comes up for a new data science
+workbench is that it needs to support whatever auth mechanism your
+IT/Admin group has decided your organization is going to use. Hopefully
+the second above has given you some context on what those various
+mechanisms are.
+
+These days, most data science tools you might want to use support all of
+the standard SSO mechanisms -- though many of them reserve that
+functionality for paid tiers.
+
+### Data Access
+
+The second concern that comes up is how to get access to data. For
+example, if you're working on RStudio Server or JupyterHub, you almost
+certainly need to get access to data in order to do your work. Depending
+on how your organization works, that data may be on a network file
+system, in some sort of cloud storage, or in a database.
+
+If your data is on a network file system, you'll need to figure out a
+way to get that network file system connected to your server. In most
+cases, the way this works is that you'll create Linux users in your data
+science environment that have permissions on the network file system.
+Then, when you mount the file system, those users will have access to
+the files it needs.
+
+If you are using a cloud storage or database system, then you'll need to
+re-authenticate from your data science environment into the data
+environment. There are a few different ways you can do this.
+
+The simplest way to access a data source is by providing a username and
+password directly to that data source. This has the advantage of being
+simple and easy to accomplish in code. But that's not an SSO-compliant
+way of doing data access.
+
+These days, most organizations have introduced SSO for the front doors
+of their main systems, but SSO into a database is somewhat rarer, mostly
+because relatively few databases have implemented such systems.
+
+There are three main ways to accomplish SSO into a database.
+
+The first and oldest is to use a Kerberos ticket, which is a relatively
+old -- but highly secure -- way to do authentication. Kerberos is mainly
+used in Windows-based environments, so it's mostly used when accessing a
+Microsoft SQL Server.
+
+If your organization uses Kerberos, you'll need to work with your
+organization's IT/Admin group to get everything configured. They may be
+able to configure it so that you never need to think about the Kerberos
+ticket and accessing the database just works. For more details on how
+Kerberos works and how to work with your organization's IT/Admin group,
+see [the relevant section](#sec-kerberos) in [Appendix
+@sec-append-auth].
+
+The second way to accomplish SSO into a data source is to pass along an
+*JSON Web Token (JWT, pronounced jot)*. A JWT is a
+cryptographically-signed token that can be passed along to gain
+authorization to the database. JWTs are the technology that underlies
+OAuth/OIDC. For more information, see the [OAuth/OIDC
+section](#sec-oauth) in [Appendix @sec-append-auth].
+
+These days, the biggest limitation on the use of JWTs for database
+access is whether your database accepts JWTs. You should talk to your
+database provider or an IT/Admin who's very familiar to understand the
+options your database provides.
+
+The last way to access a data source seamlessly is via integration with
+cloud IAM services. This will only work if you're trying to access a
+cloud resource from another cloud resource. So you could allow access
+from an EC2 instance to an S3 bucket, but not from your on-prem compute
+cluster to an S3 bucket.
+
+The patterns for doing this vary a lot by cloud and by the data science
+tooling you're using. Configuring a cloud instance to "just know" who's
+making a request is possible, but requires some savvy with managing
+cloud services.
+
+### Service Accounts
+
+The last concern that comes up a lot is what entity is doing the access.
+In workbench environments, it's common for humans to have credentials to
+data sources and to login as themselves. However, when those resources
+go to production, it's very common to introduce *service accounts*.
+
+A service account is a non-human entity that has permissions of its own.
+For example, maybe you've got a Shiny app that users use to visualize
+data that's in a database. Very often, you don't want the app to have
+the same permisions as the app's author, or to inherit the permissions
+of the people viewing the app.
+
+One important reason you might want this is that you want to manage the
+permissions of the app itself even if the author were to leave the
+company or change roles.
+
+Instead, you want the app to be able to have permissions to do certain
+database operations. In that case, you would create a service account to
+give to the Shiny app that has exactly those permissions.
+
+There's no particular magic to service accounts, but you'll need to
+figure out how to make your app or report run as the right user and have
+the correct service account credentials.
 
 ## Comprehension Questions
 
 1.  What is the difference between authentication and authorization?
-2.  What are some different ways to manage permissions? What are the advantages and drawbacks of each?
-3.  What is some advantages of token-based auth? Why are most organizations adopting it? Are there any drawbacks?
-4.  For each of the following, is it a username + password method or a token method? PAM, LDAP, Kerberos, SAML, ODIC/OAuth
+2.  What are some different ways to manage permissions? What are the
+    advantages and drawbacks of each?
+3.  What is some advantages of token-based auth? Why are most
+    organizations adopting it? Are there any drawbacks?
+4.  For each of the following, is it a username + password method or a
+    token method? PAM, LDAP, Kerberos, SAML, ODIC/OAuth
