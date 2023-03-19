@@ -1,55 +1,69 @@
-# Who gets to do what in enterprise {#sec-auth}
+# Auth in Enterprise {#sec-auth}
 
-One of the core responsibilities of an IT/Admin group is managing how
-people are able to log into the different systems they need to do their
-work. This is obviously a security issue -- making sure people are able
-to access the systems they're supposed to -- and not others -- is a core
-part of enterprise security.
+One of the core responsibilities of an IT/Admin group is making sure
+people can access the different systems, tools, and files they need to
+do their work and that unauthorized people can't.
 
-It's also a logistical issue, and as enterprises get larger, managing
-the flow of permissions into and out of systems can become a major
-hassle.
+Like all security issues, there are two sides -- keeping systems more
+secure and locked down decreases the likelihood of a breach, but people
+need some level of access to get work done.
 
-A large organization might have dozens of people joining and leaving
-each week. And they probably have dozens or hundreds of services.
-There's just no way the IT/Admin team could reasonably manage services
-one-by-one. And for users, having a different username and password for
-each system is a nightmare. That is why almost all organizations with
-more than a few users have centrally managed auth.
+In an enterprise context, dozens of people may join, leave, or change
+roles each week, and there are dozens or hundreds of different systems
+they might need to access. Managing who's allowed to do what is a major
+logistical issue.
 
-We'll start by talking about the issues that are likely to come up
-around auth in a data science context. Then we'll get generally into
-some background on how IT/Admins think about managing users and
-permissions. Last, we'll talk about the technologies they use to
-accomplish these goals so you can have an intelligent conversation with
-them about it.
+Moreover, the logistical issue and the security issue are related. If
+it's really hard to move permissions around, something is more likely to
+get missed or not be done in a timely fashion. And if people don't have
+the access they need to do their jobs, they're more likely to invent
+workarounds that circumvent important security standards.
+
+Balancing these needs along with the logistical complexity is hard for
+any enterprise IT/Admin group. The goal of this chapter is to give you
+the knowledge to be a good partner with whoever manages auth at your
+organization.
+
+You'll learn about how enterprise IT/Admin groups think about managing
+users and what they're allowed to do. We'll also discuss the auth issues
+that come up most often in a data science context.
+
+::: callout-note
+This chapter is mostly conceptual. There's a lot more detail on the
+technical details of the different technologies used to accomplish these
+goals in [Appendix @sec-append-auth].
+:::
 
 ## How IT/Admins think about auth
 
-Let's start with a broad introduction to what auth is and how IT/Admins
-think about it in order to build up a mental model.
+Let's start with an analogy to the real world. Imagine all the different
+services your company's IT/Admin team manages as rooms in a building.
+Email, databases, data science workbenches, social media accounts, HR
+systems, and more. Each one is a room in the building.
 
-I find a real-world analogy to be helpful in understanding how auth
-works. Think of all the different services your company's IT/Admin team
-manages as rooms in a building. Email, database, data science workbench,
-social media accounts, HR systems, and more. Each one is a room in the
-building.
+In order to comply with the principle of least privilege, people are
+given access only to the rooms they need. Now imagine you're the one who
+has to figure out how to keep it all secure.
 
-In order to comply with the principle of least privilege, these doors
-are locked and guarded. Anyone who needs to access a particular door is
-given access, but only to the doors they need.
+When someone tries to enter a room, you'll need a way to know who's
+asking -- to ascertain and validate their identity. This process is
+called *authentication*.
 
-In order to understand how an IT/Admin thinks about auth, put yourself
-in the shoes of the person who has to manage security for the building.
+But just knowing who they are is insufficient. Remember, not everyone
+gets to access every room. So you'll also need a way to check whether
+they have permission to access that room. That process is called
+*authorization*.
 
-When someone comes up to the door of a room, the guard for that door
-will need to do two things. First, they'll need to know who that person
-is. This process of identifying someone and validating that they are who
-they say they are is called *authentication*.
+Together, the whole system of authenticating and authorizing people to
+take actions is called *auth*.
 
-Authentication is done by providing some sort of *credential* (or cred)
-that verifies that the person actually is who they say they are. The
-most common type of credential for computer systems is a username and
+Many organizations start out simply. They just add IT systems one at a
+time and use their built-in auth functionality. That'd be like posting a
+guard at the door to each room who don't talk to each other.
+
+Each guard would issue some sort of *credential* that can be used to
+verify that the person approaching is who they say they are. For
+computer systems, the most common type of credential is a username and
 password combination.
 
 Increasingly, organizations are moving towards other kinds of
@@ -58,47 +72,161 @@ including biometrics like fingerprints and facial identification,
 multi-factor codes or a push notification on your phone, or ID cards of
 some sort.
 
-Once the guard knows who they are, they'll need to verify that the
-person is allowed to enter the room. The process of checking what you're
-allowed to do -- what *permissions* you have in IT-speak -- is called
-*authorization*.
+But just having each guard keep their own list of who's allowed in and
+hand out their own credential is kinda a mess. As someone walking around
+the building, you've gotta keep all your credentials straight. Moreover,
+adding new people to the different systems or removing old people is a
+huge pain. You've gotta run around and tell each guard and then the
+guard has to revoke their credential.
 
-Together, the whole system of authenticating and authorizing people to
-take actions inside a computer system are called *auth*.
-
-Let's start by thinking about the case where auth isn't
-centrally-managed. The guards for each room don't talk to each other, so
-each guard issues a credential to the people who are allowed in and
-maintains a list of who's allowed to enter. Maybe one has a keycard,
-another has a passcode that changes weekly, and another just remembers
-faces really well. This is obviously a huge pain for the user and also
-isn't great for any organization that wants to set and meet central
-security standards.
+This is a common scenario in small organizations without much central
+IT/Admin expertise. They tend to just use whatever auth comes with the
+systems they're adopting.
 
 In the labs in section 3, this is how we configured our server. We
 created a standalone server with standalone credentials. And while
 that's secure enough on its own, it doesn't integrate with any central
 IT/Admin capabilities.
 
-This is common in small organizations without much central IT/Admin
-expertise. Among enterprise organizations it is much rarer, mostly
-because of the hassle for users and the risk to the system of having to
-maintain so many separate credentials.
+Obviously, among enterprise organizations, this pattern doesn't fly. If
+you're only a team of 20 and you have 5 systems, it's ok to
+metaphorically run around to each room. But a team of 2,000 or 20,000
+with 50 or 500 systems can't be managed this way.
 
 So let's start thinking about how we could make the management of this
 system simpler and easier.
 
-The first, and most obvious, thing would be to simplify things so all
-the guards know to accept the same credentials. Maybe we just issue
-everyone a keycard and passcode that they tell the guards. Then, the
-guard can look at the person's keycard and radio in the passcode to
-double check that it's valid.
+### Centralizing user management with LDAP/AD
 
-But it's still not trivial to do authorization. The guards are still
-going to have to maintain lists of who's allowed into their room. This
-is called an Access Control List (ACL).[^4-3-auth-1]
+The first thing would be to standardize on a single set of credentials.
+No more letting each guard issue their own. You'll create a central
+security booth where you'll manage all the credentials. Whenever someone
+approaches a door, the guard will radio in the credential, you'll verify
+that all is well and tell the guard, "yep, that's Heather!"
 
-[^4-3-auth-1]: Standard Linux permissions (POSIX permissons) that were
+This makes life easier for someone using the system since they have only
+one set of credentials. It's also somewhat more secure. We know now that
+all of the doors are using a similar level of security and if someone
+loses their card or gets it stolen, we just have to do one trade.
+
+This is basically the situation that many companies have been in from
+the mid 1990s onwards and many still use.
+
+An open protocol called Lightweight Directory Access Protocol (LDAP --
+pronounced *ell-dap*) and the Microsoft implementation of LDAP called
+Active Directory (AD) allow organizations to maintain central lists of
+users and the groups to which they belong.
+
+They configure their systems to query their LDAP/AD servers. LDAP/AD
+would sends back information on the user including their username and
+groups and the service could use that information to authorize the user.
+
+This is a huge improvement over each system having its own set of
+credentials, but there are still three big issues.
+
+First, we haven't done anything to make authorization easier. You're now
+centrally verifying identities, but each guard still needs to maintain
+their own list of who's allowed into their room. Changing those lists
+still requires running around to each room, which is time-consuming and
+error-prone.
+
+Second, just how much do you trust those guards? The guards are radioing
+in the credentials. There's nothing to stop them from writing them down
+for themselves.
+
+Lastly, it's kinda a pain. Having to re-authenticate at every door is a
+pain. If you're logging into a lot of different systems, you're going to
+have to authenticate dozens of times a day.
+
+Over time, these problems have only gotten keener. A few decades ago,
+most companies had only a few systems and they were probably all
+on-premise systems, reducing both the hassle of changes and the risk of
+credentials actually being entered to those systems.
+
+These days, even modestly-sized organizations have dozens or hundreds of
+IT systems and many of them are SaaS services. That means the risk of
+sharing credentials with those services is much higher.
+
+Wouldn't it be nice if there were a way to solve all these problems? A
+solution would allow for centralized authorization, never sharing
+credentials with the guards, and authenticating only once.
+
+Enter the world of Single-Sign On (SSO).
+
+### Single Sign On (SSO)
+
+Ok, so let's revamp the system one more time.
+
+Now, when someone enters the building, they'll stop at the central
+security office and provide their credentials. In exchange, they'll get
+a building access pass that's unique to them and they cannot share.
+
+Moreover, you'll equip each room with a machine to swipe a building
+access pass. Swiping the access pass sends a request back to the central
+security office with the person's name and the room number. You can
+check whether they're allowed in and send back the allow signal if so
+and the red disallow signal if not.
+
+Now, the guards don't need to know anything about the people approaching
+and don't need to be trusted to do anything other than appropriately
+respond to the allow/disallow indicator.
+
+Moreover, you can now manage authorization in the central security
+office. No more running around to each room when you need to onboard or
+offboard someone or change their role.
+
+This is basically how SSO works -- your building access pass is a token
+in your computer's web browser, and the allow/disallow decision comes
+from the centralized auth management system.
+
+Now, SSO isn't a description of a technology -- it's a description of a
+user and administrator experience. People have been making SSO work for
+a long time, but two main standards for doing SSO have arisen in the
+past 15 years or so.[^4-3-auth-1]
+
+[^4-3-auth-1]: Aside from the options below, some organizations use a
+    system called Kerberos to accomplish SSO. This is quite rare.
+
+The most common option in enterprises is Security Assertion Markup
+Language (SAML), which is an XML-based standard.[^4-3-auth-2] The
+current standard, SAML 2.0 was finalized in 2005.
+
+[^4-3-auth-2]: XML is a markup language, much like HTML. The good thing
+    about XML is that it's very flexible. The bad thing is that it's
+    relatively hard for a human to easily read.
+
+The other option is Open Identity Connect (OIDC)/OAuth2.0, which used
+JSON-based tokens.[^4-3-auth-3] It's slightly newer than SAML,
+originally created by engineers at Google and Twitter in 2007. OAuth2 --
+the current standard -- was released in 2012.
+
+[^4-3-auth-3]: Technically, OIDC is an authentication standard and OAuth
+    is an authorization standard. You'll usually just hear it all
+    referred to as OAuth.
+
+For nearly all SAML or OAuth implementations, organizations use an
+external identity manager. The most common ones to use are Okta,
+OneLogin, and Azure Active Directory (AAD).[^4-3-auth-4]
+
+[^4-3-auth-4]: Yes, AAD is used for SAML/OAuth, not for LDAP. It's
+    confusing.
+
+These days, almost all enterprises are moving quickly towards
+implementing SSO using either SAML or OAuth (or both).
+
+There's a lot more detail on the technical details of how LDAP, OAuth,
+SAML, and more work in [Appendix @sec-append-auth].
+
+### Managing permissions
+
+Irrespective of what kind of auth technology you're using, you have to
+actually manage permissions somehow. It's worth learning a little about
+the options.
+
+The simplest option is just to maintain a list of who's allowed to enter
+each room. This is called an Access Control List (ACL).[^4-3-auth-5]
+
+[^4-3-auth-5]: Standard Linux permissions (POSIX permissons) that were
     discussed in [Chapter @sec-linux-admin] are basically a special case
     of ACLs. ACLs allow setting individual-level permissions for any
     number of users and groups, as opposed to the one owner, one group,
@@ -107,87 +235,7 @@ is called an Access Control List (ACL).[^4-3-auth-1]
     Linux distros now have support for ACLs on top of the standard POSIX
     permissions.
 
-That'll make it way easier for the people using the system, and also
-make it much somewhat more secure. Now we know all of the doors are
-using a similar level of security and if someone loses their card or
-gets it stolen, we just have to do one trade.
-
-This is basically the situation that many companies have been in from
-the mid 1990s onwards. An open protocol called Lightweight Directory
-Access Protocol (LDAP -- pronounced ell-dap) and the Microsoft
-implementation of LDAP called Active Directory (AD) allowed
-organizations to maintain central lists of users and the groups to which
-they belong.
-
-They'd configure server-based services to query their LDAP/AD servers.
-LDAP/AD would send back information on the user including their username
-and groups and the service could use that information to authorize the
-user.
-
-From the perspective of securely and centrally managing services,
-LDAP/AD is obviously a huge improvement over a world where each service
-maintains completely independent auth systems.
-
-But it clearly starts breaking down as the building starts getting
-bigger.
-
-In enterprises where there are dozens of people onboarding and
-offboarding to dozens or hundreds of services each week, the virtual
-equivalent of having to run around the building telling each guard to
-add or subtract names from the list is a pain and is error prone.
-
-You might think that the solution would be to just centrally manage the
-allow-lists for all the rooms. That partially solves the problem, but
-there are still a few remaining.
-
-There's also a security issue here -- you have to trust all the guards.
-What if the guard is secretly writing down all the passcodes somewhere
-to use for themselves?
-
-It's also annoying to have to maintain guards at each door. Wouldn't it
-be nice to instead just verify the person's identity when they entered
-the building and then have them let themselves into each door as they
-need?
-
-These issues with LDAP/AD led to the origination of Single-Sign On
-(SSO).
-
-SSO works like this. When you come in, you stop at the security booth
-and exchange your credentials for a building access pass. This building
-access pass has your name on it and a way to validate that its genuine.
-Then you get rid of the guards and equip each door with a keycard lock.
-Each door accepts only its own keycard.
-
-Every time you want to go into a different door, you have to go back to
-the security booth and show them your building access pass. They'll
-check that it's still valid, check that you're allowed to enter the room
-you want to go into, and issue you a keycard for the room. Then you can
-go use that keycard and go about your business.
-
-While this roundtrip to the security booth sounds a little complicated,
-it actually drastically simplifies things, because the door you're
-trying to get into doesn't ever need to know anything about you. It just
-needs to know how to accept its own specific keycard. And while it might
-seem slow for a human, it's nearly instantaneous for a computer.
-
-There are a few different technologies that can be used to accomplish
-SSO including SAML and OIDC/OAuth, which are open technologies, and
-Kerberos, which is an older Windows-based way to do SSO.
-
-These days, almost all enterprises are moving quickly towards
-implementing SSO using either SAML or OAuth (or both).
-
-If you -- for some reason -- actually have to configure your server with
-a particular authentication scheme, there's more information in
-[Appendix @sec-append-auth].
-
-### Managing permissions
-
-Now, let's talk a little bit about how the permissions themselves are
-managed. You could start by just collecting up all the ACLs from each
-room around the building and managing them out of the central booth.
-
-This is a simple kind of permissions management that makes a lot of
+ACLs are a simple kind of permissions management that make a lot of
 intuitive sense.
 
 But, as you can imagine, if your building has hundreds of rooms, that's
@@ -199,18 +247,20 @@ Instead, you might want to create a role that has certain permissions
 and then assign people to that role. For example, maybe there's the role
 of `manager`, who has access to certain rooms. There might be another
 role that's `executive` who has access to different rooms. Managing
-permissions in this way is called *Role Based Access Control (RBAC)*.
+permissions in this way is called *Role Based Access Control (RBAC)*,
+and many organizations have a requirement to be able to implement RBAC
+to adopt a new system.
 
 ![](images-auth/RBAC.png)
 
-It has the advantage of allowing more flexibility in creating roles and
-managing them relative to ACLs. You can also see how it'd be relatively
-simple to hook up something like your centralized HR database to an RBAC
-system by mapping actual users to a set of roles that is appropriate for
-them.
+RBAC has the advantage of allowing more flexibility in creating roles
+and managing them relative to ACLs. You can also see how it'd be
+relatively simple to hook up something like your centralized HR database
+to an RBAC system by mapping actual users to a set of roles that is
+appropriate for them.
 
-But RBAC has its own drawbacks. RBAC can also result in role explosion
-over time -- if people need specialized permissions, it's easier to
+But RBAC has its own drawbacks. RBAC can result in role explosion over
+time -- if people need specialized permissions, it's often easier to
 create tons and tons of special roles rather than figure out how to
 harmonize them into a system.
 
@@ -238,8 +288,7 @@ flexibility ABAC provides.
 The first and simplest concern that comes up for a new data science
 workbench is that it needs to support whatever auth mechanism your
 IT/Admin group has decided your organization is going to use. Hopefully
-the second above has given you some context on what those various
-mechanisms are.
+you now have some context on what those various mechanisms are.
 
 These days, most data science tools you might want to use support all of
 the standard SSO mechanisms -- though many of them reserve that
@@ -247,58 +296,48 @@ functionality for paid tiers.
 
 ### Data Access
 
-The second concern that comes up is how to get access to data. For
-example, if you're working on RStudio Server or JupyterHub, you almost
-certainly need to get access to data in order to do your work. Depending
-on how your organization works, that data may be on a network file
-system, in some sort of cloud storage, or in a database.
+The second concern that comes up is how to get access to data. In our
+building metaphor, this would be like sending a note from one room
+asking for a resource in another room.
 
-If your data is on a network file system, you'll need to figure out a
-way to get that network file system connected to your server. In most
-cases, the way this works is that you'll create Linux users in your data
-science environment that have permissions on the network file system.
-Then, when you mount the file system, those users will have access to
-the files it needs.
+This kind of access is actually *easier* to configure in a non-SSO
+configuration. If your database can be accessed with a username and
+password, it's the equivalent of being able to just put your request on
+a piece of paper and append your credentials. The guard can verify the
+credentials and send back the proper information.
 
-If you are using a cloud storage or database system, then you'll need to
-re-authenticate from your data science environment into the data
-environment. There are a few different ways you can do this.
+It's worth noting that this configuration is still quite common. Most
+organizations have implemented SSO for their external-facing services,
+but internal data sources are often available with username and password
+auth. This is mostly because relatively few databases have implemented
+SSO configurations. I expect this will change quickly in the next few
+years.
 
-The simplest way to access a data source is by providing a username and
-password directly to that data source. This has the advantage of being
-simple and easy to accomplish in code. But that's not an SSO-compliant
-way of doing data access.
+In an SSO configuration, getting access to data is kinda complicated.
+Remember, you're sitting in a room and you've got your building access
+pass, which you can't give to anyone, and you can't get access to
+another room without swiping your pass at the door.
 
-These days, most organizations have introduced SSO for the front doors
-of their main systems, but SSO into a database is somewhat rarer, mostly
-because relatively few databases have implemented such systems.
+The main way this is accomplished is by giving people the ability to
+remotely acquire the data room access token without actually going there
+with the building access pass. Depending on the tool you're using and
+the type of technology being used, it may be able to automatically do
+this exchange for you or you may have to do it manually in your code.
 
-There are three main ways to accomplish SSO into a database.
-
-The first and oldest is to use a Kerberos ticket, which is a relatively
-old -- but highly secure -- way to do authentication. Kerberos is mainly
-used in Windows-based environments, so it's mostly used when accessing a
+The first technology used to authenticate to data services is a
+Windows-based system called a Kerberos ticket. Kerberos is a relatively
+old -- but highly secure system. Kerberos is mainly used in
+Windows-based environments, so it's mostly used when accessing a
 Microsoft SQL Server.
 
-If your organization uses Kerberos, you'll need to work with your
-organization's IT/Admin group to get everything configured. They may be
-able to configure it so that you never need to think about the Kerberos
-ticket and accessing the database just works. For more details on how
-Kerberos works and how to work with your organization's IT/Admin group,
-see [the relevant section](#sec-kerberos) in [Appendix
-@sec-append-auth].
+If your organization uses Kerberos for database access, you'll need to
+work with your organization's IT/Admin group to get everything
+configured.
 
 The second way to accomplish SSO into a data source is to pass along an
-*JSON Web Token (JWT, pronounced jot)*. A JWT is a
-cryptographically-signed token that can be passed along to gain
-authorization to the database. JWTs are the technology that underlies
-OAuth/OIDC. For more information, see the [OAuth/OIDC
-section](#sec-oauth) in [Appendix @sec-append-auth].
-
-These days, the biggest limitation on the use of JWTs for database
-access is whether your database accepts JWTs. You should talk to your
-database provider or an IT/Admin who's very familiar to understand the
-options your database provides.
+JSON Web Token (JWT, pronounced jot). JWTs are the technology that
+underlies OAuth/OIDC. They're accepted by relatively few databases these
+days, but I expect that will change in the next few years.
 
 The last way to access a data source seamlessly is via integration with
 cloud IAM services. This will only work if you're trying to access a
