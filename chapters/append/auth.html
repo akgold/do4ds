@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - Appendix B — Appendix: Auth Technologies</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/append/docker-cheatsheet.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title">Appendix B — Appendix: Auth Technologies</h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Code promotion and integration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-env-as-code.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-arch.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Pipeline Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Designing Your Application Layers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-monitor-log.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin Tools</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-dns.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">Making it Enterprise-Grade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-ent-networks.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-scaling.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Scaling</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">Appendices</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Appendix: Auth Technologies</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#username-password" id="toc-username-password" class="nav-link active" data-scroll-target="#username-password"><span class="toc-section-number">B.1</span>  Username + Password</a></li>
+  <li><a href="#pam" id="toc-pam" class="nav-link" data-scroll-target="#pam"><span class="toc-section-number">B.2</span>  PAM</a></li>
+  <li><a href="#ldapad" id="toc-ldapad" class="nav-link" data-scroll-target="#ldapad"><span class="toc-section-number">B.3</span>  LDAP/AD</a>
+  <ul class="collapse">
+  <li><a href="#how-ldap-works" id="toc-how-ldap-works" class="nav-link" data-scroll-target="#how-ldap-works"><span class="toc-section-number">B.3.1</span>  How LDAP Works</a></li>
+  <li><a href="#trying-out-ldap" id="toc-trying-out-ldap" class="nav-link" data-scroll-target="#trying-out-ldap"><span class="toc-section-number">B.3.2</span>  Trying out LDAP</a></li>
+  <li><a href="#single-vs-double-bind" id="toc-single-vs-double-bind" class="nav-link" data-scroll-target="#single-vs-double-bind"><span class="toc-section-number">B.3.3</span>  Single vs Double Bind</a></li>
+  </ul></li>
+  <li><a href="#sec-kerberos" id="toc-sec-kerberos" class="nav-link" data-scroll-target="#sec-kerberos"><span class="toc-section-number">B.4</span>  Kerberos Tickets</a>
+  <ul class="collapse">
+  <li><a href="#how-kerberos-works" id="toc-how-kerberos-works" class="nav-link" data-scroll-target="#how-kerberos-works"><span class="toc-section-number">B.4.1</span>  How Kerberos Works</a></li>
+  <li><a href="#try-out-kerberos" id="toc-try-out-kerberos" class="nav-link" data-scroll-target="#try-out-kerberos"><span class="toc-section-number">B.4.2</span>  Try out Kerberos</a></li>
+  </ul></li>
+  <li><a href="#saml" id="toc-saml" class="nav-link" data-scroll-target="#saml"><span class="toc-section-number">B.5</span>  SAML</a>
+  <ul class="collapse">
+  <li><a href="#try-saml" id="toc-try-saml" class="nav-link" data-scroll-target="#try-saml"><span class="toc-section-number">B.5.1</span>  Try SAML</a></li>
+  </ul></li>
+  <li><a href="#sec-oauth" id="toc-sec-oauth" class="nav-link" data-scroll-target="#sec-oauth"><span class="toc-section-number">B.6</span>  OIDC/OAuth2.0</a>
+  <ul class="collapse">
+  <li><a href="#oauthoidc-vs-saml" id="toc-oauthoidc-vs-saml" class="nav-link" data-scroll-target="#oauthoidc-vs-saml"><span class="toc-section-number">B.6.1</span>  OAuth/OIDC vs SAML</a></li>
+  </ul></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"><span class="toc-section-number">B.7</span>  </a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/append/auth.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-append-auth" class="quarto-section-identifier d-none d-lg-block">Appendix B — Appendix: Auth Technologies</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>There are a variety of different technologies used to do auth in modern server-based systems. The biggest distinction is between systems that can be used to do SSO and those that cannot. The world is quickly moving towards using exclusively SSO-capable systems.</p>
+<p>There are two broad ways you can do auth, which correspond to SSO vs non systems. In a non-SSO system, you go to login to a service and you provide it with your credentials – usually just a username and password. The service takes your username and password and checks it against a database or passes it along to a centralized database. Once your credentials have been verified, the service makes sure you’re allowed to enter and lets you in.</p>
+<p>The advantage of this kind of system is that it’s very conceptually simple. Each service knows who’s allowed in and lets you in or doesn’t. The drawback is that it’s obviously not implementing any sort of SSO.</p>
+<p>In contrast to this, SSO systems are based on passing tickets or tokens around. The way this works is that you authorize just one time and then are given a ticket or token that lets the system know you’ve been validated. Then, when you go to a particular service, you give your identity token to a centralized controller, it checks that you’re allowed to enter, and it gives you back a token that allows you to enter. It may also provide more details to the system like your username or more specifics on the permissions you’re allowed.</p>
+<section id="username-password" class="level2" data-number="B.1">
+<h2 data-number="B.1" class="anchored" data-anchor-id="username-password"><span class="header-section-number">B.1</span> Username + Password</h2>
+<p>Many pieces of software come with integrated authentication. When you use those system, the product stores encrypted username and password pairs in a database.</p>
+<p>These setups are often really easy from an admin perspective – you just set up individual users on the server. However, the flip side is that users have one more username and password to remember, which is annoying for them. Moreover, if you have more than a few users, or the system is one of more than a few, it’s hard to manage users on a lot of different systems. It can be a real pain to create accounts on a ton of different systems when a new person joins the organization, or to remove their permissions one-by-one when they leave.</p>
+<p>For this reason, most IT/Admin organizations strongly prefer using some sort of centralized identity store.</p>
+</section>
+<section id="pam" class="level2" data-number="B.2">
+<h2 data-number="B.2" class="anchored" data-anchor-id="pam"><span class="header-section-number">B.2</span> PAM</h2>
+<p>Pluggable Authentication Modules (PAM) is a Linux system for doing authentication. As of this writing, PAM is the default authentication method for both RStudio Server and JupyterHub.</p>
+<p><img src="images-append/auth-pam.jpeg" class="img-fluid" width="539"></p>
+<p>Conceptually PAM is pretty straightforward. You install a service on a Linux machine and configure it to use PAM authentication from the underlying host. By default, PAM just authenticates against the users configured on the Linux server, but it can also be configured to use other sorts of “modules” to authenticate against other systems – most commonly LDAP/AD or Kerberos. PAM can also be used to do things when users login – the most common being initializing tokens or tickets to other systems, like a database.</p>
+<p>PAM is often paired with System Security Services Daemon <strong>(</strong>SSSD), which is most commonly used to automatically create Linux users on a server based on the identities stored in an LDAP/AD instance.</p>
+<p>Though conceptually simple, reading, writing, and managing PAM modules is kinda painful.</p>
+<p>#TODO: Add PAM example</p>
+</section>
+<section id="ldapad" class="level2" data-number="B.3">
+<h2 data-number="B.3" class="anchored" data-anchor-id="ldapad"><span class="header-section-number">B.3</span> LDAP/AD</h2>
+<p>Lightweight Directory Access Protocol (LDAP) is a relatively old, open, protocol used for maintaining a set of entities and their attributes. To be precise, LDAP is actually a protocol for maintaining and accessing entities and their attributes in a tree. It happens that this is a really good structure for maintaining permissions and roles of users at an organization, and it’s the main thing LDAP is used for.</p>
+<p>Active Directory (AD) is Microsoft’s implementation of LDAP, and is by-far the most common LDAP “flavor” out there. AD so thoroughly owns the LDAP enterprise market, that LDAP is often referred to as LDAP/AD. There are other implementations you may run across, the most common being OpenLDAP.</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Azure, Microsoft’s cloud provider, offers an authentication service called <em>Azure Active Directory (AAD)</em>. Confusingly, AAD is usually used in combination with SAML, not LDAP.</p>
+</div>
+</div>
+<p>It’s worth distinguishing the use of LDAP as an identity store from its use as an authentication technology. As a tree-based database, LDAP is uniquely well-suited to storing the identities, and other attributes of people at the organization. However, as discussed below, using LDAP to authenticate into actual services has security and convenience drawbacks, and many organizations consider it outdated and insecure.</p>
+<p>A lot of organizations are moving away from LDAP for authentication in favor of token-based technologies like SAML or OAuth, but many are keeping LDAP as their identity “source of truth” that is referenced by the SAML or OAuth Identity Provider.</p>
+<p>LDAP has three main disadvantages relative to other technologies. First, LDAP requires that your credentials (username and password, usually) actually be provided to the service you’re trying to use. This is fundamentally insecure relative to a system where your credentials are provided only to the identity provider, and the service just gets a token verifying who you are. In token-based systems, adding additional requirements like MFA or biometrics are easy, as they’re simply added at the IdP layer. In contrast, doing those things in LDAP would require the service to implement them, which usually is not the case, so you’re usually limited to username and password.</p>
+<p>The second disadvantage of LDAP is that it does not allow for central administration of permissions. LDAP directly records only objects and their attributes. Say, for example, you want only users of a particular group to have access to a certain resource. In LDAP, you would have to specify <em>in that resource</em> that it should only allow in users of that group. This is in contrast to SAML/OAuth, where the authorization is centrally managed.</p>
+<p>Lastly, LDAP authentication is based on each service authenticating. Once you authenticate, the service might give you a cookie so that your login persists, but there is no general-purpose token that will allow you to login to multiple services.</p>
+<section id="how-ldap-works" class="level3" data-number="B.3.1">
+<h3 data-number="B.3.1" class="anchored" data-anchor-id="how-ldap-works"><span class="header-section-number">B.3.1</span> How LDAP Works</h3>
+<p>While the technical downsides of LDAP are real, the technical operations of LDAP are pretty straightforward. In short, you try to login to a service, the service collects your username and password, sends it off to the LDAP server, and checks that your username and password are valid.</p>
+<p><img src="images-append/LDAP.png" class="img-fluid"></p>
+<p>Note that LDAP is purely for authentication. When you’re using LDAP, authorization has to be handled separately, which is one of the disadvantages.</p>
+<p>LDAP is a tree-based entity and value store. This means that LDAP stores things and their attributes, which include a name and one or more values. For example, my entry in a corporate LDAP directory might look like this:</p>
+<pre><code>cn: Alex Gold
+mail: alex.gold@example.com
+mail: alex.gold@example.org
+department: solutions
+mobile: 555-555-5555
+objectClass = Person</code></pre>
+<p>Most of these attributes should be pretty straightforward. <code>cn</code> is short for common name, and is part of the way you look up an entity in LDAP (more on that below). Each entity in LDAP must have an <code>objectClass</code>, which determines the type of entity it is. In this case, I am a <code>Person</code> , as opposed to a device, domain, organizationalRole, or room – all of which are standard <code>objectClass</code>es.</p>
+<p>Let’s say that your corporate LDAP looks like the tree below:</p>
+<p><img src="images-append/ldap-tree.jpeg" class="img-fluid" width="503"></p>
+<p>#TODO: make solutions an OU in final</p>
+<p>The most common way to look up LDAP entities is with their <em>distinguished name (DN)</em>, which is the path of names from the point you’re starting all the way back to the root of the tree. In the tree above, my DN would be <code>cn=alex,ou=solutions,dc=example,dc=com</code>.</p>
+<p>Note that you read the DN from right to left to work your way down the tree. Aside from <code>cn</code> for common name, other common fields include <code>ou</code> for organizational unit, and <code>dc</code> for domain component.</p>
+</section>
+<section id="trying-out-ldap" class="level3" data-number="B.3.2">
+<h3 data-number="B.3.2" class="anchored" data-anchor-id="trying-out-ldap"><span class="header-section-number">B.3.2</span> Trying out LDAP</h3>
+<p>Now that we understand in theory how LDAP works, let’s try out an actual example.</p>
+<p>To start, let’s stand up LDAP in a docker container:</p>
+<p>#TODO: update ldif</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="ex">docker</span> network create ldap-net</span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">docker</span> run <span class="at">-p</span> 6389:389 <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="at">--name</span> ldap-service <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>  <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">--detach</span> alexkgold/auth</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>ldapsearch</code> is a utility that lets us run queries against the LDAP tree. Let’s try it out against the LDAP container we just stood up.</p>
+<p>Let’s say I want to return everything in the subtree under <code>example.org</code>. In that case, I would run <code>ldapsearch -b dc=example,dc=org</code>, where <code>b</code> indicates my search base, which is a <code>dn</code>. But in order to make this actually work, we’ll need to include a few more arguments, including</p>
+<ul>
+<li><p>the host where the LDAP server is, indicated by <code>-H</code></p></li>
+<li><p>the bind DN we’ll be using, flagged with <code>-D</code></p></li>
+<li><p>the bind password we’ll be using, indicated by <code>-w</code></p></li>
+</ul>
+<p>Since we’re testing, we’re also going to provide the flag <code>-x</code> to use whatever certificate is present on the server. Putting it altogether, along with the commands to reach the docker container, let’s try:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=admin,dc=example,dc=org"</span> <span class="at">-w</span> admin</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># extended LDIF</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">#</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co"># LDAPv3</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co"># example.org</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="ex">dn:</span> dc=example,dc=org</span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="ex">objectClass:</span> top</span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="ex">objectClass:</span> dcObject</span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="ex">objectClass:</span> organization</span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="ex">o:</span> Example Inc.</span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="ex">dc:</span> example</span>
+<span id="cb3-18"><a href="#cb3-18"></a></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="co"># admin, example.org</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="ex">dn:</span> cn=admin,dc=example,dc=org</span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="ex">objectClass:</span> simpleSecurityObject</span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="ex">objectClass:</span> organizationalRole</span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="ex">cn:</span> admin</span>
+<span id="cb3-24"><a href="#cb3-24"></a><span class="ex">description:</span> LDAP administrator</span>
+<span id="cb3-25"><a href="#cb3-25"></a><span class="ex">userPassword::</span> e1NTSEF9d3IyVFp6SlAyKy9xT2RsQ0owTDYzR0RzNFo0NUFrQ00=</span>
+<span id="cb3-26"><a href="#cb3-26"></a></span>
+<span id="cb3-27"><a href="#cb3-27"></a><span class="co"># search result</span></span>
+<span id="cb3-28"><a href="#cb3-28"></a><span class="ex">search:</span> 2</span>
+<span id="cb3-29"><a href="#cb3-29"></a><span class="ex">result:</span> 0 Success</span>
+<span id="cb3-30"><a href="#cb3-30"></a></span>
+<span id="cb3-31"><a href="#cb3-31"></a><span class="co"># numResponses: 3</span></span>
+<span id="cb3-32"><a href="#cb3-32"></a><span class="co"># numEntries: 2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>You should be able to read what got returned pretty seamlessly. One thing to notice is that the user password is returned, so it can be compared to a password provided. It is encrypted, so it doesn’t appear in plain text.</p>
+<p>Note that <code>ldap</code> is a protocol – so it takes the place of the <code>http</code> you’re used to in normal web operations. Like there’s <code>https</code>, there is also a protocol called <code>LDAPS</code>, which is <code>ldap</code> + <code>tls</code> for the same reason you’ve got <code>https</code>. LDAP is (almost) always running in the same private network as the service, so many organizations don’t require using LDAPS, but others do require it.</p>
+<p>Running the ldapadmin</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 6443:443 <span class="dt">\</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>        <span class="at">--name</span> ldap-admin <span class="dt">\</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>        <span class="at">--env</span> PHPLDAPADMIN_LDAP_HOSTS=ldap-service <span class="dt">\</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>        <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>        <span class="at">--detach</span> osixia/phpldapadmin</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>dn for admin <code>cn=admin,dc=example,dc=org</code> pw: <code>admin</code></p>
+<p><a href="https://localhost:6443" class="uri">https://localhost:6443</a></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Replace with valid license</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="bu">export</span> <span class="va">RSC_LICENSE</span><span class="op">=</span>XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co"># Run without persistent data and using default configuration</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">--privileged</span> <span class="dt">\</span></span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="at">--name</span> rsc <span class="dt">\</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>    <span class="at">--volume</span> <span class="va">$PWD</span>/rstudio-connect.gcfg:/etc/rstudio-connect/rstudio-connect.gcfg <span class="dt">\</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>    <span class="at">-p</span> 3939:3939 <span class="dt">\</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>    <span class="at">-e</span> RSC_LICENSE=<span class="va">$RSC_LICENSE</span> <span class="dt">\</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a>    <span class="at">--network</span> ldap-net <span class="dt">\</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>    rstudio/rstudio-connect:latest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="single-vs-double-bind" class="level3" data-number="B.3.3">
+<h3 data-number="B.3.3" class="anchored" data-anchor-id="single-vs-double-bind"><span class="header-section-number">B.3.3</span> Single vs Double Bind</h3>
+<p>There are two different ways to establish a connection between your server and the LDAP server. The first method is called <em>Single Bind</em>. In a single bind authentication, the user credentials are used <strong>both</strong> to authenticate to the LDAP server, and to query the server.</p>
+<p>In a <em>Double Bind</em> configuration, there is a separate administrative service account, used to authenticate to the LDAP server. Once authentication is complete, then the user is queried in the system.</p>
+<p>Single bind configurations are often more limited than double bind ones. For example, in most cases you’ll only be able to see the single user as well as the groups they’re a part of. This can limit application functionality in some cases. On the other hand, there need be no master key maintained on your server, and some admins may prefer it for security reasons.</p>
+<p>We can see this really concretely. In the example above, you used a double bind by supplying admin credentials to LDAP. Let’s say instead, you just provide a single user’s credentials. In that case, I don’t get anything back if I just do a general search.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                                       </span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co"># extended LDIF</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co"># LDAPv3</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co"># base &lt;dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co"># search result</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="ex">search:</span> 2</span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="ex">result:</span> 32 No such object</span>
+<span id="cb6-13"><a href="#cb6-13"></a></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="co"># numResponses: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>But just searching for information about Joe does return his own information.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="ex">ldapsearch</span> <span class="at">-x</span> <span class="at">-H</span> ldap://localhost:6389 <span class="at">-b</span> cn=joe,dc=engineering,dc=example,dc=org <span class="at">-D</span> <span class="st">"cn=joe,dc=engineering,dc=example,dc=org"</span> <span class="at">-w</span> joe                    32 ✘</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="co"># extended LDIF</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">#</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co"># LDAPv3</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co"># base &lt;cn=joe,dc=engineering,dc=example,dc=org&gt; with scope subtree</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co"># filter: (objectclass=*)</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co"># requesting: ALL</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="co"># joe, engineering.example.org</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="ex">dn:</span> cn=joe,dc=engineering,dc=example,dc=org</span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="ex">cn:</span> joe</span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="ex">gidNumber:</span> 500</span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="ex">givenName:</span> Joe</span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="ex">homeDirectory:</span> /home/joe</span>
+<span id="cb7-16"><a href="#cb7-16"></a><span class="ex">loginShell:</span> /bin/sh</span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="ex">mail:</span> joe@example.org</span>
+<span id="cb7-18"><a href="#cb7-18"></a><span class="ex">objectClass:</span> inetOrgPerson</span>
+<span id="cb7-19"><a href="#cb7-19"></a><span class="ex">objectClass:</span> posixAccount</span>
+<span id="cb7-20"><a href="#cb7-20"></a><span class="ex">objectClass:</span> top</span>
+<span id="cb7-21"><a href="#cb7-21"></a><span class="ex">sn:</span> Golly</span>
+<span id="cb7-22"><a href="#cb7-22"></a><span class="ex">uid:</span> test<span class="dt">\j</span>oe</span>
+<span id="cb7-23"><a href="#cb7-23"></a><span class="ex">uidNumber:</span> 1000</span>
+<span id="cb7-24"><a href="#cb7-24"></a><span class="ex">userPassword::</span> e01ENX1qL01raWZrdk0wRm1sTDZQM0MxTUlnPT0=</span>
+<span id="cb7-25"><a href="#cb7-25"></a></span>
+<span id="cb7-26"><a href="#cb7-26"></a><span class="co"># search result</span></span>
+<span id="cb7-27"><a href="#cb7-27"></a><span class="ex">search:</span> 2</span>
+<span id="cb7-28"><a href="#cb7-28"></a><span class="ex">result:</span> 0 Success</span>
+<span id="cb7-29"><a href="#cb7-29"></a></span>
+<span id="cb7-30"><a href="#cb7-30"></a><span class="co"># numResponses: 2</span></span>
+<span id="cb7-31"><a href="#cb7-31"></a><span class="co"># numEntries: 1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="sec-kerberos" class="level2" data-number="B.4">
+<h2 data-number="B.4" class="anchored" data-anchor-id="sec-kerberos"><span class="header-section-number">B.4</span> Kerberos Tickets</h2>
+<p>Kerberos is a relatively old ticket-based auth technology. In Kerberos, encrypted tickets are passed around between servers. Because these tickets live entirely on servers under the control of the organization, they are generally quite secure.</p>
+<p>Though Kerberos is freely available, it was widely adopted along with Active Directory, and it’s used almost exclusively in places that are running a lot of Microsoft products. A frequent use of Kerberos tickets is to establish database connections.</p>
+<p>Because the tickets are passed around from server to server, Kerberos can be used to create a true SSO experience for users.</p>
+<section id="how-kerberos-works" class="level3" data-number="B.4.1">
+<h3 data-number="B.4.1" class="anchored" data-anchor-id="how-kerberos-works"><span class="header-section-number">B.4.1</span> How Kerberos Works</h3>
+<p>All of Kerberos works by sending information to and from the central <em>Kerberos Domain Controller</em> (KDC)<em>.</em> In Kerberos, authentication and authorization are handled independently.</p>
+<p>When a Kerberos session is initialized, the service sends the users credentials off to the KDC and requests something called the Ticket Granting Ticket (TGT) from the KDC. TGTs have a set expiration period. When they expire, the client has to request an updated TGT. This is one reason why Kerberos is considered quite secure - even if someone managed to steal a TGT, they’d only be able to use it for a little while before it went stale and could be revoked.</p>
+<p>When the user wants to actually do something, they send the TGT back to the KDC again and get a <em>session key</em> (sometimes referred to as a <em>service ticket</em>) that allows access to the service, usually with a specified expiration period.</p>
+<p><img src="images-append/auth-kerberos.jpeg" class="img-fluid" width="553"></p>
+</section>
+<section id="try-out-kerberos" class="level3" data-number="B.4.2">
+<h3 data-number="B.4.2" class="anchored" data-anchor-id="try-out-kerberos"><span class="header-section-number">B.4.2</span> Try out Kerberos</h3>
+<p>#TODO</p>
+</section>
+</section>
+<section id="saml" class="level2" data-number="B.5">
+<h2 data-number="B.5" class="anchored" data-anchor-id="saml"><span class="header-section-number">B.5</span> SAML</h2>
+<p>These days Security Assertion Markup Language (SAML) is probably the most common system that provides true SSO – including single login and centrally-managed permissions. SAML does this by passing around XML tokens.</p>
+<p>The way this generally works is that a user attempts to login to a <em>Service Provider</em> (SP). The SP redirects the user to an Identity Provider (IdP), which checks either for a preexisting token in the users browser, or verifies the users credentials. The IdP checks for the user’s authorization to access the SP in question, and sends an authorization token back to the SP.</p>
+<p><img src="images-append/auth-saml.jpeg" class="img-fluid" width="551"></p>
+<p>Relative to LDAP/AD, which is from the early 1990s, SAML is a new kid on the block. SAML 1.0 was introduced in 2002, and SAML 2.0, which is the current standard, came out in 2005. Many large enterprises are switching their systems over to use SAML or have already done so.</p>
+<p>One superpower of SAML IdPs is that many of them can <em>federate</em> identity management to other systems. So, it’s pretty common for large enterprises to maintain their user base in one or more LDAP/AD system, but actually use a SAML IdP to do authentication and authorization. In fact, this is what Azure Active Directory (AAD), which is Microsoft Azure’s hosted authentication offering does. It is possible to use LDAP/AD with AAD, but most organizations use it with SAML.</p>
+<p>One of the nice things about SAML is that credentials are never shared directly with the SP. This is one of the ways in which SAML is fundamentally more secure than LDAP/AD – the users credentials are only ever shared with the IdP.</p>
+<p>There are two different ways logins can occur – starting from the SP, or starting from the IdP.</p>
+<p>In SAML, the XML tokens that are passed back and forth are called assertions.</p>
+<section id="try-saml" class="level3" data-number="B.5.1">
+<h3 data-number="B.5.1" class="anchored" data-anchor-id="try-saml"><span class="header-section-number">B.5.1</span> Try SAML</h3>
+<p>We’re going to use a simple SAML IdP to try out SAML a bit. This container only supports a single SP. Any IdP that might be used in an enterprise environment is going to support many SPs simultaneously.</p>
+<p>Let’s go through the environment variables we’re providing to this <code>docker run</code> command. We’re providing three different arguments:</p>
+<ul>
+<li><p>The <code>SP_ENTITY_ID</code> is the URL of the</p></li>
+<li><p><code>SP_ASSERTION_CONSUMER_SERVICE</code> is the URL of the SP that is prepared to receive the authorized responses coming back from the SAML IdP.</p></li>
+<li><p><code>SP_SINGLE_LOGOUT_SERVICE</code> is the URL where the SP will receive a logout command once someone has been logged out at the IdP level. Many SPs do not implement single logout.</p></li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="ex">docker</span> run <span class="at">--name</span><span class="op">=</span>saml_idp <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>-p 8080:8080 <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>-p 8443:8443 <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>-e SIMPLESAMLPHP_SP_ENTITY_ID=http://app.example.com <span class="dt">\</span></span>
+<span id="cb8-5"><a href="#cb8-5"></a>-e SIMPLESAMLPHP_SP_ASSERTION_CONSUMER_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-acs.php/test-sp <span class="dt">\</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a>-e SIMPLESAMLPHP_SP_SINGLE_LOGOUT_SERVICE=http://localhost/simplesaml/module.php/saml/sp/saml2-logout.php/test-sp <span class="dt">\</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>-d kristophjunge/test-saml-idp:1.15</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><a href="http://localhost:8080/simplesaml" class="uri">http://localhost:8080/simplesaml</a></p>
+<p>admin/secret</p>
+</section>
+</section>
+<section id="sec-oauth" class="level2 page-columns page-full" data-number="B.6">
+<h2 data-number="B.6" class="anchored" data-anchor-id="sec-oauth"><span class="header-section-number">B.6</span> OIDC/OAuth2.0</h2>
+<p>OIDC/OAuth is slightly newer than SAML, created in 2007 by engineers at Google and Twitter. OAuth 2.0 – the current standard was released in 2012. If you’re being pedantic, OAuth is a authorization protocol, and OpenID Connect (OIDC) is an authorization protocol that uses OAuth. In most cases, people will just call it OAuth.</p>
+<p><img src="images-append/auth-oauth.jpeg" class="img-fluid"></p>
+<p>#TODO: this picture is bad</p>
+<p>In an enterprise context, OAuth/OIDC is conceptually very similar to SAML – but instead of passing around XML tokens, it’s based on JSON Web Tokens (JWT, usually pronounced “jot”).</p>
+<aside>
+The fact that JSON is much more human-readable than XML is one of the big advantages of OIDC/OAuth compared to SAML.
+</aside>
+<p>#TODO: try it out</p>
+<section id="oauthoidc-vs-saml" class="level3" data-number="B.6.1">
+<h3 data-number="B.6.1" class="anchored" data-anchor-id="oauthoidc-vs-saml"><span class="header-section-number">B.6.1</span> OAuth/OIDC vs SAML</h3>
+<p>From a practical perspective, the biggest difference between OAuth/OIDC and SAML is that SAML is quite strict about what SPs are allowed. Each SP needs to be registered at a specific web address that the IdP knows it’s allowed to receive requests from.</p>
+<p>In contrast, OAuth/OIDC was designed to be used to delegate authentication and authorization to different kinds of services that might be widely available on the internet. If you’ve ever allowed a website to <em>Login with Apple/Google/Facebook/Github</em>, that has been an application of OAuth/OIDC.</p>
+<p>Because the set of allowable SPs is fixed under SAML, it’s more common in enterprise settings. Some admins consider SAML more secure for that reason as well.</p>
+<p>In some situations, SAML is used for authentication and OAuth is used for access to other services. Most commonly in the data science world, this can come up when a user logs into a service like RStudio Server and is then authorized to a database using an OAuth JWT.</p>
+<p>Resources: <a href="https://www.okta.com/identity-101/saml-vs-oauth/" class="uri">https://www.okta.com/identity-101/saml-vs-oauth/</a> <a href="https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/" class="uri">https://www.okta.com/identity-101/whats-the-difference-between-oauth-openid-connect-and-saml/</a> <a href="https://phoenixnap.com/blog/kerberos-authentication" class="uri">https://phoenixnap.com/blog/kerberos-authentication</a> <a href="https://www.dnsstuff.com/rbac-vs-abac-access-control" class="uri">https://www.dnsstuff.com/rbac-vs-abac-access-control</a></p>
+</section>
+</section>
+<section id="section" class="level2" data-number="B.7">
+<h2 data-number="B.7" class="anchored" data-anchor-id="section"><span class="header-section-number">B.7</span> </h2>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/append/docker-cheatsheet.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
