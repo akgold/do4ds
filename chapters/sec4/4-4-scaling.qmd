@@ -1,10 +1,33 @@
-# Enterprise Scale Data Science {#sec-scale}
+# Enterprise Server Management {#sec-ent-servers}
 
-Data science environments need to scale for two reasons. The first
-reason that people think of most often is because people are running big
-jobs. This can happen at any scale of organization. There are data
-science teams of one who have use cases that necessitate terrabytes of
-data.
+If you work at a small organization that just runs a few servers, you
+can run them individually. But as the number of servers, the complexity
+of the interactions across services, and security requirements gets
+higher, different patterns to manage servers are required.
+
+The common DevOps adage to treat servers as "cattle, not pets" really
+comes to the fore. When you're running a few servers, it's ok if each is
+a little special. But if you're running 40 or 400, it's too
+time-consuming to have to consider individual servers.
+
+There are three main ways that enterprises manage servers very
+differently than smaller organizations. The first is trying to
+centralize the management of servers for the organization. In some
+cases, this means that the IT/Admin team is the only entity that can
+stand up servers. In other cases, it means creating a division of labor
+so there's a subteam that controls actually provisioning the servers the
+organization needs. In other cases, it involves setting up platforms
+where individual teams or users can set requisition servers.
+
+As those services and servers get centralized, scaling becomes a bigger
+issue. In a large organization with many different data science groups,
+trying to centralize all those groups on one data science platform means
+that the platform needs to scale.
+
+The first reason that people think of most often is because people are
+running big jobs. This can happen at any scale of organization. There
+are data science teams of one who have use cases that necessitate
+terrabytes of data.
 
 But this isn't an enterprise problem with scaling. The problem in the
 enterprise is having many concurrent users of the system. Additionally,
@@ -19,11 +42,16 @@ If you additionally have high resource requirements -- or highly
 variable requirements -- that just adds a level of complexity onto the
 need to figure out how you might scale up your data science environment.
 
-There are two main ways to scale server-based resources.
+Lastly, enterprise IT/Admins are always thinking about how to make the
+process of managing all these servers easier and simpler.
+Infrastructure-as-code is the best way to accomplish this.
 
-The first is *vertical scaling*, which is just a fancy way of saying
-"use a bigger server". As discussed in [Chapter @sec-servers], if you're
-in the cloud, vertical scaling is really easy.
+## Scaling in enterprise
+
+The simplest method of scaling is *vertical scaling*, which is just a
+fancy way of saying *use a bigger machine*. Often, moving to a server is
+the first way to do vertical scaling. As discussed in [Chapter
+@sec-servers], if you're in the cloud, vertical scaling is really easy.
 
 If you have resource-intensive jobs, vertical scaling should be your
 first move. This is usually cost effective as well. AWS resource costs
@@ -33,66 +61,53 @@ cores these days. That's probably sufficient for many workloads, but if
 you've got an RStudio Server with 50 concurrent users doing reasonably
 heavy compute loads, that can quickly get eaten up.
 
-*Horizontal scaling* or *load-balancing* is the other way to scale and
-means distributing the workload across multiple machines. Many
-organizations (in my opinion) opt for premature horizontal scaling. It
-is usually worthwhile to exhaust the ability to vertically scale
-*before* undertaking horizontal scaling.
+Vertical scaling is very conceptually simple, so we're not going to get
+much more into it. If you want a reminder of how to scale up a server in
+AWS, look back at the lab in [Chapter @sec-servers].
 
-Distributed system problems are inherently difficult
+*Horizontal scaling* or *load-balancing* means distributing the workload
+across multiple machines. So instead of a data science workbench that's
+just a single server, you can have two or ten or 100 servers available
+to you.
 
-This is because configuring horizontal scaling is usually a non-trivial
-task. Going from managing something that lives on a single server to
-managing a single entity hosted multiple places introduces all kinds of
-complications.
+There are two main reasons to scale horizontally -- to get more
+horsepower behind in your cluster or to provide a *high availability*
+experience with more reliable uptime guarantees.
 
-Sometimes horizontal scaling is undertaken for pure scaling purposes,
-but sometimes it's undertaken for cluster resilience purposes. For
-example, you might want the cluster to be resilient to a node randomly
-failing, or being taken down for maintenance. In this context,
-horizontal scaling is often called *high availability*. Like many other
-things, high availability is a squishy term, and different organizations
-have very different definitions of what it means.
+Sometimes people also undertake horizontal scaling to be able to do
+autoscaling. The idea here is that the organization could maintain a
+small amount of "always-on" capacity and scale out other capacity as
+needed to maintain costs. This is something that's possible -- but it
+requires nontrivial engineering work.
 
-For example, in one organization, high availability might just mean that
-there's a robust disaster recovery plan so servers can be brought back
-online with little data loss. In another organization, high availability
-might mean having duplicate servers that aren't physically colocated to
-avoid potential outages due to server issues or natural disasters. In
-other contexts, it might be a commitment to a particular amount of
-uptime.[^4-4-scaling-1]
+Anyone who tells you that configuring horizontal scaling will be trivial
+is selling you something or lying or both. Distributed system problems
+are inherently difficult computer science problems. And by choosing
+horizontal scaling, you've given yourself a distributed system problem.
 
-[^4-4-scaling-1]: Often called nines of uptime, referring to the
-    proportion of the time that the service is guaranteed to be online
-    out of a year. So a one-nine service is up 90% of the time, allowing
-    for 36 days of downtime a year. a five-nine service is up for
-    99.999% of the time, allowing for only about 5 1/4 minutes of
-    downtime a year.
+When done for scaling reasons, it is almost always worthwhile to exhaust
+the part of vertical scaling where costs grow linearly with compute
+before undertaking horizontal scaling.
 
-Spannning Multiple AZs
+There is one very simple version of horizontal scaling, which is just
+having a bunch of different servers. Each person or each team gets their
+own server. This can work well, but involves a lot more server
+management and usually involves the team or individual needing
+permission and knowledge to spin up servers on their own.
 
-As the requirements for high availability get steeper, the engineering
-cost to make sure the service really is that resilient rise
-exponentially...so be careful how much uptime you're trying to achieve.
-
-### How Horizontal Scaling Works
-
-Since vertical scaling is so conceptually simple, we're not really going
-to get much more into it. Horizontal scaling/load balancing is much more
-complicated, so we're going to get into it here.
-
-There are two reasons horizontal scaling is hard. The first is that
-you're going to want to create one front door to your cluster. You can
-always just stand up different servers for different people or groups.
-This is a crude form of horizontal scaling, but it can be effective.
+In enterprises, this usually isn't the way things get done. In
+enterprises, the plan is usually to run one centralized service that
+everyone in the company -- or at least across a large group -- come to.
 
 If you want people to have one front door, this is where things start to
 get complicated. In this case, you want the load-balancing to be
 invisible to the user, which means two things have to happen -- you have
-to have one front door and you have to make sure the user's state
-appears the same on all of the machines.
+to have one front door and you have to make sure all of the servers can
+serve the same thing.
 
 ![](images-scaling/lb-cluster.png){width="484"}
+
+TODO -- add state to this diagram
 
 Making there be one front door for the cluster is pretty
 straightforward. You put a special kind of proxy (a load balancer) in
@@ -109,7 +124,7 @@ to use to do the load balancing. All of the major cloud providers have
 *load balancers as a service*.
 
 ::: callout-note
-## AWS Load Balancer Types
+### AWS Load Balancer Types
 
 In AWS, the modern load balancer options are an Application Load
 Balancer (ALB) and a Network Load Balancer (NLB). For most data science
@@ -122,13 +137,6 @@ nodes in the cluster. For example, if I'm working in RStudio Server, I
 expect that any session I bring up will have my data and code available
 to me without furthre configuration.
 
-The details of how this is accomplished varies by the individual app,
-but the basic idea is to separate the server state into a backend, often
-some combination of a database and file storage, and allow each of the
-nodes in the cluster to symmetrically read and write from the state.
-
-### Load-Balancing configurations
-
 One feature that is likely to be a requirement of your data science
 environment is *sticky sessions* or *sticky cookies*. This means that
 when you come through the load balancer, a cookie is added to your
@@ -137,6 +145,75 @@ routed to. This is important in cases where the app state lives on the
 server -- for example, you want to get back to your same instance of a
 shiny app in an RStudio Connect cluster. In most load balancers, this is
 a simple option you can just turn on.
+
+The details of how this is accomplished varies by the individual app,
+but the basic idea is to separate the server state into a backend, often
+some combination of a database and file storage, and allow each of the
+nodes in the cluster to symmetrically read and write from the state.
+
+Moreover a data science workbench is a particularly difficult thing to
+autoscale because it's inherently *stateful*. In computer science terms,
+*state* is the configuration of the system at any given point in time.
+So if you're typing code in an IDE, your state includes the last line of
+code you types. If you're in a Shiny app, state includes the history of
+all the interaction you've had with the app.
+
+That's in contrast to a *stateless* application, where every interaction
+is completely standalone. The line between statefulness and
+statelessness are pretty blurry -- but working inside an IDE is about as
+stateful as it gets. You have long-term state like the files you need
+and your preferences and short-term state like the recent commands
+you've typed and the packages loaded into your R and Python environment.
+
+People love statelessness these days. Containers (and Kubernetes) were
+originally conceived to be stateless. As they've come into wider usage,
+people have built more statefulness into container usage, but there's
+still some awkwardness there.
+
+Many autoscaling routines assume you can scale down and just move
+someone around from one machine to another. This is a bad assumption for
+a data science workbench and autoscaling a data science workbench
+downwards is a difficult challenge.
+
+### Horizontal Scaling for High Availability
+
+Another reason people to horizontal scaling is for resilience. For
+example, you might want the cluster to be resilient to a node randomly
+failing or being taken down for maintenance. In this context, horizontal
+scaling is often called *high availability*. Like many other things,
+high availability is a squishy term, and different organizations have
+very different definitions of what it means.
+
+For example, in one organization, high availability might just mean that
+there's a robust disaster recovery plan so servers can be brought back
+online with little data loss. In another organization, high availability
+might mean having duplicate servers that aren't physically colocated to
+avoid potential outages due to server issues or natural disasters. In
+other contexts, it might be a commitment to a particular amount of
+uptime.[^4-4-scaling-1]
+
+[^4-4-scaling-1]: Often called nines of uptime, referring to the
+    proportion of the time that the service is guaranteed to be online
+    out of a year. So a one-nine service is up 90% of the time, allowing
+    for 36 days of downtime a year. a five-nine service is up for
+    99.999% of the time, allowing for only about 5 1/4 minutes of
+    downtime a year.
+
+It's worth repeating that when you undertake horizontal scaling, you've
+taken on a distributed systems problem and those are *inherently
+difficult*. As the requirements for high availability get steeper, the
+engineering cost to make sure the service really is that resilient rise
+exponentially...so be careful how much uptime you're trying to achieve.
+
+In fact, it's totally possible to make your system *less stable* by just
+doing horizontal scaling in one spot without thinking through the
+implications.
+
+Your organization may have requirements that services be configured in a
+load-balanced or high-availability mode. If that's the case, you should
+figure out what it'll take to do it right and make sure that gets done.
+
+### Specific load-balancing configurations
 
 There are a few different ways to configure load balancing for servers.
 The first is called active/active. This just means that all of the
@@ -158,16 +235,17 @@ active/passive\]
 In active/passive configurations, you have two or more servers, with one
 set accepting traffing all the time, and the other set remaining inert
 until or unless the first set goes offline. This is sometimes called a
-blue/green or red/black configuration.[^4-4-scaling-3] People often
-really like this configuration if they have high requirements for
-uptime, and want to be able to do upgrades to the system behind the
-scenes and then just cut the traffic over at some point without an
-interruption in service. It is a nice idea. It is often very hard to
-pull off.
+blue/green or red/black configuration.[^4-4-scaling-3]
 
 [^4-4-scaling-3]: Blue/Green and Red/Black aren't the same things, but
     the differences are deep in the weeds...and not even consistently
     used.
+
+People often really like this configuration if they have high
+requirements for uptime, and want to be able to do upgrades to the
+system behind the scenes and then just cut the traffic over at some
+point without an interruption in service. It is a nice idea. It is often
+very hard to pull off.
 
 Disaster recovery is not really a load-balancing method, but it's
 closely related. In a disaster recovery configuration, you have a server
@@ -176,76 +254,87 @@ data on a regular basis. In the event the real server were to go down,
 the disaster recovery server could be activated and brought in to
 receive traffic more quickly than the original server could be revived.
 
-## High Performance Computing
+## Kubernetes in Enterprise
 
-## Container Deployment + Orchestration {#k8s}
-
-One tool that comes up increasingly frequently when talking about
-scaling is Kubernetes (sometimes abbreviated as K8S).[^4-4-scaling-4]
-Kubernetes is the way people orchestrate Docker containers in production
-settings.[^4-4-scaling-5] So basically that it's the way to put
-containers into production when you want more than one to interact --
-say you've got an app that separately has a database and a front end in
-different containers, or, like in this chapter, multiple load-balanced
-instances of the same containers.
+Kubernetes (K8S) is the way people use Docker containers to run
+production services.[^4-4-scaling-4] Kubernetes solves all three of the
+key enterprise IT/Admin challenges with running servers because you
+manage a single cluster, you can scale rather effortlessly, and
+app-level administration is extremely simple.
 
 [^4-4-scaling-4]: Apparently, Kubernetes is an ancient Greek word for
     "helmsman", so cutesy nautical puns abound. See, for example, the
     Kubernetes logo, which is a ship wheel.
 
-[^4-4-scaling-5]: Pedants will be delighted in all the ways this is
-    technically incorrect. Some people use other tools like Docker Swarm
-    in development, but *rarely* in production. Kubernetes also is not
+    Pedants will be delighted in all the ways this is technically
+    incorrect. Some people use other tools like Docker Swarm in
+    development, but *rarely* in production. Kubernetes also is not
     limited to *Docker* containers. As of this writing in 2022, those
     are irrelevant details for most people.
+
+So basically that it's the way to put containers into production when
+you want more than one to interact -- say you've got an app that
+separately has a database and a front end in different containers, or,
+like in this chapter, multiple load-balanced instances of the same
+containers.
 
 While the operational details of Kubernetes are very different from the
 horizontal scaling patterns we've discussed so far in this chapter, the
 conceptual requirements are the same.
 
-TODO: Diagram of K8S
+At a conceptual level, people like Kubernetes because you get to think
+about the applications you want running completely separately from the
+set of servers running underneath.
 
-Many people like Kubernetes because of its declarative nature. If you
-recall from the section on [Infrastructure as Code](), declarative code
-allows you to make a statement about what the thing is you want and just
-get it, instead of specifying the details of how to get there.
+In Kubernetes, a running Docker container is called a *pod*. When you
+want to run one or more pods in Kubernetes, you declare to Kubernetes
+that you want a certain number of instances of a certain Docker
+container with a certain amount of horsepower behind each pod.
 
-Of course, in operation this all can get much more complicated, but once
-you've got the right containers, Kubernetes makes it easy to say, "Ok, I
-want one instance of my load balancer container connected to three
-instances of my compute container with the same volume connected to all
-three."
+Kubernetes takes care of scheduling the pods on the *nodes* underlying
+the cluster. This is amazing, because unlike running services on a
+regular VM, you just make sure you've got enough horsepower in the
+cluster and then all the app-level requirements go in the container.
+Then when you declare how many pods you want, you don't have to worry
+about what's going on with each of the nodes in the cluster because it
+is just running Kubernetes and Docker.
 
-::: callout-warning
-## Kubernetes Tripwire!
+This really is extremely powerful -- it's pretty easy to tell
+Kubernetes, "I want one instance of my load balancer container connected
+to three instances of my Workbench container with the same storage
+volume connected to all three."
 
-If you're reading this and are extremely excited about Kubernetes --
-that's great! Kubernetes does make a lot of things easy that used to be
-hard. Just know, networking configuration is the place you're likely to
-get tripped up. You've got to deal with networking into the cluster,
-networking among the containers inside the cluster, and then networking
-within each container.
+However, Kubernetes is still a complex tool and a data science workbench
+is a particuarly difficult fit for Kubernetes. In particular, Kubernetes
+was originally designed to be for stateless use cases. For example,
+let's imagine a search engine -- every time you put in a search, it
+spins up a pod on Kubernetes, does your search, and then spins down.
 
-Complicated kubernetes networking configurations are not for the faint
-of heart.
-:::
+If you come back in a minute or two, it can just spin up another pod.
+Maybe it's saved your last query and remembers that, but the state
+maintenance is quite simple. If that pod is on a different node, no big
+deal!
 
-For individual data scientists, Kubernetes is usually overkill for the
-type of work you're doing. If you find yourself in this territory, it's
-likely you should try to work with you organization's IT/Admin group.
+That's not the case with a data science workbench. Imagine if Kubernetes
+tried to autoscale the node you're on out from under you while you're in
+the midst of working on some code.
 
-One of the nice abstraction layers Kubernetes provides is that in
-Kubernetes, you provide declarative statements of the containers you
-want to run, and any requirements you have. You separately register
-actual hardware with the cluster, and Kubernetes takes care of placing
-the conatiners onto the hardware depending on what you've got available.
+Networking in Kubernetes can also be quite complicated. For anything
+that lives fully in Kubernetes, like your Workbench nodes and
+load-balancer, it's quite simple. But getting things into and out of the
+Kubernetes cluster -- like the filesystem you probably need to mount in
+and accessing databases is a real challenge.
+
+All this to say -- these are solvable problems for an experienced
+Kubernetes admin. But they will probably need some guidance around
+specific requirements for a data science workbench.
 
 In practice, unless you're part of a very sophisticated IT organization,
 you'll almost certainly use Kubernetes via one of the cloud providers'
 *Kubernetes clusters as a service*. AWS's is called Elastic Kubernetes
-Service (EKS).[^4-4-scaling-6]
+Service (EKS).[^4-4-scaling-5]
 
-[^4-4-scaling-6]: If you aren't using EKS, Azures AKS, or Google's GKE,
+[^4-4-scaling-5]: If you aren't using EKS, Azures AKS, or Google's GKE,
     the main other competitor is Oracle's OpenShift, which some
     organizations have running in on-prem Kubernetes clusters.
 
@@ -256,14 +345,8 @@ from a cost perspective.
 
 It is possible to define a Kubernetes cluster "on the fly" and deploy
 things to a cluster in an ad hoc way. I wouldn't recommend this for any
-production system. *Helm* is the standard tool for defining kubernetes
-deployments in code, and *Helmfile* is a templating system for Helm.
-
-So, for example, if you had a standard "Shiny Server" that was one load
-balancer containers, two containers each running a Shiny app, and a
-volume mounted to both, you would define that cluster in Helm. If you
-wanted to be able to template that Helm code for different clusters,
-you'd use Helmfile.
+production system. *Helm* is the standard tool for defining Kubernetes
+deployments in code.
 
 ## Comprehension Questions
 
@@ -285,4 +368,3 @@ you'd use Helmfile.
     you really need a load balancer and when can you go without?
 3.  What are the biggest strengths of Kubernetes as a scaling tool? What
     are some drawbacks?
-
