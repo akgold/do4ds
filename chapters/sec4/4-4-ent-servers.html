@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.475">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 19&nbsp; Enterprise Server Management</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/append/docker-cheatsheet.html" rel="next">
+<link href="../../chapters/sec4/4-3-auth.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-BTSMMRMH08"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+    <div class="container-fluid d-flex justify-content-between">
+      <h1 class="quarto-secondary-nav-title"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></h1>
+      <button type="button" class="quarto-btn-toggle btn" aria-label="Show secondary navigation">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="sidebar-tool px-1"><i class="bi bi-github"></i></a>
+    <a href="" title="Share" id="sidebar-tool-dropdown-0" class="sidebar-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-share"></i></a>
+    <ul class="dropdown-menu" aria-labelledby="sidebar-tool-dropdown-0">
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+            <i class="bi bi-bi-twitter pe-1"></i>
+          Twitter
+          </a>
+        </li>
+        <li>
+          <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+            <i class="bi bi-bi-facebook pe-1"></i>
+          Facebook
+          </a>
+        </li>
+    </ul>
+</div>
+    </div>
+      </div>
+      <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">Welcome!</a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">Introduction</a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">DevOps Lessons for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-code-promotion.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Code promotion and integration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-env-as-code.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Environments as Code</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-arch.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Data Pipeline Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-apis.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Designing Your Application Layers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-monitor-log.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin Tools</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-docker.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Docker for Data Science</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">IT/Admin for Data Science</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-dns.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-servers.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">Making it Enterprise-Grade</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-ent-networks.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-ent-servers.html" class="sidebar-item-text sidebar-link active"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">Appendices</a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/docker-cheatsheet.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Auth Technical Details</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#managing-complexity-with-infrastructure-as-code" id="toc-managing-complexity-with-infrastructure-as-code" class="nav-link active" data-scroll-target="#managing-complexity-with-infrastructure-as-code"><span class="toc-section-number">19.1</span>  Managing complexity with Infrastructure as Code</a>
+  <ul class="collapse">
+  <li><a href="#devtestprod-for-itadmins" id="toc-devtestprod-for-itadmins" class="nav-link" data-scroll-target="#devtestprod-for-itadmins"><span class="toc-section-number">19.1.1</span>  Dev/Test/Prod for IT/Admins</a></li>
+  </ul></li>
+  <li><a href="#enterprise-scale-and-stability" id="toc-enterprise-scale-and-stability" class="nav-link" data-scroll-target="#enterprise-scale-and-stability"><span class="toc-section-number">19.2</span>  Enterprise scale and stability</a>
+  <ul class="collapse">
+  <li><a href="#load-balancing-requirements" id="toc-load-balancing-requirements" class="nav-link" data-scroll-target="#load-balancing-requirements"><span class="toc-section-number">19.2.1</span>  Load-balancing requirements</a></li>
+  <li><a href="#accommodating-different-kinds-of-workloads" id="toc-accommodating-different-kinds-of-workloads" class="nav-link" data-scroll-target="#accommodating-different-kinds-of-workloads"><span class="toc-section-number">19.2.2</span>  Accommodating different kinds of workloads</a></li>
+  <li><a href="#adding-autoscaling" id="toc-adding-autoscaling" class="nav-link" data-scroll-target="#adding-autoscaling"><span class="toc-section-number">19.2.3</span>  Adding Autoscaling</a></li>
+  </ul></li>
+  <li><a href="#dockerkubernetes-in-enterprise" id="toc-dockerkubernetes-in-enterprise" class="nav-link" data-scroll-target="#dockerkubernetes-in-enterprise"><span class="toc-section-number">19.3</span>  Docker/Kubernetes in Enterprise</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">19.4</span>  Comprehension Questions</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec4/4-4-ent-servers.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-ent-servers" class="quarto-section-identifier d-none d-lg-block"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>When the number of servers you’re managing is small, you can handle them individually. But for an enterprise, there are dozens or hundreds of servers with complicated interactions across them. In order to keep up with these complexities, different management patterns are needed.</p>
+<p>Relative to a world of just a few servers, there are two main issues that come to the fore in an enterprise context – how to manage the complexity of that many servers and how to ensure services are available when they’re needed for enterprise-scale operations.</p>
+<p>In this chapter, we’ll get into how enterprises solve these challenges of keeping so many servers in sync and scaling services to be stable and available across an enterprise.</p>
+<section id="managing-complexity-with-infrastructure-as-code" class="level2" data-number="19.1">
+<h2 data-number="19.1" class="anchored" data-anchor-id="managing-complexity-with-infrastructure-as-code"><span class="header-section-number">19.1</span> Managing complexity with Infrastructure as Code</h2>
+<p>Here’s where you don’t want to be an an enterprise IT/Admin. You stand up a server for the data science team in a known good state – with versions of R and Python and the applications they need. But then, over time, more stuff gets installed. Maybe they needed some more versions of R. And that package they installed required some updated system libraries.</p>
+<p>If you just <code>ssh</code> in and do these things — or let the data science team do it themselves, you’ll quickly lose track of what the current state of the server is. You can’t just tear down the server and stand it back up, because none of the changes you’ve made are documented. In DevOps language, the server has become <em>stateful</em> – and that’s a no-no.</p>
+<p>Now, when you’ve just got one server like this, it’s annoying, but not the end of the world. If you’re an IT/Admin organization with 40 or 400 servers it is much more troublesome. And moreover, if you have many servers that need to be configured identically – for example because they’re treated as one cluster – this is impossible. In many enterprises, this whole though experiment would just never fly because production servers can’t be changed. They’re validated from top to bottom for compliance or security reasons and then have to be completely re-validated if any changes are needed.</p>
+<p>IT/Admin organizations want to avoid server state drift and make sure the environment is always in a known good state. If it ever needs to be torn down or moved, it should be a painless activity to re-create the exact same environment with a minimum of fuss.</p>
+<p>There’s a DevOps adage to encompass this need to manage servers as a herd, rather than individually – servers should be cattle, not pets.</p>
+<p>To restart an entire server environment from nothing, there are two general steps. <em>Provisioning</em> is about creating and configuring the (virtualized) hardware including the servers and networking configuration. Once the servers are provisioned, they need to be <em>configured</em> including installing things on them and getting them running.</p>
+<p>If you’re thinking of restarting an environment from scratch, you need to</p>
+<ol type="1">
+<li>Create the networking environment for servers (VPC)</li>
+<li>Stand up the actual servers and networking facilities</li>
+<li>Configure servers (create users, groups, mount storage, etc)</li>
+<li>Configure networking hardware (ports, firewalls, etc)</li>
+<li>Install system libraries and operating system dependencies</li>
+<li>Install R and/or Python</li>
+<li>Install application layer (RStudio Server, JupyterLab, Shiny Server, etc)</li>
+<li>Configure application layer (write config files)</li>
+<li>Configure application layer networking (SSL, DNS)</li>
+<li>Start application</li>
+</ol>
+<p>As an R or Python-loving data scientist, you know that the best way to create this kind of setup is with code. Much like you can use packages like <code>renv</code> and <code>venv</code> to document the state of your R or Python environment and restore it somewhere else (see <a href="../sec1/1-2-env-as-code.html">Chapter&nbsp;<span>2</span></a>), IT/Admin professionals use Infrastructure as Code (IaC) tooling to stand up and manage their servers.</p>
+<p>It’s not always the case that organizations need to put <em>all</em> of this in code. For example, while servers should be re-create-able in code, it’s quite rare that you need to re-create a VPC, so it may well be the case that step remains manual.</p>
+<p>Either way, some names you’ll hear a lot if you’re looking into IaC are Terraform, Ansible, CloudFormation (AWS’s IaC tool), Chef, Puppet, and Pulumi. The other option, which we’ll discuss in more detail below, is using Docker in Kubernetes.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+No Code IaC
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are also ways to manage enterprise servers that don’t involve IaC. These usually involve writing extensive “run-books” for how to configure servers or point-and-click graphical interfaces for server administration. If your spidey sense is tingling that this probably isn’t nearly as good, you’re right. Enterprise IT/Admin organizations that don’t use IaC tooling is definitely a red flag.</p>
+</div>
+</div>
+<p>We’re not going to get into any more detail on how these IaC tools work – there are books on all of them you should feel free to read if you’re interested. But now you’ll understand what you’re hearing when the IT/Admin team says they need to write a Terraform script or a Chef recipe to be able to stand up a particular service.</p>
+<section id="devtestprod-for-itadmins" class="level3" data-number="19.1.1">
+<h3 data-number="19.1.1" class="anchored" data-anchor-id="devtestprod-for-itadmins"><span class="header-section-number">19.1.1</span> Dev/Test/Prod for IT/Admins</h3>
+<p>Like you want a Dev/Test/Prod setup for your data science projects as discussed in <a href="../sec1/1-1-code-promotion.html">Chapter&nbsp;<span>1</span></a>, IT/Admins usually use a Dev/Test/Prod setup for themselves. They want an environment to test changes before promoting them for testing and eventually into production. In ideal states, even changes in Dev are only attempted with IaC tools to make sure it’s easy to move forward once the changes are final.</p>
+<p>For enterprises, I recommend a two-dimensional Dev/Test/Prod setup where the IT/Admin group make changes to the platform in a staging environment.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Data scientists never get access to the Staging environments and do all their work in the IT/Admin prod environment.</p>
+<p><img src="images-scaling/dev-test-prod.png" class="img-fluid" width="468"></p>
+<p>Looking back to <a href="../sec1/1-1-code-promotion.html">Chapter&nbsp;<span>1</span></a>, it should be obvious that the best way to move servers and applications from staging to prod is using IaC and CI/CD to make sure that changes to code always make it into production at the right time.</p>
+</section>
+</section>
+<section id="enterprise-scale-and-stability" class="level2" data-number="19.2">
+<h2 data-number="19.2" class="anchored" data-anchor-id="enterprise-scale-and-stability"><span class="header-section-number">19.2</span> Enterprise scale and stability</h2>
+<p>Needing to scale data science environments for large jobs is a common need across large and small organizations. But the enterprise need to support many data scientists often requires a different kind of approach to scaling.</p>
+<p>In <a href="../sec3/3-6-servers.html">Chapter&nbsp;<span>15</span></a>, we discussed how just making a single server bigger with vertical scaling can take you a long way. But there are limits. For example, I was recently working with a large customer of Posit’s who needed to support up to 2,000 data scientists in their environment.</p>
+<p>At that scale, there is no server that is nearly large enough. The way to accomplish this kind of scale isto spread the workload out across many servers with <em>horizontal scaling</em>.</p>
+<p>Additionally, when you’re operating at that scale, the stability of the system gets really important. When you’ve got 2,000 data scientists using your platform, each hour of lost time costs more than $100,000.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>For some organizations, this necessitates the creation of a <em>disaster recovery</em> plan. This may mean that there are frequent snapshots of the state of the server (often nightly) so the IT/Admins can just roll back to a previous known good state in the event of a failure. Sometimes it also means that there is actually a copy of the server waiting on standby to be activated at all times.</p>
+<p>Other times, there are stiffer requirements such that nodes in the cluster could fail and the users wouldn’t be meaningfully affected. This requirement for limited cluster downtime is often called <em>high availability</em>. High availability is not a description of a particular technology or technical approach – though it is sometimes treated as such. High availability is a description of a desired outcome for a cluster and different organizations have different definitions.</p>
+<div class="callout-note callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Measuring Uptime
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Downtime limits are often measured in <em>nines of uptime</em>. Nines of uptime refers to the proportion of the time that the service is guaranteed to be online out of a year. So a one-nine service is guaranteed to be up 90% of the time, allowing for 36 days of downtime a year. A five-nine service is up for 99.999% of the time, allowing for only about 5 1/4 minutes of downtime a year.</p>
+</div>
+</div>
+<p>Horizontal scaling and high availability are different of requirements with different implications. Depending on your organization, you may have horizontal scaling requirements or high availability requirements or both.</p>
+<p>One option, where you have horizontal scaling requirements, but not high availability is to just put different users or team on their own server. The upside to this is that the team gets ownership of the server. The downside is fragmentation and that the team has to manage your own servers. In organizations that allow this kind of fragmentation, each team is usually on their own to support those servers and you’re basically back in non-enterprise land.</p>
+<p>In enterprises, this usually isn’t the way things get done. Most enterprises want to run one centralized service that everyone in the company – or at least across a large group – come to.</p>
+<p>If you’re trying to run a large centralized service, it’s going to be run as a <em>load-balanced cluster</em>. In this context, you don’t want to think about individual servers. Instead, you want to manage the cluster as a whole and make it really easy to add individual servers, called <em>nodes</em>.</p>
+<p>In order to go from a single server to a cluster, you add two requirements – there needs to be one front door to all the servers, called a <em>load-balancer</em> – and any state users care about needs to move from the individual server to a shared location all of the nodes can access. Usually that state is stored in a database or network attached storage (NAS), which is just a filesystem that lives on its own server.</p>
+<p><img src="images-scaling/lb-cluster.png" class="img-fluid" width="484"></p>
+<p>If you are a solo data scientist reading this – please do not try to run your own data science cluster. When you undertake load balancing, you’ve taken on a distributed systems problem and those are <em>inherently difficult</em>. When done for scaling reasons, it is almost always worthwhile to exhaust the part of vertical scaling where costs grow linearly with compute before undertaking horizontal scaling.</p>
+<p>If your organization has high availability requirements, it’s worth considering that just adding more nodes may not be sufficient. As the requirements for high availability get steeper, the engineering cost to make sure the service really is that resilient rise exponentially. In addition to considering what to do if a node goes offline, you also have to have backup for the load-balancer and the database/NAS, as well as any other part of the system.</p>
+<p>In fact, it’s totally possible to make your system <em>less stable</em> by just doing horizontal scaling in one spot without thinking through the implications.</p>
+<section id="load-balancing-requirements" class="level3" data-number="19.2.1">
+<h3 data-number="19.2.1" class="anchored" data-anchor-id="load-balancing-requirements"><span class="header-section-number">19.2.1</span> Load-balancing requirements</h3>
+<p>Load-balancers are just a special kind of proxy that routes sessions among the nodes in the cluster. A simple load-balancer just rotates sending traffic to the different nodes using a <em>round-robin</em> configuration.</p>
+<p>At a minimum, your load-balancer has to know what nodes are accepting traffic. This is accomplished by configuring a health check/heartbeat endpoint for your product. A health check is a feature of an application. The load-balancer periodically pings the health check. If it gets a response, it knows it can send traffic to that node. If no response comes back, it treats that node as unhealthy and doesn’t send traffic there.</p>
+<p>It is sometimes necessary to do more complicated load-balancing that pays attention to how loaded different nodes are. Additionally, some products feature internal load-balancers, so it really doesn’t matter what your load-balancer does.</p>
+<p>One other feature that may come up is <em>sticky sessions</em> or <em>sticky cookies</em>. For stateful applications – like Shiny apps – you want to get back to the same node in the cluster so you can resume a previous session. In most load-balancers, this is a simple option you can just turn on.</p>
+<p>There are a few different ways to configure load balancing for servers. The first is called active/active. This just means that all of the servers are online all of the time. So if I have two RStudio Server instances, they’re both accepting traffic all the time.</p>
+<p>In active/passive configurations, you have two or more servers, with one set accepting traffing all the time, and the other set remaining inert until or unless the first set goes offline. This is sometimes called a blue/green or red/black configuration.</p>
+<p>People often really like this configuration if they have high requirements for uptime, and want to be able to do upgrades to the system behind the scenes and then just cut the traffic over at some point without an interruption in service. It is a nice idea. It is often very hard to pull off.</p>
+<p>For an application, there are basically two ways it can store data – in a database or in files on the filesystem. Now, this isn’t data you need to access, but it’s needed for the internal workings of the application. For example, it may need to save log information or counts of the number of active users.</p>
+<p>When you’re in a single-server configuration, all this can just go somewhere on the server with the application. Very often the database is just a <em>sqlite</em> file that sits in a file on the filesystem.</p>
+<p>But when you go to to a load-balanced cluster, all of the nodes need symmetric access to read and write. You need an actual database (like <em>postgres</em>) for the application to use. Additionally, anything on the filesystem now needs to move off of an individual server onto a networked system that all the nodes can access.</p>
+</section>
+<section id="accommodating-different-kinds-of-workloads" class="level3" data-number="19.2.2">
+<h3 data-number="19.2.2" class="anchored" data-anchor-id="accommodating-different-kinds-of-workloads"><span class="header-section-number">19.2.2</span> Accommodating different kinds of workloads</h3>
+<p>When you’re doing horizontal-scaling, people often want to accomodate a variety of workloads. For example, they might want to be able to incorporate several different sizes of jobs that might require a few different sized nodes. Or maybe they want to run a mixture of GPU-backed and non-GPU workloads in the cluster and want to reserve GPU nodes for the jobs that need it.</p>
+<p>In general, it’s not trivial to set up a single cluster that can support different kinds of workloads, and it’s often easier to set up, for example, a standalone GPU cluster.</p>
+<p>These days, people are often reaching for Kubernetes for clusters that need to support varies workloads. While it’s true that Kubernetes can theoretically support different kinds of nodes within one cluster, this often isn’t trivial to configure.</p>
+<p>Often, a better option for data science workloads is to use use a high-performance computing (HPC) framework. HPC is particularly appropriate when you need very large machines. In Kubernetes, it is not possible to schedule pods larger than the size of the actual nodes in the cluster. In contrast, most HPC frameworks allow you to combine an arbitrary number of nodes into what acts like a single machine with thousands or tens of thousands of nodes.</p>
+<p>For example, Slurm is an HPC framework that support multiple queues for different sets of machines. AWS has a service called ParallelCluster that allows users to easily set up a Slurm cluster – and with no additional cost relative to the cost of the underlying AWS hardware.</p>
+</section>
+<section id="adding-autoscaling" class="level3" data-number="19.2.3">
+<h3 data-number="19.2.3" class="anchored" data-anchor-id="adding-autoscaling"><span class="header-section-number">19.2.3</span> Adding Autoscaling</h3>
+<p>Sometimes people also undertake horizontal scaling to be able to do autoscaling. The idea here is that the organization could maintain a small amount of “always-on” capacity and scale out other capacity as needed to maintain costs. This is possible – but it requires nontrivial engineering work.</p>
+<p>In particular, autoscaling a data science workbench down is quite hard. The main reason for this is that many autoscaling routines assume you can easily move someone’s job from one node to another just keeping track of the long-term state. This is a bad assumption for a data science workbench and autoscaling a data science workbench downwards is a difficult challenge.</p>
+<p>Let’s think about a relatively stateless workload. For example, let’s imagine a search engine – every time you put in a search, it spins up a job, does your search, and then spins down.</p>
+<p>If you come back in a minute or two, it can just spin up another job. It only needs to remember your last query, but that’s a pretty simple bit to state to pass around. If you’re on a different node, no big deal!</p>
+<p>That’s not the case with a data science workbench. Many autoscaling frameworks these days assume that applications are mostly stateless. In a stateless applications, every interaction is standalone – there’s very little path dependence. The line between statefulness and statelessness are pretty blurry, but working inside a development environment like RStudio or a Jupyter Notebook is about as stateful as it gets. You have long-term state like the files you need and your preferences and short-term state like the recent commands you’ve typed and the packages loaded into your R and Python environment.</p>
+</section>
+</section>
+<section id="dockerkubernetes-in-enterprise" class="level2" data-number="19.3">
+<h2 data-number="19.3" class="anchored" data-anchor-id="dockerkubernetes-in-enterprise"><span class="header-section-number">19.3</span> Docker/Kubernetes in Enterprise</h2>
+<p>Originally created at Google and released in 2014, Kubernetes is the way to run production services out of Docker containers.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> It is an open source project. If you’re confused by the name, apparently Kubernetes is an ancient Greek word for “helmsman”.</p>
+<p>Many organizations are moving towards using Docker and Kubernetes for their server-based infrastructure. Kubernetes solves all three of the key enterprise IT/Admin challenges with running servers because you manage a single cluster, you can scale rather effortlessly, and app-level administration is extremely simple.</p>
+<p>The elegance of using Kubernetes is that it completely separates provisioning and configuration challenges. The main unit of analysis in Kubernetes is a <em>pod</em>, which is the term for a Docker container that is running in Kubernetes.</p>
+<p>The elegance of Kubernetes is that you create a cluster of a certain number of nodes and separately request a certian number of pods with a certain amount of horsepower. Kubernetes takes care of scheduling the pods on the nodes.</p>
+<p>TODO: Graphic of Kubernetes</p>
+<p>This is amazing, because unlike running services on a regular VM, you just make sure you’ve got enough horsepower in the cluster and then all the app-level requirements go in the container. Then when you declare how many pods you want, you don’t have to worry about what’s going on with each of the nodes in the cluster because it is just running Kubernetes and Docker.</p>
+<p>This really is extremely powerful – it’s pretty easy to tell Kubernetes, “I want one instance of my load balancer container connected to three instances of my Workbench container with the same storage volume connected to all three.”</p>
+<p>In practice, unless you’re part of a very sophisticated IT organization, you’ll almost certainly use Kubernetes via one of the cloud providers’ <em>Kubernetes clusters as a service</em>. AWS’s is called Elastic Kubernetes Service (EKS).<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>One really nice thing about using these Kubernetes clusters as a service is that adding more compute power to your cluster is generally as easy as a few button clicks. On the other hand, that also makes it dangerous from a cost perspective.</p>
+<p>It is possible to define a Kubernetes cluster “on the fly” and deploy things to a cluster in an ad hoc way. But then you’re back out of IaC world. You can use any standard IaC tooling to stand up a Kubernetes cluster in any of the three major clouds. Once you’ve got the cluster up, <em>Helm</em> is the standard tool for defining what’s running in the cluster.</p>
+<p>There’s a reason Kubernetes is taking the world by storm – it makes managing complicated enterprise workloads way easier. For example, let’s say you want to stand up a new service in a Kubernetes cluster using IaC. I listed 10 steps above for doing this in a standard server-based configuration. For Kubernetes, there are only three steps:</p>
+<ol type="1">
+<li>Provision the cluster itself using IaC or add nodes to an existing cluster (usually trivially easy)</li>
+<li>Get the Docker containers to run in the cluster (often provided by vendors)</li>
+<li>Declare what container configuration you want in the environment using <em>Helm</em></li>
+</ol>
+<p>One really nice thing about this is that it’s really clear where the state lies. The applications themselves are installed in the Docker containers and because the containers themselves are ephemeral, state has to be mounted in from somewhere external.</p>
+<p>Relative to more stateful server-based configuration, Kubernetes-based configurations rest a lot more heavily on environment variables, so a lot of configuring application setup is the same as configuring the environment variables in the running container.</p>
+<p>In the extreme version, some enterprises are going to “we just run a single kubernetes cluster for our entire organzation”. In my opinion, this will someday be a great pattern, but it’s still a little immature. In particular, Kubernetes kinda makes the underlying assumption that all of the resources for the cluster are shared across the cluster. There are ways to use namespaces and other things – but not all Kubernetes resources can be split into namespaces, and managing a Kubernetes cluster for multiple use cases or groups isn’t at all trivial.</p>
+<p>It’s easy to look at the power of Kubernetes and think it will make everything easy. This is not the case. While the high-level outlines of Kubernetes are super appealing, it is still a complex tool and a data science workbench is a particularly difficult fit for Kubernetes.</p>
+<p>In many organizations, adopting Kubernetes is synonymous with trying to do autoscaling. As previously discussed, autoscaling a data science workbench is a particularly difficult task – and Kubernetes is particularly friendly to stateless workloads. Autoscaling in Kubernetes with a data science workbench really requires a highly competent Kubernetes admin.</p>
+<p>Networking in Kubernetes can also be quite complicated. For anything that lives fully in Kubernetes, like your Workbench nodes and load-balancer, it’s quite simple. But getting things into and out of the Kubernetes cluster – like the filesystem you probably need to mount in and accessing databases is a real challenge.</p>
+<p>All this to say – these are solvable problems for an experienced Kubernetes admin. But they will probably need some guidance around specific requirements for a data science workbench.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="19.4">
+<h2 data-number="19.4" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">19.4</span> Comprehension Questions</h2>
+<ol type="1">
+<li>What is the difference between horizontal and vertical scaling? For each of the following examples, which one would be more appropriate?
+<ol type="a">
+<li><p>You’re the only person using your data science workbench and run out of RAM because you’re working with very large data sets in memory.</p></li>
+<li><p>Your company doubles the size of the team that will be working in your data science workbench. Each person will be working with reasonably small data, but there’s going to be a lot more of them.</p></li>
+<li><p>You have a big modeling project that’s too large for your existing machine. The modeling you’re doing is highly parallelizable.</p></li>
+</ol></li>
+<li>What is the role of the load balancer in horizontal scaling? When do you really need a load balancer and when can you go without?</li>
+<li>What are the biggest strengths of Kubernetes as a scaling tool? What are some drawbacks?</li>
+</ol>
+
+
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>I call it staging because I call the data science environments Dev/Test/Prod. You’ll have to work out language with your IT/Admin group.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>A low-end estimate of $100,000 fully-loaded cost for one data scientist FTE and 2,000 hours is $50 per hour.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>If you are pedantic, there are other tools for deploying Docker containers like Docker Swarm and Kubernetes is not limited to Docker containers. But those are corner cases.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>If you aren’t using EKS, Azures AKS, or Google’s GKE, the main other competitor is Oracle’s OpenShift, which some organizations have running in on-prem Kubernetes clusters.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec4/4-3-auth.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/append/docker-cheatsheet.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Docker Cheatsheet</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
