@@ -298,85 +298,112 @@ few more services you'll likely hear about over time.
 [^3-1-cloud-5]: There are many others. These are just the most popular
     I've seen for data science use cases.
 
-## Lab
+## Lab: Intro to AWS
 
-Welcome to the lab portion. In this lab, we're going to get you up and
-running with an AWS account and show you how to manage, start, and stop
-EC2 instances in AWS.
+Welcome to the lab!
+
+The point of these exercises is to get you hands on with running servers
+and get you practicing the things you're learning in the rest of the
+book.
+
+If you walk through the labs sequentially, you'll end up with a working
+data science workbench. It won't suffice for any enterprise-level
+requirements, but it'll be secure enough for a hobby project or even a
+small team.
+
+These days most people are using servers from a cloud provider. We're
+going to use AWS, as they're by far the biggest cloud provider and the
+one you're most likely to run into in the real world.
 
 At a high level, you can do all of this with any cloud provider. Feel
 free to try if you prefer Azure or GCP, but the details on how to get
 started and service names will be different.
 
-We will be standing up a server in AWS's *free tier* -- so there will be
-no cost involved as long as you haven't used up all your AWS free tier
-credits before now.
+In the lab for this chapter, we're going to get you up and running with
+an AWS account and show you how to manage, start, and stop EC2 instances
+in AWS.
 
-### Login to the AWS Console
+The server we'll stand up will be from AWS's *free tier* -- so there
+will be no cost involved as long as you haven't used up all your AWS
+free tier credits before now.
 
-We're going to start by logging into AWS. If you already know how, you
-can skip ahead to standing up an instance.
+For AWS things, I'm going to tell you what to do...but not the exact
+buttons, as AWS frequently changes the interface and this will almost
+certainly be out-of-date by the time you read it. The high level steps
+won't change though.
 
-If not, go to <https://aws.amazon.com> and click
-`Sign In to the Console` .
+Throughout the lab, we're going to go step by step through getting
+things done. If you know how to do any of the steps, I'd recommend you
+at least skim the step for any important details.
 
-If you've never set up an AWS account before, click
-`Create a New AWS account` and follow the instructions to create an
-account. Note that even if you've got an Amazon account for ordering
-stuff online and watching movies, an AWS account is separate.
+### Step 1: Login to the AWS Console
+
+We're going to start by logging into AWS.
+
+::: callout-note
+An AWS account is separate from an Amazon account for ordering stuff
+online and watching movies. If you've never created an account for AWS
+in particular, you'll have to make an account.
+:::
+
+Start by signing in at <https://aws.amazon.com>. You most likely haven't
+created an IAM account and should just login as root.
 
 Once you've logged in, you'll be confronted by the AWS console. There
 are a ton of things here -- feel free to poke around if you want -- come
-back and continue when you're ready.
+back to continue when you're ready.
 
-### Stand up an instance
+### Step 2: Stand up an instance
 
-AWS's "rent a server" is called EC2.[^3-1-cloud-6] It is the most basic
-AWS service, and it's what we're going to use to get started.
+AWS's most basic "rent a server by the hour" service is called EC2
+(Elastic Cloud Compute).
 
-[^3-1-cloud-6]: It's short for *Elastic Cloud Compute*, but everyone
-    just says EC2.
+There are five things we have to configure in the process of launching
+the server. I'll give you advice on each of them. If I don't mention it
+here, feel free to stick with defaults.
 
-There are five things we have to configure before launching the server.
-I'm not going to walk you through configuring each one on this page,
-because Amazon is constantly updating the exact layout of the page and
-the text, but I'll explain the choices and then you can make them
-yourself -- or even make similar choices if you're in GCP or Azure.
+#### Name + Tags
 
-The first choice is instance **name and tags**. None of this is required
--- it's for convenience and organization. I'd suggest you name the
-server something like `do4ds-lab`.
+The first choice is instance **name and tags**. They aren't required,
+but I'd recommend you name the server something like `do4ds-lab` so you
+can remember what this server is later.
 
-Next, you'll have to choose the **image**. All clouds have a concept of
-server images. In AWS, they're called *AMIs* (short for *Amazon Machine
-Image,* pronounced like you're reading the letters individually).
+#### Image
 
-An image is the set of software that's preinstalled when you start the
-server. Images can range from just a bare operating system to a running
-RStudio instance that's suspended in between two computations. There are
-many paid images that come preinstalled with a bunch of software ready
-to go.
+Next, you'll have to choose the **image**. An image is a snapshot of a
+system and serves as the starting point for your server. Images can
+range from just a bare operating system to a running RStudio instance
+that's paused in between two computations.
+
+All clouds have the concept of images. AWS calls their's *Amazon Machine
+Images* or *AMIs*. Some images are free and some are paid.
 
 Since we're going to work on configuring the server from the ground up,
-we're going to choose an AMI that's just the operating system. Choose
-the most basic Ubuntu one. At the time of this writing, that's using
+we're going to choose an AMI that's just the operating system. For the
+lab, let's use Ubuntu Server LTS 22.04 image. It should say *free tier
+eligible*.
+
+::: callout-note
+If you want to use a different operating system, that's fine. For the
+purpose of being able to follow along with this lab, I'd recommend using
 Ubuntu 22.04.
 
-If you want to use a different operating system, that's fine, but you
-may need to adjust the commands in this chapter and subsequent to match.
+If you happen to be reading this after 2026 or so, there will be newer
+operating systems. A newer version of Ubuntu should work very similarly
+for the purposes of this lab.
+:::
+
+#### Instance Type
 
 You'll have to choose an **Instance Type**. In AWS, there are two
 components to instance type -- the *family* and the *size*. The family
 is the category of server that you're using. In AWS, families are
-denoted by letters and numbers, so there are T2s and T3s, C4s and C5s,
-R5s and many more.
+denoted by letters and numbers, so there are T2s and T3s, C4s, R5s, and
+many more.
 
-Within each family, there are different sizes. The sizes vary by the
-family, but generally range from things below small *nano* to multiples
-of *xlarge* like *24xlarge*.
-
-We'll get into choosing the right family and size for your team's use
-case in [Chaper @sec-servers].
+Within each family, there are different sizes. The sizes availble vary
+by the family, but generally range from *nano* to multiples of *xlarge*
+like *24xlarge*.
 
 For now, I'd recommend you get the largest server that is free tier
 eligible, which is a *t2.micro* with 1 CPU and 1 Gb of memory as of this
@@ -385,59 +412,49 @@ writing.
 ::: callout-note
 ## Server sizing for the lab
 
-A *t2.micro* with 1 CPU and 1 Gb of memory is a very small server.
+A *t2.micro* with 1 CPU and 1 Gb of memory is a very small server. For
+example, your laptop probably has at least 8 CPUs and 8 Gb of memory.
 
 If all you're doing is walking through the lab, it should be sufficient,
 but if you actually want to do any data science work, you'll need a
 substantially larger server.
 
-It is possible to rack up really large AWS bills, so be careful.
-
-That said, a modestly-sized server is still pretty cheap if you're only
-putting it up for a short amount of time.
-
-I'm writing this on a 2021 M1 Macbook Pro with 10 CPUs and 32 Gb of
-memory. If you wanted that same computational power from an AWS server,
-it's roughly comparable to a `t3.2xlarge` -- with 8 CPUs and 32Gb of
-memory. That server costs is \$0.33 an hour. So a full year running full
-time for an instance is nearly \$3,000, but if you're only running that
-instance for a little while -- say, the few hours it'll take you to
-complete this lab -- it will probably only be a few dollars.
+If you want to pick a server for actual data science work, there's lots
+of advice on how to choose in [Chaper @sec-servers].
 :::
 
-Next, you'll need to make sure you have a **keypair**. We'll get into
-what this key is and how to use it in [Chapter @sec-cmd-line]. For now,
-you'll need to create a keypair if you don't already have one. I'd
-suggest naming it `do4ds-lab-key` because I'll use that name, so you can
-just copy/paste commands if you use the same name.
+#### Keypair
+
+Next, you'll need to make sure you have a **keypair**. A keypair is a
+special kind of SSH key that's only valid for a particular server.
+
+If you aren't sure what that means, I'd recommend you check out [Chapter
+@sec-cmd-line].
+
+Even if you have a keypair you already use, I'd suggest creating a new
+one and naming it `do4ds-lab-key`. Download the `pem` version of your
+key.
+
+I'll use that name throughout the lab, so you can just copy commands
+straight from this book if you use the same name.
 
 I'd recommend creating a directory for this lab, perhaps something like
 `do4ds-lab` and putting your keypair there. If you're not going to do
 that, just make sure you keep track of where you downloaded it.
 
-Whether you're on Windows or Mac, download the `pem` version of the key.
+#### Storage
 
-You shouldn't need to change any **networking settings** from the
-defaults. Make sure it's configured to allow SSH traffic.
+For storage, you should bump it up to something more than 8 Gb. As of
+this writing, you can get 30 Gb under the free tier. I'd recommend at
+least 16 Gb, but feel free to go bigger if you wish.
 
-You'll need to **configure storage**. By default, the server comes just
-with root storage. Root storage is where the operating system will be,
-as well as storing most of the executables you'll need.
+### Step 3: Start your Server
 
-You'll want another volume where you'll store the actual work you're
-doing -- data files, code, and more. You can attach volumes quite
-easily. In AWS, they're called EBS. While it's not strictly necessary to
-configure an extra EBS volume to complete the labs in this book, make
-sure to add one since it's necessary if you ever want to stand up an
-actual environment to do work.
+If you followed these instructions, the summary on the right side should
+look something like this:
 
-You can feel free to look through the Advanced Details, but you
-shouldn't need to adjust any of them.
-
-When you go to the summary, it should look something like this, assuming
-you followed the instructions here:
-
-![](images/paste-089E941E.png)
+![](images/instance-summary.png){fig-align="center"
+width="362"}
 
 Click `Launch Instance`. AWS is now creating a virtual server *just for
 you*.
@@ -446,46 +463,62 @@ If you go back to the EC2 page and click on `Instances` you can see your
 instance as it comes up. You may need to remove the filter for
 `State: Running` since it'll take a few moments to be `Running`.
 
-### Grab the address of your server
+### Step 5: Grab the address of your server
 
 If you click on the actual instance ID in blue, you can see all the
 details of your server.
 
-The instance ID and public IP addresses were auto-assigned.
+Wait for a few moments for the instance state to transition to
+`Running`.
 
-Grab the Public IPv4 DNS address, which starts with `ec2-` and ends with
-`amazonaws.com`. Copy it somewhere easy to grab. That's going to be the
-way we access the server.
+Once the instance is up, you'll be able to see the instance ID and
+public IP addresses, which were auto-assigned.
 
-For example, as I write this, my server has the address
-`ec2-54-159-134-39.compute-1.amazonaws.com`. In the commands, I'll
-include the variable `SERVER_ADDRESS`. If you'd like to be able to copy
-commands verbatim, you can set the variable `SERVER_ADDRESS` to be your
-server address using
-`SERVER_ADDRESS=ec2-54-159-134-39.compute-1.amazonaws.com`.
+Copy the Public IPv4 DNS address , which starts with `ec2-` and ends
+with `amazonaws.com`. That little icon on the left of the address copies
+it.
 
 ::: callout-tip
-If you're used to R, where it's best practice to put spaces around `=`,
-notice that assigning variables in bash *requires* no spaces around `=`.
+### Set a Server Address Variable
+
+In the rest of the labs in this book, I'm going to write the commands
+using the bash variable `SERVER_ADDRESS`. That means that if you create
+that variable, you'll be able to just copy the commands out of the book.
+
+For example, as I write this, my server has the address
+`ec2-54-159-134-39.compute-1.amazonaws.com`. So would set my server
+address variable with
+`SERVER_ADDRESS=ec2-54-159-134-39.compute-1.amazonaws.com`.
+
+If you're used to R or Python, where it's best practice to put spaces
+around `=`, notice that assigning variables in bash *requires* no spaces
+around `=`.
 :::
 
-### Stopping or burning it down
+### Step 5: Stop the Server
 
 Whenever you're stopping for the day, you may want to suspend your
 server so you're not paying for it overnight or using up your free tier
-hours.
+hours. You can suspend an instance in the state it's in so it can be
+restarted later.
 
-You can suspend an instance in the state it's in so it can be restarted
-later. Depending on how much data you're storing, it may not be free,
-but storage costs are generally very modest.
+If you're storing a lot of data with your instance, it may not be free
+-- but it is quite cheap. In the free tier, a suspended instance should
+be free for some time.
 
 Whenever you want to suspend your instance, go to the EC2 page for your
 server. Under the `Instance State` drop down in the upper right, choose
 `Stop Instance`.
 
-After a couple minutes the instance will stop and you won't get charged
-for it. Before you come back to the next lab, you'll need to start the
-instance back up so it's ready to go.
+After a couple minutes the instance will stop. Before you come back to
+the next lab, you'll need to start the instance back up so it's ready to
+go.
+
+::: callout-note
+If you stop your server, the server address will change and you'll have
+to use the new one. In [Chapter @sec-dns], we'll get into getting a
+stable IP address and URL for the server.
+:::
 
 If you want to completely delete the instance at any point, you can
 choose to `Terminate Instance` from that same `Instance State` dropdown.

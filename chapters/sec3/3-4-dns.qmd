@@ -1,9 +1,9 @@
 # DNS allows for human-readable addresses {#sec-dns}
 
-In [Chapter @sec-basic-networks] you learned all about how IP addresses are
-where a resource lives on a computer network. But you've been using the
-internet for a long time and you've rarely -- if ever -- actually used
-an IP address. What gives?
+In [Chapter @sec-basic-networks] you learned all about how IP addresses
+are where a resource lives on a computer network. But you've been using
+the internet for a long time and you've rarely -- if ever -- actually
+used an IP address. What gives?
 
 IP addresses are hard to remember. And worse, they can change when
 servers are replaced or changed.
@@ -18,10 +18,10 @@ $do4ds.com$. Purchasing a domain (renting one, really) gives you the
 right to attach that domain to an IP address so people can access the
 resources you choose at that address.
 
-[Chapter @sec-basic-networks] introduced full URLs. Where the main address
-goes, I handwaved a little because I was switching back and forth
-between IP addresses and domains. In this chapter, we're going to get
-really specific about how that substitution works, so we're going to
+[Chapter @sec-basic-networks] introduced full URLs. Where the main
+address goes, I handwaved a little because I was switching back and
+forth between IP addresses and domains. In this chapter, we're going to
+get really specific about how that substitution works, so we're going to
 focus on the address part of it. In particular, we're going to learn
 about Fully-Qualified Domain Names (FQDN).
 
@@ -109,33 +109,35 @@ domain go to the same place.
 
 ## How DNS lookups work
 
-In [Chapter @sec-basic-networks], we discussed how packets gets routed to
-successively higher-level routers until there's one that knows where the
-packet is going and sends it back down. It turns out that this process
-essentially happens *twice.* The first time is to get the IP address for
-the domain in a process called *DNS resolution.* The second time is when
-it actually sends the information to that IP address.
+In [Chapter @sec-basic-networks], we discussed how packets gets routed
+to successively higher-level routers until there's one that knows where
+the packet is going and sends it back down. It turns out that this
+process essentially happens *twice.* The first time is to get the IP
+address for the domain in a process called *DNS resolution.* The second
+time is when it actually sends the information to that IP address.
 
 You can see the basic structure of a DNS lookup using the terminal
 command `nslookup`. Here's the DNS routing for $google.com$:
 
-     ❯ nslookup google.com                                              
-    Server:     192.168.86.1
-    Address:    192.168.86.1#53
+```         
+ ❯ nslookup google.com                                              
+Server:     192.168.86.1
+Address:    192.168.86.1#53
 
-    Non-authoritative answer:
-    Name:   google.com
-    Address: 142.251.163.113
-    Name:   google.com
-    Address: 142.251.163.100
-    Name:   google.com
-    Address: 142.251.163.138
-    Name:   google.com
-    Address: 142.251.163.101
-    Name:   google.com
-    Address: 142.251.163.102
-    Name:   google.com
-    Address: 142.251.163.139
+Non-authoritative answer:
+Name:   google.com
+Address: 142.251.163.113
+Name:   google.com
+Address: 142.251.163.100
+Name:   google.com
+Address: 142.251.163.138
+Name:   google.com
+Address: 142.251.163.101
+Name:   google.com
+Address: 142.251.163.102
+Name:   google.com
+Address: 142.251.163.139
+```
 
 These addresses do change periodically, so they may no longer be valid
 by the time you read this. But if you want to go do an `nslookup`
@@ -251,59 +253,75 @@ TODO
 
 ## Lab: Configuring DNS for your server
 
-::: callout-warning
-In [Chapter @sec-ssl], we'll secure your server with an SSL certificate
-and `https`. You absolutely should not use your server for anything real
-until you've configured SSL.
-:::
+In the last lab, we configured the server so that all of the services
+were served off of one single port that redirected to various subpaths.
+
+Now we want to get a real URL for the server so that you don't have to
+remember some random `ec2-` URL for your server. In this lab, we'll
+configure DNS records for our server so it's available at a real URL.
 
 ### Step 1: Allocate Elastic IP
 
-If you've restarted your server, you've probably noticed that the IP
-address changed!
+EC2 instances get assigned a public IP when they are started. That's
+great -- it makes it easy to do the kind of work we've done. But if
+you've stopped or restarted your server, you've you've probably noticed
+that the public IP address changed!
 
-This can be a real pain if you have to reconfigure your DNS every time.
-AWS offers a service called Elastic IP that gives you an IP address that
-won't change that you can use with your instance, even if you restart
-it.
+This is no good for configuring a long-lived DNS record that
+consistently routes to your server. So we're going to use AWS's *Elastic
+IP* service, which gives you a stable public IP address you can keep and
+move around from one instance to another as you wish.
 
-As of this writing, Elastic IPs are free as long as it's associated with
-a single running EC2 instance. You get charged if they're not active --
-basically AWS doesn't want you hoarding Elastic IPs. Great -- just make
-sure to give back the elastic IP if you take down your instance.
+Elastic IP payment is a little weird. You don't get charged for Elastic
+IPs *as long as you're using them*. So if your server is up and using an
+elastic IP, it's all free. If you take your server down and want to
+reserve the Elastic IP so it's the same when you bring it back up,
+you'll pay. It's very cheap for one IP (12 cents per day as of this
+writing), so don't worry about it.
+
+Basically AWS doesn't want you hoarding Elastic IPs. Great -- just make
+sure to give back the elastic IP if you take down your instance
+permanently.
 
 ::: callout-note
-If you were doing this for real, and not in a somewhat arbitrary order
-that's grouped by topic, it would've made sense to set up the elastic IP
-as soon as you brought the server up so you only would've used that IP
-address.
+The labs in this book are ordered to promote learning.
+
+If you configure a server later for real, I'd recommend setting up an
+Elastic IP as soon as you bring the server up so you have a permanent IP
+address right off the bat.
 :::
 
-Go to Elastic IP and click allocate. Once it has been allocated, you'll
-need to associate it with the existing Instance you created. Choose the
-instance and the default private IP address.
+To actually do it, find Elastic IP in the AWS console and allocate an
+address. Once it has been allocated, click through to the elastic IP and
+associate it with the default private IP address for your instance.
 
 Note that once you make this change, your server will no longer be
-available at its old IP address, so you'll have to ssh in at the new
+available at its old IP address, so you'll have to SSH in at the new
 one. If you have SSH terminals open when you make the change, they will
 break.
 
 ### Step 2: Buy a domain
 
-This part will not be free, but it can be very cheap. The easiest way to
-do this is via AWS's Route53 service. You can get domains on Route53 for
-as little as \$9 per year -- but there are even cheaper services. For
-example, I was able to get the domain $do4ds-lab.shop$ for \$1.98 for a
-year on $namecheap.com$.
+You can buy a domain from any of the many domain purchasing services on
+the web. Now, it won't be free, but many domains are very cheap.
+
+The easiest place to buy a domain is via AWS's *Route53* service. You
+can get domains on *Route53* for as little as \$9 per year -- but there
+are even cheaper services. For example, I was able to get the domain
+$do4ds-lab.shop$ for \$1.98 for a year on `namecheap.com`, which has
+long been my choice for purchasing domains because it is indeed, cheap.
 
 ### Step 3: Configure DNS
 
 Once you've got your domain, you have to configure your DNS. You'll have
 to create 2 A records -- one each for the \@ host and the \* host
-pointing to your IP and one for the CNAME at the www with the value
+pointing to your IP and one for the CNAME at the `www` with the value
 being your bare domain.
 
-So in NameCheap, my Advanced DNS configuration looks like this:
+Exactly how you configure this will depend on the domain name provider
+you choose.
+
+In NameCheap, my Advanced DNS configuration looks like this:
 
 ![](images-traffic/namecheap-config.png)
 
@@ -316,3 +334,7 @@ reachable at your domain.
 If it's not (yet) reachable, try seeing if an incognito browser works.
 If it doesn't, wait some more. When you run out of patience, try
 reconfiguring everything and check if it works now.
+
+Note that we still haven't configured SSL, so you'll need to make sure
+to correct your browser away from the `https` URL.
+
