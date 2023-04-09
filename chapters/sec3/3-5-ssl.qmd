@@ -157,29 +157,34 @@ For anyone who's never dealt with self-signing certificates in the past,
 let me tell you, the fact that it does this all automatically is
 magical!
 
+### Step 1: Update Nginx configuration
+
 In our nginx configuration, we'll need to add a line certbot will use to
 know which site to generate the certificate for.
 
 Somewhere inside the nginx configuration's server block, add
 
-``` {filename="/etc/nginx/nginx.conf"}
+``` {.bash filename="/etc/nginx/nginx.conf"}
 server_name do4ds-lab.shop www.do4ds-lab.shop;
 ```
 
-substituting in your domain for mine. Make sure to do both the bare
+substituting in your domain for mine. Make sure to include both the bare
 domain and the `www` subdomain.
 
-At that point, you can just install certbot and let it do its thing!
+### Step 2: Certbot does its thing
 
 If you google "configure nginx with letsencrypt", there's a [great
 article](https://www.nginx.com/blog/using-free-ssltls-certificates-from-lets-encrypt-with-nginx/)
 by someone at Nginx walking you through the process.
 
-As of this writing, that was as simple as running these lines
+As of this writing, that was as simple as running these lines on the
+server
 
-    > sudo apt-get install certbot python3-certbot-nginx 
-    > sudo systemctl restart nginx 
-    > sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop
+``` {.bash filename="Terminal"}
+sudo apt-get install certbot python3-certbot-nginx 
+sudo systemctl restart nginx 
+sudo certbot –nginx -d do4ds-lab.shop -d www.do4ds-lab.shop
+```
 
 Before you move along, I'd recommend you take a moment and inspect the
 `/etc/nginx/nginx.conf` file to look at what certbot added.
@@ -189,7 +194,7 @@ from inside the server block. We're no longer listening for `http`
 traffic.
 
 Instead there's a `listen 443` -- the default port for `https`, and a
-bunch of stuff that tells nginx where to find the certificate on the
+bunch of stuff that tells Nginx where to find the certificate on the
 server.
 
 Scrolling down a little, there's a new server block that *is* listening
@@ -197,14 +202,16 @@ on `80`. This block returns a `301`, which you might recall is a
 redirect code (specifically for a *permanent* redirect) sending all
 `http` traffic to `https`.
 
+### Step 3: Let RStudio know it's on `https`
+
 Before we exit and test it out, let's do one more thing. RStudio does a
 bunch of sending traffic back to itself. For that reason, the `/rstudio`
 proxy location *also* needs to know to upgrade traffic from `http` to
 `https`.
 
-So add the following line to the nginx config:
+So add the following line to the Nginx config:
 
-``` {filename="/etc/nginx/nginx.conf"}
+``` {.bash filename="/etc/nginx/nginx.conf"}
 proxy_set_header X-Forwarded-Proto https;
 ```
 
@@ -216,6 +223,8 @@ Ok, now try it by going to the URL your server is hosted at, and you'll
 find that...it's broken again.
 
 Before you read along, think for just a moment. Why is it broken?
+
+### Step 4: Configure security groups
 
 If your thoughts went to something involving ports and AWS security
 groups, you're right!
@@ -229,6 +238,12 @@ into the security group settings and change it so there are only 2 rules
 -- one that allows SSH traffic on `22` from anywhere and one that allows
 `https` traffic on `443` from anywhere.
 
+It's up to you whether you want to leave port `80` open. If you do, it
+will redirect people to `https` on `443`. If you close it entirely,
+people who come to port `80` will just be blocked and will eventually
+get a timeout. That shouldn't be an issue as all modern browsers default
+to `https`.
+
 ::: callout-note
 If you decided to only configure *one* service on the server, you could
 have a much simpler setup. Neither RStudio Server nor Plumber support
@@ -241,9 +256,15 @@ would just configure JupyterHub to be aware of the SSL certificate and
 put itself on port `443`.
 :::
 
+### Step 5: Check it out!
+
 NOW you should be able to go to `<your-domain>/rstudio` and get to
 RStudio, `<your-domain>/jupyter` to get to JupyterHub, and
-`<your-domain>/palmer` to get the API! Voila!
+`<your-domain>/penguins` to get the API! Voila!
+
+::: callout-note
+For now, penguins is actually still at `/penguins/__docs__/`.
+:::
 
 And you should still be able to SSH into your server on your domain.
 
@@ -252,8 +273,10 @@ three real data science services available on a domain of your choosing
 protected by `https`. You can really use this server to do real data
 science work.
 
-Now, that's not to say this is fully enterprise-ready. If you're working
-on a small team or at a small organization, this may be sufficient. But
-if you're working at a large organization, your IT/Admin group is going
-to have other concerns. Section 4 of this book gets into some of those
-concerns and how you might discuss them with the relevant teams.
+That's not to say this is fully enterprise-ready. If you're working on a
+small team or at a small organization, this may be sufficient. But if
+you're working at a large organization, your IT/Admin group is going to
+have other concerns.
+
+You can learn more about what those concerns are in the last section of
+this book, starting with [Chapter @sec-4-intro].

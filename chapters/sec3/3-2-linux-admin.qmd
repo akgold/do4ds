@@ -192,8 +192,10 @@ On any Unix-like system, you can check your active user at any time with
 the `whoami` command. For example, here's what it looks like on my
 MacBook.
 
-     ❯ whoami                                                       
-    alexkgold
+``` bash        
+❯ whoami                                                       
+alexkgold
+```
 
 `whoami` returns the *username* of my user.
 
@@ -238,8 +240,10 @@ Like a user has a `uid` a group has a `gid`. User `gid`s start at 100.
 You can see a user's username, `uid`, groups, and `gid` with the `id`
 command.
 
-     ❯ id                                                                
-    uid=501(alexkgold) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),701(com.apple.sharepoint.group.1),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),400(com.apple.access_remote_ae)
+```  bash       
+ ❯ id                                                                
+uid=501(alexkgold) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),701(com.apple.sharepoint.group.1),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),400(com.apple.access_remote_ae)
+```
 
 On my laptop, I'm a member of a number of different groups.
 
@@ -256,19 +260,20 @@ any time with the `passwd` command. Both `useradd` and `passwd` start
 interactive prompts, so you don't need to do much more than run those
 commands.
 
-+--------------------+-----------------------------------------------------------+
-| Command            | What it does                                              |
-+====================+===========================================================+
-| `su <username>`    | Change to be a different user.                            |
-+--------------------+-----------------------------------------------------------+
-| `whoami`           | Get username of current user.                             |
-+--------------------+-----------------------------------------------------------+
-| `id`               | Get full user + group info on current user.               |
-+--------------------+-----------------------------------------------------------+
-| `passwd`           | Change password.                                          |
-+--------------------+-----------------------------------------------------------+
-| `useradd`          | Add a new user.                                           |
-+--------------------+-----------------------------------------------------------+
++----------------+------------------------------------------------+
+| Command        | What it does                                   |
++================+================================================+
+| `              | Change to be a different user.                 |
+| su <username>` |                                                |
++----------------+------------------------------------------------+
+| `whoami`       | Get username of current user.                  |
++----------------+------------------------------------------------+
+| `id`           | Get full user + group info on current user.    |
++----------------+------------------------------------------------+
+| `passwd`       | Change password.                               |
++----------------+------------------------------------------------+
+| `useradd`      | Add a new user.                                |
++----------------+------------------------------------------------+
 
 ### File Permissions
 
@@ -323,11 +328,13 @@ little tricky to read.
 So, for example, here's a few lines of the output of running `ls -l` on
 a python project I have.
 
-    ❯ ls -l                                                           
-    -rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
-    -rw-r--r--  1 alexkgold  staff   2330 May  8  2017 credentials.json
-    -rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
-    drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests
+``` bash       
+❯ ls -l                                                           
+-rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
+-rw-r--r--  1 alexkgold  staff   2330 May  8  2017 credentials.json
+-rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
+drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests
+```
 
 This readout has the file permissions (a series of ten characters),
 followed by a number[^3-2-linux-admin-7], then the file's owner, and the
@@ -396,8 +403,10 @@ the `su` command.
 Some actions are also reserved for the admin user. For example, let's
 take a look at this configuration file:
 
-     ❯ ls -l /etc/config/my-config                      
-    -rw-r--r--  1 root  system  4954 Dec  2 06:37 config.conf
+``` bash         
+ ❯ ls -l /etc/config/my-config                      
+-rw-r--r--  1 root  system  4954 Dec  2 06:37 config.conf
+```
 
 As you can see, all users can read this file to check the configuration
 settings. But this file is owned by `root`, and only the owner has
@@ -410,23 +419,34 @@ assume my root powers to make changes. Instead of switching to be the
 root user, I would run `sudo vim config.conf` and open the file for
 editing with root permissions.
 
-+---------------------------------------+---------------------+------------------------------+
-| Command                               | What it does        | Helpful options + notes      |
-+=======================================+=====================+==============================+
-| `chmod <permissions> <file>`          | Modifies            | Number indicates permissions |
-|                                       | permissions on a    | for user, group, others: add |
-|                                       | file.               | 4 for read, 2 for write, 1   |
-|                                       |                     | for execute, 0 for nothing.  |
-+---------------------------------------+---------------------+------------------------------+
-| `chown <user/group> <file>`           | Change the owner of | Can be used for user or      |
-|                                       | a file.             | group, e.g. `:my-group`.     |
-+---------------------------------------+---------------------+------------------------------+
-| `su <username>`                       | Change active user. |                              |
-+---------------------------------------+---------------------+------------------------------+
-| `sudo <command>`                      | Adopt super user    |                              |
-|                                       | permissions for the |                              |
-|                                       | following command.  |                              |
-+---------------------------------------+---------------------+------------------------------+
++-------------------------+----------------+------------------+
+| Command                 | What it does   | Helpful          |
+|                         |                | options + notes  |
++=========================+================+==================+
+| `c h m o                | Modifies       | Number indicates |
+| d <permissions> <file>` | permissions on | permissions for  |
+|                         | a file.        | user, group,     |
+|                         |                | others: add 4    |
+|                         |                | for read, 2 for  |
+|                         |                | write, 1 for     |
+|                         |                | execute, 0 for   |
+|                         |                | nothing.         |
++-------------------------+----------------+------------------+
+| `c h o                  | Change the     | Can be used for  |
+| wn <user/group> <file>` | owner of a     | user or group,   |
+|                         | file.          | e.g.             |
+|                         |                | `:my-group`.     |
++-------------------------+----------------+------------------+
+| `su <username>`         | Change active  |                  |
+|                         | user.          |                  |
++-------------------------+----------------+------------------+
+| `sudo <command>`        | Adopt super    |                  |
+|                         | user           |                  |
+|                         | permissions    |                  |
+|                         | for the        |                  |
+|                         | following      |                  |
+|                         | command.       |                  |
++-------------------------+----------------+------------------+
 
 ## Installing Stuff
 
@@ -458,22 +478,55 @@ repository. Doing that will generally involve downloading a file
 directly from a URL -- usually with `wget` and then installing it from
 the file you've downloaded -- often with the `gdebi` command.
 
-+----------------------------------------+---------------------+
-| Command                                | What it does        |
-+========================================+=====================+
-| `apt-get update  && apt-get upgrade y` | Fetch and install   |
-|                                        | upgrades to system  |
-|                                        | packages            |
-+----------------------------------------+---------------------+
-| `apt-get install <package>`            | Install a system    |
-|                                        | package.            |
-+----------------------------------------+---------------------+
-| `wget`                                 | Download a file     |
-|                                        | from a URL.         |
-+----------------------------------------+---------------------+
-| `gdebi`                                | Install local       |
-|                                        | `.deb` file.        |
-+----------------------------------------+---------------------+
++-----------------------------------+----------------+
+| Command                           | What it does   |
++===================================+================+
+| `a p t -                          | Fetch and      |
+| get update  && apt-get upgrade y` | install        |
+|                                   | upgrades to    |
+|                                   | system         |
+|                                   | packages       |
++-----------------------------------+----------------+
+| `apt-get install <package>`       | Install a      |
+|                                   | system         |
+|                                   | package.       |
++-----------------------------------+----------------+
+| `wget`                            | Download a     |
+|                                   | file from a    |
+|                                   | URL.           |
++-----------------------------------+----------------+
+| `gdebi`                           | Install local  |
+|                                   | `.deb` file.   |
++-----------------------------------+----------------+
+
+### Managing R and Python
+
+As the admin of a data science server, managing R and Python
+installations is a central task you'll have to do, as well as installing
+software on top of that like RStudio Server, JupyterHub, and/or Shiny
+Server. While R and Python are both open source data science languages,
+the way you'll have to administer them are pretty different.
+
+People pretty much only ever install R to do data science. In contrast,
+Python is one of the world's most popular programming languages for
+general purpose computing. Contrary to what you might think, this
+actually makes configuring Python *harder* than configuring R.
+
+The reason is that your system comes with a version of Python installed,
+but we don't want to use that version. Given the centrality of that
+version to normal server operations, we want to leave it alone. It turns
+out that installing one or more other versions of Python and then
+ignoring the system version of Python isn't totally trivial to do. Then
+we're going to want to create a standalone virtual environment that's
+just for running JupyterHub so it doesn't get messed up later.
+
+RStudio and R are system libraries. So when RStudio runs, it calls and
+owns the R process that you'll use inside RStudio Server. In contrast,
+JupyterHub and JupyterLab *are* Python programs, so we install them
+inside a Python installation.
+
+TODO: diagram of relationships of system python, DS python, Jupyter
+Python.
 
 ## Debugging and troubleshooting
 
@@ -499,20 +552,22 @@ It's particularly useful in combination with the `sort` command.
 For example, here's the result of running `du` on the `chapters`
 directory where the text files for this book live.
 
-     ❯ du -h chapters | sort -h                                      
-     44K    chapters/sec2/images-servers
-    124K    chapters/sec3/images-scaling
-    156K    chapters/sec2/images
-    428K    chapters/sec2/images-traffic
-    656K    chapters/sec1/images-code-promotion
-    664K    chapters/sec1/images-docker
-    1.9M    chapters/sec1/images-repro
-    3.4M    chapters/sec1
-    3.9M    chapters/sec3/images-auth
-    4.1M    chapters/sec3
-    4.5M    chapters/sec2/images-networking
-    5.3M    chapters/sec2
-     13M    chapters
+``` bash        
+ ❯ du -h chapters | sort -h                                      
+ 44K    chapters/sec2/images-servers
+124K    chapters/sec3/images-scaling
+156K    chapters/sec2/images
+428K    chapters/sec2/images-traffic
+656K    chapters/sec1/images-code-promotion
+664K    chapters/sec1/images-docker
+1.9M    chapters/sec1/images-repro
+3.4M    chapters/sec1
+3.9M    chapters/sec3/images-auth
+4.1M    chapters/sec3
+4.5M    chapters/sec2/images-networking
+5.3M    chapters/sec2
+ 13M    chapters
+```
 
 So if I were thinking about cleaning up this directory, I could see that
 my `images-networking` directory in `sec2` is the biggest single
@@ -532,38 +587,44 @@ it mounted on and how full is that device?
 So here's the result of running the `df` command on that same `chapters`
 directory.
 
-     ❯ df -h chapters                                                    
-    Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
-    /dev/disk3s5  926Gi  163Gi  750Gi    18% 1205880 7863468480    0%   /System/Volumes/Data
+``` bash       
+ ❯ df -h chapters                                                    
+Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+/dev/disk3s5  926Gi  163Gi  750Gi    18% 1205880 7863468480    0%   /System/Volumes/Data
+```
 
 So you can see that the chapters folder lives on a disk called
 `/dev/disk3s5` that's a little less than 1Tb and is 18% full -- no
 problem. On a server this can be really useful to know, because it's
 quite easy to switch a disk out for a bigger one in the same spot.
 
-+--------------+--------------+-------------------+
-| Command      | What it does | Helpful options   |
-+==============+==============+===================+
-| `du`         | Check size   | Most likely to be |
-|              | of files.    | used              |
-|              |              | `du  -h           |
-|              |              |  <dir> | sort -h` |
-|              |              | [^3               |
-|              |              | -2-linux-admin-9] |
-|              |              |                   |
-|              |              | Also useful to    |
-|              |              | combine with      |
-|              |              | `head`.           |
-+--------------+--------------+-------------------+
-| `df`         | Check        | `-h`              |
-|              | storage      |                   |
-|              | space on     |                   |
-|              | device.      |                   |
-+--------------+--------------+-------------------+
-
-[^3-2-linux-admin-9]: Note that if you're using `du` with `-h`, `sort`
-    also needs a `-h` so it knows to sort by human-readable attributes.
-    Otherwise the sorting gets weird.
++-----------+-----------+-----------+
+| Command   | What it   | Helpful   |
+|           | does      | options   |
++===========+===========+===========+
+| `du`      | Check     | Most      |
+|           | size of   | likely to |
+|           | files.    | be used   |
+|           |           | `d u -h   |
+|           |           | <d ir > | |
+|           |           |  sort -h` |
+|           |           | \[\^3     |
+|           |           | -2-l in u |
+|           |           | x         |
+|           |           | -         |
+|           |           | admin-9\] |
+|           |           |           |
+|           |           | Also      |
+|           |           | useful to |
+|           |           | combine   |
+|           |           | with      |
+|           |           | `head`.   |
++-----------+-----------+-----------+
+| `df`      | Check     | `-h`      |
+|           | storage   |           |
+|           | space on  |           |
+|           | device.   |           |
++-----------+-----------+-----------+
 
 ### Monitoring processes
 
@@ -594,18 +655,20 @@ The `top` command is a good first stop. `top` shows the top
 CPU-consuming processes in real time. Here's the `top` output from my
 machine as I write this sentence.
 
-    PID    COMMAND      %CPU TIME     #TH    #WQ  #PORT MEM    PURG   CMPRS PGRP
-    0      kernel_task  16.1 03:56:53 530/10 0    0     2272K  0B     0B    0
-    16329  WindowServer 16.0 01:53:20 23     6    3717  941M-  16M+   124M  16329
-    24484  iTerm2       11.3 00:38.20 5      2    266-  71M-   128K   18M-  24484
-    29519  top          9.7  00:04.30 1/1    0    36    9729K  0B     0B    29519
-    16795  Magnet       3.1  00:39.16 3      1    206   82M    0B     39M   16795
-    16934  Arc          1.8  18:18.49 45     6    938   310M   144K   61M   16934
-    16456  Messages     1.7  06:58.27 4      1    603   138M   2752K  63M   16456
-    1      launchd      1.7  13:41.03 4/1    3/1  3394+ 29M    0B     6080K 1
-    573    diagnosticd  1.4  04:31.97 3      2    49    2417K  0B     816K  573
-    16459  zoom.us      1.3  66:38.37 30     3    2148  214M   384K   125M  16459
-    16575  UniversalCon 1.3  01:15.89 2      1    131   12M    0B     2704K 16575
+```  bash       
+PID    COMMAND      %CPU TIME     #TH    #WQ  #PORT MEM    PURG   CMPRS PGRP
+0      kernel_task  16.1 03:56:53 530/10 0    0     2272K  0B     0B    0
+16329  WindowServer 16.0 01:53:20 23     6    3717  941M-  16M+   124M  16329
+24484  iTerm2       11.3 00:38.20 5      2    266-  71M-   128K   18M-  24484
+29519  top          9.7  00:04.30 1/1    0    36    9729K  0B     0B    29519
+16795  Magnet       3.1  00:39.16 3      1    206   82M    0B     39M   16795
+16934  Arc          1.8  18:18.49 45     6    938   310M   144K   61M   16934
+16456  Messages     1.7  06:58.27 4      1    603   138M   2752K  63M   16456
+1      launchd      1.7  13:41.03 4/1    3/1  3394+ 29M    0B     6080K 1
+573    diagnosticd  1.4  04:31.97 3      2    49    2417K  0B     816K  573
+16459  zoom.us      1.3  66:38.37 30     3    2148  214M   384K   125M  16459
+16575  UniversalCon 1.3  01:15.89 2      1    131   12M    0B     2704K 16575
+```
 
 In most instances, the first three columns are the most useful. You've
 got the name of the command and how much CPU they're using. Right now,
@@ -626,12 +689,12 @@ The `top` command takes over your whole terminal. You can exit with
 `Ctrl + c`.
 
 Another useful command for finding runaway processes is
-`ps aux`.[^3-2-linux-admin-10] It lists all processes currently running
+`ps aux`.[^3-2-linux-admin-9] It lists all processes currently running
 on the system, along with how much CPU and RAM they're using. You can
 sort the output with the `--sort` flag and specify sorting by cpu with
 `--sort -%cpu` or by memory with `--sort -%mem`.
 
-[^3-2-linux-admin-10]: This is another one where you'll almost never use
+[^3-2-linux-admin-9]: This is another one where you'll almost never use
     `ps` without `aux`.
 
 Because `ps aux` returns *every* running process on the system, you'll
@@ -645,10 +708,12 @@ the `pid`.
 For example, here are the RStudio processes currently running on my
 system.
 
-     > ps aux | grep "RStudio\|USER"                                                                                      [10:21:18]
-    USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
-    alexkgold        23583   0.9  1.7 37513368 564880   ??  S    Sat09AM  17:15.27 /Applications/RStudio.app/Contents/MacOS/RStudio
-    alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /Applications/RStudio.app/Contents/MacOS/rsession --config-file none --program-mode desktop 
+``` bash         
+ > ps aux | grep "RStudio\|USER"                                                                                      [10:21:18]
+USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+alexkgold        23583   0.9  1.7 37513368 564880   ??  S    Sat09AM  17:15.27 /Applications/RStudio.app/Contents/MacOS/RStudio
+alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /Applications/RStudio.app/Contents/MacOS/rsession --config-file none --program-mode desktop 
+```
 
 ::: callout-tip
 The `grep` command above looks a little weird because I used a little
@@ -657,20 +722,21 @@ matches both the header line (`USER`) and the thing I actually care
 about (`RStudio`).
 :::
 
-+----------------+----------------+-------------------------+
-| Command        | What it does   | Helpful options         |
-+================+================+=========================+
-| `top`          | See what's     |                         |
-|                | running on the |                         |
-|                | system.        |                         |
-+----------------+----------------+-------------------------+
-| `ps aux`       | See all system | Consider using `--sort` |
-|                | processes.     | and pipe into `head` or |
-|                |                | `grep`                  |
-+----------------+----------------+-------------------------+
-| `kill`         | Kill a system  | `-9` to force kill      |
-|                | process.       | immediately             |
-+----------------+----------------+-------------------------+
++----------------+----------------+--------------------+
+| Command        | What it does   | Helpful options    |
++================+================+====================+
+| `top`          | See what's     |                    |
+|                | running on the |                    |
+|                | system.        |                    |
++----------------+----------------+--------------------+
+| `ps aux`       | See all system | Consider using     |
+|                | processes.     | `--sort` and pipe  |
+|                |                | into `head` or     |
+|                |                | `grep`             |
++----------------+----------------+--------------------+
+| `kill`         | Kill a system  | `-9` to force kill |
+|                | process.       | immediately        |
++----------------+----------------+--------------------+
 
 ### Managing networking
 
@@ -687,13 +753,13 @@ programs associated.
 
 TODO: get netstat example
 
-+----------------+----------------+-----------------------+
-| Command        | What it does   | Helpful options       |
-+================+================+=======================+
-| `netstat`      | See ports and  | Usually used with     |
-|                | services using | `-tlp`                |
-|                | them.          |                       |
-+----------------+----------------+-----------------------+
++----------------+----------------+------------------+
+| Command        | What it does   | Helpful options  |
++================+================+==================+
+| `netstat`      | See ports and  | Usually used     |
+|                | services using | with `-tlp`      |
+|                | them.          |                  |
++----------------+----------------+------------------+
 
 Sometimes you *know* you've got a service running on your machine, but
 you just can't seem to get the networking working. It can be useful to
@@ -735,27 +801,29 @@ Let's say you want to open R on your command line. Once you've got
 everything properly configured, you can just type `R` and have it open
 right up.
 
-     ❯ R                                                       
+``` bash        
+ ❯ R                                                       
 
-    R version 4.2.0 (2022-04-22) -- "Vigorous Calisthenics"
-    Copyright (C) 2022 The R Foundation for Statistical Computing
-    Platform: x86_64-apple-darwin17.0 (64-bit)
+R version 4.2.0 (2022-04-22) -- "Vigorous Calisthenics"
+Copyright (C) 2022 The R Foundation for Statistical Computing
+Platform: x86_64-apple-darwin17.0 (64-bit)
 
-    R is free software and comes with ABSOLUTELY NO WARRANTY.
-    You are welcome to redistribute it under certain conditions.
-    Type 'license()' or 'licence()' for distribution details.
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
 
-      Natural language support but running in an English locale
+  Natural language support but running in an English locale
 
-    R is a collaborative project with many contributors.
-    Type 'contributors()' for more information and
-    'citation()' on how to cite R or R packages in publications.
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
 
-    Type 'demo()' for some demos, 'help()' for on-line help, or
-    'help.start()' for an HTML browser interface to help.
-    Type 'q()' to quit R.
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
 
-    >
+>
+```
 
 But how does the operating system know what you mean when you type `R`?
 If you've been reading carefully, you've realized that running the
@@ -773,8 +841,10 @@ If you ever want to check which actual executable is being used by a
 command, you can use the `which` command. For example, on my system this
 is the result of `which R`.
 
-     ❯ which R                                                    
-    /usr/local/bin/R
+``` bash        
+ ❯ which R                                                    
+/usr/local/bin/R
+```
 
 Most of the time you don't want to have to bother with full paths for
 executables. You want to just type `R` on the command line and have R
@@ -791,8 +861,10 @@ You can check your path at any time by echoing the `PATH` environment
 variable with `echo $PATH`. On my MacBook, this is what the path looks
 like.
 
-     ❯ echo $PATH                                                      
-    /opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+``` bash        
+ ❯ echo $PATH                                                      
+/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+```
 
 Later, when we get into running versions of programs that aren't the
 system versions, we may have to append locations to the path so that we
@@ -819,27 +891,25 @@ can run them easily.
 
 ## Lab: A working Data Science Workbench
 
-In this lab, we're going to take your server from an empty server that
-only you can access to one with users and useful software installed and
-running -- even if it's not yet accessible to the outside world.
+In the last chapter's lab, we set up a bare Ubuntu server in AWS. In
+this chapter, we're going to make that server into a data science
+workbench. By the end of this chapter, you'll have a functional data
+science workbench - though it won't yet be accessible to the outside
+world.
 
 #### Step 1: Log on with the `.pem` key
 
 The `.pem` key you downloaded when you set up the server is the skeleton
 key -- it will automatically let you in with complete admin privileges.
-In [Chapter @sec-linux-admin], we'll set up a user with SSH on the
-server with more limited permissions.
-
-In the meantime, we're going to use the `.pem` key to get started on the
-server, but be extremely careful with the power of the `.pem` key.
+We're going to use the `.pem` key to get started on the server, but be
+extremely careful with the power of the `.pem` key.
 
 Because the keypair is so powerful, AWS requires that you restrict the
-access pretty severely (more on what that means in [Chapter
-@sec-linux-admin]). If you try to use the keypair without first changing
-the permissions, you'll be unable to, and you'll get a warning that
-looks something like this:
+access pretty severely. If you try to use the keypair without first
+changing the permissions, you'll be unable to, and you'll get a warning
+that looks something like this:
 
-``` {{bash}}
+``` bash
 
 \@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
 
@@ -858,31 +928,28 @@ Load key "do4ds-lab-key.pem": bad permissions
 ubuntu\@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).
 ```
 
-Before we can use it to open the server, we'll need to make a quick
-change to the permissions on the key.
+Before we can use it to open the server, we'll need to change the
+permissions so that only the user can use it. We're going to give the
+key `600` permissions. If you recall from above, that means that the
+user can read and write the file and no one else can access.
 
-So let's change the file permissions.
+On my machine, changing the key goes like this:
 
-We'll get into the details of how to use these commands in just a
-minute. For now, you'll need to open a terminal window, navigate to the
-directory where the key is and change the file permissions.
-
-On my machine that looks like:
-
-``` bash
-$ cd ~/Documents/do4ds-lab
-$ chmod 600 do4ds-lab-key.pem
+``` {.bash filename="Terminal"}
+cd ~/Documents/do4ds-lab
+chmod 600 do4ds-lab-key.pem
 ```
-
-You can sub in the path to where your key is and the name you used for
-your key.
 
 In your terminal type the following
 
-``` bash
-$ ssh -i do4ds-lab-key.pem ubuntu@$SERVER_ADDRESS
+``` {.bash filename="Terminal"}
+ssh -i do4ds-lab-key.pem \
+  ubuntu@$SERVER_ADDRESS
 ```
 
+Type `yes` when prompted, and you're now logged in to your server!
+
+::: callout-note
 ##### SSH on Windows
 
 For a long time, Windows didn't come with a built in SSH client, so you
@@ -892,8 +959,7 @@ default since 2018.
 
 If you run into any trouble using SSH commands on Windows, double check
 that you've enabled the `OpenSSH Client`.
-
-Type `yes` when prompted, and you're now logged in to your server!
+:::
 
 ### Step 2: Create a non-root user
 
@@ -912,61 +978,72 @@ through a set of prompts to create a new user with a home directory and
 a password. Feel free to add any information you want -- or to leave it
 blank -- when prompted.
 
-``` {{bash}}
+``` {.bash filename="Terminal"}
 sudo adduser test-user
 ```
 
 We want this new user to be able to adopt root privileges. Remember that
 the way that is determined is whether the user is part of the `sudo`
-group.
+group. Here's the command you'll need to make it so.
 
-``` {{bash}}
+``` {.bash filename="Terminal"}
 sudo usermod -aG sudo test-user
 ```
-
-As you might have guessed, `-aG` stands for **a**dd to **g**roup.
 
 ### Step 3: Add an SSH Key for your user
 
 The first thing you should do is check if you have an SSH key on your
-system (try `ls ~/.ssh`). If you've got one already, I'd recommend just
-using that key so you don't have to mess around with multiple keys.
+laptop. You'll need to open a different terminal window or tab than the
+one that's SSH-ed into your server and try `ls ~/.ssh`.
 
-If you don't have one, google how to create an SSH key and do it on your
-laptop.
+If you've got one already, I'd recommend just using that key so you
+don't have to mess around with multiple keys. If you don't have one,
+google how to create an SSH key and do it on your laptop. If you're not
+really sure what an SSH key is, I'd recommend re-reading [Chapter
+@sec-ssh].
 
-The first step is going to be adding your public key to the end of the
-`authorized_users` file.
+Once you've got an SSH key, we're going to add it to the
+`authorized_users` for our user on the server.
 
 First, you need to get your public key to the server. I recommend using
-`scp`.[^3-2-linux-admin-11]
+`scp`.[^3-2-linux-admin-10]
 
-[^3-2-linux-admin-11]: Alternatively, you could open a file of the right
+[^3-2-linux-admin-10]: Alternatively, you could open a file of the right
     name and just copy/paste the contents of your public key in there.
     Either way works.
 
-For me, the command looks something like this
+You'll need to check that your `SERVER_ADDRESS` variable is still set
+using `echo $SERVER_ADDRESS`. If it's not set, you'll have to re-set it
+to be the public IPv4 from your server.
 
-    scp -i do4ds-lab-key.pem \ # scp w/ pem key
-      ~/.ssh/id_ed25519.pub \ # local public key
-      ubuntu@ec2-54-159-134-39.compute-1.amazonaws.com:/home/ubuntu # where to on server
+For me, the command looks like this
+
+``` {.bash filename="Terminal"}
+scp -i ~/Documents/do4ds-lab/do4ds-lab-key.pem ~/.ssh/id_ed25519.pub ubuntu@$SERVER_ADDRESS:/home/ubuntu 
+```
+
+You may need to change the file paths to either your server's `pem` key
+or your SSH key if they're not in the same locations as mine.
 
 Now our public key is on the server, but it's in the `ubuntu` user's
 home directory. We're going to add it as an authorized key for the
 `test-user` so that we can SSH in as that user.
 
+Let's go back to the tab that's open to the SSH connection to our
+server.
+
 Here are the commands to do so:
 
-    ssh -i 
-    ubuntu@ip-172-31-2-42:~$ sudo mv /home/ubuntu/id_ed25519.pub /home/test-user/ # move key
-    ubuntu@ip-172-31-2-42:~$ sudo chown test-user /home/test-user/id_ed25519.pub # give it to test-user
-    ubuntu@ip-172-31-2-42:~$ su test-user #change user
-    Password:
-    test-user@ip-172-31-2-42:/home/ubuntu$ cd ~ #go to home dir
-    test-user@ip-172-31-2-42:~$ mkdir -p .ssh #create .ssh directory
-    test-user@ip-172-31-2-42:~$ chmod 700 .ssh # Lock directory from other users
-    test-user@ip-172-31-2-42:~$ cat id_ed25519.pub >> .ssh/authorized_keys #add public key to end of authorized_keys file
-    test-user@ip-172-31-2-42:~$ chmod 600 .ssh/authorized_keys #set permissions
+``` {.bash filename="Terminal"}
+su test-user #change user
+cd ~ # move to home directory
+mkdir -p .ssh # create .ssh directory
+sudo mv /home/ubuntu/id_ed25519.pub ./.ssh # move key into .ssh 
+sudo chown test-user:test-user ~/.ssh/id_ed25519.pub # take ownership of key
+chmod 700 .ssh # Lock directory from other users
+cat .ssh/id_ed25519.pub > .ssh/authorized_keys #add public key to end of authorized_keys file
+chmod 600 .ssh/authorized_keys #set permissions
+```
 
 Now we're all set up with SSH, and you can log in as a normal user from
 your laptop just using `ssh test-user@$SERVER_ADDRESS`.
@@ -980,18 +1057,16 @@ and never use it to log in again.
 When you ever want to exit SSH and get back to your machine, you can
 just type `exit`.
 
-### Step 4: Install R and Python
-
-Everything until now has been generic server administration. Now let's
-get into some data-science-specific work -- setting up R and Python.
-
 ::: callout-tip
 If you run into trouble assuming `sudo` with your new user, try exiting
 SSH and coming back. Sometimes these changes aren't picked up until you
 restart the shell.
 :::
 
-#### Installing R
+### Step 4: Install R
+
+Everything until now has been generic server administration. Now let's
+get into some data-science-specific work -- setting up R and Python.
 
 There are a number of ways to install R on your server including
 installing it from source, from the system repository, or using
@@ -1005,79 +1080,17 @@ an R-specific installation manager.
 ::: callout-note
 As of this writing, `rig` only supports Ubuntu. If you want to install
 on a different Linux distro, you will have to install R a different way.
-
-Posit makes [R binaries](https://docs.posit.co/resources/install-r/)
-available for a variety of different operating systems, including Ubuntu
-and RedHat. You can find instructions at
-https://docs.posit.co/resources/install-r/.
-
-TODO: confirm that installing into `/opt/R` works for RStudio Server
-OSS.
 :::
 
 There are good instructions on downloading `rig` and using it to install
-R on the GitHub repo -- https://github.com/r-lib/rig. Use those
-instructions to install the current R release on your AWS server.
+R on the [`rlib/rig` GitHub repo](https://github.com/r-lib/rig). Use
+those instructions to install the current R release on your AWS server.
 
 Once you've installed R on your server, you can check that it's running
 by just typing `R` into the command line. If that works, you're good to
 move on to the next step.
 
-### Step 5: Installing RStudio Server
-
-Once R is installed, let's download and install RStudio Server. This
-should be a very easy process. The basic process is to install the
-`gdebi` package from `apt`, which is used for installing downloaded
-packages, download the RStudio Server package, and install it.
-
-I'm not going to reproduce the commands here because the RStudio Server
-version numbers change frequently and you probably want the most recent
-one.
-
-You can find the exact commands on the Posit website at
-https://posit.co/download/rstudio-server/. Make sure to pick the version
-that matches your operating system. Since you've already installed R,
-you can skip down to the "Install RStudio Server" step.
-
-Once you've installed, you can check the status with
-`sudo systemctl status rstudio-server`. If it says `running`, you're
-good to go!
-
-But knowing it's good to go isn't nearly as fun as actually trying it.
-We don't have a stable public URL for the server yet, so we can't just
-access it from our browser. This is a perfect use case for an SSH
-tunnel.
-
-By default, RStudio Server is on port `8787`, so we'll tunnel port
-`8787` on the server to `localhost:8787` on our laptop. The command to
-do that is `ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`.
-
-Now, if you go to `localhost:8787` in your browser, you should be able
-to access RStudio Server and login with the username `test-user` and
-password you set on the server.
-
-### Step 6: Installing JupyerHub + JupyterLab
-
-RStudio and R are system libraries. So when RStudio runs, it calls and
-owns the R process that you'll use inside RStudio Server. In contrast,
-JupyterHub and JupyterLab *are* Python programs, so we install them
-inside a Python installation.
-
-People pretty much only ever install R to do data science. In contrast,
-Python is one of the world's most popular programming languages for
-general purpose computing. Contrary to what you might think, this
-actually makes configuring Python *harder* than configuring R.
-
-The reason is that your system comes with a version of Python installed,
-but we don't want to use that version. Given the centrality of that
-version to normal server operations, we want to leave it alone. It turns
-out that installing one or more other versions of Python and then
-ignoring the system version of Python isn't totally trivial to do. Then
-we're going to want to create a standalone virtual environment that's
-just for running JupyterHub so it doesn't get messed up later.
-
-TODO: diagram of relationships of system python, DS python, Jupyter
-Python.
+### Step 5: Install Python
 
 It's very likely that the version of Python on your system is old.
 Generally we're going to want to install a newer Python for doing data
@@ -1087,16 +1100,47 @@ relatively new version of Python, so we'll install that one.
 Let's start by actually installing Python 3.10 on our system. We can do
 that with apt.
 
-TODO: finish these instructions
+``` {.bash filename="Terminal"}
+sudo apt-get install python3.10-venv
+```
 
-    > sudo su
-    > apt install python3.10-venv
+Once you've installed Python, you can check that you've got the right
+version by running
 
-Now that we've installed Python, we can create a standalone virtual
+``` {.bash filename="Terminal"}
+python3 --version
+```
+
+### Step 5: Installing RStudio Server
+
+Once R is installed, let's download and install RStudio Server.
+
+I'm not going to reproduce the commands here because the RStudio Server
+version numbers change frequently and you probably want the most recent
+one.
+
+You can find the exact commands on the [Posit
+website](https://posit.co/download/rstudio-server/). Make sure to pick
+the version that matches your operating system. Since you've already
+installed R, you can skip down to the "Install RStudio Server" step.
+
+Once you've installed, you can check the status with
+`sudo systemctl status rstudio-server`. If there's a line that says
+`Active: active (running)`, you're good to go!
+
+### Step 6: Installing JupyerHub + JupyterLab
+
+Because python is so crucial to the operation of your system *are*
+python programs, we're going to want to create a standalone virtual
 environment for running JupyterHub.
 
-    > python3 -m venv /opt/jupyterhub
-    > source /opt/jupyterhub/bin/activate
+Here are the commands to create and activate a `jupyterhub` virtual
+environment
+
+``` {.bash filename="Terminal"}
+sudo python3 -m venv /opt/jupyterhub
+source /opt/jupyterhub/bin/activate
+```
 
 Now we're going to actually get JupyterHub up and running inside the
 virtual environment we just created. JupyterHub produces [docs that you
@@ -1107,19 +1151,19 @@ environment we created.
 
 Here were the installation steps that worked for me:
 
-    npm install -g configurable-http-proxy
-    apt-get install npm nodejs
-    python3 -m pip install jupyterhub jupyterlap notebook
+``` {.bash filename="Terminal"}        
+sudo su
+apt install npm nodejs
+npm install -g configurable-http-proxy
+python3 -m pip install jupyterhub jupyterlab notebook
 
-    ln -s /opt/jupyterhub/bin/jupyterhub-singleuser /usr/local/bin/jupyterhub-singleuser # symlink in singleuser server, necessary because we're using virtual environment
+ln -s /opt/jupyterhub/bin/jupyterhub-singleuser /usr/local/bin/jupyterhub-singleuser # symlink in singleuser server, necessary because we're using virtual environment
 
-    jupyterhub
+jupyterhub
+```
 
 If all went well, you'll now have JupyterHub up and running on port
 `8000`!
-
-If you want to confirm, tunnel in with
-`ssh -L 8000:localhost:8000 test-user@$SERVER_ADDRESS`.
 
 #### Running JupyterHub as a service
 
@@ -1139,9 +1183,13 @@ later on from a config file that's in `/etc/jupyterhub`.
 Let's create a default config file and move it into the right place
 using
 
-    > jupyterhub --generate-config
-    > mkdir -p /etc/jupyterhub
-    > mv jupyterhub_config.py /etc/jupyterhub
+``` {.bash filename="Terminal"}
+sudo su
+source /opt/jupyterhub/bin/activate
+jupyterhub --generate-config
+mkdir -p /etc/jupyterhub
+mv jupyterhub_config.py /etc/jupyterhub
+```
 
 Now we've got to daemon-ize JupterHub. There are two steps -- create a
 file describing the service for the server's daemon, and then start the
@@ -1159,7 +1207,7 @@ First, add the following to `/etc/systemd/system/jupyterhub.service`. If
 you're reading this book in hard copy, you can go to the online version
 to copy/paste or get this file on the book's Git repo at TODO.
 
-``` {filename="/etc/systemd/system/jupyterhub.service"}
+``` {.default filename="/etc/systemd/system/jupyterhub.service"}
 [Unit]
 Description=Jupyterhub
 After=syslog.target network.target
@@ -1184,8 +1232,10 @@ start JupyterHub with the config we created a few seconds ago.
 Now we just need to reload the daemon tool so it picks up the new
 service it has available and start JupyterHub!
 
-    systemctl daemon-reload
-    systemctl start jupyterhub
+``` {.bash filename="Terminal"}
+systemctl daemon-reload
+systemctl start jupyterhub
+```
 
 You should now be able to see that JupyterHub is running using
 `systemctl status jupyterhub` and can see it again by tunneling to it.
@@ -1211,16 +1261,17 @@ Once we have docker installed, getting the API running is almost
 trivially easy using the command we used back in [Chapter @sec-docker]
 to run our container.
 
-    sudo docker run --rm -d \
-      -p 8555:8000 \
-      --name palmer-plumber \
-      alexkgold/plumber
+``` {.bash filename="Terminal"}
+sudo docker run --rm -d \
+  -p 8555:8000 \
+  --name palmer-plumber \
+  alexkgold/plumber
+```
 
 The one change you might note is that I've changed the port on the
 server to be 8555, since we already have JupyterHub running on 8000.
 
-Now, we can SSH tunnel into our server and view our running API at
-`localhost:8555/__docs__/`.
+Once it's up, you can check that it's running with `docker ps`.
 
 This is why people love docker -- it's wildly easy to get something
 simple running. But getting Docker hardened for production takes a bit
@@ -1240,10 +1291,34 @@ container management system that is designed specifically to manage
 running containers, like Docker Compose or Kubernetes. Getting deeper
 into those systems is beyond the scope of this book.
 
-### Questions for Alex
+### Step 8: Check it all out
 
-We didn't actually make use of the EBS volume we mounted for home dirs.
-Should we do that?
-https://www.tecmint.com/move-home-directory-to-new-partition-disk-in-linux/
+Just knowing that all of our services are running isn't nearly as fun as
+actually trying them out.
 
-### 
+We don't have a stable public URL for the server yet, so we can't just
+access it from our browser. This is a perfect use case for an SSH
+tunnel.
+
+TODO: picture of server w/ RStudio on 8787, JupyterHub on 8000, and
+Palmer Penguin container on 8555.
+
+If you recall, the command for an SSH tunnel from a remote server to
+`localhost` is to do
+`ssh -L <remote port>:localhost:<local port> <user>@<server>`.
+
+We've got three services running on our server, RStudio Server at
+`8787`, JupyterHub on `8000`, and our Plumber API on `8555`. You can try
+each of them out by subbing those in for the remote port and putting
+them at a local port. I'd recommend just using the same one.
+
+For example, by running
+`ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`, I can visit
+RStudio Server in my browser at `localhost:8787` and login with the
+username `test-user` and password I set on the server.
+
+::: callout-note
+Currently, the API isn't accepting traffic at `/`, so we've got to go to
+the `/__docs__/` URL. Assuming you're using the same port locally, try
+accessing it at `localhost:8555/__docs__/`.
+:::
