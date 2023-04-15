@@ -1,93 +1,249 @@
 # DevOps Lessons for Data Science {#sec-1-intro}
 
-DevOps Is a set of processes, tools, and cultural norms designed to simplify, speed, and lower the risk of putting software into production.
+DevOps Is a set of processes, tools, and cultural norms designed to
+simplify, speed, and lower the risk of putting software into production.
 
-The term DevOps is a portmanteau reflecting the two halves of software delivery it is meant to bring closer together -- **dev**elopment and **op**erations. DevOps is a somewhat slippery concept as it's not a specific dogma or set of tools. Instead, it's the application of principles and norms -- combined with tooling -- to the particular situation you face in delivering software.
+The term DevOps is a portmanteau reflecting the two halves of software
+delivery it is meant to bring closer together -- **dev**elopment and
+**op**erations. DevOps is a somewhat slippery concept as it's not a
+specific dogma or set of tools. Instead, it's the application of
+principles and norms -- combined with tooling -- to the particular
+situation you face in delivering software.
 
-And for you, the particular situation you face is delivering data science assets. Delivering data science fundamentally is a form of software development. Whether you consciously acknowledge it or not, delivering a data science asset is the same as delivering software in many important ways.
+And for you, the particular situation you face is delivering data
+science assets. Delivering data science fundamentally is a form of
+software development. Whether you consciously acknowledge it or not,
+delivering a data science asset is the same as delivering software in
+many important ways.
 
 ## The Problems DevOps Solves
 
-DevOps started as an offshoot of the Agile software movement. In particular, Agile's focus on quick iteration via frequent delivery of small chunks and immediate feedback proved completely incompatible with a pattern where developers completed software and hurled it over an organizational wall to somehow be put into production by an IT/Admin team.
+DevOps started as an offshoot of the Agile software movement. In
+particular, Agile's focus on quick iteration via frequent delivery of
+small chunks and immediate feedback proved completely incompatible with
+a pattern where developers completed software and hurled it over an
+organizational wall to somehow be put into production by an IT/Admin
+team.
 
-There are a few particular problems that DevOps attempted to solve -- problems that will probably feel familiar if you've ever tried to put a data science asset into production.
+There are a few particular problems that DevOps attempted to solve --
+problems that will probably feel familiar if you've ever tried to put a
+data science asset into production.
 
-The first issue DevOps addresses is the "works on my machine" phenomenon. If you've ever collaborated on a piece of data science code, you've almost certainly gotten an email, instant message, or quick shout that some code that was working great for you is failing now that your colleague is trying to work on it to collaborate.
+The first issue DevOps addresses is the "works on my machine"
+phenomenon. If you've ever collaborated on a piece of data science code,
+you've almost certainly gotten an email, instant message, or quick shout
+that some code that was working great for you is failing now that your
+colleague is trying to work on it to collaborate.
 
-The processes and tooling of DevOps is designed to link *application* much more closely to *environment* in order to prevent the "works on my machine" phenomenon from rearing its head.
+The processes and tooling of DevOps is designed to link *application*
+much more closely to *environment* in order to prevent the "works on my
+machine" phenomenon from rearing its head.
 
-The second problem DevOps addresses is the "breaks on deployment" issue. Perhaps you wrote some code and tested it lovingly on your machine, but didn't have the chance to test it against a production configuration. Or perhaps you don't really have patterns around testing code in your organization. Even if you tested thoroughly, you might not know if something breaks when its deployed. DevOps is designed to reduce the risk of deploying code that won't function as intended *the first time* it's deployed.
+The second problem DevOps addresses is the "breaks on deployment" issue.
+Perhaps you wrote some code and tested it lovingly on your machine, but
+didn't have the chance to test it against a production configuration. Or
+perhaps you don't really have patterns around testing code in your
+organization. Even if you tested thoroughly, you might not know if
+something breaks when its deployed. DevOps is designed to reduce the
+risk of deploying code that won't function as intended *the first time*
+it's deployed.
 
-DevOps is designed to incorporate ideas about scaling into the genesis of software, helping avoid software that works fine locally, but can't be deployed for real.
+DevOps is designed to incorporate ideas about scaling into the genesis
+of software, helping avoid software that works fine locally, but can't
+be deployed for real.
+
+## Data science software types
+
+As you're creating a data science project, you're writing software. It's
+helpful to have a mental model of what kinds of software you might be
+writing.
+
+In data science, there are four basic types of software you might write.
+
+The first type of software is a *job*. A job is something you care about
+because of its side effects. Maybe it is a job to do some sort of data
+pipelining. Or maybe it builds an ML model. Or maybe it produces plots,
+figures, or numbers to be used in a report that's being written in other
+software (usually a PowerPoint or Word doc).
+
+Often these steps are done in some sort of SQL-based pipelining tool.
+*dbt* is quickly rising in popularity. If you're doing these tasks in R
+or Python, they're most commonly done in a `.R` or `.py` script. Though
+I'll argue in [Chapter @sec-log-monitor] that you should always use a
+literate programming tool like Quarto, R Markdown, or Jupyter Notebook.
+
+The second type of software is a *report*. I use report as a general
+category to refer to anything where you are rendering a document and
+care about the output. The actual form of the output might be a
+document, a book, a presentation, or a website.
+
+In these cases, you're taking an R Markdown doc, Quarto doc, or Jupyter
+Notebook and rendering it into a final documents for people to consume
+-- either on the web, as a live presentation, or by emailing them.
+Depending on what you're doing, these docs may be completely static
+(this book is a Quarto doc) or they may have interactive elements using
+Quarto, R Markdown, or voila.
+
+The third type of data science software is an interactive web *app*.
+These apps, created in frameworks like Shiny (R or Python), Dash
+(Python), or Streamlit (Python) are for people to click around. Most
+often they are used to explore data sets and to provide non-data
+scientists an interface to data insights.
+
+The fourth type of data science software is an API (application
+programming interface). An API is for machine-to-machine communication.
+It facilitates cross-language communication as well as making it easy to
+separate different kinds of logic in a data science project. Much more
+on APIs in [Chapter @sec-apis].
+
+Throughout this first section of the book, we'll get into each of these
+job types, when to use each of them, and how to effectively use them in
+concert to create a great data science project.
 
 ## Core principles and best practices of DevOps
 
-As I've mentioned, the term DevOps is squishy. So squishy that there isn't even agreeement on what the basic tenets of DevOps are that help solve the problems its attempting to solve. Basically every resource on DevOps lists a different set of core principles and frameworks.
+As I've mentioned, the term DevOps is squishy. So squishy that there
+isn't even agreeement on what the basic tenets of DevOps are that help
+solve the problems its attempting to solve. Basically every resource on
+DevOps lists a different set of core principles and frameworks.
 
-And the profusion of *xOps* like DataOps, MLOps, and more just add confusion about what DevOps itself actually is.
+And the profusion of *xOps* like DataOps, MLOps, and more just add
+confusion about what DevOps itself actually is.
 
-I'm going to name five core tenets of DevOps. Some lists of DevOps have more components, and some fewer, but this is a good-faith attempt to summarize what I believe the core components are.
+I'm going to name five core tenets of DevOps. Some lists of DevOps have
+more components, and some fewer, but this is a good-faith attempt to
+summarize what I believe the core components are.
 
-1.  **Code** should be **well-tested** and tests should be **automated**.
+1.  **Code** should be **well-tested** and tests should be
+    **automated**.
 2.  **Code updates** should be **frequent** and **low-risk**.
-3.  **Security** concerns should be considered **up front** as part of architecture.
+3.  **Security** concerns should be considered **up front** as part of
+    architecture.
 4.  Production **systems** should have **monitoring** and **logging**.
-5.  Frequent opportunities for reviewing, changing, and **updating process** should be **built into the system** -- both culturally and technically.
+5.  Frequent opportunities for reviewing, changing, and **updating
+    process** should be **built into the system** -- both culturally and
+    technically.
 
-These five tenets are a great philosophical stance, they're about things that *should* happen, and they seem pretty inarguably good.[^1-0-sec-intro-1] But they're also kinda vague and it's not clear how to go from them to a your actual day-to-day work.
+These five tenets are a great philosophical stance, they're about things
+that *should* happen, and they seem pretty inarguably
+good.[^1-0-sec-intro-1] But they're also kinda vague and it's not clear
+how to go from them to a your actual day-to-day work.
 
-[^1-0-sec-intro-1]: If you want to think more about the philosophy of DevOps, I strongly recommend *The Phoenix Project* by Gene Kim, Kevin Behr, and George Spafford. It's a book on DevOps formatted as a novel, so it's not very technical but it is very fun. A good friend described it as, "like a trashy romance novel about DevOps".
+[^1-0-sec-intro-1]: If you want to think more about the philosophy of
+    DevOps, I strongly recommend *The Phoenix Project* by Gene Kim,
+    Kevin Behr, and George Spafford. It's a book on DevOps formatted as
+    a novel, so it's not very technical but it is very fun. A good
+    friend described it as, "like a trashy romance novel about DevOps".
 
 ## Applying DevOps to data science
 
-Hopefully, you're convinced that the principles of DevOps are relevant to you as a data scientist and you're excited to learn more!
+Hopefully, you're convinced that the principles of DevOps are relevant
+to you as a data scientist and you're excited to learn more!
 
-However, it would be inappropriate to just take the DevOps principles and practices and apply them to data science.
+However, it would be inappropriate to just take the DevOps principles
+and practices and apply them to data science.
 
-As a data scientist, the huge majority of what you're doing is taking data generated by a business process, deriving some sort of signal from that data flow, and making it available to other people or other software. Fundamentally, data science apps are *consumers* of data, almost by definition.
+As a data scientist, the huge majority of what you're doing is taking
+data generated by a business process, deriving some sort of signal from
+that data flow, and making it available to other people or other
+software. Fundamentally, data science apps are *consumers* of data,
+almost by definition.
 
-In contrast, most traditional pieces of software either don't involve meaningful data flows, or are *producers* of business data. An online store, software for managing inventory, and electronic health records -- these tools all produce data.
+In contrast, most traditional pieces of software either don't involve
+meaningful data flows, or are *producers* of business data. An online
+store, software for managing inventory, and electronic health records --
+these tools all produce data.
 
-There's a major architectural and process implication from this difference -- how much freedom you have. Software engineers get to dream up data structures and data flows from scratch, designing them to work optimally for their systems. In contrast, you are stuck with the way the data flows into your system -- most likely designed by someone who wasn't thinking about the needs of data science at all.
+There's a major architectural and process implication from this
+difference -- how much freedom you have. Software engineers get to dream
+up data structures and data flows from scratch, designing them to work
+optimally for their systems. In contrast, you are stuck with the way the
+data flows into your system -- most likely designed by someone who
+wasn't thinking about the needs of data science at all.
 
 ::: callout-note
 ### Language-specific tooling
 
-There's one other important difference between data science and general purpose software development. As of the writing of this book, a huge majority of data science work is done in just two programming languages, R and Python (and SQL). For that reason, this book on DevOps for Data Science can get much deeper into the particularities of applying DevOps principles to those specific languages than a general purpose book on DevOps ever would.
+There's one other important difference between data science and general
+purpose software development. As of the writing of this book, a huge
+majority of data science work is done in just two programming languages,
+R and Python (and SQL). For that reason, this book on DevOps for Data
+Science can get much deeper into the particularities of applying DevOps
+principles to those specific languages than a general purpose book on
+DevOps ever would.
 :::
 
-So while the problems DevOps attempts to solve will probably resonate with most data scientists, and the core principles seem equally applicable, the technical best practices need some translation.
+So while the problems DevOps attempts to solve will probably resonate
+with most data scientists, and the core principles seem equally
+applicable, the technical best practices need some translation.
 
-So here are four technical best practices from DevOps and their equivalents in the data science world.[^1-0-sec-intro-2]
+So here are four technical best practices from DevOps and their
+equivalents in the data science world.[^1-0-sec-intro-2]
 
-[^1-0-sec-intro-2]: Resources you see online have anywhere between three and seven of these. I think these four cover the core of almost any list you'll see.
+[^1-0-sec-intro-2]: Resources you see online have anywhere between three
+    and seven of these. I think these four cover the core of almost any
+    list you'll see.
 
 ### Use CI/CD
 
-Continuous Integration/Continuous Delivery/Continuous Deployment (CI/CD) is the notion that there should be a central repository of code where changes are merged. Once these changes are merged, the code should be tested, built, and delivered/deployed in an automated way.
+Continuous Integration/Continuous Delivery/Continuous Deployment (CI/CD)
+is the notion that there should be a central repository of code where
+changes are merged. Once these changes are merged, the code should be
+tested, built, and delivered/deployed in an automated way.
 
-The data science analog of CI/CD is code promotion and integration processes. This chapter will help you think about how to structure your app or report so that you can feel secure moving an app into production and updating it later. This chapter will also include an introduction to real CI/CD tools, so that you can get started using them in your own work.
+The data science analog of CI/CD is code promotion and integration
+processes. This chapter will help you think about how to structure your
+app or report so that you can feel secure moving an app into production
+and updating it later. This chapter will also include an introduction to
+real CI/CD tools, so that you can get started using them in your own
+work.
 
 ### Infrastructure as Code
 
-The underlying infrastructure for development and deployment should be reproducible using code so it can be updated and replaced with minimal fuss or disruption.
+The underlying infrastructure for development and deployment should be
+reproducible using code so it can be updated and replaced with minimal
+fuss or disruption.
 
-The data science analog is thinking about managing environments as code. This chapter will help you think about how to create a reproducible and secure project-level data science environment so you can be confident it can be used, secured, and resurrected later (or somewhere else) as need be.
+The data science analog is thinking about managing environments as code.
+This chapter will help you think about how to create a reproducible and
+secure project-level data science environment so you can be confident it
+can be used, secured, and resurrected later (or somewhere else) as need
+be.
 
 ### Microservices
 
-Any large application should be decomposed into smaller services that are as atomic and lightweight as possible. This makes large projects easier to reason about and makes interfaces between components clearer, so changes and updates are safer.
+Any large application should be decomposed into smaller services that
+are as atomic and lightweight as possible. This makes large projects
+easier to reason about and makes interfaces between components clearer,
+so changes and updates are safer.
 
-I believe this technical best practice has the furthest to go to translate to data science, so this chapter is about how to think of your data science project in terms of its components. This chapter will help you think about what the various components of your projects are and how to split them up for painless and simple updating and atomizing.
+I believe this technical best practice has the furthest to go to
+translate to data science, so this chapter is about how to think of your
+data science project in terms of its components. This chapter will help
+you think about what the various components of your projects are and how
+to split them up for painless and simple updating and atomizing.
 
 ### Monitoring and Logging
 
-Application metrics and logs are essential for understanding the usage and performance of production services, and should be leveraged as much as possible to have a holistic picture at all times.
+Application metrics and logs are essential for understanding the usage
+and performance of production services, and should be leveraged as much
+as possible to have a holistic picture at all times.
 
-The fourth chapter in this section is on monitoring and logging, which is -- honestly -- in its infancy in the data science world, but deserves more love and attention.
+The fourth chapter in this section is on monitoring and logging, which
+is -- honestly -- in its infancy in the data science world, but deserves
+more love and attention.
 
 ### Other Things
 
-Most DevOps frameworks also include communication, collaboration, and review practices as part of their framework, as the technical best practices of DevOps exist to support the work of the people who use them. This is obviously equally important in the data science world -- it's what the entire third section is about.
+Most DevOps frameworks also include communication, collaboration, and
+review practices as part of their framework, as the technical best
+practices of DevOps exist to support the work of the people who use
+them. This is obviously equally important in the data science world --
+it's what the entire third section is about.
 
-And in the fifth chapter, we'll learn about Docker -- a tool that has become so common in DevOps practices that it deserves some discussion all on its own. In this section, you'll get a general intro to what Docker is and how it works -- as well as a hands-on intro to using Docker yourself.
+And in the fifth chapter, we'll learn about Docker -- a tool that has
+become so common in DevOps practices that it deserves some discussion
+all on its own. In this section, you'll get a general intro to what
+Docker is and how it works -- as well as a hands-on intro to using
+Docker yourself.
+
