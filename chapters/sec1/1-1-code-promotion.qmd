@@ -253,30 +253,6 @@ have to take a few extra steps to be sure the right version of R or
 Python is on the CI/CD server, that your package environment is properly
 reproduced, and that you have the right code to render your document.
 
-Feel free to take a look through the [code for the GitHub Action for
-this
-book](https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_quartobook.yml).
-It's all YAML, so it's pretty human-readable.
-
-Here's what happens every time I make a push to the `main` branch of the
-repository for this book:[^1-1-code-promotion-3]
-
-[^1-1-code-promotion-3]: Recall that a finished merge request into the
-    `main` branch is equivalent to a push to `main` .
-
-1.  Checkout the current `main` branch of the book.
-2.  Use the `r-lib` action to install R.
-3.  Use the `r-lib` action to setup pandoc (a required system library
-    for R Markdown to work).
-4.  Get the cached `renv` library for the book.
-5.  Render the book.
-6.  Push the book to GitHub Pages, where this website serves from.
-
-You'll see that it uses a mixture of pre-defined actions created for
-general use, pre-defined actions created by people in the R community,
-and custom R code I insert to restore an `renv` library and render the
-book itself.
-
 ## Per-Environment Configuration {config-swap=""}
 
 Sometimes you want a little more flexibility -- for example the option
@@ -402,9 +378,9 @@ use.
 
 That means that switching from the dev to the prod version of the app is
 as easy as making sure you've got the correct environment variable set
-on your system.[^1-1-code-promotion-4]
+on your system.[^1-1-code-promotion-3]
 
-[^1-1-code-promotion-4]: If you're deploying to Posit Connect,
+[^1-1-code-promotion-3]: If you're deploying to Posit Connect,
     `R_CONFIG_ACTIVE` is locked to `rsconnect`. If you've got multiple
     deployments to Connect that you want to differentiate, you may want
     to use a different environment variable, which you would specify
@@ -449,35 +425,53 @@ def my_db_con(user = os.getenv("db_user"), pw = os.getenv("db_pw")):
 4.  What is the relationship between git and CI/CD? What's the benefit
     of using git and CI/CD together?
 
-## Portfolio Exercise: Blog Automation
+## Lab: Host a Website on GitHub
 
-Many people in the data science community have personal websites or
-blogs. They're a great way to show off your portfolio of work! You may
-even have one. But how is it built?
+Being able to work well with git is a fundamental skill for adhering to
+DevOps best practices. For most organizations, that means using GitHub.
 
-Many people build their blog locally and then just push it up to a
-website.
+In this lab, we're going to put up a website using GitHub Pages and set
+up GitHub actions to update the website whenever we make changes.
 
-For this challenge, create a personal website if you don't have one and
-configure it so that you can push changes to git and have them render to
-your website.
+We're going to use [Quarto](https://quarto.org) for our website. Quarto
+is a open source scientific and technical publishing system that makes
+it easy to render R and Python code into beautiful documents, website,
+reports, and presentations.
 
-Here are a few suggestions on components you might use:
+Here's what you should do:
 
--   Build the website itself using [quarto](https://quarto.org/). Quarto
-    is a library for scientific and technical publishing that makes it
-    easy to include R or Python code if you want. It's the tool this
-    book was written with.
+1.  Create an empty remote git repo and clone it locally.
+2.  Create a quarto doc in the repo.
+3.  Follow the [instructions on the Quarto
+    website](https://quarto.org/docs/publishing/github-pages.html#github-action)
+    to serve it on GitHub pages and steps to run from GitHub Actions.
+4.  Configure GitHub pages to serve the site (off of `gh-pages`) branch.
 
--   Deploy the website onto GitHub Pages. At least as of this writing,
-    you can deploy a free website for your GitHub account or for any
-    individual project in your account.
+If you follow the instructions on the quarto website, you'll end up with
+a workflow called `publish.yml`. Let's pull apart what's happening in
+this `yml` file -- it should be reasonably human-readable.
 
-    -   By default, your website will have a github.io URL for now. If
-        you want to change it, I'd suggest checking out [Chapter
-        @sec-basic-networks] on networking for more information.
+``` {.yaml include="../../labs/lab-1/publish.yml" filename=".github/workflows/publish.yml"}
+```
 
--   Use GitHub Actions to automate what happens when you push to your
-    website. The GitHub repo for this book
-    ([akgold/do4ds](github.com/akgold/do4ds)) may prove useful as a
-    reference.
+The top section just defines what triggers this workflow. In this case,
+we've configured the workflow only to trigger on a push to the `main`
+branch. Note that a merge into main counts.
+
+Below that we define a name for the workflow and what actually happens.
+
+There are a few things that are defined here.
+
+What kind of host does the job run on?
+
+What does it do? You can write custom GitHub Actions steps, but these
+days most things you want to do are better accomplished by taking
+existing workflows and providing arguments to them. You can see that
+this uses 3 existing workflows to check out a repository, set up Quarto,
+and render and publish a Quarto doc. There are no arguments to the first
+two steps, but the third step uses two arguments. `with` defines
+variables used by the workflow, and `env` defines values in the
+environment -- often secrets used by the workflow, like in this case.
+
+Once you've finished this lab, you'll have a website up and running! In
+the next lab, we'll add some R and Python content to the website.
