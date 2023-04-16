@@ -425,53 +425,49 @@ def my_db_con(user = os.getenv("db_user"), pw = os.getenv("db_pw")):
 4.  What is the relationship between git and CI/CD? What's the benefit
     of using git and CI/CD together?
 
-## Lab: Host a Website on GitHub
+## Lab: Host a Website on GitHub with Automatic Updates
 
-Being able to work well with git is a fundamental skill for adhering to
-DevOps best practices. For most organizations, that means using GitHub.
+The goal for this lab is to set up a [GitHub Pages](https://pages.github.com/) website  that automatically updates when the code changes using [GitHub Actions](https://github.com/features/actions).
 
-In this lab, we're going to put up a website using GitHub Pages and set
-up GitHub actions to update the website whenever we make changes.
-
-We're going to use [Quarto](https://quarto.org) for our website. Quarto
+We're going to create the website using [Quarto](https://quarto.org) for our website. Quarto
 is a open source scientific and technical publishing system that makes
-it easy to render R and Python code into beautiful documents, website,
+it easy to render R and Python code into beautiful documents, websites,
 reports, and presentations.
 
-Here's what you should do:
+I'm not going to give you a complete step-by-step walkthrough, but here is the outline:
 
-1.  Create an empty remote git repo and clone it locally.
-2.  Create a quarto doc in the repo.
-3.  Follow the [instructions on the Quarto
-    website](https://quarto.org/docs/publishing/github-pages.html#github-action)
-    to serve it on GitHub pages and steps to run from GitHub Actions.
-4.  Configure GitHub pages to serve the site (off of `gh-pages`) branch.
+1. Create an empty public git repo on GitHub and clone it locally.
+2. Create a Quarto website in the repo.
+3. Publish the website to GitHub Pages.
+4. Configure GitHub Actions to re-render the website and push updates when the GitHub repo is updated.
 
-If you follow the instructions on the quarto website, you'll end up with
-a workflow called `publish.yml`. Let's pull apart what's happening in
-this `yml` file -- it should be reasonably human-readable.
+If you need to learn more about using git or GitHub, I'd recommend checking out [Happy Git with R](https://happygitwithr.com/). There are tons of great git references online. This one is nicely oriented towards the needs of a data professional. It's obviously a little more R-oriented than Python, but I think it's a great resource regardless of your language of choice.
+
+Once you've got the git repo created and a basic Quarto website created, the Quarto website has [great instructions to configure publishing with GitHub Actions](https://quarto.org/docs/publishing/github-pages.html#github-action). 
+
+In those instructions, you'll set up GitHub Pages to serve your website off a long-running standalone branch called `gh-pages`. Along the way, you'll generate an `_publish.yml`, which is a Quarto-specific file for configuring publishing locations. 
+
+By default, your website will be available at `https://<username>.github.io/<repo-name>`. If you want to use a custom domain, GitHub has [good instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/about-custom-domains-and-github-pages) for how to set that up. While you can just follow those instructions, I'd recommend you wait until you get to [Chapter @sec-dns] to understand a little better how it all works.
+
+You'll also generate the GitHub Action, which will live at `.github/workflows/publish.yml`. Since the main point here is to learn about CI/CD like GitHub Actions, let's take a minute to make sure you understand what the GitHub Action does.
 
 ``` {.yaml include="../../labs/lab-1/publish.yml" filename=".github/workflows/publish.yml"}
 ```
 
-The top section just defines what triggers this workflow. In this case,
-we've configured the workflow only to trigger on a push to the `main`
-branch. Note that a merge into main counts.
+If you've never looked at YAML before, it should be reasonably human-readable. In this YAML file, there are three high-level sections -- `on`, `name`, and `jobs`. This is a pretty minimal GitHub Actions workflow. Every workflow needs an `on` and `jobs`. The `name` is technically optional, but it's a good idea to keep track of what job is running.
 
-Below that we define a name for the workflow and what actually happens.
+While this particular syntax is unique to GitHub Actions, the basic idea is universal to any CI/CD system. You have to define when something occurs and what that something is.
 
-There are a few things that are defined here.
+The `on` section defines *when* the workflow occurs. In this case, we've configured the workflow only to trigger on a push to the `main` branch. Note that a merge into main counts. This is basically the simplest trigger you can have. GitHub Actions supports a ton of different ways to trigger a workflow. You can see more [in the documentation](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow).
 
-What kind of host does the job run on?
+The `jobs` section defines what happens when the job is triggered. The most common way to define what happens is to use preexisting GitHub Actions steps with `uses`. Recall that part of the value of CI/CD is that it occurs in a completely isolated environment, so you'll first have to set up the environment for the work to occur, then actually do the work.
 
-What does it do? You can write custom GitHub Actions steps, but these
-days most things you want to do are better accomplished by taking
-existing workflows and providing arguments to them. You can see that
-this uses 3 existing workflows to check out a repository, set up Quarto,
-and render and publish a Quarto doc. There are no arguments to the first
-two steps, but the third step uses two arguments. `with` defines
+As you can see from the `runs-on` field, we're starting with a very basic Ubuntu setup. After that, the first two workflow steps set up our environment, with our website's GitHub repository checked out into the Actions environment and Quarto installed. 
+
+In the third step, we're actually rendering the website and then pushing it back to the repository. This third step makes use of arguments in GitHub Actions. In GitHub Actions, `with` defines
 variables used by the workflow, and `env` defines values in the
 environment -- often secrets used by the workflow, like in this case.
 
-Once you've finished this lab, you'll have a website up and running! In
-the next lab, we'll add some R and Python content to the website.
+At this point, you can just take the pre-defined workflow and use it.
+
+Once you've done that, you're website should be good to go. If you want to check, make a change to your website and push to the main branch. If you click on the `Actions` tab on GitHub you'll be able to see the Action running. Once it finishes, you should be able to see your change reflected on your website.
