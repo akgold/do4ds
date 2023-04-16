@@ -253,30 +253,6 @@ have to take a few extra steps to be sure the right version of R or
 Python is on the CI/CD server, that your package environment is properly
 reproduced, and that you have the right code to render your document.
 
-Feel free to take a look through the [code for the GitHub Action for
-this
-book](https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_quartobook.yml).
-It's all YAML, so it's pretty human-readable.
-
-Here's what happens every time I make a push to the `main` branch of the
-repository for this book:[^1-1-code-promotion-3]
-
-[^1-1-code-promotion-3]: Recall that a finished merge request into the
-    `main` branch is equivalent to a push to `main` .
-
-1.  Checkout the current `main` branch of the book.
-2.  Use the `r-lib` action to install R.
-3.  Use the `r-lib` action to setup pandoc (a required system library
-    for R Markdown to work).
-4.  Get the cached `renv` library for the book.
-5.  Render the book.
-6.  Push the book to GitHub Pages, where this website serves from.
-
-You'll see that it uses a mixture of pre-defined actions created for
-general use, pre-defined actions created by people in the R community,
-and custom R code I insert to restore an `renv` library and render the
-book itself.
-
 ## Per-Environment Configuration {config-swap=""}
 
 Sometimes you want a little more flexibility -- for example the option
@@ -402,9 +378,9 @@ use.
 
 That means that switching from the dev to the prod version of the app is
 as easy as making sure you've got the correct environment variable set
-on your system.[^1-1-code-promotion-4]
+on your system.[^1-1-code-promotion-3]
 
-[^1-1-code-promotion-4]: If you're deploying to Posit Connect,
+[^1-1-code-promotion-3]: If you're deploying to Posit Connect,
     `R_CONFIG_ACTIVE` is locked to `rsconnect`. If you've got multiple
     deployments to Connect that you want to differentiate, you may want
     to use a different environment variable, which you would specify
@@ -449,35 +425,49 @@ def my_db_con(user = os.getenv("db_user"), pw = os.getenv("db_pw")):
 4.  What is the relationship between git and CI/CD? What's the benefit
     of using git and CI/CD together?
 
-## Portfolio Exercise: Blog Automation
+## Lab: Host a Website on GitHub with Automatic Updates
 
-Many people in the data science community have personal websites or
-blogs. They're a great way to show off your portfolio of work! You may
-even have one. But how is it built?
+The goal for this lab is to set up a [GitHub Pages](https://pages.github.com/) website  that automatically updates when the code changes using [GitHub Actions](https://github.com/features/actions).
 
-Many people build their blog locally and then just push it up to a
-website.
+We're going to create the website using [Quarto](https://quarto.org) for our website. Quarto
+is a open source scientific and technical publishing system that makes
+it easy to render R and Python code into beautiful documents, websites,
+reports, and presentations.
 
-For this challenge, create a personal website if you don't have one and
-configure it so that you can push changes to git and have them render to
-your website.
+I'm not going to give you a complete step-by-step walkthrough, but here is the outline:
 
-Here are a few suggestions on components you might use:
+1. Create an empty public git repo on GitHub and clone it locally.
+2. Create a Quarto website in the repo.
+3. Publish the website to GitHub Pages.
+4. Configure GitHub Actions to re-render the website and push updates when the GitHub repo is updated.
 
--   Build the website itself using [quarto](https://quarto.org/). Quarto
-    is a library for scientific and technical publishing that makes it
-    easy to include R or Python code if you want. It's the tool this
-    book was written with.
+If you need to learn more about using git or GitHub, I'd recommend checking out [Happy Git with R](https://happygitwithr.com/). There are tons of great git references online. This one is nicely oriented towards the needs of a data professional. It's obviously a little more R-oriented than Python, but I think it's a great resource regardless of your language of choice.
 
--   Deploy the website onto GitHub Pages. At least as of this writing,
-    you can deploy a free website for your GitHub account or for any
-    individual project in your account.
+Once you've got the git repo created and a basic Quarto website created, the Quarto website has [great instructions to configure publishing with GitHub Actions](https://quarto.org/docs/publishing/github-pages.html#github-action). 
 
-    -   By default, your website will have a github.io URL for now. If
-        you want to change it, I'd suggest checking out [Chapter
-        @sec-basic-networks] on networking for more information.
+In those instructions, you'll set up GitHub Pages to serve your website off a long-running standalone branch called `gh-pages`. Along the way, you'll generate an `_publish.yml`, which is a Quarto-specific file for configuring publishing locations. 
 
--   Use GitHub Actions to automate what happens when you push to your
-    website. The GitHub repo for this book
-    ([akgold/do4ds](github.com/akgold/do4ds)) may prove useful as a
-    reference.
+By default, your website will be available at `https://<username>.github.io/<repo-name>`. If you want to use a custom domain, GitHub has [good instructions](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/about-custom-domains-and-github-pages) for how to set that up. While you can just follow those instructions, I'd recommend you wait until you get to [Chapter @sec-dns] to understand a little better how it all works.
+
+You'll also generate the GitHub Action, which will live at `.github/workflows/publish.yml`. Since the main point here is to learn about CI/CD like GitHub Actions, let's take a minute to make sure you understand what the GitHub Action does.
+
+``` {.yaml include="../../labs/lab-1/publish.yml" filename=".github/workflows/publish.yml"}
+```
+
+If you've never looked at YAML before, it should be reasonably human-readable. In this YAML file, there are three high-level sections -- `on`, `name`, and `jobs`. This is a pretty minimal GitHub Actions workflow. Every workflow needs an `on` and `jobs`. The `name` is technically optional, but it's a good idea to keep track of what job is running.
+
+While this particular syntax is unique to GitHub Actions, the basic idea is universal to any CI/CD system. You have to define when something occurs and what that something is.
+
+The `on` section defines *when* the workflow occurs. In this case, we've configured the workflow only to trigger on a push to the `main` branch. Note that a merge into main counts. This is basically the simplest trigger you can have. GitHub Actions supports a ton of different ways to trigger a workflow. You can see more [in the documentation](https://docs.github.com/en/actions/using-workflows/triggering-a-workflow).
+
+The `jobs` section defines what happens when the job is triggered. The most common way to define what happens is to use preexisting GitHub Actions steps with `uses`. Recall that part of the value of CI/CD is that it occurs in a completely isolated environment, so you'll first have to set up the environment for the work to occur, then actually do the work.
+
+As you can see from the `runs-on` field, we're starting with a very basic Ubuntu setup. After that, the first two workflow steps set up our environment, with our website's GitHub repository checked out into the Actions environment and Quarto installed. 
+
+In the third step, we're actually rendering the website and then pushing it back to the repository. This third step makes use of arguments in GitHub Actions. In GitHub Actions, `with` defines
+variables used by the workflow, and `env` defines values in the
+environment -- often secrets used by the workflow, like in this case.
+
+At this point, you can just take the pre-defined workflow and use it.
+
+Once you've done that, you're website should be good to go. If you want to check, make a change to your website and push to the main branch. If you click on the `Actions` tab on GitHub you'll be able to see the Action running. Once it finishes, you should be able to see your change reflected on your website.
