@@ -5,16 +5,20 @@ format:
     code-fold: true
 ---
 
-## Penguin Size and Mass by Sex and Species
+## *Penguin Size and Mass by Sex and Species*
 
 ```{r}
 #| include: false
 
-library(palmerpenguins)
 library(dplyr)
 library(ggplot2)
+library(dbplyr)
 
-df <- palmerpenguins::penguins
+con <- DBI::dbConnect(
+  duckdb::duckdb(), 
+  dbdir = "my-db.duckdb"
+  )
+df <- dplyr::tbl(con, "penguins")
 ```
 
 ```{r}
@@ -22,18 +26,23 @@ df %>%
   group_by(species, sex) %>%
   summarise(
     across(
-      where(is.numeric), 
+        ends_with("mm") | ends_with("g"),
       \(x) mean(x, na.rm = TRUE)
       )
     ) %>%
+  dplyr::collect() %>%
   knitr::kable()
 ```
 
-## Penguin Size vs Mass by Species
+## *Penguin Size vs Mass by Species*
 
 ```{r}
 df %>%
   ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
   geom_point() + 
   geom_smooth(method = "lm")
+```
+
+```{r}
+DBI::dbDisconnect(con)
 ```

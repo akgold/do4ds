@@ -248,11 +248,13 @@ assets that make up your presentation layer. For example, let's say
 you're building a simple Dash app that's just a single file. You could
 create a project structure like this.
 
-    my-project/
-    ├─ my_app.py
-    ├─ data/
-    │  ├─ my_data.csv
-    │  ├─ my_model.pkl
+```         
+my-project/
+├─ my_app.py
+├─ data/
+│  ├─ my_data.csv
+│  ├─ my_model.pkl
+```
 
 You could do this, but you shouldn't.
 
@@ -618,18 +620,55 @@ password to login.
 4.  What is a good way to create a database query that performs badly?
     (Hint: what's the slowest part of the query)
 
-## Portfolio Exercise: Standing Up a Loosely Coupled App
+## Lab 3: Work with the data in a database
 
-Find a public data source you like that's updated on a regular candence.
-Some popular ones include weather, public transit, and air travel.
+The process here is quite straight forward. We're going to load the data
+into a database and then alter our existing code to use the data in the
+database.
 
-Create a job that uses R or Python to access the data and create a job
-to put it into a database (make sure this is compliant with the data use
-agreement).
+For now, we're going to use [DuckDB](https://duckdb.org). DuckDB is an
+in-memory database that's great for analytics use cases. Because it's
+in-memory, we don't have to set up an external database. In chapter
+\[TODO\], you can set up an AWS database if you'd like practice doing
+that.
 
-Create an API in Plumber (R) or Flask or FastAPI (Python) that allows
-you to query the data -- or maybe create a machine learning model that
-you can run against new data coming in.
+To start, let's load the data.
 
-Create an app that visualizes what's coming out of the API using Dash or
-Streamlit (Python) or Shiny (either R or Python).
+Here's what that looks like in R:
+
+``` {.r eval="false" include="../../labs/lab-3/r-data-load.R"}
+```
+
+Or equivalently, in Python:
+
+``` {.python eval="false" include="../../labs/lab-3/py-data-load.py"}
+```
+
+Now that the data is loaded, let's adjust our scripts to use the
+database.
+
+In R, we are just going to replace our data loading with connecting to
+the database. Leaving out all the parts that don't change, it looks like
+
+``` {.r eval="false" include="../../labs/lab-3/eda-db.qmd" filename="eda.qmd" start-line=17 end-line=21}
+```
+
+There's also a call to `DBI::dbDisconnect(con)` at the end of the script. The code for the data processing part doesn't change at all, but the operation changes a lot. 
+
+``` {.r eval="false" include="../../labs/lab-3/eda-db.qmd" filename="eda.qmd" start-line=25 end-line=34}
+```
+
+I've added a call to `dplyr::collect` in line 33. That's not actually necessary -- it will be implied if I don't put it there manually, but it helps make obvious that everything up to that point happens in the database, not by loading the data into R. Obviously for this small dataset it doesn't matter, but if the dataset were much larger, this would be a huge benefit.
+
+In Python, we're just going to load the entire dataset into memory for modeling, so the line loading the dataset changes to
+
+``` {.python eval="false" include="../../labs/lab-3/model-db.qmd" filename="model.qmd" start-line=18 end-line=20}
+```
+
+There are no other changes on the Python side. 
+
+In order to get this to work in CI/CD, there don't need to be any changes to the GitHub workflows, but you will need to make sure the DuckDB packages and others get added. So before you push the code to GitHub, make sure to run `renv::snapshot()` and `pip freeze > requirements.txt` to make sure all the requirements are present.
+
+Because you're working with an on-disk database, you'll also need to push the `my-db.duckdb` file. At some point, we probably want to pull the data out of the bundle and locate it somewhere else, either on an actutal database or by storing the DuckDB file in a centralized location. 
+
+More on that in the lab for [Chapter @sec-cloud].
