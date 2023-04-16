@@ -40,3 +40,16 @@ print(f"Intercept {model.intercept_}")
 print(f"Columns {X.columns}")
 print(f"Coefficients {model.coef_}")
 ```
+
+## Turn into Vetiver Model
+
+```{python}
+from vetiver import VetiverModel, VetiverAPI, vetiver_pin_write
+from pins import board_temp
+
+v = VetiverModel(model, model_name='penguin_model', prototype_data=X)
+# Save model to board
+model_board = board_temp(versioned = True, allow_pickle_read = True)
+vetiver_pin_write(model_board, v)
+app = VetiverAPI(v, check_prototype = True)
+```
