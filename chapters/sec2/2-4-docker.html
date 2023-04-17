@@ -347,6 +347,11 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Auth Technical Details</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Lab Map</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -374,11 +379,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   </ul></li>
   <li><a href="#build-your-own-with-dockerfiles" id="toc-build-your-own-with-dockerfiles" class="nav-link" data-scroll-target="#build-your-own-with-dockerfiles"><span class="toc-section-number">9.7</span>  Build your own with Dockerfiles</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">9.8</span>  Comprehension Questions</a></li>
-  <li><a href="#lab-running-a-container-locally" id="toc-lab-running-a-container-locally" class="nav-link" data-scroll-target="#lab-running-a-container-locally"><span class="toc-section-number">9.9</span>  Lab: Running a Container Locally</a></li>
-  <li><a href="#portfolio-example-run-rstudio-server-in-a-container" id="toc-portfolio-example-run-rstudio-server-in-a-container" class="nav-link" data-scroll-target="#portfolio-example-run-rstudio-server-in-a-container"><span class="toc-section-number">9.10</span>  Portfolio Example: Run RStudio Server in a Container</a>
-  <ul class="collapse">
-  <li><a href="#running-a-service-in-a-container" id="toc-running-a-service-in-a-container" class="nav-link" data-scroll-target="#running-a-service-in-a-container"><span class="toc-section-number">9.10.1</span>  Running a service in a container</a></li>
-  </ul></li>
+  <li><a href="#lab-putting-an-api-in-a-container" id="toc-lab-putting-an-api-in-a-container" class="nav-link" data-scroll-target="#lab-putting-an-api-in-a-container"><span class="toc-section-number">9.9</span>  Lab: Putting an API in a Container</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-4-docker.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -516,13 +517,14 @@ Note
 <section id="getting-started" class="level3" data-number="9.4.2">
 <h3 data-number="9.4.2" class="anchored" data-anchor-id="getting-started"><span class="header-section-number">9.4.2</span> Getting Started</h3>
 <p>Let’s get started with an example that demonstrates the power of Docker right off the bat.</p>
+<p>TODO: put model in S3</p>
 <p>Once you’ve got Docker Desktop installed and running, type the following in your terminal:</p>
 <pre><code>docker run --rm -d \
-  -p 8000:8000 \
+  -p 8080:8080 \
   --name palmer-plumber \
   alexkgold/plumber</code></pre>
 <p>Once you type in this command, it’ll take a minute to pull, extract, and start the container.</p>
-<p>Once the container starts up, you’ll see a long sequence of letters and numbers. Now, navigate to http://localhost:8000/__docs__/ in your browser (this URL has to be exact!), and you should see the documentation for an R language API that lets you explore the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins data set</a></p>
+<p>Once the container starts up, you’ll see a long sequence of letters and numbers. Now, navigate to <code>http://localhost:8080</code>in your browser (this URL has to be exact!), and you should see the documentation for an R language API that lets you explore the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins data set</a></p>
 <p>That was probably pretty uninspiring. It took a long time to download and get started. In order to show the real power of Docker, let’s now kill the container with</p>
 <pre><code>docker kill palmer-plumber</code></pre>
 <p>You can check that the container isn’t running by trying to visit that URL again. You’ll get an error.</p>
@@ -624,12 +626,12 @@ Note
 </div>
 </div>
 <p>Let’s first look at how we ran the container with the plumber API in it.</p>
-<p>For this container, we used the <code>--rm</code> flag, the <code>-d</code> flag, the <code>-p</code> flag with the argument <code>8000:8000</code>, and the <code>--name</code> flag with the argument <code>plumber-palmer</code>.</p>
+<p>For this container, we used the <code>--rm</code> flag, the <code>-d</code> flag, the <code>-p</code> flag with the argument <code>8080:8080</code>, and the <code>--name</code> flag with the argument <code>plumber-palmer</code>.</p>
 <p>The <code>--rm</code> flag <em>removes</em> the container after it finishes running. This is nice when you’re just playing around with a container locally because then you can use the same container name repeatedly, but it’s a flag you’ll almost never use in production because it removes everything from the container, including logs.</p>
 <p>You can check this by running <code>docker kill palmer-plumber</code> to make sure the container is down and then try to get to the logs with <code>docker logs palmer-plumber</code>. But they don’t exist because they got cleaned up!</p>
 <p>Feel free to try running to container without the <code>--rm</code> flag, playing around, killing the container, and then looking at the logs. Before you’re able to bring back another container with the same name, you’ll have to remove the container with <code>docker rm palmer-plumber</code>.</p>
 <p>The <code>-d</code> flag instructs the container to run in <em>detached</em> mode so the container won’t block the terminal session. You can feel free to run the container attached – but you’ll have to quit the container by aborting the command from inside the terminal (<code>Ctrl + c</code>), or opening another terminal to <code>docker kill</code> the container.</p>
-<p>The <code>-p</code> flag <em>publishes</em> a port from inside the container to the host machine. So by specifying <code>-p 8000:8000</code>, we’re taking whatever’s available on the port <code>8000</code> inside the container and making it available at the same port on the <code>localhost</code> of the machine that’s hosting the container.</p>
+<p>The <code>-p</code> flag <em>publishes</em> a port from inside the container to the host machine. So by specifying <code>-p 8080:8080</code>, we’re taking whatever’s available on the port <code>8080</code> inside the container and making it available at the same port on the <code>localhost</code> of the machine that’s hosting the container.</p>
 <p>TODO: picture of ports</p>
 <p>Port forwarding is always specified as <code>&lt;host port&gt;:&lt;container port&gt;</code>. Try playing around with changing the values to make the API available on a different port, perhaps <code>9876</code>. For a more in-depth treatment of ports, see <a href="../sec3/3-3-networking.html">Chapter&nbsp;<span>12</span></a>.</p>
 <p>The <code>--name</code> flag gives our container a name. This is really just a convenience so that you could do commands like <code>docker kill</code> in terms of the container name, rather than the container ID, which will be different for each person who runs the command.</p>
@@ -639,7 +641,7 @@ Note
 
 CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                    NAMES
 
-35bd54e44015   alexkgold/plumber   "R -e 'pr &lt;- plumber…"   29 seconds ago   Up 28 seconds   0.0.0.0:8000-&gt;8000/tcp   palmer-plumber</code></pre>
+35bd54e44015   alexkgold/plumber   "R -e 'pr &lt;- plumber…"   29 seconds ago   Up 28 seconds   0.0.0.0:8080-&gt;8080/tcp   palmer-plumber</code></pre>
 <hr>
 <p>Now let’s head over to the batch document rendering, where we only used one command line flag <code>-v ${PWD}:/project-out</code>, short for <em>volume</em>. To demonstrate what this argument does, navigate to a new directory on your command line and re-run the container without the argument.</p>
 <p>Wait…where’d my document go?</p>
@@ -719,50 +721,103 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <li>What are the most important Dockerfile commands?</li>
 </ol>
 </section>
-<section id="lab-running-a-container-locally" class="level2" data-number="9.9">
-<h2 data-number="9.9" class="anchored" data-anchor-id="lab-running-a-container-locally"><span class="header-section-number">9.9</span> Lab: Running a Container Locally</h2>
-<p>TODO: move palmer penguins example down here</p>
-<p>CONSIDER – should the portfolio example instead be dockerizing the app you created in section 1-3?</p>
-</section>
-<section id="portfolio-example-run-rstudio-server-in-a-container" class="level2" data-number="9.10">
-<h2 data-number="9.10" class="anchored" data-anchor-id="portfolio-example-run-rstudio-server-in-a-container"><span class="header-section-number">9.10</span> Portfolio Example: Run RStudio Server in a Container</h2>
-<p>Write a blog post about getting RStudio Server running in a container on your desktop using the <code>rocker/rstudio</code> container. Can you access your home directory from RStudio Server?</p>
-<ul>
-<li><p>Hint 1: You’ll probably need all of the <code>docker run</code> flags you’ve learned and one more – the <code>-e KEY=value</code> flag provides an environment variable to the running container.</p></li>
-<li><p>Hint 2: The default port for RStudio Server is <code>8787</code>.</p></li>
-<li><p>Hint 3: If you’re running a laptop with Apple Silicon (M1 or M2), you may need to try a different container. <code>amoselb/rstudio-m1</code> worked for me.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p></li>
-</ul>
-<section id="running-a-service-in-a-container" class="level3" data-number="9.10.1">
-<h3 data-number="9.10.1" class="anchored" data-anchor-id="running-a-service-in-a-container"><span class="header-section-number">9.10.1</span> Running a service in a container</h3>
-<p>Consider reviewing the <a href="#docker">containers</a> section if you’re not generally familiar with how to run a container.</p>
-<p>If you want to run a service, like RStudio Server, out of a container, the pattern is very similar to running an interactive app. You’ll find an appropriate container, bring it up, and do some port mapping to make it available to the outside world.</p>
-<p>The <a href="https://hub.docker.com/u/rocker">rocker</a> organization makes available a number of containers related to R and RStudio. So if you want a container running RStudio Server on your laptop, it’s as easy as running</p>
-<pre><code>docker run \
-  --rm -d \
-  -p 8787:8787 \
-  --name rstudio \
-  rocker/rstudio</code></pre>
-<p>Now, when you go to <code>http://localhost:8787</code> on your laptop, you should see the the RStudio login screen…but what’s the password? Luckily, the wonderful folks who built the <code>rocker/rstudio</code> container made it easy to supply a password for the default <code>rstudio</code> user.</p>
-<p>We do this by supplying an environment variable to the container named <code>PASSWORD</code> using the <code>-e</code> flag.</p>
-<p>So, <code>docker kill rstudio</code> and try again by adding a password when you start:</p>
-<pre><code>docker run \
-  --rm -d \
-  -p 8787:8787 \
-  --name rstudio \
-  -e PASSWORD=my-rstudio-pass
-  rocker/rstudio</code></pre>
-<p>Now you should be looking at the RStudio IDE! Hurray!</p>
-<p>This is great for standing up a quick sandbox…but before you go standing up an RStudio Server on your laptop and spreading it around the world, there are a few things you’ll want to think about.</p>
-<p>It’s totally possible to run a service like RStudio Server in a docker container, but you’ll need to take all the same steps to make it available to the outside world in terms of hosting it on a server, routing traffic properly, and making sure that you’re using <code>HTTPS</code> to secure your traffic. See chapters XX-XX for more on all that.</p>
-<p>Now, let’s say I wanted to create another user on the server (docker exec)</p>
-<p>But there’s also one more concern that’s particular to Docker.</p>
-<p>One of the best things about a Docker container is how ephemeral it is. Things come up in moments, and when they’re gone you don’t have to worry about them. But that’s also very dangerous if you want things to persist.</p>
-<p>The best way to fix this is to mount external volumes that will maintain the state should the container die or should you want to replace it. We went over how to do that in the last section.</p>
-<p>At a minimum, you’ll want to mount the user home directories that store all the data and code you can see in RStudio Server. You may also want to mount other bits of state, like wherever you’ve installed your version of R, and the config file you’re using to maintain the server.</p>
-<p>Note that, unlike on a server (where you restart the process of the server), the pattern with a container is generally to kill and restart the container, and let changes come up with the new container.</p>
+<section id="lab-putting-an-api-in-a-container" class="level2" data-number="9.9">
+<h2 data-number="9.9" class="anchored" data-anchor-id="lab-putting-an-api-in-a-container"><span class="header-section-number">9.9</span> Lab: Putting an API in a Container</h2>
+<p>Let’s put our Penguin model prediction API from <a href="../sec1/1-4-apis.html">Chapter&nbsp;<span>4</span></a> into a container.</p>
+<p>Again, Vetiver has some nice tooling to make this very easy to do. You should follow the instructions on the <code>{vetiver}</code> website for how to generate your Dockerfile.</p>
+<p>One thing to note about this container – it follows best practices for how to put data (in this case the machine-learning model) into the container. That means the model <em>isn’t</em> built into the container. Instead, the container knows how to fetch the model.</p>
+<p>That means that you’ll need to have the <code>model_board</code> object available. Look back at <a href="../sec1/1-4-apis.html#lab4">Lab 4</a> if you’ve restarted your Python session since you last ran the <code>{vetiver}</code> code.</p>
+<p>Once you’ve generated your Dockerfile, take a look at it. Here’s the one for my model:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Dockerfile</strong></pre>
+</div>
+<div class="sourceCode" id="cb9" data-eval="false"><pre class="sourceCode numberSource Dockerfile number-lines code-with-copy"><code class="sourceCode dockerfile"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># # Generated by the vetiver package; edit with care</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="co"># start with python base image</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">FROM</span> python:3.9</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a><span class="co"># create directory in container for vetiver files</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="kw">WORKDIR</span> /vetiver</span>
+<span id="cb9-7"><a href="#cb9-7"></a></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="co"># copy  and install requirements</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="kw">COPY</span> vetiver_requirements.txt /vetiver/requirements.txt</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a><span class="co">#</span></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="kw">RUN</span> <span class="ex">pip</span> install <span class="at">--no-cache-dir</span> <span class="at">--upgrade</span> <span class="at">-r</span> /vetiver/requirements.txt</span>
+<span id="cb9-13"><a href="#cb9-13"></a></span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="co"># copy app file</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a><span class="kw">COPY</span> app.py /vetiver/app/app.py</span>
+<span id="cb9-16"><a href="#cb9-16"></a></span>
+<span id="cb9-17"><a href="#cb9-17"></a><span class="co"># expose port</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a><span class="kw">EXPOSE</span> 8080</span>
+<span id="cb9-19"><a href="#cb9-19"></a></span>
+<span id="cb9-20"><a href="#cb9-20"></a><span class="co"># run vetiver API</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a><span class="kw">CMD</span> [<span class="st">"uvicorn"</span>, <span class="st">"app.app:api"</span>, <span class="st">"--host"</span>, <span class="st">"0.0.0.0"</span>, <span class="st">"--port"</span>, <span class="st">"8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This auto-generated Dockerfile is very nicely commented, so its easy to follow.</p>
+<p>Now build the container using <code>docker build -t penguin-model-local .</code>.</p>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>docker build</code> command will only work if you’re in the directory with the container.</p>
+</div>
+</div>
+<p>Ok, now let’s run the container using</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-d</span> <span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="at">-p</span> 8080:8080 <span class="dt">\</span></span>
+<span id="cb10-4"><a href="#cb10-4"></a>  <span class="at">--name</span> penguin-model <span class="dt">\</span></span>
+<span id="cb10-5"><a href="#cb10-5"></a>  penguin-model-local</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>If you go to <code>http://localhost:8080</code> you’ll find that…it doesn’t work? Why? If you run the container attached (remove the <code>-d</code> from the run command) you’ll get some feedback that might be helpful.</p>
+<p>In line 15 of the Dockerfile, we copied the <code>app.py</code> in to the container. Let’s take a look at that file to see if we can find any hints.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>app.py</strong></pre>
+</div>
+<div class="sourceCode" id="cb11" data-eval="false"><pre class="sourceCode numberSource Python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="im">import</span> vetiver</span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="im">import</span> pins</span>
+<span id="cb11-4"><a href="#cb11-4"></a></span>
+<span id="cb11-5"><a href="#cb11-5"></a></span>
+<span id="cb11-6"><a href="#cb11-6"></a>b <span class="op">=</span> pins.board_folder(<span class="st">'/var/folders/t9/kw5hnztj68d6_37dm5rw8n_h0000gn/T/tmpti3uqb2x'</span>, allow_pickle_read<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-7"><a href="#cb11-7"></a>v <span class="op">=</span> VetiverModel.from_pin(b, <span class="st">'penguin_model'</span>)</span>
+<span id="cb11-8"><a href="#cb11-8"></a></span>
+<span id="cb11-9"><a href="#cb11-9"></a>vetiver_api <span class="op">=</span> vetiver.VetiverAPI(v)</span>
+<span id="cb11-10"><a href="#cb11-10"></a>api <span class="op">=</span> vetiver_api.app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Look at that (very long) line 6. The API is connecting to a local directory to pull the model. Is your spidey sense tingling? Something about container filesystem vs host filesystem?</p>
+<p>That’s right – the temp file indicated is inside the <code>/var</code> directory on <em>my machine</em>, but that directory doesn’t exist at <code>/var</code> inside the container when it’s running. In order to get this to work, I’ve got to mount the model in at run time.</p>
+<p>Add a <code>-v /var:/var</code> to your run command like so</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-d</span> <span class="dt">\</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">-p</span> 8080:8080 <span class="dt">\</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">--name</span> penguin-model <span class="dt">\</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>  <span class="at">-v</span> /var:/var <span class="dt">\</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>  penguin-model-local</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout-tip callout callout-style-default callout-captioned">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-caption-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Depending on the permissions of the <code>/var</code> directory on your machine, you <em>may</em> need to run the <code>docker run</code> command prefixed by <code>sudo</code>.</p>
+</div>
+</div>
+<p>And NOW you should be able to get your model up in no time.</p>
+<p>In <a href="../sec3/3-1-cloud.html">Chapter&nbsp;<span>10</span></a>, we’ll worry about putting the model somewhere more permanent so you don’t have to worry about this issue.</p>
 
 
-</section>
 </section>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
@@ -770,7 +825,6 @@ CONTAINER ID   IMAGE               COMMAND                  CREATED          STA
 <li id="fn1"><p>There are some other types of containers that are commonly used for specialized use cases, like high-performance computing.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Remember, we talked about them back in <a href="../sec1/1-1-code-promotion.html">Chapter&nbsp;<span>1</span></a>!<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>This might sound backward – the key is to realize that this is always how it works. The default <code>ENTRYPOINT</code> is <code>/bin/sh -c</code>, so <code>CMD</code> is always just providing arguments to the <code>ENTRYPOINT</code>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>This should eventually be resolved, keep an eye on <a href="https://github.com/rstudio/rstudio/issues/8809">this issue</a> in the RStudio repo.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

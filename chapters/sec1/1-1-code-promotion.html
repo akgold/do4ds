@@ -347,6 +347,11 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Auth Technical Details</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Lab Map</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -372,7 +377,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
   <li><a href="#per-environment-configuration" id="toc-per-environment-configuration" class="nav-link" data-scroll-target="#per-environment-configuration"><span class="toc-section-number">1.3</span>  Per-Environment Configuration</a></li>
   <li><a href="#sec-env-vars" id="toc-sec-env-vars" class="nav-link" data-scroll-target="#sec-env-vars"><span class="toc-section-number">1.4</span>  The power of environment variables</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="toc-section-number">1.5</span>  Comprehension Questions</a></li>
-  <li><a href="#portfolio-exercise-blog-automation" id="toc-portfolio-exercise-blog-automation" class="nav-link" data-scroll-target="#portfolio-exercise-blog-automation"><span class="toc-section-number">1.6</span>  Portfolio Exercise: Blog Automation</a></li>
+  <li><a href="#lab1" id="toc-lab1" class="nav-link" data-scroll-target="#lab1"><span class="toc-section-number">1.6</span>  Lab 1: Host a Website on GitHub with Automatic Updates</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/1-1-code-promotion.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -505,17 +510,6 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <h3 data-number="1.2.2" class="anchored" data-anchor-id="using-cicd-to-deploy-data-science-assets"><span class="header-section-number">1.2.2</span> Using CI/CD to deploy data science assets</h3>
 <p>In general, using a CI/CD tool to deploy a data science asset is pretty straightforward. The mental model to have is that the CI/CD tool stands up a completely empty server for you, and runs some code on it.</p>
 <p>That means that if you’re just doing something simple like spellchecking, you can probably just specify to run spellcheck. If you’re doing something more complicated, like rendering an R Markdown document or Jupyter Notebook and then pushing it to a server, you’ll have to take a few extra steps to be sure the right version of R or Python is on the CI/CD server, that your package environment is properly reproduced, and that you have the right code to render your document.</p>
-<p>Feel free to take a look through the <a href="https://github.com/akgold/do4ds/blob/main/.github/workflows/deploy_quartobook.yml">code for the GitHub Action for this book</a>. It’s all YAML, so it’s pretty human-readable.</p>
-<p>Here’s what happens every time I make a push to the <code>main</code> branch of the repository for this book:<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<ol type="1">
-<li>Checkout the current <code>main</code> branch of the book.</li>
-<li>Use the <code>r-lib</code> action to install R.</li>
-<li>Use the <code>r-lib</code> action to setup pandoc (a required system library for R Markdown to work).</li>
-<li>Get the cached <code>renv</code> library for the book.</li>
-<li>Render the book.</li>
-<li>Push the book to GitHub Pages, where this website serves from.</li>
-</ol>
-<p>You’ll see that it uses a mixture of pre-defined actions created for general use, pre-defined actions created by people in the R community, and custom R code I insert to restore an <code>renv</code> library and render the book itself.</p>
 </section>
 </section>
 <section id="per-environment-configuration" class="level2" data-config-swap="" data-number="1.3">
@@ -589,7 +583,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <p>There is no equivalent of the <code>.Rprofile</code> that’s sourced before startup in Python, but it’s common to use the <code>python-dotenv</code> package to manually load the contents of a <code>.env</code> file into the environment as one of the first few lines in your code.</p>
 <p>You should not commit these files to git, but should manually move them across environments, so they never appear anywhere centrally accessible.</p>
 <p>Once you’re using environment variables, they’re extremely powerful. It’s very common to set the default value of a function argument to be the value of an environment variable. For example, in the example using the R <code>{config}</code> package, <code>config::get()</code> uses the value of the <code>R_CONFIG_ACTIVE</code> environment variable to choose which configuration to use.</p>
-<p>That means that switching from the dev to the prod version of the app is as easy as making sure you’ve got the correct environment variable set on your system.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>That means that switching from the dev to the prod version of the app is as easy as making sure you’ve got the correct environment variable set on your system.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p>It can also be a great way to safely store secrets on your system. If you’ve got a function that, for example, creates a database connection, it’s a good idea to have the <code>username</code> and <code>password</code> arguments of your function default to reading from an environment variable so you don’t ever have to expose them in your code.</p>
 <p>That might look something like this in R:</p>
 <div class="cell">
@@ -613,20 +607,60 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <li>What is the relationship between git and CI/CD? What’s the benefit of using git and CI/CD together?</li>
 </ol>
 </section>
-<section id="portfolio-exercise-blog-automation" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="portfolio-exercise-blog-automation"><span class="header-section-number">1.6</span> Portfolio Exercise: Blog Automation</h2>
-<p>Many people in the data science community have personal websites or blogs. They’re a great way to show off your portfolio of work! You may even have one. But how is it built?</p>
-<p>Many people build their blog locally and then just push it up to a website.</p>
-<p>For this challenge, create a personal website if you don’t have one and configure it so that you can push changes to git and have them render to your website.</p>
-<p>Here are a few suggestions on components you might use:</p>
-<ul>
-<li><p>Build the website itself using <a href="https://quarto.org/">quarto</a>. Quarto is a library for scientific and technical publishing that makes it easy to include R or Python code if you want. It’s the tool this book was written with.</p></li>
-<li><p>Deploy the website onto GitHub Pages. At least as of this writing, you can deploy a free website for your GitHub account or for any individual project in your account.</p>
-<ul>
-<li>By default, your website will have a github.io URL for now. If you want to change it, I’d suggest checking out <a href="../sec3/3-3-networking.html">Chapter&nbsp;<span>12</span></a> on networking for more information.</li>
-</ul></li>
-<li><p>Use GitHub Actions to automate what happens when you push to your website. The GitHub repo for this book (<a href="github.com/akgold/do4ds">akgold/do4ds</a>) may prove useful as a reference.</p></li>
-</ul>
+<section id="lab1" class="level2" data-number="1.6">
+<h2 data-number="1.6" class="anchored" data-anchor-id="lab1"><span class="header-section-number">1.6</span> Lab 1: Host a Website on GitHub with Automatic Updates</h2>
+<p>The goal for this lab is to set up a <a href="https://pages.github.com/">GitHub Pages</a> website that automatically updates when the code changes using <a href="https://github.com/features/actions">GitHub Actions</a>.</p>
+<p>We’re going to create the website using <a href="https://quarto.org">Quarto</a> for our website. Quarto is a open source scientific and technical publishing system that makes it easy to render R and Python code into beautiful documents, websites, reports, and presentations.</p>
+<p>I’m not going to give you a complete step-by-step walkthrough, but here is the outline:</p>
+<ol type="1">
+<li>Create an empty public git repo on GitHub and clone it locally.</li>
+<li>Create a Quarto website in the repo.</li>
+<li>Publish the website to GitHub Pages.</li>
+<li>Configure GitHub Actions to re-render the website and push updates when the GitHub repo is updated.</li>
+</ol>
+<p>If you need to learn more about using git or GitHub, I’d recommend checking out <a href="https://happygitwithr.com/">Happy Git with R</a>. There are tons of great git references online. This one is nicely oriented towards the needs of a data professional. It’s obviously a little more R-oriented than Python, but I think it’s a great resource regardless of your language of choice.</p>
+<p>Once you’ve got the git repo created and a basic Quarto website created, the Quarto website has <a href="https://quarto.org/docs/publishing/github-pages.html#github-action">great instructions to configure publishing with GitHub Actions</a>.</p>
+<p>In those instructions, you’ll set up GitHub Pages to serve your website off a long-running standalone branch called <code>gh-pages</code>. Along the way, you’ll generate an <code>_publish.yml</code>, which is a Quarto-specific file for configuring publishing locations.</p>
+<p>By default, your website will be available at <code>https://&lt;username&gt;.github.io/&lt;repo-name&gt;</code>. If you want to use a custom domain, GitHub has <a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/about-custom-domains-and-github-pages">good instructions</a> for how to set that up. While you can just follow those instructions, I’d recommend you wait until you get to <a href="../sec3/3-4-dns.html">Chapter&nbsp;<span>13</span></a> to understand a little better how it all works.</p>
+<p>You’ll also generate the GitHub Action, which will live at <code>.github/workflows/publish.yml</code>. Since the main point here is to learn about CI/CD like GitHub Actions, let’s take a minute to make sure you understand what the GitHub Action does.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>.github/workflows/publish.yml</strong></pre>
+</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">on</span><span class="kw">:</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="at">  </span><span class="fu">workflow_dispatch</span><span class="kw">:</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="at">  </span><span class="fu">push</span><span class="kw">:</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="at">    </span><span class="fu">branches</span><span class="kw">:</span><span class="at"> main</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> Quarto Publish</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="fu">jobs</span><span class="kw">:</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="at">  </span><span class="fu">build-deploy</span><span class="kw">:</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="at">    </span><span class="fu">permissions</span><span class="kw">:</span></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="at">      </span><span class="fu">contents</span><span class="kw">:</span><span class="at"> write</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="at">    </span><span class="fu">steps</span><span class="kw">:</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Check out repository</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> actions/checkout@v3</span></span>
+<span id="cb6-16"><a href="#cb6-16"></a></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Set up Quarto</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/setup@v2</span></span>
+<span id="cb6-19"><a href="#cb6-19"></a></span>
+<span id="cb6-20"><a href="#cb6-20"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> Render and Publish</span></span>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="at">        </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> quarto-dev/quarto-actions/publish@v2</span></span>
+<span id="cb6-22"><a href="#cb6-22"></a><span class="at">        </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a><span class="at">          </span><span class="fu">target</span><span class="kw">:</span><span class="at"> gh-pages</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
+<span id="cb6-25"><a href="#cb6-25"></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If you’ve never looked at YAML before, it should be reasonably human-readable. In this YAML file, there are three high-level sections – <code>on</code>, <code>name</code>, and <code>jobs</code>. This is a pretty minimal GitHub Actions workflow. Every workflow needs an <code>on</code> and <code>jobs</code>. The <code>name</code> is technically optional, but it’s a good idea to keep track of what job is running.</p>
+<p>While this particular syntax is unique to GitHub Actions, the basic idea is universal to any CI/CD system. You have to define when something occurs and what that something is.</p>
+<p>The <code>on</code> section defines <em>when</em> the workflow occurs. In this case, we’ve configured the workflow only to trigger on a push to the <code>main</code> branch. Note that a merge into main counts. This is basically the simplest trigger you can have. GitHub Actions supports a ton of different ways to trigger a workflow. You can see more <a href="https://docs.github.com/en/actions/using-workflows/triggering-a-workflow">in the documentation</a>.</p>
+<p>The <code>jobs</code> section defines what happens when the job is triggered. The most common way to define what happens is to use preexisting GitHub Actions steps with <code>uses</code>. Recall that part of the value of CI/CD is that it occurs in a completely isolated environment, so you’ll first have to set up the environment for the work to occur, then actually do the work.</p>
+<p>As you can see from the <code>runs-on</code> field, we’re starting with a very basic Ubuntu setup. After that, the first two workflow steps set up our environment, with our website’s GitHub repository checked out into the Actions environment and Quarto installed.</p>
+<p>In the third step, we’re actually rendering the website and then pushing it back to the repository. This third step makes use of arguments in GitHub Actions. In GitHub Actions, <code>with</code> defines variables used by the workflow, and <code>env</code> defines values in the environment – often secrets used by the workflow, like in this case.</p>
+<p>At this point, you can just take the pre-defined workflow and use it.</p>
+<p>Once you’ve done that, you’re website should be good to go. If you want to check, make a change to your website and push to the main branch. If you click on the <code>Actions</code> tab on GitHub you’ll be able to see the Action running. Once it finishes, you should be able to see your change reflected on your website.</p>
 
 
 </section>
@@ -636,8 +670,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <li id="fn1"><p>In fact, you should probably feel grateful! It’s nice to know you can mess around as much as you want without risking any damage to real data.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>It’s worth remarking that GitLab has long offered a very good CI/CD integration. I’m going to talk about GHA, since it’s the most popular, but you can accomplish these same things with GitLab CI/CD.</p>
 <p>Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so I’d expect Azure DevOps and GitHub to converge at some point…but who knows?<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>Recall that a finished merge request into the <code>main</code> branch is equivalent to a push to <code>main</code> .<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>If you’re deploying to Posit Connect, <code>R_CONFIG_ACTIVE</code> is locked to <code>rsconnect</code>. If you’ve got multiple deployments to Connect that you want to differentiate, you may want to use a different environment variable, which you would specify manually like <code>config::get(config = Sys.getenv("WHICH_CONFIG"))</code> .<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>If you’re deploying to Posit Connect, <code>R_CONFIG_ACTIVE</code> is locked to <code>rsconnect</code>. If you’ve got multiple deployments to Connect that you want to differentiate, you may want to use a different environment variable, which you would specify manually like <code>config::get(config = Sys.getenv("WHICH_CONFIG"))</code> .<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
