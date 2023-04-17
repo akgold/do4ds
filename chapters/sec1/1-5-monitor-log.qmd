@@ -173,7 +173,9 @@ or *layout*. In most cases, the default log format is in plain text.
 So if you log "Button pressed" at the info level, your log record might
 look something like this in the file:
 
-    2022-11-18 21:57:50 INFO Button Pressed
+```         
+2022-11-18 21:57:50 INFO Button Pressed
+```
 
 But if you're shipping your logs off to have them consumed by some other
 service, you might prefer to have a highly structured log file. The most
@@ -181,11 +183,13 @@ common structured logging format is JSON, though it's also possible to
 use something like YAML or XML. If you used JSON logging, the same
 record might be emitted as:
 
-    {
-      "time": "2022-11-18 21:57:50",
-      "level": "INFO", 
-      "data": "Button Pressed"
-    }
+```         
+{
+  "time": "2022-11-18 21:57:50",
+  "level": "INFO", 
+  "data": "Button Pressed"
+}
+```
 
 Once your log record is created, it needs to be put somewhere for you to
 get it later via a *handler* in `logger` or an *appender* in `log4r`.
@@ -325,10 +329,50 @@ doc on the GrafanaLabs website if you want to actually try it out.
     4.  The numeric values that are going into your computational
         function.
 
-## Portfolio Exercise: Adding Logging
+## Lab 5: An App with Logging
 
-Using the appropriate package for whichever language you wrote in, add
-robust logging to both the API and the App you built.
+Let's go back to the prediction generator app from the last lab and add a little logging. This is quite easy in both R and Python. In both, we just declare that we're using the logger and then we put logging statements into our code. 
 
-For an extra challenge, consider trying to emit Prometheus metrics as
-well and consume them using Prometheus and Grafana.
+I decided to log when the
+app starts, just before and after each request, and an error logger if
+an HTTP error code comes back from the API. 
+
+With the logging now added, here's what the app looks like in R:
+
+``` {.r eval="false" include="../../labs/lab-5/app-log.R" filename="app.R"}
+```
+
+And in Python:
+
+``` {.python eval="false" include="../../labs/lab-5/app-log.py" filename="app.py"}
+```
+
+Now, if you load up this app locally, you can see the logs of what's
+happening stream in as you're pressing buttons in the app.
+
+
+You can feel free to log whatever you think is helpful -- for example, it'd probably be more useful to get the actual error contents if an HTTP error comes back.
+
+
+
+
+
+Now that we've got a model running as an API, let's build an interactive
+app to make it easy for someone who isn't a data scientist to find model
+predictions. I'm going to use the Shiny package, which has both R and
+Python versions.
+
+Here's what my finished app is going to look like
+
+
+Here's the code for this app:
+
+
+
+Now, the point of this chapter isn't the app itself -- it's the app's
+logging. So let's add some logging to this app with `log4r`.
+
+Feel free to add whatever logging you want. 
+With all that added, the code looks like this:
+
+
