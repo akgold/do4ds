@@ -37,10 +37,10 @@ all while being reasonably confident that you won't ever have to say,
 
 Docker is by far the most popular open-source containerization platform.
 So much so that for most purposes container is a synonym for Docker
-container.[^1-5-docker-1] In this chapter, containers will exclusively
+container.[^2-4-docker-1] In this chapter, containers will exclusively
 refer to Docker containers.
 
-[^1-5-docker-1]: There are some other types of containers that are
+[^2-4-docker-1]: There are some other types of containers that are
     commonly used for specialized use cases, like high-performance
     computing.
 
@@ -217,28 +217,34 @@ terminal.
 Let's get started with an example that demonstrates the power of Docker
 right off the bat.
 
+TODO: put model in S3
+
 Once you've got Docker Desktop installed and running, type the following
 in your terminal:
 
-    docker run --rm -d \
-      -p 8000:8000 \
-      --name palmer-plumber \
-      alexkgold/plumber
+```         
+docker run --rm -d \
+  -p 8080:8080 \
+  --name palmer-plumber \
+  alexkgold/plumber
+```
 
 Once you type in this command, it'll take a minute to pull, extract, and
 start the container.
 
 Once the container starts up, you'll see a long sequence of letters and
-numbers. Now, navigate to http://localhost:8000/\_\_docs\_\_/ in your
-browser (this URL has to be exact!), and you should see the
-documentation for an R language API that lets you explore the [Palmer
-Penguins data set](https://allisonhorst.github.io/palmerpenguins/)
+numbers. Now, navigate to `http://localhost:8080`in your browser (this
+URL has to be exact!), and you should see the documentation for an R
+language API that lets you explore the [Palmer Penguins data
+set](https://allisonhorst.github.io/palmerpenguins/)
 
 That was probably pretty uninspiring. It took a long time to download
 and get started. In order to show the real power of Docker, let's now
 kill the container with
 
-    docker kill palmer-plumber
+```         
+docker kill palmer-plumber
+```
 
 You can check that the container isn't running by trying to visit that
 URL again. You'll get an error.
@@ -257,7 +263,9 @@ want logs of what people are doing? Or I need to look at the app code?
 
 You can get into the container to poke around using the command
 
-    docker exec -it palmer-plumber /bin/bash
+```         
+docker exec -it palmer-plumber /bin/bash
+```
 
 Once you're in, try `cat api/plumber.R` to look at the code of the
 running API.
@@ -292,7 +300,9 @@ common reason you'd probably exec into the container -- looking at logs.
 
 After you've clicked around a little in the API, try running:
 
-    docker logs palmer-plumber
+```         
+docker logs palmer-plumber
+```
 
 We're done with this container now. Feel free to kill it before you move
 on.
@@ -308,9 +318,11 @@ around in (the `cd` command is your friend here, see [Chapter
 @sec-cmd-line] if you're not familiar). Run the following in your
 terminal:
 
-    docker run \
-    -v ${PWD}:/project-out \
-    alexkgold/batch:0.1
+```         
+docker run \
+-v ${PWD}:/project-out \
+alexkgold/batch:0.1
+```
 
 It'll take a minute to download -- this container is about 600Mb. You
 may need to grant the container access to a directory on your machine
@@ -350,9 +362,9 @@ and the commands you'll need to move them around.
 A container starts its life as a *Dockerfile*. A Dockerfile is a set of
 instructions for how to build a container. Dockerfiles are usually
 stored in a git repository, just like any other code, and it's common to
-build them on push via a CI/CD pipeline.[^1-5-docker-2]
+build them on push via a CI/CD pipeline.[^2-4-docker-2]
 
-[^1-5-docker-2]: Remember, we talked about them back in [Chapter
+[^2-4-docker-2]: Remember, we talked about them back in [Chapter
     @sec-code-promotion]!
 
 A working Dockerfile gets built into a *Docker image* with the *build*
@@ -440,7 +452,7 @@ If you just want a quick reference later, there's a cheatsheet in
 Let's first look at how we ran the container with the plumber API in it.
 
 For this container, we used the `--rm` flag, the `-d` flag, the `-p`
-flag with the argument `8000:8000`, and the `--name` flag with the
+flag with the argument `8080:8080`, and the `--name` flag with the
 argument `plumber-palmer`.
 
 The `--rm` flag *removes* the container after it finishes running. This
@@ -466,8 +478,8 @@ the command from inside the terminal (`Ctrl + c`), or opening another
 terminal to `docker kill` the container.
 
 The `-p` flag *publishes* a port from inside the container to the host
-machine. So by specifying `-p 8000:8000`, we're taking whatever's
-available on the port `8000` inside the container and making it
+machine. So by specifying `-p 8080:8080`, we're taking whatever's
+available on the port `8080` inside the container and making it
 available at the same port on the `localhost` of the machine that's
 hosting the container.
 
@@ -491,11 +503,13 @@ the name `palmer-plumber`, or with the container ID. You can abbreviate
 container IDs as long as they're unique -- I tend to use the first three
 characters.
 
-    ❯ docker ps                                                         [12:23:13]
+```         
+❯ docker ps                                                         [12:23:13]
 
-    CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                    NAMES
+CONTAINER ID   IMAGE               COMMAND                  CREATED          STATUS          PORTS                    NAMES
 
-    35bd54e44015   alexkgold/plumber   "R -e 'pr <- plumber…"   29 seconds ago   Up 28 seconds   0.0.0.0:8000->8000/tcp   palmer-plumber
+35bd54e44015   alexkgold/plumber   "R -e 'pr <- plumber…"   29 seconds ago   Up 28 seconds   0.0.0.0:8080->8080/tcp   palmer-plumber
+```
 
 ------------------------------------------------------------------------
 
@@ -598,9 +612,9 @@ need `ENTRYPOINT`. If you're building containers to -- for example --
 accept a different asset to run or allow for particular arguments,
 you'll need to use `ENTRYPOINT` to specify the command that will always
 run and `CMD` to specify the default arguments to `ENTRYPOINT`, which
-can be overridden on the command line.[^1-5-docker-3]
+can be overridden on the command line.[^2-4-docker-3]
 
-[^1-5-docker-3]: This might sound backward -- the key is to realize that
+[^2-4-docker-3]: This might sound backward -- the key is to realize that
     this is always how it works. The default `ENTRYPOINT` is
     `/bin/sh -c`, so `CMD` is always just providing arguments to the
     `ENTRYPOINT`.
@@ -657,103 +671,83 @@ another registry using `docker push`.
     -   `-p`, `--name`, `-d`, `--rm`, `-v`
 4.  What are the most important Dockerfile commands?
 
-## Lab: Running a Container Locally
+## Lab: Putting an API in a Container
 
-TODO: move palmer penguins example down here
+Let's put our Penguin model prediction API from [Chapter @sec-apis] into
+a container.
 
-CONSIDER -- should the portfolio example instead be dockerizing the app
-you created in section 1-3?
+Again, Vetiver has some nice tooling to make this very easy to do. You
+should follow the instructions on the `{vetiver}` website for how to
+generate your Dockerfile.
 
-## Portfolio Example: Run RStudio Server in a Container
+One thing to note about this container -- it follows best practices for
+how to put data (in this case the machine-learning model) into the
+container. That means the model *isn't* built into the container.
+Instead, the container knows how to fetch the model.
 
-Write a blog post about getting RStudio Server running in a container on
-your desktop using the `rocker/rstudio` container. Can you access your
-home directory from RStudio Server?
+That means that you'll need to have the `model_board` object available.
+Look back at [Lab 4](#lab4) if you've restarted your Python session
+since you last ran the `{vetiver}` code.
 
--   Hint 1: You'll probably need all of the `docker run` flags you've
-    learned and one more -- the `-e KEY=value` flag provides an
-    environment variable to the running container.
+Once you've generated your Dockerfile, take a look at it. Here's the one
+for my model:
 
--   Hint 2: The default port for RStudio Server is `8787`.
+``` {.Dockerfile eval="false" include="../../labs/lab-6/Dockerfile" filename="Dockerfile"}
+```
 
--   Hint 3: If you're running a laptop with Apple Silicon (M1 or M2),
-    you may need to try a different container. `amoselb/rstudio-m1`
-    worked for me.[^1-5-docker-4]
+This auto-generated Dockerfile is very nicely commented, so its easy to
+follow.
 
-[^1-5-docker-4]: This should eventually be resolved, keep an eye on
-    [this issue](https://github.com/rstudio/rstudio/issues/8809) in the
-    RStudio repo.
+Now build the container using `docker build -t penguin-model-local .`.
 
-### Running a service in a container
+::: callout-tip
+The `docker build` command will only work if you're in the directory
+with the container.
+:::
 
-Consider reviewing the [containers](#docker) section if you're not
-generally familiar with how to run a container.
+Ok, now let's run the container using
 
-If you want to run a service, like RStudio Server, out of a container,
-the pattern is very similar to running an interactive app. You'll find
-an appropriate container, bring it up, and do some port mapping to make
-it available to the outside world.
+``` bash
+#| eval: false
+docker run --rm -d \
+  -p 8080:8080 \
+  --name penguin-model \
+  penguin-model-local
+```
 
-The [rocker](https://hub.docker.com/u/rocker) organization makes
-available a number of containers related to R and RStudio. So if you
-want a container running RStudio Server on your laptop, it's as easy as
-running
+If you go to `http://localhost:8080` you'll find that...it doesn't work?
+Why? If you run the container attached (remove the `-d` from the run
+command) you'll get some feedback that might be helpful.
 
-    docker run \
-      --rm -d \
-      -p 8787:8787 \
-      --name rstudio \
-      rocker/rstudio
+In line 15 of the Dockerfile, we copied the `app.py` in to the
+container. Let's take a look at that file to see if we can find any
+hints.
 
-Now, when you go to `http://localhost:8787` on your laptop, you should
-see the the RStudio login screen...but what's the password? Luckily, the
-wonderful folks who built the `rocker/rstudio` container made it easy to
-supply a password for the default `rstudio` user.
+``` {.Python eval="false" include="../../labs/lab-6/app.py" filename="app.py"}
+```
 
-We do this by supplying an environment variable to the container named
-`PASSWORD` using the `-e` flag.
+Look at that (very long) line 6. The API is connecting to a local directory to pull the model. Is your spidey sense tingling? Something about container filesystem vs host filesystem?
 
-So, `docker kill rstudio` and try again by adding a password when you
-start:
+That's right -- the temp file indicated is inside the `/var` directory on *my machine*, but that directory doesn't exist at `/var` inside the
+container when it's running. In order to get this to work, I've got to
+mount the model in at run time.
 
-    docker run \
-      --rm -d \
-      -p 8787:8787 \
-      --name rstudio \
-      -e PASSWORD=my-rstudio-pass
-      rocker/rstudio
+Add a `-v /var:/var` to your run command like so
 
-Now you should be looking at the RStudio IDE! Hurray!
+``` bash
+#| eval: false
+docker run --rm -d \
+  -p 8080:8080 \
+  --name penguin-model \
+  -v /var:/var \
+  penguin-model-local
+```
 
-This is great for standing up a quick sandbox...but before you go
-standing up an RStudio Server on your laptop and spreading it around the
-world, there are a few things you'll want to think about.
+::: callout-tip
+Depending on the permissions of the `/var` directory on your machine, you *may* need to run the `docker run` command prefixed by `sudo`.
+:::
 
-It's totally possible to run a service like RStudio Server in a docker
-container, but you'll need to take all the same steps to make it
-available to the outside world in terms of hosting it on a server,
-routing traffic properly, and making sure that you're using `HTTPS` to
-secure your traffic. See chapters XX-XX for more on all that.
+And NOW you should be able to get your model up in no time.
 
-Now, let's say I wanted to create another user on the server (docker
-exec)
-
-But there's also one more concern that's particular to Docker.
-
-One of the best things about a Docker container is how ephemeral it is.
-Things come up in moments, and when they're gone you don't have to worry
-about them. But that's also very dangerous if you want things to
-persist.
-
-The best way to fix this is to mount external volumes that will maintain
-the state should the container die or should you want to replace it. We
-went over how to do that in the last section.
-
-At a minimum, you'll want to mount the user home directories that store
-all the data and code you can see in RStudio Server. You may also want
-to mount other bits of state, like wherever you've installed your
-version of R, and the config file you're using to maintain the server.
-
-Note that, unlike on a server (where you restart the process of the
-server), the pattern with a container is generally to kill and restart
-the container, and let changes come up with the new container.
+In [Chapter @sec-cloud], we'll worry about putting the model somewhere
+more permanent so you don't have to worry about this issue.

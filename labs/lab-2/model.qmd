@@ -1,0 +1,37 @@
+---
+title: "Model"
+format:
+  html:
+    code-fold: true
+---
+
+```{python}
+from palmerpenguins import penguins
+from pandas import get_dummies
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
+```
+
+## Get Data
+```{python}
+df = penguins.load_penguins().dropna()
+
+df.head(3)
+```
+
+## Define Model and Fit
+```{python}
+X = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)
+y = df['body_mass_g']
+
+model = LinearRegression().fit(X, y)
+```
+
+## Get some information
+```{python}
+print(f"R^2 {model.score(X,y)}")
+print(f"Intercept {model.intercept_}")
+print(f"Columns {X.columns}")
+print(f"Coefficients {model.coef_}")
+```
