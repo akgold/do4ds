@@ -1,152 +1,49 @@
 # Docker for Data Science {#sec-docker}
 
-You've probably heard of Docker -- maybe you've even heard that you
-*must* use Docker for some purpose or another. And maybe that's true.
-Docker is a fantastic technology that has taken the DevOps world by
-storm, but it's not a panacea for all reproducibility problems.
+In [Chapter @sec-env-as-code], we considered the "runs on my machine"
+problem. In that chapter, you learned about `{renv}` and `{venv}` for
+reproducing and isolating the package environment where your R or Python
+code runs.
 
-This chapter is designed to clarify what Docker is and how it might help
-you. We'll start with a general intro to Docker, proceed with some
-discussion of data science-relevant Docker workflows, and then dive in
-to a hands-on lab that will be just the thing to get you started if
-you're not sure where to go.
+And that's true -- but those same reproducibility and isolation needs
+are present all the way down the data science reproducibility stack.
 
-It's worth noting that there are many entire books on how to use Docker
-in a software engineering context. This chapter is really just meant to
-give you a jumping off point. If you find that you want to get deep, I'd
-recommend you pick up another resource after this.
+For example, what if you have content that needs a particular version of
+R or Python or two pieces of content that rely on different versions of
+the same system library, or run on different operating systems?
 
-## Containers are a Packaging Tool
+Let me introduce you to my friend Docker.
 
-Let's tell a story that might feel familiar. A collaborator sends you a
-piece of code. You go to run it on your machine and an error pops up
-`Python 3.7 not found`. So you spend an hour on Stack Overflow, figuring
-out how to install version 3.7 of Python.
-
-Then you try to run the code again, which creates some maps, and this
-time get an error `System library gdal not found`. "Augh!" you cry, "Why
-is there not a way to include all of these dependencies with the
-code?!?"
-
-You have just discovered one of the primary use cases for a container.
-
-Containers are a way to package up some code with all of its
-dependencies, making it easy to run the code later, share it with
-someone else for collaboration, or put it onto a production server --
-all while being reasonably confident that you won't ever have to say,
-"well, it runs on my machine".
-
-Docker is by far the most popular open-source containerization platform.
-So much so that for most purposes container is a synonym for Docker
-container.[^2-4-docker-1] In this chapter, containers will exclusively
-refer to Docker containers.
-
-[^2-4-docker-1]: There are some other types of containers that are
-    commonly used for specialized use cases, like high-performance
-    computing.
-
-In addition to making it easy to get all of the dependencies with an
-app, Docker also makes it easy to run a bunch of different isolated apps
-without having them interfere with each other.
-
-Virtual machines of various sorts have been around since the 1960s, and
-are still used for many applications. In contrast to a virtual machine,
-Docker is much more lightweight. Once a container has been downloaded to
-your machine, it can start up in less than a second.
-
-This is why Docker -- not the only, or even the first open source
-containerization system -- was the first to hit the mainstream, as much
-as any esoteric code-development and deployment tool can be said to "hit
-the mainstream".
-
-This means that -- for the most part -- anything that can run in a
-Docker container in one place can be run on another machine with very
-minimal configuration.
-
-::: callout-note
-There are exceptions. Until recently, a huge fraction of laptop CPUs
-were of a particular architecture called `x86`.
-
-Apple's recent M1 and M2 chips run on an ARM64 architecture, which had
-previously been used almost exclusively for phones and tablets. The
-details aren't super important, but the upshot is that getting
-containers working on Apple silicon may not be trivial.
-:::
-
-Docker doesn't completely negate the need for other sorts of IT tooling,
-because you still have to provision the physical hardware somehow, but
-it does make everything much more self-contained. And if you've already
-got a laptop, you can easily run Docker containers with just a few
-commands (we'll get to that below).
-
-## Containers for Data Science
-
-In a data science context, there are two main ways you might use
-containers -- as a way to package a development environment for someone
-else to use, and as a way to package a finished app for archiving,
-reproducibility, and production.
-
-::: callout-note
-## The Data Science Reproducibility Stack
-
-A reminder from the [reproducibility chapter](#repro):
-
-*The data science reproducibility stack generally includes 6 elements:*
-
-1.  *Code*
-2.  *Data*
-3.  *R + Python Packages*
-4.  *R + Python Versions*
-5.  *Other System Libraries*
-6.  *Operating System*
-:::
-
-If you're running RStudio Server or JupyterHub on a centralized server,
-Docker can be a great way to maintain that server. In my opinion,
-maintaining a Docker container is one of the easiest ways to start on an
-infrastructure-as-code journey.
-
-We're not going to get terribly deep into this use case, as creating the
-overwhelming majority of the work involved is standard IT/Admin tasks
-for hosting a server - things like managing networking, authentication
-and authorization, security, and more.
-
-::: callout-note
-If you're thinking about hosting a data science workbench in Docker, you
-should think carefully about whether you want to deal with standalone
-containers, or whether you're really looking for [*container
-orchestration*](#k8s) using *Kubernetes*.
-:::
-
-In this chapter, I'll suggest trying to stand up RStudio Server in a
-container on your desktop, but don't let the ease fool you. The majority
-of difficulties with administering a server are the same, even if you
-put your application stack into a Docker container. Section II of this
-book will have a lot more on those challenges, and I suggest you check
-it out if you're interested.
-
-Instead, we're going to stick with talking about how actual data
-scientists would want to use Docker: to archive and share completed data
-science assets.
+TODO: rework this image to show the different layers
 
 ![](images-docker/docker-usage.png)
 
-In this pattern, you'll put your whole reproducibility stack inside the
-container itself -- perhaps minus your data.
+**Data Science Reproducibility Stack**
 
-## Container Gotchas
++-----------------------+----------------------------------------------+
+| Layer                 | Contents                                     |
++=======================+==============================================+
+| Package               | R + Python Packages                          |
++-----------------------+----------------------------------------------+
+| System                | R + Python Language Versions                 |
+|                       |                                              |
+|                       | Other System Libraries                       |
+|                       |                                              |
+|                       | Operating System                             |
++-----------------------+----------------------------------------------+
+| Hardware              | Virtual Hardware                             |
+|                       |                                              |
+|                       | Physical Hardware                            |
++-----------------------+----------------------------------------------+
 
-Docker containers are great for certain purposes, but there are also
-some tradeoffs that it's worth being aware of.
+Docker is the most popular tool to reproduce and isolate the *System*
+level of the reproducibility stack. If you put your project in a Docker
+container and it runs today, you can be reasonably confident that the
+container itself can run almost anywhere else.[^2-4-docker-1]
 
-The first is the tradeoff of Docker's strength: a container only gets
-access to the resources it has specifically been allowed to access.
-
-This is a great feature for security and process isolation, but it means
-you may run into some issues with networking and access to system
-resources, like your files. You'll have to develop a reasonably good
-mental model of the relationship of the Docker container to the rest of
-your machine in order to be able to develop effectively.
+[^2-4-docker-1]: Usually. Users of Apple's M1 and M2 chips have run into
+    many issues running containers due to differences in hardware
+    architecture.
 
 It's worth noting that in some environments -- especially
 highly-regulated ones -- a Docker container may not be a sufficient
@@ -156,102 +53,117 @@ differ across machines, even with the same container. You probably know
 if you're in this kind of environment and you have to maintain physical
 machines.
 
-There are also several antipatterns that using a container could
-facilitate.
+That's a great thing for reproducibility. It's also really nice if
+you're a team that manages services another team builds. If the build
+team can run their containers, you've meaningfully reduced how much can
+go wrong when you go to prod.
 
-The biggest reproducibility headache for most data scientists is
-managing R and Python package environments. While you can just install a
-bunch of packages into a container, save the container state, and move
-on, this really isn't a good solution.
+There are two basic things you might want to with Docker containers --
+use them to share a development environment with collaborators or use
+them as a tool for reproducibility across time and system.
 
-If you do this, you've got the last state of your environment saved, but
-it's not really reproducible. If you come back next year and need to add
-a new package, you'll have no way to do it without potentially breaking
-the whole environment.
+I am not a big fan of sharing Docker containers as a way to collaborate
+with others on data science projects. It requires everyone to have a
+pretty high level of understanding of Docker. I generally am a bigger
+fan of moving data science work [to a server](@sec-servers). If you're
+on the same server as your collaborator, you know the *System Level*
+matches and you just need to worry about the package environment for any
+given project.
 
-The obvious solution is to write down the steps for creating your Docker
-container -- in a file called a Dockerfile. Here, it's tempting to
-create a Dockerfile that looks like:
+For that reason, I'm not going to explicitly address how to use
+containers for collaboration, but this chapter will give you all the
+tools you need if you really want to go down that road.
 
-``` dockerfile
-...
-RUN /opt/R/4.1.0/bin/R install.packages(c("shiny", "dplyr"))
-...
-```
+Instead, we're going to stick with talking about how actual data
+scientists would want to use Docker: to archive and share completed data
+science assets. This chapter starts with a general intro to how to use
+Docker for Data Science, dives deep into how to actually use Docker, and
+closes out by taking the model prediction API from [Chapter @sec-apis]
+and Docker-izes it.
 
-But this is also completely non-reproducible. Whenever you rebuild your
-container, you'll install the newest versions of Shiny and Dplyr afresh,
-potentially ruining the reproducibility of your code. For that reason,
-the best move is to still use R- and Python-specific libraries for
-capturing package state -- like `renv` and `rig` in R and `virtualenv` ,
-`conda` , and `pyenv` in Python -- rather than relying on Docker for
-that job. There's more on those topics in the [Chapter @sec-env-as-code]
-on environments.
+## But what are containers?
+
+Docker is the most popular open-source containerization platform. As a
+rough mental model, you can think of a Docker container as a little
+sub-computer running inside your computer or server.
+
+Because they are so ubiquitous these days, some people mistakenly think
+using Docker and DevOps best practices are synonymous. And it's true,
+many DevOps best practices can be facilitated by Docker containers. But
+using Docker containers are neither necessary or sufficient for
+achieving a high level of reproducibility and isolation.
+
+Docker is far from the only way to do this. Virtual machines and machine
+images have been around since the 1960s, and other sorts of environment
+management tools are still quite popular in certain
+contexts.[^2-4-docker-2]
+
+[^2-4-docker-2]: For example, Linux Environment Modules are quite
+    popular in the Pharmaceutical industry, and Singularity containers
+    are popular for High-Performance Computing (HPC).
+
+But relative to those other systems, containers are more
+system-agnostic, more lightweight, and are easier to run. And Docker
+containers in particular are by far the most popular type of container.
+So much so that for most purposes container is a synonym for Docker
+container.
+
+Docker containers have very high degrees of ephemerality and isolation
+that make them extremely powerful, but also tricky.
+
+*What happens in a Docker container stays in a Docker container.*
+
+Docker containers are almost completely ephemeral. Whatever operations
+happen inside a Docker container are restricted to that container.
+That's awesome from the perspective of security and resource management.
+It's also just nice because everything gets cleaned up after itself.
+
+But it can also be a challenge -- when a container needs to access data
+outside the container or someone else needs to get inside, it has to be
+explicitly given to the container. That means anyone running a Docker
+container has to develop a good mental model of the relationship of the
+Docker container to the rest of your machine in order to be able to
+develop effectively.
 
 ## Trying out Docker
-
-If you've read this far, you probably have a reasonably good mental
-model of when you might want to use Docker to encapsulate your data
-science environment or when you might not. The rest of this chapter will
-be a hands-on intro to using Docker to run a finished app.
-
-### Prerequisites
-
-In order to get started with Docker, you'll need to know a few things.
-The first is that you'll have to actually have Docker installed on an
-environment you can use. The easiest way to do this is to install
-[Docker Desktop](https://www.docker.com/products/docker-desktop) on your
-laptop, but you can also put Docker on a server environment.
-
-::: callout-note
-We're going to use Docker from a terminal on your machine. I'll give you
-all the commands you'll need, but you need to know how to find and open
-a terminal.
-
-If that's new to you, you might want to skip ahead and check out the
-beginning of [Chapter @sec-cmd-line] so you can at least open a
-terminal.
-:::
-
-### Getting Started
 
 Let's get started with an example that demonstrates the power of Docker
 right off the bat.
 
-TODO: put model in S3
+::: callout-note
+Before you start, make sure to install [Docker
+Desktop](https://www.docker.com/products/docker-desktop) on your laptop.
+:::
 
-Once you've got Docker Desktop installed and running, type the following
-in your terminal:
+Open a terminal and put the following in:
 
 ```         
 docker run --rm -d \
   -p 8080:8080 \
-  --name palmer-plumber \
-  alexkgold/plumber
+  --name penguin-model \
+  alexkgold/penguin-model
 ```
 
 Once you type in this command, it'll take a minute to pull, extract, and
 start the container.
 
 Once the container starts up, you'll see a long sequence of letters and
-numbers. Now, navigate to `http://localhost:8080`in your browser (this
-URL has to be exact!), and you should see the documentation for an R
-language API that lets you explore the [Palmer Penguins data
-set](https://allisonhorst.github.io/palmerpenguins/)
+numbers. Now, navigate to `http://localhost:8080` in your browser (this
+URL has to be exact!), and you should see the model API we built back in
+the lab in [Chapter @sec-apis].
 
 That was probably pretty uninspiring. It took a long time to download
 and get started. In order to show the real power of Docker, let's now
 kill the container with
 
 ```         
-docker kill palmer-plumber
+docker kill penguin-model
 ```
 
 You can check that the container isn't running by trying to visit that
 URL again. You'll get an error.
 
-Let's bring the container back up by running the `docker run` command
-above again.
+Now run the `docker run` command again.
 
 This time is should be quick -- probably less than a second -- now that
 you've got the container downloaded. THIS is the power of Docker.
@@ -363,9 +275,9 @@ and the commands you'll need to move them around.
 A container starts its life as a *Dockerfile*. A Dockerfile is a set of
 instructions for how to build a container. Dockerfiles are usually
 stored in a git repository, just like any other code, and it's common to
-build them on push via a CI/CD pipeline.[^2-4-docker-2]
+build them on push via a CI/CD pipeline.[^2-4-docker-3]
 
-[^2-4-docker-2]: Remember, we talked about them back in [Chapter
+[^2-4-docker-3]: Remember, we talked about them back in [Chapter
     @sec-code-promotion]!
 
 A working Dockerfile gets built into a *Docker image* with the *build*
@@ -546,7 +458,57 @@ evaluated to the current working directory to be the directory
 `project-out` inside the container, so the rendered document can be
 persisted after the container goes away.
 
-## Build your own with Dockerfiles
+## Building Data Science Containers with Dockerfiles
+
+My recommendation for using containers for data science is to complete a
+data science project and get everything working as if no containers will
+be involved and then put all the immutable data inside the container.
+
+This last bit is particularly important -- only *immutable* data should
+go inside the container. As we discussed in [Chapter @sec-data-arch],
+you don't want to have to rebuild your environment every time the data
+changes. Instead, you want to provide a way for the container to pick up
+the data or model from outside.
+
+Likewise because containers are so ephemeral, you shouldn't count on
+anything in there sticking around. If it's important, the container
+should explicitly write it somewhere outside the container. That
+includes the logs of the container itself -- if the container errors
+out, it's gone and you'll want those logs to try to figure out what went
+wrong.
+
+In this pattern, you'll put your whole reproducibility stack inside the
+container itself -- perhaps minus your data.
+
+There are also several antipatterns that using a container could
+facilitate.
+
+The biggest reproducibility headache for most data scientists is
+managing R and Python package environments. While you can just install a
+bunch of packages into a container, save the container state, and move
+on, this really isn't a good solution.
+
+If you do this, you've got the last state of your environment saved, but
+it's not really reproducible. If you come back next year and need to add
+a new package, you'll have no way to do it without potentially breaking
+the whole environment.
+
+The obvious solution is to write down the steps for creating your Docker
+container -- in a file called a Dockerfile. Here, it's tempting to
+create a Dockerfile that looks like:
+
+``` dockerfile
+RUN /opt/R/4.1.0/bin/R install.packages(c("shiny", "dplyr"))
+```
+
+But this is also completely non-reproducible. Whenever you rebuild your
+container, you'll install the newest versions of Shiny and Dplyr afresh,
+potentially ruining the reproducibility of your code. For that reason,
+the best move is to still use R- and Python-specific libraries for
+capturing package state -- like `renv` and `rig` in R and `virtualenv` ,
+`conda` , and `pyenv` in Python -- rather than relying on Docker for
+that job. There's more on those topics in the [Chapter @sec-env-as-code]
+on environments.
 
 So far, we've just been running containers based on images I've already
 prepared for you. Let's look at how those images were created so you can
@@ -613,9 +575,9 @@ need `ENTRYPOINT`. If you're building containers to -- for example --
 accept a different asset to run or allow for particular arguments,
 you'll need to use `ENTRYPOINT` to specify the command that will always
 run and `CMD` to specify the default arguments to `ENTRYPOINT`, which
-can be overridden on the command line.[^2-4-docker-3]
+can be overridden on the command line.[^2-4-docker-4]
 
-[^2-4-docker-3]: This might sound backward -- the key is to realize that
+[^2-4-docker-4]: This might sound backward -- the key is to realize that
     this is always how it works. The default `ENTRYPOINT` is
     `/bin/sh -c`, so `CMD` is always just providing arguments to the
     `ENTRYPOINT`.
@@ -759,3 +721,10 @@ And NOW you should be able to get your model up in no time.
 
 In [Chapter @sec-cloud], we'll worry about putting the model somewhere
 more permanent so you don't have to worry about this issue.
+
+### Lab Extension
+
+Right now, logs from the API just stay inside the app. But that means
+that the logs go away when the container does. That's obviously bad if
+the container dies because something goes wrong. How might you make sure
+that the container's logs get written somewhere more permanent?
