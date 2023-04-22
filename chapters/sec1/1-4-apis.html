@@ -407,7 +407,7 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <col style="width: 20%">
 <col style="width: 20%">
 <col style="width: 20%">
-<col style="width: 29%">
+<col style="width: 25%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -422,8 +422,8 @@ gtag('config', 'G-BTSMMRMH08', { 'anonymize_ip': true});
 <td>Front End</td>
 <td>Pre sentation</td>
 <td>Javascript</td>
-<td><p>Sh iny/Dash/Streamlit</p>
-<p>Quarto/R Markdown/Jupyter</p></td>
+<td><p>Sh iny /Dash/Streamlit</p>
+<p>Quarto/R M arkdown/Jupyter</p></td>
 </tr>
 <tr class="even">
 <td>Back End</td>
@@ -682,7 +682,7 @@ Note
 <table class="table">
 <colgroup>
 <col style="width: 23%">
-<col style="width: 68%">
+<col style="width: 66%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -769,18 +769,24 @@ Note
 <div class="code-with-filename-file">
 <pre><strong>model.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb5" data-eval="false" data-startfrom="44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 43;"><span id="cb5-44"><a href="#cb5-44"></a><span class="co">## Turn into Vetiver Model</span></span>
+<div class="sourceCode" id="cb5" data-startfrom="44"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 43;"><span id="cb5-44"><a href="#cb5-44"></a><span class="co">## Turn into Vetiver Model</span></span>
 <span id="cb5-45"><a href="#cb5-45"></a></span>
 <span id="cb5-46"><a href="#cb5-46"></a>```{python}</span>
-<span id="cb5-47"><a href="#cb5-47"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel, VetiverAPI, vetiver_pin_write</span>
+<span id="cb5-47"><a href="#cb5-47"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel, VetiverAPI</span>
 <span id="cb5-48"><a href="#cb5-48"></a><span class="im">from</span> pins <span class="im">import</span> board_temp</span>
 <span id="cb5-49"><a href="#cb5-49"></a></span>
 <span id="cb5-50"><a href="#cb5-50"></a>v <span class="op">=</span> VetiverModel(model, model_name<span class="op">=</span><span class="st">'penguin_model'</span>, prototype_data<span class="op">=</span>X)</span>
-<span id="cb5-51"><a href="#cb5-51"></a><span class="co"># Save model to board</span></span>
-<span id="cb5-52"><a href="#cb5-52"></a>model_board <span class="op">=</span> board_temp(versioned <span class="op">=</span> <span class="va">True</span>, allow_pickle_read <span class="op">=</span> <span class="va">True</span>)</span>
-<span id="cb5-53"><a href="#cb5-53"></a>vetiver_pin_write(model_board, v)</span>
-<span id="cb5-54"><a href="#cb5-54"></a>app <span class="op">=</span> VetiverAPI(v, check_prototype <span class="op">=</span> <span class="va">True</span>)</span>
-<span id="cb5-55"><a href="#cb5-55"></a>```</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-51"><a href="#cb5-51"></a>```</span>
+<span id="cb5-52"><a href="#cb5-52"></a></span>
+<span id="cb5-53"><a href="#cb5-53"></a><span class="co">## Save to Board</span></span>
+<span id="cb5-54"><a href="#cb5-54"></a>```{python}</span>
+<span id="cb5-55"><a href="#cb5-55"></a><span class="im">from</span> pins <span class="im">import</span> board_folder</span>
+<span id="cb5-56"><a href="#cb5-56"></a><span class="im">from</span> vetiver <span class="im">import</span> vetiver_pin_write</span>
+<span id="cb5-57"><a href="#cb5-57"></a></span>
+<span id="cb5-58"><a href="#cb5-58"></a>model_board <span class="op">=</span> board_folder(<span class="st">"./model"</span>, allow_pickle_read <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb5-59"><a href="#cb5-59"></a>vetiver_pin_write(model_board, v)</span>
+<span id="cb5-60"><a href="#cb5-60"></a>```</span>
+<span id="cb5-61"><a href="#cb5-61"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once you’ve done this, you can run <code>app.run(port = 8080)</code> in your Python session. This will run your model API on port 8080.</p>
 <p>More on what that means in <a href="../sec3/3-3-networking.html">Chapter&nbsp;<span>12</span></a>.</p>
@@ -834,7 +840,7 @@ Note
 <div class="code-with-filename-file">
 <pre><strong>app.R</strong></pre>
 </div>
-<div class="sourceCode" id="cb8" data-eval="false"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">library</span>(shiny)</span>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">library</span>(shiny)</span>
 <span id="cb8-2"><a href="#cb8-2"></a></span>
 <span id="cb8-3"><a href="#cb8-3"></a>api_url <span class="ot">&lt;-</span> <span class="st">"http://127.0.0.1:8080/predict"</span></span>
 <span id="cb8-4"><a href="#cb8-4"></a></span>
@@ -912,58 +918,71 @@ Note
 <div class="code-with-filename-file">
 <pre><strong>app.py</strong></pre>
 </div>
-<div class="sourceCode" id="cb9" data-eval="false"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">from</span> shiny <span class="im">import</span> App, render, ui, reactive</span>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="im">from</span> shiny <span class="im">import</span> App, render, ui, reactive</span>
 <span id="cb9-2"><a href="#cb9-2"></a><span class="im">import</span> requests</span>
-<span id="cb9-3"><a href="#cb9-3"></a></span>
-<span id="cb9-4"><a href="#cb9-4"></a>api_url <span class="op">=</span> <span class="st">'http://127.0.0.1:8080/predict'</span></span>
-<span id="cb9-5"><a href="#cb9-5"></a></span>
-<span id="cb9-6"><a href="#cb9-6"></a>app_ui <span class="op">=</span> ui.page_fluid(</span>
-<span id="cb9-7"><a href="#cb9-7"></a>    ui.panel_title(<span class="st">"Penguin Mass Predictor"</span>), </span>
-<span id="cb9-8"><a href="#cb9-8"></a>    ui.layout_sidebar(</span>
-<span id="cb9-9"><a href="#cb9-9"></a>        ui.panel_sidebar(</span>
-<span id="cb9-10"><a href="#cb9-10"></a>            [ui.input_slider(<span class="st">"bill_length"</span>, <span class="st">"Bill Length (mm)"</span>, <span class="dv">30</span>, <span class="dv">60</span>, <span class="dv">45</span>, step <span class="op">=</span> <span class="fl">0.1</span>),</span>
-<span id="cb9-11"><a href="#cb9-11"></a>            ui.input_select(<span class="st">"sex"</span>, <span class="st">"Sex"</span>, [<span class="st">"Male"</span>, <span class="st">"Female"</span>]),</span>
-<span id="cb9-12"><a href="#cb9-12"></a>            ui.input_select(<span class="st">"species"</span>, <span class="st">"Species"</span>, [<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>]),</span>
-<span id="cb9-13"><a href="#cb9-13"></a>            ui.input_action_button(<span class="st">"predict"</span>, <span class="st">"Predict"</span>)]</span>
-<span id="cb9-14"><a href="#cb9-14"></a>        ),</span>
-<span id="cb9-15"><a href="#cb9-15"></a>        ui.panel_main(</span>
-<span id="cb9-16"><a href="#cb9-16"></a>            ui.h2(<span class="st">"Penguin Parameters"</span>),</span>
-<span id="cb9-17"><a href="#cb9-17"></a>            ui.output_text_verbatim(<span class="st">"vals_out"</span>),</span>
-<span id="cb9-18"><a href="#cb9-18"></a>            ui.h2(<span class="st">"Predicted Penguin Mass (g)"</span>), </span>
-<span id="cb9-19"><a href="#cb9-19"></a>            ui.output_text(<span class="st">"pred_out"</span>)</span>
-<span id="cb9-20"><a href="#cb9-20"></a>        )</span>
-<span id="cb9-21"><a href="#cb9-21"></a>    )   </span>
-<span id="cb9-22"><a href="#cb9-22"></a>)</span>
-<span id="cb9-23"><a href="#cb9-23"></a></span>
-<span id="cb9-24"><a href="#cb9-24"></a><span class="kw">def</span> server(<span class="bu">input</span>, output, session):</span>
-<span id="cb9-25"><a href="#cb9-25"></a>    <span class="at">@reactive.Calc</span></span>
-<span id="cb9-26"><a href="#cb9-26"></a>    <span class="kw">def</span> vals():</span>
-<span id="cb9-27"><a href="#cb9-27"></a>        d <span class="op">=</span> {</span>
-<span id="cb9-28"><a href="#cb9-28"></a>            <span class="st">"bill_length_mm"</span> : <span class="bu">input</span>.bill_length(),</span>
-<span id="cb9-29"><a href="#cb9-29"></a>            <span class="st">"sex_Male"</span> : <span class="bu">input</span>.sex() <span class="op">==</span> <span class="st">"Male"</span>,</span>
-<span id="cb9-30"><a href="#cb9-30"></a>            <span class="st">"species_Gentoo"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Gentoo"</span>, </span>
-<span id="cb9-31"><a href="#cb9-31"></a>            <span class="st">"species_Chinstrap"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Chinstrap"</span></span>
-<span id="cb9-32"><a href="#cb9-32"></a></span>
-<span id="cb9-33"><a href="#cb9-33"></a>        }</span>
-<span id="cb9-34"><a href="#cb9-34"></a>        <span class="cf">return</span> d</span>
-<span id="cb9-35"><a href="#cb9-35"></a>    </span>
-<span id="cb9-36"><a href="#cb9-36"></a>    <span class="at">@reactive.Calc</span></span>
-<span id="cb9-37"><a href="#cb9-37"></a>    <span class="at">@reactive.event</span>(<span class="bu">input</span>.predict)</span>
-<span id="cb9-38"><a href="#cb9-38"></a>    <span class="kw">def</span> pred():</span>
-<span id="cb9-39"><a href="#cb9-39"></a>        r <span class="op">=</span> requests.post(api_url, json <span class="op">=</span> vals())</span>
-<span id="cb9-40"><a href="#cb9-40"></a>        <span class="cf">return</span> r.json().get(<span class="st">'predict'</span>)[<span class="dv">0</span>]</span>
-<span id="cb9-41"><a href="#cb9-41"></a></span>
-<span id="cb9-42"><a href="#cb9-42"></a>    <span class="at">@output</span></span>
-<span id="cb9-43"><a href="#cb9-43"></a>    <span class="at">@render.text</span></span>
-<span id="cb9-44"><a href="#cb9-44"></a>    <span class="kw">def</span> vals_out():</span>
-<span id="cb9-45"><a href="#cb9-45"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span>vals()<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb9-46"><a href="#cb9-46"></a></span>
-<span id="cb9-47"><a href="#cb9-47"></a>    <span class="at">@output</span></span>
-<span id="cb9-48"><a href="#cb9-48"></a>    <span class="at">@render.text</span></span>
-<span id="cb9-49"><a href="#cb9-49"></a>    <span class="kw">def</span> pred_out():</span>
-<span id="cb9-50"><a href="#cb9-50"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="bu">round</span>(pred())<span class="sc">}</span><span class="ss">"</span></span>
-<span id="cb9-51"><a href="#cb9-51"></a></span>
-<span id="cb9-52"><a href="#cb9-52"></a>app <span class="op">=</span> App(app_ui, server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="im">import</span> logging</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a>api_url <span class="op">=</span> <span class="st">'http://127.0.0.1:8080/predict'</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>logging.basicConfig(</span>
+<span id="cb9-7"><a href="#cb9-7"></a>    <span class="bu">format</span><span class="op">=</span><span class="st">'</span><span class="sc">%(asctime)s</span><span class="st"> - </span><span class="sc">%(message)s</span><span class="st">'</span>,</span>
+<span id="cb9-8"><a href="#cb9-8"></a>    level<span class="op">=</span>logging.INFO</span>
+<span id="cb9-9"><a href="#cb9-9"></a>)</span>
+<span id="cb9-10"><a href="#cb9-10"></a></span>
+<span id="cb9-11"><a href="#cb9-11"></a>app_ui <span class="op">=</span> ui.page_fluid(</span>
+<span id="cb9-12"><a href="#cb9-12"></a>    ui.panel_title(<span class="st">"Penguin Mass Predictor"</span>), </span>
+<span id="cb9-13"><a href="#cb9-13"></a>    ui.layout_sidebar(</span>
+<span id="cb9-14"><a href="#cb9-14"></a>        ui.panel_sidebar(</span>
+<span id="cb9-15"><a href="#cb9-15"></a>            [ui.input_slider(<span class="st">"bill_length"</span>, <span class="st">"Bill Length (mm)"</span>, <span class="dv">30</span>, <span class="dv">60</span>, <span class="dv">45</span>, step <span class="op">=</span> <span class="fl">0.1</span>),</span>
+<span id="cb9-16"><a href="#cb9-16"></a>            ui.input_select(<span class="st">"sex"</span>, <span class="st">"Sex"</span>, [<span class="st">"Male"</span>, <span class="st">"Female"</span>]),</span>
+<span id="cb9-17"><a href="#cb9-17"></a>            ui.input_select(<span class="st">"species"</span>, <span class="st">"Species"</span>, [<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>]),</span>
+<span id="cb9-18"><a href="#cb9-18"></a>            ui.input_action_button(<span class="st">"predict"</span>, <span class="st">"Predict"</span>)]</span>
+<span id="cb9-19"><a href="#cb9-19"></a>        ),</span>
+<span id="cb9-20"><a href="#cb9-20"></a>        ui.panel_main(</span>
+<span id="cb9-21"><a href="#cb9-21"></a>            ui.h2(<span class="st">"Penguin Parameters"</span>),</span>
+<span id="cb9-22"><a href="#cb9-22"></a>            ui.output_text_verbatim(<span class="st">"vals_out"</span>),</span>
+<span id="cb9-23"><a href="#cb9-23"></a>            ui.h2(<span class="st">"Predicted Penguin Mass (g)"</span>), </span>
+<span id="cb9-24"><a href="#cb9-24"></a>            ui.output_text(<span class="st">"pred_out"</span>)</span>
+<span id="cb9-25"><a href="#cb9-25"></a>        )</span>
+<span id="cb9-26"><a href="#cb9-26"></a>    )   </span>
+<span id="cb9-27"><a href="#cb9-27"></a>)</span>
+<span id="cb9-28"><a href="#cb9-28"></a></span>
+<span id="cb9-29"><a href="#cb9-29"></a><span class="kw">def</span> server(<span class="bu">input</span>, output, session):</span>
+<span id="cb9-30"><a href="#cb9-30"></a>    logging.info(<span class="st">"App start"</span>)</span>
+<span id="cb9-31"><a href="#cb9-31"></a></span>
+<span id="cb9-32"><a href="#cb9-32"></a>    <span class="at">@reactive.Calc</span></span>
+<span id="cb9-33"><a href="#cb9-33"></a>    <span class="kw">def</span> vals():</span>
+<span id="cb9-34"><a href="#cb9-34"></a>        d <span class="op">=</span> {</span>
+<span id="cb9-35"><a href="#cb9-35"></a>            <span class="st">"bill_length_mm"</span> : <span class="bu">input</span>.bill_length(),</span>
+<span id="cb9-36"><a href="#cb9-36"></a>            <span class="st">"sex_Male"</span> : <span class="bu">input</span>.sex() <span class="op">==</span> <span class="st">"Male"</span>,</span>
+<span id="cb9-37"><a href="#cb9-37"></a>            <span class="st">"species_Gentoo"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Gentoo"</span>, </span>
+<span id="cb9-38"><a href="#cb9-38"></a>            <span class="st">"species_Chinstrap"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Chinstrap"</span></span>
+<span id="cb9-39"><a href="#cb9-39"></a></span>
+<span id="cb9-40"><a href="#cb9-40"></a>        }</span>
+<span id="cb9-41"><a href="#cb9-41"></a>        <span class="cf">return</span> d</span>
+<span id="cb9-42"><a href="#cb9-42"></a>    </span>
+<span id="cb9-43"><a href="#cb9-43"></a>    <span class="at">@reactive.Calc</span></span>
+<span id="cb9-44"><a href="#cb9-44"></a>    <span class="at">@reactive.event</span>(<span class="bu">input</span>.predict)</span>
+<span id="cb9-45"><a href="#cb9-45"></a>    <span class="kw">def</span> pred():</span>
+<span id="cb9-46"><a href="#cb9-46"></a>        logging.info(<span class="st">"Request Made"</span>)</span>
+<span id="cb9-47"><a href="#cb9-47"></a>        r <span class="op">=</span> requests.post(api_url, json <span class="op">=</span> vals())</span>
+<span id="cb9-48"><a href="#cb9-48"></a>        logging.info(<span class="st">"Request Returned"</span>)</span>
+<span id="cb9-49"><a href="#cb9-49"></a></span>
+<span id="cb9-50"><a href="#cb9-50"></a>        <span class="cf">if</span> r.status_code <span class="op">!=</span> <span class="dv">200</span>:</span>
+<span id="cb9-51"><a href="#cb9-51"></a>            logging.error(<span class="st">"HTTP error returned"</span>)</span>
+<span id="cb9-52"><a href="#cb9-52"></a></span>
+<span id="cb9-53"><a href="#cb9-53"></a>        <span class="cf">return</span> r.json().get(<span class="st">'predict'</span>)[<span class="dv">0</span>]</span>
+<span id="cb9-54"><a href="#cb9-54"></a></span>
+<span id="cb9-55"><a href="#cb9-55"></a>    <span class="at">@output</span></span>
+<span id="cb9-56"><a href="#cb9-56"></a>    <span class="at">@render.text</span></span>
+<span id="cb9-57"><a href="#cb9-57"></a>    <span class="kw">def</span> vals_out():</span>
+<span id="cb9-58"><a href="#cb9-58"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span>vals()<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb9-59"><a href="#cb9-59"></a></span>
+<span id="cb9-60"><a href="#cb9-60"></a>    <span class="at">@output</span></span>
+<span id="cb9-61"><a href="#cb9-61"></a>    <span class="at">@render.text</span></span>
+<span id="cb9-62"><a href="#cb9-62"></a>    <span class="kw">def</span> pred_out():</span>
+<span id="cb9-63"><a href="#cb9-63"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="bu">round</span>(pred())<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb9-64"><a href="#cb9-64"></a></span>
+<span id="cb9-65"><a href="#cb9-65"></a>app <span class="op">=</span> App(app_ui, server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This isn’t a Shiny book, so I’m not going to go into why all of this works. If you’re interested in getting better at Shiny, I’d recommend the excellent <a href="https://mastering-shiny.org/">Mastering Shiny</a> book.</p>
 <p>In both apps, the most relevant section for this chapter is the part that calls the API.</p>

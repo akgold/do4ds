@@ -449,16 +449,7 @@ What doesn’t <code>https</code> do?
 <div class="cell-output-display">
 <div>
 <p>
-</p><pre class="mermaid mermaid-js" data-tooltip-selector="#mermaid-tooltip-1">graph TD
-    A[Browser] --&gt;|Request| B[SSL Certificate]
-    B --&gt; |Sent| A
-    C[Certificate Authority] --&gt; |Verifies| B
-    A --&gt; |Consults| C
-</pre>
-<div id="mermaid-tooltip-1" class="mermaidTooltip">
-
-</div>
-<p></p>
+</p>
 </div>
 </div>
 </div>
@@ -506,7 +497,7 @@ What doesn’t <code>https</code> do?
 </div>
 <div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">sudo</span> apt-get install certbot python3-certbot-nginx </span>
 <span id="cb2-2"><a href="#cb2-2"></a><span class="fu">sudo</span> systemctl restart nginx </span>
-<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">sudo</span> certbot –nginx <span class="at">-d</span> do4ds-lab.shop <span class="at">-d</span> www.do4ds-lab.shop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="fu">sudo</span> certbot <span class="at">--nginx</span> <span class="at">-d</span> do4ds-lab.shop <span class="at">-d</span> www.do4ds-lab.shop</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Before you move along, I’d recommend you take a moment and inspect the <code>/etc/nginx/nginx.conf</code> file to look at what certbot added.</p>
 <p>You’ll notice two things. You’ll notice that the <code>listen 80</code> is gone from inside the server block. We’re no longer listening for <code>http</code> traffic.</p>
@@ -530,7 +521,7 @@ What doesn’t <code>https</code> do?
 <section id="step-4-configure-security-groups" class="level3" data-number="14.4.4">
 <h3 data-number="14.4.4" class="anchored" data-anchor-id="step-4-configure-security-groups"><span class="header-section-number">14.4.4</span> Step 4: Configure security groups</h3>
 <p>If your thoughts went to something involving ports and AWS security groups, you’re right!</p>
-<p>By default, our server was open to SSH traffic on port <code>22</code>. Since then, we may have opened or closed port <code>80</code>, <code>8000</code>, <code>8787</code>, and/or <code>8555</code>.</p>
+<p>By default, our server was open to SSH traffic on port <code>22</code>. Since then, we may have opened or closed port <code>80</code>, <code>8000</code>, <code>8787</code>, and/or <code>8080</code>.</p>
 <p>But now that we’re exclusively sending <code>https</code> traffic into the proxy on <code>443</code> and letting the proxy redirect things elsewhere. So you have to go into the security group settings and change it so there are only 2 rules – one that allows SSH traffic on <code>22</code> from anywhere and one that allows <code>https</code> traffic on <code>443</code> from anywhere.</p>
 <p>It’s up to you whether you want to leave port <code>80</code> open. If you do, it will redirect people to <code>https</code> on <code>443</code>. If you close it entirely, people who come to port <code>80</code> will just be blocked and will eventually get a timeout. That shouldn’t be an issue as all modern browsers default to <code>https</code>.</p>
 <div class="callout-note callout callout-style-default callout-captioned">
@@ -551,19 +542,6 @@ Note
 <section id="step-5-check-it-out" class="level3" data-number="14.4.5">
 <h3 data-number="14.4.5" class="anchored" data-anchor-id="step-5-check-it-out"><span class="header-section-number">14.4.5</span> Step 5: Check it out!</h3>
 <p>NOW you should be able to go to <code>&lt;your-domain&gt;/rstudio</code> and get to RStudio, <code>&lt;your-domain&gt;/jupyter</code> to get to JupyterHub, and <code>&lt;your-domain&gt;/penguins</code> to get the API! Voila!</p>
-<div class="callout-note callout callout-style-default callout-captioned">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-caption-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>For now, penguins is actually still at <code>/penguins/__docs__/</code>.</p>
-</div>
-</div>
 <p>And you should still be able to SSH into your server on your domain.</p>
 <p>At this point your server is fully configured. You have a server hosting three real data science services available on a domain of your choosing protected by <code>https</code>. You can really use this server to do real data science work.</p>
 <p>That’s not to say this is fully enterprise-ready. If you’re working on a small team or at a small organization, this may be sufficient. But if you’re working at a large organization, your IT/Admin group is going to have other concerns.</p>
