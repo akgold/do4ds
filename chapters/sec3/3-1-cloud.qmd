@@ -603,20 +603,35 @@ Now, add a block to the code that loads in the environment variables.
 If these variables are in the environment, the call to `board_s3` should
 just work locally.
 
-We have one more step to make this work so that the model can also be written from GitHub actions. GitHub Actions needs to know how to access those environment variables too. 
+We have one more step to make this work so that the model can also be
+written from GitHub actions. GitHub Actions needs to know how to access
+those environment variables too.
 
-So in the `Render and Publish` step, we're going to declare those variables as well as environment variables.
+So in the `Render and Publish` step, we're going to declare those
+variables as well as environment variables.
 
-Once you're done, that section of the `publish.yml` should look something like this.
+Once you're done, that section of the `publish.yml` should look
+something like this.
 
-``` {.yaml include="../../_labs/gha/publish-s3.yml" filename=".github/workflows/publish.yml" start_line=45 end_line=49}
+``` {.yaml include="../../_labs/gha/publish-s3.yml" filename=".github/workflows/publish.yml" start_line="45" end_line="49"}
 ```
 
-Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions automatically provides to itself, we'll have to provide these secrets to the GitHub interface.As of this writing, you can provide them under the repository settings, secrets and variables, actions. 
+Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions
+automatically provides to itself, we'll have to provide these secrets to
+the GitHub interface.As of this writing, you can provide them under the
+repository settings, secrets and variables, actions.
 
-The other thing you'll need to do is to update the API to use the S3 pin. Luckily, this is very easy. Just update the script you used to build your `Dockerfile` so it pulls from the pin in the S3 bucket rather than the local folder.
+The other thing you'll need to do is to update the API to use the S3
+pin. Luckily, this is very easy. Just update the script you used to
+build your `Dockerfile` so it pulls from the pin in the S3 bucket rather
+than the local folder.
 
 Now, the script to build the `Dockerfile` looks like this:
 
-``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line=11 end_line=19}
+``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line="11" end_line="19"}
 ```
+
+There are a variety of ways to put the data into S3 as well. I would
+recommend doing this if you are going to be working with data that will
+update. In fact, DuckDB allows you to directly interface with parquet
+files on S3.
