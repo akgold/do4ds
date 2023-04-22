@@ -298,6 +298,13 @@ few more services you'll likely hear about over time.
 [^3-1-cloud-5]: There are many others. These are just the most popular
     I've seen for data science use cases.
 
+## Comprehension Questions
+
+1.  What is the difference between PaaS, IaaS, and SaaS? What's an
+    example of each that you're familiar with?
+2.  What are the names for AWS's services for: renting a server, file
+    system storage, blob storage
+
 ## Lab: Intro to AWS
 
 Welcome to the lab!
@@ -336,7 +343,9 @@ Throughout the lab, we're going to go step by step through getting
 things done. If you know how to do any of the steps, I'd recommend you
 at least skim the step for any important details.
 
-### Step 1: Login to the AWS Console
+### Stand up an EC2 instance
+
+#### Step 1: Login to the AWS Console
 
 We're going to start by logging into AWS.
 
@@ -353,7 +362,7 @@ Once you've logged in, you'll be confronted by the AWS console. There
 are a ton of things here -- feel free to poke around if you want -- come
 back to continue when you're ready.
 
-### Step 2: Stand up an instance
+#### Step 2: Stand up an instance
 
 AWS's most basic "rent a server by the hour" service is called EC2
 (Elastic Cloud Compute).
@@ -362,13 +371,13 @@ There are five things we have to configure in the process of launching
 the server. I'll give you advice on each of them. If I don't mention it
 here, feel free to stick with defaults.
 
-#### Name + Tags
+##### Name + Tags
 
 The first choice is instance **name and tags**. They aren't required,
 but I'd recommend you name the server something like `do4ds-lab` so you
 can remember what this server is later.
 
-#### Image
+##### Image
 
 Next, you'll have to choose the **image**. An image is a snapshot of a
 system and serves as the starting point for your server. Images can
@@ -393,7 +402,7 @@ operating systems. A newer version of Ubuntu should work very similarly
 for the purposes of this lab.
 :::
 
-#### Instance Type
+##### Instance Type
 
 You'll have to choose an **Instance Type**. In AWS, there are two
 components to instance type -- the *family* and the *size*. The family
@@ -423,7 +432,7 @@ If you want to pick a server for actual data science work, there's lots
 of advice on how to choose in [Chaper @sec-servers].
 :::
 
-#### Keypair
+##### Keypair
 
 Next, you'll need to make sure you have a **keypair**. A keypair is a
 special kind of SSH key that's only valid for a particular server.
@@ -442,19 +451,18 @@ I'd recommend creating a directory for this lab, perhaps something like
 `do4ds-lab` and putting your keypair there. If you're not going to do
 that, just make sure you keep track of where you downloaded it.
 
-#### Storage
+##### Storage
 
 For storage, you should bump it up to something more than 8 Gb. As of
 this writing, you can get 30 Gb under the free tier. I'd recommend at
 least 16 Gb, but feel free to go bigger if you wish.
 
-### Step 3: Start your Server
+#### Step 3: Start your Server
 
 If you followed these instructions, the summary on the right side should
 look something like this:
 
-![](images/instance-summary.png){fig-align="center"
-width="362"}
+![](images/instance-summary.png){fig-align="center" width="362"}
 
 Click `Launch Instance`. AWS is now creating a virtual server *just for
 you*.
@@ -463,7 +471,7 @@ If you go back to the EC2 page and click on `Instances` you can see your
 instance as it comes up. You may need to remove the filter for
 `State: Running` since it'll take a few moments to be `Running`.
 
-### Step 5: Grab the address of your server
+#### Step 4: Grab the address of your server
 
 If you click on the actual instance ID in blue, you can see all the
 details of your server.
@@ -495,7 +503,7 @@ around `=`, notice that assigning variables in bash *requires* no spaces
 around `=`.
 :::
 
-### Step 5: Stop the Server
+#### Step 5: Stop the Server
 
 Whenever you're stopping for the day, you may want to suspend your
 server so you're not paying for it overnight or using up your free tier
@@ -523,9 +531,107 @@ stable IP address and URL for the server.
 If you want to completely delete the instance at any point, you can
 choose to `Terminate Instance` from that same `Instance State` dropdown.
 
-## Comprehension Questions
+### Step 6: Put the penguins data and model in S3
 
-1.  What is the difference between PaaS, IaaS, and SaaS? What's an
-    example of each that you're familiar with?
-2.  What are the names for AWS's services for: renting a server, file
-    system storage, blob storage
+As discussed in [Chapter @sec-data-arch], we're going to want to put our
+data and our model somewhere other than on our local machine.
+
+While this data doesn't get updated, you might want to be able to update
+the data and the model periodically.
+
+A bucket is a great place to store non-tabular data like a model. AWS's
+bucket storage is called S3. You'll probably find yourself using it a
+lot. It can also store flat files to be used by DuckDB.
+
+For the model, `{vetiver}` interfaces with another package called
+`{pins}` which makes it easy to store data in a variety of backends,
+including an s3 bucket.
+
+First, you'll need to create an S3 bucket in the AWS console. Give it a
+name that's descriptive and memorable -- it will also have to be unique.
+I named mine `do4ds-lab`. You'll have to choose the AWS region where
+your bucket is located -- take note of this.
+
+Now, let's change our code to write to the S3 bucket we created. Vetiver
+makes this very easy. All you have to do to move the model into S3 is to
+change the line that creates the bucket in your code so instead of using
+a `board_temp`, it uses `board_s3`.
+
+``` {.python include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="47" end-line="50"}
+```
+
+That line will now become
+
+``` {.python include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="64" end-line="68"}
+```
+
+Now, if you try this line in your code, it won't work. Why? Because of
+authentication. The bucket we're using isn't public and AWS needs to
+know that we're actually allowed to access it.
+
+In this case, we're going to use [environment variables](@sec-env-vars)
+to give access to the S3 bucket. If you play around a little, you'll
+discover that `{pins}` does authentication via the `s3fs` package, which
+can do authentication in several different ways. We're going to use
+environment variables because they work nicely locally and from GitHub
+Actions.
+
+The 3 environment variables are `AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, and `AWS_REGION`. You can get the access key
+and secret access key from the AWS console.
+
+Once you've done that, create a file in the directory where your project
+is called `.env`. In that file you'll put the access keys, along with
+the AWS region where you put your bucket.
+
+It'll look something like this[^3-1-cloud-6]
+
+[^3-1-cloud-6]: Not my real access key or secret access key. Never share
+    them.
+
+``` {.yaml filename=".env"}
+AWS_ACCESS_KEY_ID=AJAASJKD88ALLKAIS8A
+AWS_SECRET_ACCESS_KEY=0JAJSduasdjkASDLISjkasd8AD78
+AWS_REGION=us-east-1
+```
+
+Now, add a block to the code that loads in the environment variables.
+
+``` {.python include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="56" end-line="58"}
+```
+
+If these variables are in the environment, the call to `board_s3` should
+just work locally.
+
+We have one more step to make this work so that the model can also be
+written from GitHub actions. GitHub Actions needs to know how to access
+those environment variables too.
+
+So in the `Render and Publish` step, we're going to declare those
+variables as well as environment variables.
+
+Once you're done, that section of the `publish.yml` should look
+something like this.
+
+``` {.yaml include="../../_labs/gha/publish-s3.yml" filename=".github/workflows/publish.yml" start_line="45" end_line="49"}
+```
+
+Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions
+automatically provides to itself, we'll have to provide these secrets to
+the GitHub interface.As of this writing, you can provide them under the
+repository settings, secrets and variables, actions.
+
+The other thing you'll need to do is to update the API to use the S3
+pin. Luckily, this is very easy. Just update the script you used to
+build your `Dockerfile` so it pulls from the pin in the S3 bucket rather
+than the local folder.
+
+Now, the script to build the `Dockerfile` looks like this:
+
+``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line="11" end_line="19"}
+```
+
+There are a variety of ways to put the data into S3 as well. I would
+recommend doing this if you are going to be working with data that will
+update. In fact, DuckDB allows you to directly interface with parquet
+files on S3.

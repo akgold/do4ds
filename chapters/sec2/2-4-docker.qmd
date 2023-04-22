@@ -689,10 +689,15 @@ That means that you'll need to have the `model_board` object available.
 Look back at [Lab 4](#lab4) if you've restarted your Python session
 since you last ran the `{vetiver}` code.
 
+I'm using this code to generate my Dockerfile
+
+``` {.python include="../../_labs/docker/docker-local/build-docker-local.qmd" start-line="9" end-line="13"}
+```
+
 Once you've generated your Dockerfile, take a look at it. Here's the one
 for my model:
 
-``` {.Dockerfile eval="false" include="../../labs/lab-6/Dockerfile" filename="Dockerfile"}
+``` {.Dockerfile include="../../_labs/docker/docker-local/docker/Dockerfile" filename="Dockerfile"}
 ```
 
 This auto-generated Dockerfile is very nicely commented, so its easy to
@@ -707,8 +712,7 @@ with the container.
 
 Ok, now let's run the container using
 
-``` bash
-#| eval: false
+``` {.bash eval="false"}
 docker run --rm -d \
   -p 8080:8080 \
   --name penguin-model \
@@ -723,19 +727,21 @@ In line 15 of the Dockerfile, we copied the `app.py` in to the
 container. Let's take a look at that file to see if we can find any
 hints.
 
-``` {.Python eval="false" include="../../labs/lab-6/app.py" filename="app.py"}
+``` {.python include="../../_labs/docker/docker-local/docker/app.py" filename="app.py"}
 ```
 
-Look at that (very long) line 6. The API is connecting to a local directory to pull the model. Is your spidey sense tingling? Something about container filesystem vs host filesystem?
+Look at that (very long) line 6. The API is connecting to a local
+directory to pull the model. Is your spidey sense tingling? Something
+about container filesystem vs host filesystem?
 
-That's right -- the temp file indicated is inside the `/var` directory on *my machine*, but that directory doesn't exist at `/var` inside the
+That's right -- the temp file indicated is inside the `/var` directory
+on *my machine*, but that directory doesn't exist at `/var` inside the
 container when it's running. In order to get this to work, I've got to
 mount the model in at run time.
 
 Add a `-v /var:/var` to your run command like so
 
 ``` bash
-#| eval: false
 docker run --rm -d \
   -p 8080:8080 \
   --name penguin-model \
@@ -744,7 +750,8 @@ docker run --rm -d \
 ```
 
 ::: callout-tip
-Depending on the permissions of the `/var` directory on your machine, you *may* need to run the `docker run` command prefixed by `sudo`.
+Depending on the permissions of the `/var` directory on your machine,
+you *may* need to run the `docker run` command prefixed by `sudo`.
 :::
 
 And NOW you should be able to get your model up in no time.
