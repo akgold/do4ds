@@ -531,15 +531,92 @@ stable IP address and URL for the server.
 If you want to completely delete the instance at any point, you can
 choose to `Terminate Instance` from that same `Instance State` dropdown.
 
-### Put the penguins model in S3
+### Step 6: Put the penguins data and model in S3
 
-TODO - running into errors in py.pins?
+As discussed in [Chapter @sec-data-arch], we're going to want to put our
+data and our model somewhere other than on our local machine.
 
-### Stand up a database for the penguins data
+While this data doesn't get updated, you might want to be able to update
+the data and the model periodically.
 
-Stand up redshift
+A bucket is a great place to store non-tabular data like a model. AWS's
+bucket storage is called S3. You'll probably find yourself using it a
+lot. It can also store flat files to be used by DuckDB.
 
-Note: public access not allowed, recommend you create an sg that only
-allows access from your EC2 instance.
+For the model, `{vetiver}` interfaces with another package called
+`{pins}` which makes it easy to store data in a variety of backends,
+including an s3 bucket.
 
-TODO
+First, you'll need to create an S3 bucket in the AWS console. Give it a
+name that's descriptive and memorable -- it will also have to be unique.
+I named mine `do4ds-lab`. You'll have to choose the AWS region where
+your bucket is located -- take note of this.
+
+Now, let's change our code to write to the S3 bucket we created. Vetiver
+makes this very easy. All you have to do to move the model into S3 is to
+change the line that creates the bucket in your code so instead of using
+a `board_temp`, it uses `board_s3`.
+
+``` {.python eval="false" include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="47" end-line="50"}
+```
+
+That line will now become
+
+``` {.python eval="false" include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="64" end-line="68"}
+```
+
+Now, if you try this line in your code, it won't work. Why? Because of
+authentication. The bucket we're using isn't public and AWS needs to
+know that we're actually allowed to access it.
+
+In this case, we're going to use [environment variables](@sec-env-vars)
+to give access to the S3 bucket. If you play around a little, you'll
+discover that `{pins}` does authentication via the `s3fs` package, which
+can do authentication in several different ways. We're going to use
+environment variables because they work nicely locally and from GitHub
+Actions.
+
+The 3 environment variables are `AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, and `AWS_REGION`. You can get the access key
+and secret access key from the AWS console.
+
+Once you've done that, create a file in the directory where your project
+is called `.env`. In that file you'll put the access keys, along with
+the AWS region where you put your bucket.
+
+It'll look something like this[^3-1-cloud-6]
+
+[^3-1-cloud-6]: Not my real access key or secret access key. Never share
+    them.
+
+``` {.yaml filename=".env"}
+AWS_ACCESS_KEY_ID=AJAASJKD88ALLKAIS8A
+AWS_SECRET_ACCESS_KEY=0JAJSduasdjkASDLISjkasd8AD78
+AWS_REGION=us-east-1
+```
+
+Now, add a block to the code that loads in the environment variables.
+
+``` {.python eval="false" include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="56" end-line="58"}
+```
+
+If these variables are in the environment, the call to `board_s3` should
+just work locally.
+
+We have one more step to make this work so that the model can also be written from GitHub actions. GitHub Actions needs to know how to access those environment variables too. 
+
+So in the `Render and Publish` step, we're going to declare those variables as well as environment variables.
+
+Once you're done, that section of the `publish.yml` should look something like this.
+
+``` {.yaml include="../../_labs/gha/publish-s3.yml" filename=".github/workflows/publish.yml" start_line=45 end_line=49}
+```
+
+Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions automatically provides to itself, we'll have to provide these secrets to the GitHub interface.As of this writing, you can provide them under the repository settings, secrets and variables, actions. 
+
+The other thing you'll need to do is to update the API to use the S3 pin. Luckily, this is very easy. Just update the script you used to build your `Dockerfile` so it pulls from the pin in the S3 bucket rather than the local folder.
+
+Now, the script to build the `Dockerfile` looks like this:
+
+``` {.python include="../../_labs/docker/build-docker-s3.qmd" start_line=11 end_line=19}
+```
