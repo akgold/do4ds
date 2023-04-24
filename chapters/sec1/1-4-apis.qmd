@@ -24,23 +24,23 @@ from the *back-end* or the *application layer* and *data layer*.
 In data science, there are rough equivalents to each of these layers as
 the table below shows.
 
-+--------------+--------------+--------------+-----------------+
-| Front/Back   | Layer        | Software     | Data Science    |
-| End?         |              | Engineering  |                 |
-+==============+==============+==============+=================+
-| Front End    | Pre          | Javascript   | Sh              |
-|              | sentation    |              | iny             |
-|              |              |              | /Dash/Streamlit |
-|              |              |              |                 |
-|              |              |              | Quarto/R        |
-|              |              |              | M               |
-|              |              |              | arkdown/Jupyter |
-+--------------+--------------+--------------+-----------------+
-| Back End     | Ap plication | API          | Functions *or*  |
-|              |              |              | API             |
-+--------------+--------------+--------------+-----------------+
-| Back End     | Data         | Database     | Data            |
-+--------------+--------------+--------------+-----------------+
++--------------+--------------+--------------+--------------+
+| Front/Back   | Layer        | Software     | Data Science |
+| End?         |              | Engineering  |              |
++==============+==============+==============+==============+
+| Front End    | Pre          | Javascript   | Sh iny       |
+|              | sentation    |              | /Da          |
+|              |              |              | sh/Streamlit |
+|              |              |              |              |
+|              |              |              | Quarto/R M   |
+|              |              |              | ark          |
+|              |              |              | down/Jupyter |
++--------------+--------------+--------------+--------------+
+| Back End     | Ap plication | API          | Functions    |
+|              |              |              | *or* API     |
++--------------+--------------+--------------+--------------+
+| Back End     | Data         | Database     | Data         |
++--------------+--------------+--------------+--------------+
 
 As we got into in [Chapter @sec-data-arch], there are a variety of
 different ways to architect your data layer, you may or may not choose
@@ -452,37 +452,37 @@ bodies, like images.
 As you work more with `http` traffic, you'll learn some of the common
 codes. Here's a cheatshet for some of the most frequent you'll see.
 
-+----------------+-----------------------------------------------+
-| Code           | Meaning                                       |
-+================+===============================================+
-| `200`          | Everyone's favorite, a successful response.   |
-+----------------+-----------------------------------------------+
-| `3xx`          | Your query was redirected somewhere else,     |
-|                | usually ok.                                   |
-+----------------+-----------------------------------------------+
-| `4xx`          | Errors with the request                       |
-+----------------+-----------------------------------------------+
-| `400`          | Bad request. This isn't a request the server  |
-|                | can understand.                               |
-+----------------+-----------------------------------------------+
-| `401` and      | Unauthorized or forbidden. Required           |
-| `403`          | authentication hasn't been provided.          |
-+----------------+-----------------------------------------------+
-| `404`          | Not found. There isn't any content to access  |
-|                | here.                                         |
-+----------------+-----------------------------------------------+
-| `5xx`          | Errors with the server once your request got  |
-|                | there.                                        |
-+----------------+-----------------------------------------------+
-| `500`          | Generic server-side error. Your request was   |
-|                | received, but there was an error processing   |
-|                | it.                                           |
-+----------------+-----------------------------------------------+
-| `504`          | Gateway timeout. This means that a proxy or   |
-|                | gateway between you and the server you're     |
-|                | trying to access timed out before it got a    |
-|                | response from the server.                     |
-+----------------+-----------------------------------------------+
++----------------+----------------------------------------------+
+| Code           | Meaning                                      |
++================+==============================================+
+| `200`          | Everyone's favorite, a successful response.  |
++----------------+----------------------------------------------+
+| `3xx`          | Your query was redirected somewhere else,    |
+|                | usually ok.                                  |
++----------------+----------------------------------------------+
+| `4xx`          | Errors with the request                      |
++----------------+----------------------------------------------+
+| `400`          | Bad request. This isn't a request the server |
+|                | can understand.                              |
++----------------+----------------------------------------------+
+| `401` and      | Unauthorized or forbidden. Required          |
+| `403`          | authentication hasn't been provided.         |
++----------------+----------------------------------------------+
+| `404`          | Not found. There isn't any content to access |
+|                | here.                                        |
++----------------+----------------------------------------------+
+| `5xx`          | Errors with the server once your request got |
+|                | there.                                       |
++----------------+----------------------------------------------+
+| `500`          | Generic server-side error. Your request was  |
+|                | received, but there was an error processing  |
+|                | it.                                          |
++----------------+----------------------------------------------+
+| `504`          | Gateway timeout. This means that a proxy or  |
+|                | gateway between you and the server you're    |
+|                | trying to access timed out before it got a   |
+|                | response from the server.                    |
++----------------+----------------------------------------------+
 
 ### What does an API in R or Python look like?
 
@@ -518,45 +518,37 @@ Swagger framework. Most often, these docs are available on the root path
 In this lab, we're going to create an API from our Penguin prediction
 model and get some predictions out.
 
-The `{vetiver}` package makes it extremely easy to generate a Python
-language `fastAPI` from a `scikit-learn` model. It's also worth noting
-that `{vetiver}` also supports turning R language models into
-`{plumber}` APIs.
-
 ::: callout-note
 The `{vetiver}` package auto-generates the API. If you're interested in
 getting better at writing APIs in general, I encourage you to consult
 the documentation for `{plumber}` or `{fastAPI}`.
 :::
 
-You can add this code to the end of your `model.qmd`.
+Going back to our modeling code, you can get your model back from your pin with:
 
-``` {.python include="../../_labs/model/model-vetiver.qmd" filename="model.qmd" start-line="44"}
+```{python}
+b = pins.board_folder('data/model', allow_pickle_read=True)
+v = VetiverModel.from_pin(b, 'penguin_model')
 ```
 
-Once you've done this, you can run `app.run(port = 8080)` in your Python
-session. This will run your model API on port 8080.
+Vetiver can auto-generate a `{fastAPI}` from this model with 
 
-More on what that means in [Chapter @sec-basic-networks].
+``` python
+app = VetiverAPI(v, check_prototype=True)
+```
 
-::: callout-note
-Take a look at line 52. In this line, we're writing our model to a
-temporary board. That's because we're just running this API locally.
-Later on, when we move the API to a permanent home in [Chapter
-@sec-linux-admin], we'll also need to put the model somewhere so it can
-be loaded by the API.
-:::
+You can run this in your Python session with `app.run(port = 8080)`. You can
+then access run your model API by navigating to `http://localhost:8080`
+in your browser.
 
-Once it's running, you can access it by going to `http://127.0.0.1:8080`
-in your browser. You can play around with the front end there, including
-trying the provided examples.
+You can play around with the front end there, including trying the
+provided examples.
 
 If you want to call the model in code, you can use any http request
 library. In R you should use `httr2` and in Python you should use
 `requests`. Here's what it looks like to call the API.
 
 ```{r}
-#| eval: false
 r <- httr2::request("http://127.0.0.1:8080/predict") |>
   httr2::req_body_json(
   list(
@@ -573,8 +565,6 @@ httr2::resp_body_json(r)$predict[[1]]
 Or equivalently, in Python
 
 ```{python}
-#| eval: false
-
 import requests
 
 req_data = {
@@ -587,11 +577,12 @@ r = requests.post('http://127.0.0.1:8080/predict', json = req_data)
 r.json().get('predict')[0]
 ```
 
-It's worth noting that the `{vetiver}` package also includes the ability
-to auto-query a vetiver API without having to manually perform the
-request in R or Python. That capability is documented in the [vetiver
-package
+::: callout-note
+The `{vetiver}` package also includes the ability to auto-query a
+vetiver API without having to manually perform the request in R or
+Python. That capability is documented in the [vetiver package
 documentation](https://vetiver.rstudio.com/get-started/deploy.html#predict-from-your-model-endpoint).
+:::
 
 Now, if your job is to build machine learning models for others to
 consume, you're done. For many data scientists, the idea is to share

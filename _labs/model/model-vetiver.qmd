@@ -44,18 +44,25 @@ print(f"Coefficients {model.coef_}")
 ## Turn into Vetiver Model
 
 ```{python}
-from vetiver import VetiverModel, VetiverAPI
-from pins import board_temp
+from vetiver import VetiverModel
 
 v = VetiverModel(model, model_name='penguin_model', prototype_data=X)
 ```
 
 ## Save to Board
+
 ```{python}
 from pins import board_folder
 from vetiver import vetiver_pin_write
 
-model_board = board_folder("./model", allow_pickle_read = True)
+model_board = board_folder("/data/model", allow_pickle_read = True)
 vetiver_pin_write(model_board, v)
 ```
+
+## Turn model into API
+```{python}
+from vetiver import VetiverAPI
+app = VetiverAPI(v, check_prototype = True)
+```
+
 
