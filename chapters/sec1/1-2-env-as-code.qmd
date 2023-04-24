@@ -85,28 +85,21 @@ the ones below. Once you understand the layers of an environment, you
 can think more clearly about what your actual reproducibility needs are,
 and which environmental layers you need to target putting into code.
 
-+---------------+-----------------+
-| Layer         | Contents        |
-+===============+=================+
-| Packages      | R + Python      |
-|               | Packages        |
-+---------------+-----------------+
-| System        | R + Python      |
-|               | Language        |
-|               | Versions        |
-|               |                 |
-|               | Other System    |
-|               | Libraries       |
-|               |                 |
-|               | Operating       |
-|               | System          |
-+---------------+-----------------+
-| Hardware      | Virtual         |
-|               | Hardware        |
-|               |                 |
-|               | Physical        |
-|               | Hardware        |
-+---------------+-----------------+
++----------+------------------------------+
+| Layer    | Contents                     |
++==========+==============================+
+| Packages | R + Python Packages          |
++----------+------------------------------+
+| System   | R + Python Language Versions |
+|          |                              |
+|          | Other System Libraries       |
+|          |                              |
+|          | Operating System             |
++----------+------------------------------+
+| Hardware | Virtual Hardware             |
+|          |                              |
+|          | Physical Hardware            |
++----------+------------------------------+
 
 Note that your code and your data are not the environment -- they are
 what the environment is for. As you're thinking about reproducibility,
@@ -258,8 +251,8 @@ after activating an `{renv}` environment, the first entry from the
 `.libPaths()` call changes from a user-level library `/Users/alexkgold`
 to a project-level library `/Users/alexkgold/Documents/do4ds/`.
 
-``` {{r}}
-.libPaths()
+``` r
+> .libPaths()
 [1] "/Users/alexkgold/Library/R/x86_64/4.2/library"                 
 [2] "/Library/Frameworks/R.framework/Versions/4.2/Resources/library"
 renv::activate()
@@ -272,8 +265,8 @@ renv::activate()
 Similarly, in Python it looks like this. Note that the "after" version
 replaces the last line of the `sys.path` with a project-level library:
 
-``` {{bash}}
-❯ python3 -m site                                       
+``` bash
+> python3 -m site                                       
 sys.path = [
     '/Users/alexkgold/Documents/python-examples/dash-app',
     '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip',
@@ -285,10 +278,10 @@ USER_BASE: '/Users/alexkgold/Library/Python/3.8' (doesn't exist)
 USER_SITE: '/Users/alexkgold/Library/Python/3.8/lib/python/site-packages' (doesn't exist)
 ENABLE_USER_SITE: True
 
-❯ source .venv/bin/activate                       
+> source .venv/bin/activate                       
 (.venv)
 
-❯ python3 -m site
+> python3 -m site
 sys.path = [
     '/Users/alexkgold/Documents/python-examples/dash-app',
     '/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip',
@@ -407,7 +400,7 @@ virtual environment using `venv source ./venv/bin/activate` and then
 install from a requirements file using
 `pip install -r requirements.txt`.
 
-### Reproducing the rest of the stack
+## Reproducing the rest of the stack
 
 Sometimes, just recording the package environment and moving that around
 is sufficient. In many cases, old versions of R and Python are retained
@@ -432,14 +425,54 @@ There are many tools you can use to record and reproduce the R and
 Python versions you're using, the system libraries, and the operating
 system itself.
 
-These days, the clear leader of the pack on this front is Docker. It has
-become an increasingly popular way to create, maintain, and use
-standalone environments -- and for good reason! In [Chapter @sec-docker]
-we'll get deep into the use of Docker in data science. However, it's
-worth keeping in mind that if you're working in the context of a
-formally-supported IT organization, they may have other tooling they
-prefer to use to create and maintain environments, and they can be
-equally valid.
+These days, the clear leader of the pack on this front is Docker. Since
+its introduction in 2013, it has become an increasingly popular way to
+create, maintain, and use standalone environments -- and for good
+reason!
+
+![](images/docker-usage.png){fig-align="left" width="408"}
+
+In most cases, the only requirement to run any Docker container is
+having Docker installed. If you put your project in a Docker container
+and it runs today, you can be reasonably confident that the container
+itself can run almost anywhere else, irrespective of what else is
+running on that machine.[^1-2-env-as-code-3]
+
+[^1-2-env-as-code-3]: Usually. Users of Apple's M1 and M2 chips have run
+    into many issues running containers due to differences in hardware
+    architecture.
+
+In [Chapter @sec-docker], you'll learn the basics of how to use Docker
+as a tool for reproducing a data science project and moving it around.
+
+### Caution on Docker
+
+Like so many of the tools in this book, Docker was developed by Software
+Engineers to solve software engineering problems, and fitting Docker
+into a data science workflow has a bit of a square-peg round-hole kind
+of feeling.
+
+Once a Docker container is built, it's amazing to run over and over in
+nearly any environment. But if you ever have to rebuild the container,
+you still need R and Python specific tooling like `{renv}` and `{venv}`.
+
+The biggest strength of Docker is also its greatest weakness as a data
+science tool. Docker containers are highly ephemeral and highly
+isolated. That means that whatever happens in a Docker container stays
+in a Docker container.
+
+This is great if you're running a production service that has many
+instances of the same app and security and stability are your main
+concerns. As a Data Scientist, working inside a Docker container can be
+an exercise in frustration, as anything you want inside the container
+from outside has to explicitly be passed in, and anything from the
+inside you want to get out has to do the same. Working well with Docker
+requires a very good mental model of the container and how it relates to
+the rest of the system. Most data scientists would do better not to
+develop this expertise.
+
+Instead, Docker *can* be an extremely valuable tool for reproducibility
+and for moving things into production.
 
 ## Environments as Code Cheatsheet
 
@@ -448,6 +481,7 @@ equally valid.
 TODO
 
 ### Creating and Using a Standalone Project Library
+
 
 +----------------------+----------------------+----------------+
 | Step                 | R Command            | Python Command |
