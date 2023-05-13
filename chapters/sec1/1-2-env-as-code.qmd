@@ -85,21 +85,23 @@ the ones below. Once you understand the layers of an environment, you
 can think more clearly about what your actual reproducibility needs are,
 and which environmental layers you need to target putting into code.
 
-+----------+------------------------------+
-| Layer    | Contents                     |
-+==========+==============================+
-| Packages | R + Python Packages          |
-+----------+------------------------------+
-| System   | R + Python Language Versions |
-|          |                              |
-|          | Other System Libraries       |
-|          |                              |
-|          | Operating System             |
-+----------+------------------------------+
-| Hardware | Virtual Hardware             |
-|          |                              |
-|          | Physical Hardware            |
-+----------+------------------------------+
++--------------+-----------------------+
+| Layer        | Contents              |
++==============+=======================+
+| Packages     | R + Python Packages   |
++--------------+-----------------------+
+| System       | R + Python Language   |
+|              | Versions              |
+|              |                       |
+|              | Other System          |
+|              | Libraries             |
+|              |                       |
+|              | Operating System      |
++--------------+-----------------------+
+| Hardware     | Virtual Hardware      |
+|              |                       |
+|              | Physical Hardware     |
++--------------+-----------------------+
 
 Note that your code and your data are not the environment -- they are
 what the environment is for. As you're thinking about reproducibility,
@@ -474,79 +476,6 @@ develop this expertise.
 Instead, Docker *can* be an extremely valuable tool for reproducibility
 and for moving things into production.
 
-## Environments as Code Cheatsheet
-
-### Checking your library + repository status
-
-TODO
-
-### Creating and Using a Standalone Project Library
-
-
-+----------------------+----------------------+----------------+
-| Step                 | R Command            | Python Command |
-+======================+======================+================+
-| Make a standalone    | \-                   | \-             |
-| project directory.   |                      |                |
-+----------------------+----------------------+----------------+
-| Make sure you've got | `ins t a             | Included w/    |
-| `{renv}/{venv}`.     | ll.packages("renv")` | Python 3.5+    |
-+----------------------+----------------------+----------------+
-| Create a standalone  | `renv::init()`       | `pyt h o n     |
-| library.             |                      | -m venv <dir>` |
-|                      |                      |                |
-|                      |                      | Recommend:     |
-|                      |                      | `us e . v      |
-|                      |                      | env for <dir>` |
-+----------------------+----------------------+----------------+
-| Activate project     | `renv::activate()`   | `so u          |
-| library.             |                      | rce < d i r >  |
-|                      | Happens              | /bin/activate` |
-|                      | automatically if     |                |
-|                      | using projects.      |                |
-+----------------------+----------------------+----------------+
-| Install packages as  | `inst a l            | `pyt           |
-| normal.              | l.packages("<pkg>")` |  hon -m p i p  |
-|                      |                      | install <pkg>` |
-+----------------------+----------------------+----------------+
-| Snapshot package     | `renv::snapshot()`   | `p ip f        |
-| state.               |                      | reeze > r e q  |
-|                      |                      | uirements.txt` |
-+----------------------+----------------------+----------------+
-| Exit project         | Leave R project.     | `deactivate`   |
-| environment.         |                      |                |
-+----------------------+----------------------+----------------+
-
-### Collaborating on someone else's project
-
-+----------------+-----------------------+----------------+
-| Step           | R Command             | Python Command |
-+================+=======================+================+
-| Download       |                       |                |
-| project.       |                       |                |
-+----------------+-----------------------+----------------+
-| Move into      | `s e                  | `c d           |
-| project        | twd("<project-dir>")` | <project-dir>` |
-| directory.     |                       |                |
-|                | Or just open R        |                |
-|                | project in RStudio.   |                |
-+----------------+-----------------------+----------------+
-| Create project | `renv::init()`        | `py t h o n    |
-| environment.   |                       | -m venv <dir>` |
-|                |                       |                |
-|                |                       | Recommend:     |
-|                |                       | `u s e . v     |
-|                |                       | env for <dir>` |
-+----------------+-----------------------+----------------+
-| Enter project  | Happens               | `so            |
-| environment.   | automatically.        | urce < d i r > |
-|                |                       | /bin/activate` |
-+----------------+-----------------------+----------------+
-| Restore        | May happen            | `p ip ins      |
-| packages.      | automatically or      | tall - r r e q |
-|                | `renv::restore()`     | uirements.txt` |
-+----------------+-----------------------+----------------+
-
 ## Comprehension Questions
 
 1.  Why does difficulty increase as the level of required
@@ -626,7 +555,7 @@ Quarto and `{renv}`.
 I've created a page in the repo called `eda.qmd` with the following
 contents.
 
-``` {.markdown filename="eda.qmd" include="../../_labs/eda/eda_basic.qmd"}
+``` {.markdown filename="eda.qmd" include="../../_labs/eda/eda-basic.qmd"}
 ```
 
 Feel free to copy this Quarto doc right into your website, or to write
@@ -662,7 +591,7 @@ to base the predictions on its species and bill length.
 
 Here's the code for the Quarto doc I created.
 
-``` {.yml filename="model.qmd" include="../../_labs/model/model_basic.qmd"}
+``` {.yml filename="model.qmd" include="../../_labs/model/model-basic.qmd"}
 ```
 
 Again, you'll want to create your virtual environment and make sure to
@@ -687,3 +616,70 @@ terminal.
 With your `requirements.txt` and your workflow, pushing to GitHub should
 give you a beautiful Quarto webpage with tabs for an EDA page and a
 Model page.
+
+## Cheatsheet: Environments as Code {#cheat-renv-venv}
+
+### Checking library + repository status
+
++-------------+-------------+----------+
+| Step        | R Command   | Python   |
+|             |             | Command  |
++=============+=============+==========+
+| Check       | `renv       | None     |
+| whether     | ::status()` |          |
+| library in  |             |          |
+| sync with   |             |          |
+| lockfile.   |             |          |
++-------------+-------------+----------+
+
+### Creating and Using a Standalone Project Library
+
+Make sure you're in a standalone project library.
+
++--------------------+-------------------------------------------+--------------------------------------------+
+| Step               | R Command                                 | Python Command                             |
++====================+===========================================+============================================+
+| Make sure you've   | `install.packages("renv")`                | Included w/ Python 3.5+                    |
+| got                |                                           |                                            |
+| `{renv}/{venv}`.   |                                           |                                            |
++--------------------+-------------------------------------------+--------------------------------------------+
+| Create a           | `renv::init()`                            | `python -m venv <dir>`                     |
+| standalone         |                                           |                                            |
+| library.           |                                           | Convention: `use .venv for <dir>`          |
++--------------------+-------------------------------------------+--------------------------------------------+
+| Activate project   | `renv::activate()`                        | `source <dir> /bin/activate`               |
+| library.           |                                           |                                            |
+|                    | Happens automatically if using projects.  |                                            |
++--------------------+-------------------------------------------+--------------------------------------------+
+| Install packages   | `install.packages("<pkg>")`               | `python -m pip install <pkg>`              |
+| as normal.         |                                           |                                            |
++--------------------+-------------------------------------------+--------------------------------------------+
+| Snapshot package   | `renv::snapshot()`                        | `pip freeze > requirements.txt`            |
+| state.             |                                           |                                            |
++--------------------+-------------------------------------------+--------------------------------------------+
+| Exit project       | Leave R project.                          | `deactivate`                               |
+| environment.       |                                           |                                            |
++--------------------+-------------------------------------------+--------------------------------------------+
+
+### Collaborating on someone else's project
+
+Start by downloading the project into a directory on your machine.
+
++----------------+-------------------------------+---------------------------------------+
+| Step           | R Command                     | Python Command                        |
++================+===============================+=======================================+
+| Move into      | `setwd("<project-dir>")`      | `cd <project-dir>`                    |
+| project        |                               |                                       |
+| directory.     | Or just open R project in     |                                       |
+|                | RStudio.                      |                                       |
++----------------+-------------------------------+---------------------------------------+
+| Create project | `renv::init()`                | `python -m venv <dir>`                |
+| environment.   |                               |                                       |
+|                |                               | Recommend: `use .venv for <dir>`      |
++----------------+-------------------------------+---------------------------------------+
+| Enter project  | Happens automatically or      | `source <dir> /bin/activate`          |
+| environment.   | `renv::activate()`            |                                       |
++----------------+-------------------------------+---------------------------------------+
+| Restore        | Happens automatically or      | `pip install -r requirements.txt`     |
+| packages.      | `renv::restore()`             |                                       |
++----------------+-------------------------------+---------------------------------------+

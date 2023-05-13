@@ -71,22 +71,10 @@ I've included `docker pull` on the graphic for completeness, but you'll
 almost never run it. `docker run` auto-pulls the container(s) it needs.
 :::
 
-### Docker Commands
-
-When you install Docker on your system -- whether desktop or server --
-you also install the `docker` command line utility. This command line
-utility is how you build, run, and manage containers. Here are a few of
-the most commonly used `docker` sub-commands.
-
-| Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
-|--------------|-----------------------------------------|------------------------------------------------|--------------------------------------------|
-| Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
-| Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
-| Run   | `docker run <image>`                | Run a container.                                          | See section below.                                                                                |
-| Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
-| Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
-| Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
-| Run   | `docker logs <container>`           |                                                           |                                                                                                   |
+You can control Docker Containers from the Docker Desktop app. But if
+you're going to be using Docker on a server, you'll mostly be
+interacting via the CLI. There's a [cheatsheet](#cheat-docker) for Docker CLI commands at
+the end of this chapter.
 
 ### Flags for `docker run`
 
@@ -118,16 +106,6 @@ directory. You might just want to make it available to the container at
 TODO: slashes are wrong.
 
 ![](images-docker/docker-on-host.png){width="593"}
-
-**Frequently used `docker run` flags**
-
-| Flag                            | Effect                                         | Notes                                                                                                                                                            |
-|-----------------------|--------------------|-----------------------------|
-| `--name <name>`                 | Give a name to the running container.          | Optional. Will be auto-assigned if not provided. Then you'll need to discover name with `docker ps`.                                                             |
-| `--rm`                          | Remove container when its stopped.             | Very useful when playing around because it cleans things up. Almost never used in prod, because you usually want to be able to inspect logs from old containers. |
-| `-d`                            | Detach container (don't block the terminal).   | Almost always used in production. Sometimes useful to stay attached when troubleshooting.                                                                        |
-| `-p <host port:container port>` | Publish port from inside container to outside. | Needed if you want to access anything inside the container with HTTP.                                                                                            |
-| `-v <host dir:container dir>`   | Mount volume into the container.               | Make a directory (volume) on the host available to the container for reading and writing.                                                                        |
 
 ## Building from Dockerfiles
 
@@ -273,7 +251,6 @@ That's right -- we put our model at `/data/model` on our *host* machine.
 But the API inside the container is looking for `/data/model` *inside*
 the container, which doesn't exist!
 
-
 This is a case where we need to mount a volume into the container like
 so
 
@@ -285,12 +262,16 @@ docker run --rm -d \
   penguin-model-local
 ```
 
-
 And NOW you should be able to get your model up in no time.
 
-It's worth noting that it's somewhat rare that you want to put the volume at the same location inside the container as it is outside. But because of the `{vetiver}` tooling, it expects it to be at the same place.
+It's worth noting that it's somewhat rare that you want to put the
+volume at the same location inside the container as it is outside. But
+because of the `{vetiver}` tooling, it expects it to be at the same
+place.
 
-Now, thinking back to [Chapter @sec-data-arch], we're going to run into some trouble when when and if we move the API off of our laptop and onto a server. We'll address that in [Chapter @sec-cloud].
+Now, thinking back to [Chapter @sec-data-arch], we're going to run into
+some trouble when when and if we move the API off of our laptop and onto
+a server. We'll address that in [Chapter @sec-cloud].
 
 ### Lab Extension
 
@@ -298,3 +279,40 @@ Right now, logs from the API just stay inside the app. But that means
 that the logs go away when the container does. That's obviously bad if
 the container dies because something goes wrong. How might you make sure
 that the container's logs get written somewhere more permanent?
+
+## Cheatsheet: Docker  {#cheat-docker}
+
+### Docker CLI Commands
+
+| Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
+|---------|-------------------------|--------------------|------------------|
+| Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
+| Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
+| Run   | `docker run <image>`                | Run a container.                                          | See section below.                                                                                |
+| Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
+| Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
+| Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
+| Run   | `docker logs <container>`           |                                                           |                                                                                                   |
+
+### **Flags for `docker run`**
+
+| Flag               | Effect                                         | Notes                                                                                                                                                            |
+|------------------|--------------------|-----------------------------|
+| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided. Then you'll need to discover name with `docker ps`.                                                             |
+| `--rm`             | Remove container when its stopped.             | Very useful when playing around because it cleans things up. Almost never used in prod, because you usually want to be able to inspect logs from old containers. |
+| `-d`               | Detach container (don't block the terminal).   | Almost always used in production. Sometimes useful to stay attached when troubleshooting.                                                                        |
+| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access anything inside the container with HTTP.                                                                                            |
+| `-v <dir>:<dir>`   | Mount volume into the container.               | Make a directory (volume) on the host available to the container for reading and writing.                                                                        |
+
+: *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
+
+### Dockerfile Commands
+
+These are the commands that go in a Dockerfile when you're building it.
+
+| Command | Purpose                                              | Example                   |
+|----------------|---------------------------------|------------------------------|
+| `FROM`  | Indicate base container                              | `FROM rocker/r-ver:4.1.0` |
+| `RUN`   | Run a command when building                          | `RUN apt-get update`      |
+| `COPY`  | Copy from build directory into the container         | `COPY . /app/`            |
+| `CMD`   | Specify the command to run when the container starts | `CMD quarto render .`     |
