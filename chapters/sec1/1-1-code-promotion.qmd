@@ -1,140 +1,159 @@
-# Code promotion and integration {#sec-code-promotion}
+# Code deployment and promotion {#sec-code-promotion}
 
-If you've ever taken an app or report into production, you know the
-moment. You get a call, a text, a slack -- "the app is down". A bead of
-cold sweat runs down your back. Your world narrows to you and your
-agonizingly nonfunctional app that the CEO, of course, needs *right
-now*.
+It's well known that the most dangerous moments of any plane flight are
+takeoff and landing. Things can go wrong when you're at altitude, but
+the process of getting a plane into and out of the air turns out to be
+by far the most dangerous part of the process of flying
+somewhere.[^1-1-code-promotion-1]
 
-Basically all of DevOps is designed around preventing this moment.
+[^1-1-code-promotion-1]: It's worth noting that commercial air travel is
+    exceptionally safe -- including takeoff and landing. But we're
+    talking relative risk here.
 
-Promotion workflows are the core of DevOps practices.
+It turns out that it's the same with software. If it's properly tested,
+software that's running smoothly tends -- for the most part -- to
+continue running smoothly. But it's the getting it there that gets you.
 
-In this chapter in particular, we'll be thinking about *deployments* --
-the moment something goes into production, whether that's a new app
-entirely or an update to an existing app. You want this moment to be as
-smooth as possible. Thus, you want to ensure that deployments don't
-happen unless they're supposed to and that when a deployment happens, it
-is as seamless as possible, with minimal downtime in the live production
-system.
+That's why *deployment* is one of the primary concerns of DevOps best
+practices*.*
 
-In this chapter, we'll explore how to set up multiple environments so
-you can safely develop and test your app before going to production and
-how to design and execute a promotion workflow that makes your
-deployment completely seamless.
+Deployment is the process of taking code that isn't in production right
+now -- whether it's an entirely new piece of software or an update to
+something existing -- and turn it into something in production. That
+moment when your Shiny app goes live or you run your report or job for
+real for the first time, or when you add a new feature to your model --
+that's a deployment process.
 
-## The Three Environments
+A good deployment process has three major components:
 
-The best way to ensure that things only get deployed when you mean them
-to -- and sleep securely knowing that it won't be disturbed -- is to
-have standalone environments for development, testing, and production.
-Having separate environments and a plan for promoting content from one
-to the other is the core of workflows that de-risk pushing to
-production.
+1.  A separation between production and non-production environments.
+2.  An explicit process by which code is deployed into production.
+3.  Automation to smoothly execute the deployment.
 
-Usually, these environments are referred to as Dev, Test, and Prod.
+In this chapter, we'll explore how to apply these three components to a
+data science workflow so you can safely develop and test your app before
+going to production and how to design and execute a promotion workflow
+that makes your deployment completely seamless.
+
+By the end of this chapter, I hope to accomplish three things --
+convince you that you need to create a code promotion workflow, equip
+you to explain how a data science promotion workflow is different from a
+general purpose software one, and illuminate some of the common tooling
+you can use to build your own promotion workflows.
+
+## You need a prod
+
+One of the primary risks to production code is that something gets put
+into the production environment before it was supposed to.
+
+One precondition for keeping things out of the production environment
+until their supposed to be there is actually having a separate
+production environment -- usually called *prod*. In order to keep prod
+separate from other environments, you'll also need a *promotion process*
+that dictates how things get into prod.
 
 ![](images-code-promotion/dev-test-prod.png){fig-alt="An app moving through dev, test, and prod environments."}
 
-The best way to ensure that deployments go smoothly is to make them as
-minimal and predictable as possible. This requires that the dev, test,
-and prod environments be very close mirrors of each other. We'll get
-into how to accomplish that at the end of this chapter.
+You can choose the level of separation that's appropriate for the prod
+environment for your use case, but some attributes that are common among
+prod environments and promotion processes:
 
-### Dev for Data Science
+-   Nothing in prod is changed manually. You don't get to go in and just
+    check out what's happening in prod. If something breaks, you use the
+    logs (see [Chapter @sec-monitor-log]) to figure out what went wrong
+    and re-create that issue in a lower environment.
 
-**Dev** is a sandbox where people can install packages and try new
-things with no risk of breaking anything in production.
+-   Only certain people are authorized to approve software into prod.
+    The approval process is well-understood and things can only go to
+    prod after the proper approvals are gained.
 
-If you're a data scientist, you probably have a really good idea what
-your Dev environment looks like. It's probably a Jupyter Notebook or an
-IDE with data science capabilities like RStudio, Spyder, or PyCharm. You
-use this environment to do exploratory data analysis, try out new types
-of charts and graphs, and test model performance against new features
-that you might design. This is really different than what most IT/Admins
-imagine is happening in Dev.
+-   The only way for things to get into prod is via promotion from a
+    lower environment. Nothing gets tried for the first time in prod.
+    It's tried and tested in a lower environment before ever touching
+    the prod environment.
 
-For a pure software engineering project, the Dev environment isn't about
-exploration and experimentation -- it's about building. The relationship
-between data science and software engineering is akin to the difference
-between archaeology and architecture. Data science is about exploring
-existing relationships and sharing them with others once they've been
-discovered. The path is often meandering -- and it's usually not clear
-whether it's even a possible one when you start. In contrast, pure
-software engineering is like designing a building. You know from the
-beginning that you're designing a building for a particular purpose. You
-might need a little exploration to ensure you've thought through all of
-the nooks and crannies, or that you've chosen the right materials, or
-that you're going to stay on budget, but you'll have a pretty good idea
-up front whether it's possible to design the building you want.
+In most cases, the right tooling to implement these rules is a
+Continuous Integration/Continuous Deployment (CI/CD) pipeline that runs
+based on pushes and merges to a git repo. Most often, the git repo is
+where the permissions management lives.
 
-This means that Dev environments look really different for a data
-scientist versus a software engineer.
+## Dev and test environments
 
-The biggest difference is that most IT/Admins are going to think of Dev,
-Test, and Prod being three identical copies of the same environment.
-That's close to what you need as a data scientist, but really it's more
-like you need a sandbox, a test environment, and prod. That means that
-if you're using a deployment platform like RStudio Connect or Dash
-Enterprise, you probably don't need it in your Dev environment, and that
-you don't need your development tool in Test or Prod (any changes should
-go back through the deployment pipeline).
+Everything that's not prod is a "lower environment". There are often at
+least two: dev and test. There are sometimes multiple testing
+environments for different kinds of testing.
 
-### Test and Prod
+For data science purposes, *dev* is a sandbox for exploration and
+experimentation. Your dev environment is for exploratory data analysis,
+testing out new model features or types, and creating a new plot to add
+to the dashboard. Dev is probably a Jupyter Notebook or an IDE with data
+science capabilities like RStudio, Spyder, VSCode, or PyCharm.
 
-**Test** is (unsurprisingly) an environment for testing. Depending on
-the type of asset you're developing, the test environment might
-incorporate testing that you do, testing by outside entities like
-security, and/or performance testing. Generally, the test environment
-facilitates User Acceptance Testing (UAT), where you can investigate
-whether labels and buttons are clear or whether plots and graphs meet
-the need. Depending on your organization, test might be collapsed with
-dev, it might be a single environment, or it could be multiple
-environments for the different types of testing.
+*Test* is an environment that looks exactly like prod, but it's not.
+Depending on what you're creating, you might do testing for correctness,
+security, performance, or user acceptance testing (UAT). Relative to
+general purpose software development, testing a data science project is
+a little more difficult. In addition to testing functional aspects of
+the software (does this button do what I think?), you may also need to
+test for correctness -- does the model output the *right* output, for
+some meaning of the word right.
 
-**Prod** is the gold standard environment where things run without any
-manual human intervention. Usually the only way to get things into prod
-is through some type of formalized process -- sometimes backed by a
-computer process like a git merge or push from a Continuous
-Integration/Continuous Deployment (CI/CD) platform (more on that below).
-One of the most important ways to keep prod stable is that nothing
-changes in prod other than via a simple promotion from the test
-environment.
+For software that is read-only, you may not really need a completely
+standalone environment for testing. You'll want to have a separate
+instance of your project that can be tested and adjusted without
+affecting the prod instance, but it may be possible to have the two
+sitting side-by-side in the same environment. That really depends on
+what exactly you're building and the standards of your organization.
 
-### Protecting Prod Data
+This is really different than the general purpose software development
+notion of a dev environment. A general purpose software engineer is like
+an architect -- they have a stated purpose, and they're designing a
+piece of software to fulfill that purpose. They need some space to get
+things dusty and to think through exactly the right materials and how
+all the pieces fit together and stay on budget -- but they pretty much
+know what they're trying to build.
 
-One of the biggest risks during the dev and test parts of an assets
-lifecycle is that you might mess up real data during your work. In a
-software engineering context, it's common to use completely fake data or
-for the app to be the data generation tool.
+In contrast, a data scientist is much more like an archaeologist. You
+don't know what exactly you're going to need to do in dev, because you
+need to spend time exploring the data before you can figure out what
+you're going to build -- or even if you can build anything of value at
+all. The path to finished data science software is usually much more
+meandering than general purpose software engineering. is often
+meandering -- and it's usually not clear whether it's even a possible
+one when you start.
 
-In contrast, data science is all about using and learning from your
-organization's actual data. So a dev environment that doesn't include
-access to your organization's real data is going to be completely
-useless if it doesn't have real data in it. This is often a difficult
-thing to convince an IT/Admin of.
+For general purpose software engineering, the big requirements of a
+lower environment is that the shape of the inputs look exactly like
+prod, but the actual content doesn't matter. For example, if you're
+building an online store, you need dev and test environments where the
+API calls from the sales system are in exactly the same format as the
+real data -- but you don't actually care if it's real data. In fact, you
+probably want to create some odd-looking cases for testing purposes.
 
-In many cases, data science assets and reports are read-only. If you're
-mostly building visualizations or dashboards that just consume the
-business data, perhaps clean it for analytics purposes, you can happily
-accept a read-only connection to your organization's
-data.[^1-1-code-promotion-1] In this case, it works just fine to connect
-to your real data from your Dev and Test environments and create graphs,
-models, and dashboards based on the real data, testing out new
-visualizations and model features in a safe sandbox while the existing
-version of your app or report runs smoothly in prod.
+The requirements for a data science dev and test environment is
+different. In a dev or test environment, you don't want write access to
+anything sensitive. You absolutely do not want to overwrite your
+organization's real data. But for data science, a dev environment
+without read access to the real data is basically useless.
 
-[^1-1-code-promotion-1]: In fact, you should probably feel grateful!
-    It's nice to know you can mess around as much as you want without
-    risking any damage to real data.
+::: callout-note
+As most data science software consumes much more data than it produces,
+read-only access may mean that dev and prod are very similar. If your
+software *writes* data, you can use configuration switches so that the
+software writes to a fake location in dev and test and to a real
+location in prod. More on that below.
+:::
 
-On the other hand, if your app or report actually writes data, you'll
-have to be a little more clever. In general, you'll have to figure out
-how to redirect your apps output into a test data store, or to mock
-responses from the real services you're interacting with. The easiest
-way to do this is by including your output locations as variables inside
-your code and then setting them at runtime based on an environment
-variable. See [below](#config-swap) for an example of how to do this.
+This is often a point of friction with IT/Admins who might believe
+access to fake data is fine. Convincing them that you need *read-only*
+access in a dev environment can often help allay these concerns.
+
+You also may have much more freedom to try out and install different R
+and Python packages in dev and test. You'll need a process to get free
+reign over packages in dev and test and to lock down package access in
+prod.
+
+STOPPED HERE
 
 ## Taking data science to production with CI/CD
 
@@ -170,8 +189,8 @@ on basic git concepts, and on workflows will be useful since they
 approach git from a data science perspective.
 :::
 
-There's a git [cheatsheet](#cheat-git) at the end of the chapter, and I will
-talk about some git *strategies* that match well with using git to
+There's a git [cheatsheet](#cheat-git) at the end of the chapter, and I
+will talk about some git *strategies* that match well with using git to
 execute a data science code promotion strategy.
 
 For production data science assets, I generally recommend long-running
