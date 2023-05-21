@@ -7,13 +7,15 @@ library(reticulate)
 
 ```
 
-Data science itself is pretty useless.
+Data science is pretty useless.
 
-It's likely you became a data scientist because you love creating
-beautiful charts, minimizing model prediction error, or writing elegant
-code in R or Python.
+Maybe you started writing R or Python code because you love creating
+beautiful visualizations. Or maybe you are passionate about ecology or
+biostatistics or economics. Maybe you just like writing elegant code in
+R or Python.
 
-Ultimately -- and perhaps frustratingly -- these things don't matter.
+Ultimately -- frustratingly -- these things *don't matter*.
+
 What matters is whether the output of your work is useful in affecting
 decisions at your organization or in the broader world.
 
@@ -21,7 +23,7 @@ That means you're going to have to share your work by putting it *in
 production*.
 
 Many data scientists think of *in production* as some mythical state of
-super computers running ultra-complex machine learning models running
+super computers running state-of-the-art machine learning models running
 over dozens of shards of data, terrabytes each. It definitely occurs on
 a misty mountaintop, and does not involve the google sheets, csv files,
 or half-baked database queries you probably wrangle every day.
@@ -32,208 +34,193 @@ if you're *in production*, this book is for you.
 
 You may sensibly be asking who I am to make such a proclamation.
 
-As of this writing, I've been on the Solutions Engineering team at
-RStudio (soon to be Posit) for nearly four years. The Solutions
-Engineering team at RStudio helps users of our open source and
-professional tools understand how to deploy, install, configure, and use
-RStudio's Professional Products.
+In 2019, I left a role leading a data science team to join the Solutions
+Engineering team at Posit (then RStudio). The Solutions Engineering team
+helps our customers deploy, install, configure, and use Posit's
+Professional Products.
 
 As such, I've spoken with hundreds of organizations managing data
-science *in production* about what being *in production* means for them,
-and how to make their production systems for developing and sharing data
-science products more robust -- both with RStudio's Professional
-Products and using purely open source tooling.
+science in production about what being in production means for them. And
+I've helped them to make their systems for developing and sharing data
+science products more robust with both open source tooling and Posit's
+Professional Products.
 
-For some orgaizations, *in production* means a report that will get
-emailed around at the end of each week. For others, it will mean hosting
-a live app or dashboard that people visit. For others, it means serving
-live predictions to another service from a machine learning model.
+I've seen organizations at every level of data science maturity. For
+some organizations, in production means a report that gets rendered and
+emailed around. For others, it means hosting a live app or dashboard
+that people come visit. For others, it means serving live predictions to
+another service from a machine learning model via an API.
 
-Regardless of the actual character of the data science products,
-organizations are universally concerned with making these assets
-reliable, reproducible, and performant (enough).
+Regardless of the maturity or the form, every organization wants to know
+that the work is reliable, the environment is safe, and that it'll be
+available when people need it.
 
-For the purpose of this book, I'm going to use the terms analytics, data
-science, and machine learning interchangeably. The real key is people
-who are deriving insights or predictions from data using R or Python.
+And so that's what this book is about -- all of the stuff that is *not
+data science* that it takes to deploy a data science product into
+production.
 
-At RStudio, the Solutions Engineering team is most directly responsible
-for engaging with the IT/Admin organizations at our customers. So that's
-what this book is about -- all of the stuff that is *not data science*
-that it takes to deploy a data science asset into production.
+The good news is that there's existing prior art here. *DevOps* is an
+outgrowth of software engineering that is primarily concerned with these
+problems and where we, as data scientists, can take some important cues.
 
-## A short history of DevOps
+## DevOps for Agile Software
 
-Here's the one sentence definition: DevOps is a set of cultural norms,
-practices, and supporting tooling to help make the process of developing
-and deploying software smoother and lower risk.
+DevOps is a set of cultural norms, practices, and supporting tooling to
+help make the process of developing and deploying software smoother and
+lower risk.
 
 If you feel like that definition is pretty vague and unhelpful, you're
-right. Like Agile software development, to which it is closely related,
-DevOps is a squishy concept. That's partially because DevOps isn't just
-one thing -- it's the application of some principles and process ideas
-to whatever context you're actually working in. That malleability is one
-of the great strengths of DevOps, but it also makes the concept quite
-squishy.
+right.
+
+Like Agile software development, to which it is closely related, DevOps
+is a squishy concept. That's partially because DevOps isn't just one
+thing -- it's the application of some principles and process ideas to
+whatever context you're actually working in. That malleability is one of
+the great strengths of DevOps, but can also make it difficult to pin
+down.
 
 This squishiness is furthered by the ecosystem of companies enabling
 DevOps. There are dozens and dozens of companies proselytizing their own
-particular flavor of DevOps -- one that (curiously) reflects the
+particular flavor of DevOps -- one that (shocker) reflects the
 capabilities of whatever product they're selling.
 
 But underneath the industry hype and the marketing jargon, there are
 some extremely valuable lessons to take from the field.
 
-To understand better, let's go back to the birth of the field.
+To understand better, let's go back to the birth DevOps.
 
-The [*Manifesto for Agile Software
-Development*](https://agilemanifesto.org/) was originally published in
-2001. Throughout the 1990s, software developers had begun observing that
-delivering software in small units, quickly collecting feedback, and
-iterating was an effective model. After that point, many different
-frameworks of actual working patterns were developed and popularized.
+As the story goes, the history of software development before the 1990s
+involved a *waterfall* development processes. In these processes,
+software developers would work with clients and customers to fully
+define requirements for software, plan the whole thing out, and deliver
+final software months or years later.
 
-However, many of these frameworks were really focused on *software
+When the application was complete, it was hurled over the metaphorical
+wall from Development to Operations. IT Administrators in the Ops
+department would figure out the hardware and networking requirements,
+get it running, and keep it up.
+
+Throughout the 1990s, software developers observed that delivering
+software in small units, quickly collecting feedback, and iterating was
+a more effective model.
+
+In 2001, the [*Manifesto for Agile Software
+Development*](https://agilemanifesto.org/) was published, giving a name
+to this philosophy of software development. Agile development basically
+ate the world and basically all software is developed using some form of
+Agile these days. These days, Agile work styles have extended far beyond
+software into other domains as well.
+
+There are dozens of Agile software development frameworks you might've
+heard of like Scrum, Kanban, Extreme Programming, and many, many more.
+One commonality of these frameworks were really focused on *software
 development*. What happened once the software was written?
 
-Historically, IT Administrators managed the servers, networking, and
-workstations needed to deploy, release, and operate that software. So,
-when an application was complete (or perceived as such), it was hurled
-over the wall from Development to Operations. They'd figure out the
-hardware and networking requirements, check that it was performant
-enough, and get it going in the real world.
+The old pattern clearly wouldn't work. If you were doing new deployments
+multiple times a week -- or even a day -- you needed a complementary
+process to get that software deployed and into production.
 
-This pattern is very fragile and subject to many errors, and it quickly
-became apparent that the Agile process -- creating and getting feedback
-on small, iterative changes to working software -- needed a
-complementary process to get that software deployed and into production.
+*DevOps* arose as this discipline -- a way for Dev and Ops to better
+collaborate on the process that would take software from development
+intor production. It took a little while for the field to be formalized,
+and the term DevOps came into common usage around 2010.
 
-DevOps arose as this discipline -- a way for software developers and the
-administrators of operational software to better collaborate on making
-sure the software being written was making it reliably and quickly into
-production. It took a little while for the field to be formalized, and
-the term DevOps came into common usage around 2010.
+## Processes and People
 
-## Those who do DevOps
-
-Throughout this book, I'll use two different terms -- DevOps and
-IT/Admin -- and though they may sound similar, I mean very different
-things by them.
-
-**DevOps** refers to the *knowledge, practices, and tools* that make it
-easier, safer, and faster to put work into production. So, if you're a
-software developer (and as a data scientist, you are) you need to be
-thinking about DevOps.
+Throughout this book, *DevOps* refers to the *knowledge, practices, and
+tools* that make it easier, safer, and faster to put work into
+production. So, if you're a software developer (and as a data scientist,
+you are) you need to be thinking about DevOps.
 
 Most organizations also have a set of *people and roles* who have the
-permission and responsibility for managing the servers and computers at
-your organization. I'm going to refer to this group as **IT/Admins**.
-Their names vary widely by organization -- they might be named
-Information Technology (IT), SysAdmin, Site Reliability Engineering
-(SRE), or DevOps.[^intro-1]
+permission and responsibility for managing the servers and software at
+your organization. Their titles vary widely by organization -- they
+might be named Information Technology (IT), SysAdmin, Site Reliability
+Engineering (SRE), or DevOps.[^intro-1]
 
 [^intro-1]: I think a lot of DevOps experts would argue that you're
-    doing DevOps wrong if you have a standalone DevOps team, but some
-    companies have them.
+    doing DevOps wrong if you have a standalone DevOps team.
 
-Depending on what you're trying to accomplish, the relevant IT/Admins
-may change. For example, if you're trying to get access to a particular
-database, the relevant IT/Admins may be a completely different group of
-people than if you're trying to procure a new server.
+For the sake of simplicity, I'm going to use the term *IT/Admin* to
+refer to these people and teams throughout this book.
 
 Fundamentally, DevOps is about creating good patterns for people to
-collaborate on developing and deploying software. As a data scientist,
-you're on the Dev side of the house, and so a huge part of making DevOps
-work at your organization is about finding some Ops counterparts with
-whom you can develop a successful collaboration. There are many
-different organizational structures that support collaboration between
-data scientists and IT/Admins.
+collaborate on developing and deploying software and those patterns vary
+by organization. That means that DevOps can and should be adapted to
+your organization.
 
-However, I will point out three patterns that are almost always red
+As a data scientist, you are the Dev, and so a huge part of making
+DevOps work for you is finding some IT/Admin counterparts with whom you
+can develop a successful collaboration. In some cases that will be
+easier than others. Here are three patterns that are almost always red
 flags -- mostly because they make it hard to develop relationships that
-can sustain the kind of collaboration DevOps neccesitates. If you find
-yourself in these situations, you're not doomed -- you can still get
-things done. But progress is likely to be slow.
+can sustain the kind of collaboration DevOps necessitates.
 
-1.  At some very large organizations, IT/Admin functions are split into
-    small atomic units like security, databases, networking, storage,
+1.  At some large organizations, IT/Admin functions are split into small
+    atomic units like security, databases, networking, storage,
     procurement, cloud, and more. This is useful for keeping the
     scope-of-work manageable for the people in that group -- and often
-    results in super deep expertise within the group -- but also means
-    that you'll need to bring people together from disparate teams to
-    actually get anything done. And even when you find the person who
-    can help you with one task, they're probably not the right person to
-    help you with anything else. They may not even know who is.
+    results in super deep technical expertise -- but also means that it
+    can be slow to get anything done because you'll need to bring people
+    together from disparate teams to actually get anything done.
 
 2.  Some organizations have chosen to outsource their IT/Admin
-    functions. This isn't a problem per-se -- the people who work for
-    outsourced IT/Admin companies are often very competent, but it does
-    indicate a lack of commitment at your organization. The main issues
-    in this case tend to be logistical. Outsourced IT/Admin teams are
-    often in India, so it can be hard to find meeting times with
-    American and European teams. Additionally, turnover on projects and
-    systems tends to be very high at outsourced IT/Admin organizations.
-    That means it can be really hard to find anyone who's an expert on a
-    particular system -- or to be able to go back to them once you've
-    found them.
+    functions. While the individuals in those outsourced teams are often
+    quite competent, building relationships can be difficult. Outsourced
+    IT/Admin teams are often in India, so it can be hard to find meeting
+    times with American and European teams. Additionally, turnover on
+    projects and systems tends to be high at outsourced IT/Admin
+    organizations. That means that institutional knowledge tends to be
+    thin and relationships can't be relied on long term.
 
-3.  At some very small organizations, there isn't yet an IT/Admin
-    function. And at others, the IT/Admins are preoccupied with other
-    tasks and don't have the capacity to help the data science team.
-    This isn't a tragedy, but it probably means you're about to become
-    your own IT/Admin. If your organization is pretty happy to let you
-    do what you want, you've picked up this book, so you're in the right
-    place. If you're going to have to fight for money to get servers,
-    that's an uphill battle.
+3.  Some organizations, especially small or new ones, there isn't an
+    IT/Admin function. At others, the IT/Admins are preoccupied with
+    other tasks and don't have the capacity to help the data science
+    team. This isn't a tragedy, but it probably means you're going to
+    have to become the IT/Admin if you want to get anything done.
 
 Whether your organization has an IT/Admin setup that facilitates DevOps
 best practices or not, hopefully this book can help you take the first
 steps towards making your path to production smoother and simpler.
 
-TODO: Ways to ameliorate red flags
+## About this book
 
-## What's in this book?
+Over the course of engaging with so many organizations, I've seen which
+patterns work to grease the path to production for data scientists and
+which ones tend to impede it.
 
-My hope for this book is twofold.
+Many of those patterns are *inspired* by traditional DevOps, but they're
+not identical because of differences between pure software development
+and data science (more on that in [Chapter @sec-1-intro]).
 
-First, I'd like to share some patterns.
+The first goal of this book is to equip you with mental models you can
+apply in your own work and your own organization to create data science
+projects that are easier to take to production.
 
-DevOps is a well-developed field in its own right. However, a simple 1-1
-transposition of DevOps practices from traditional software to data
-science would be a mistake. Over the course of engaging with so many
-organizations at RStudio, I've observed some particular patterns,
-borrowed from traditional DevOps, that work particularly well to grease
-the path to production for data scientists.
+The second goal of this book is to give you some background on relevant
+IT/Admin knowledge.
 
-Hopefully, by the time you're done with this book, you'll have a pretty
-good mental model of some patterns and principles you can apply in your
-own work to make deployment more reliable. That's what's in the first
-section of this book.
-
-Second, I want to equip you with some technical knowledge.
-
-IT administration is an older field than DevOps or data science, full of
-arcane language and technologies. My hope in this book is to equip you
+IT Administration is an older field than DevOps or data science, and
+it's full of arcane language and technologies. This book will equip you
 with the vocabulary to talk to the IT/Admins at your organization and
-the (beginning of) skills you'll need if it turns out that you need to
-DIY a lot of what you're doing.
+some basic skills of how to do IT/Admin tasks yourself.
 
-The second section is the hands-on section for anyone who's
-administering a data science server for themselves. In this section,
-we're going to DIY a data science environment. If you have to, this
-could be an environment you actually work in. If not, this section will
-help you learn the language and tools to better collaborate with the
-IT/Admins at your organization.
+The book is divided up into four sections.
 
-The final section is about taking the DIY environment we'll set up in
-section 2 and making it enterprise-grade. Hopefully, if you have
-enterprise requirements, you also have enterprise IT support, so this
-section will be more focused on the conceptual knowledge and terminology
-you'll need to productively interact with the IT/Admins who are
-(hopefully) responsible for helping you. And if you don't have IT/Admins
-to help you, it will at least give you some terms to google.
+[Section 1](@sec-1-intro) is about data science best practices that can
+make it easy to take your R and Python work into production.
 
-### Comprehension Questions and Labs
+[Section 2](@sec-2-intro) is an introduction to the tools IT/Admins use
+in their work like the command line, bash, and Docker.
+
+[Section 3](@sec-3-intro) is a walkthrough of basic concepts in IT
+Administration that will get you to the point of being able to host and
+manage your own small server.
+
+[Section 4](@sec-4-intro) is about how all of what you learned in
+Section 3 changes when you go to enterprise scale.
+
+### Comprehension Questions
 
 Each chapter in this book includes comprehension questions. As you get
 to the end of the chapter, take a moment to consider these questions. If
@@ -245,22 +232,18 @@ chapter. If you can already answer them all, you can probably skip that
 chapter's content.
 
 ::: callout-note
-## Mental Models + Mental Maps
+### Mental Models + Mental Maps
 
-Throughout the book, I'll talk a lot about building a mental model. What
-a mental model is is reasonably intuitive, but just to make clear -- a
-mental model is a model in your head of various entities and how they
-relate. Many of the chapters in this book will be about helping you
-build mental models of various DevOps concepts and how they relate to
-Data Science.
+Throughout the book, I'll talk a lot about building a mental model of
+different concepts.
 
-A mental map is a particularly helpful way to represent mental models.
-Because I believe generating mental maps is a great test of mental
-models, I'll suggest them as exercises in a number of places.
+A mental map is way to represent mental models.
 
-In a mental map, you'll draw out each of the entities I suggest and
-connect them with arrows. Each node will be a noun, and you'll write the
-relationship between entities in the arrows.
+In a mental map, you draw each of the nouns as nodes and connect them
+with arrows that are labelled to explain the relationship.
+
+Mental maps are a great way to test your mental models, so I'll suggest
+them as comprehension questions in many chapters.
 
 Here's an example about this book:
 
@@ -277,20 +260,40 @@ verbs. It's pretty simple! But writing down the relationships between
 entities like this is a *great* check on understanding.
 :::
 
-Throughout the book, you'll also complete labs. Some chapters in the
-book are more conceptual and don't include a lab, but many chapters do.
+### Labs
 
-The idea of these labs is to build up a complete data science platform
-that includes a place for you to work, a way to store data, and a
-deployment environment.
+Many chapters also contain labs. The idea of these labs is to give you
+hands-on experience with the concepts at hand.
 
-By the time you're done, you'll have built a website with automated
-deployment that includes an interactive web app and a workbench
-environment in AWS for data science work in R or Python.
+These labs all tie together. If you follow the labs in this book, you'll
+build up a reasonably complete data science platform that includes a
+place for you to work, a way to store data, and a deployment
+environment.
 
-The whole thing will look something like this:
+[Palmer Penguins](https://allisonhorst.github.io/palmerpenguins/) is a
+public dataset meant for demonstrating data exploration and
+visualization. We're going to pretend we care deeply about the
+relationship between penguin bill length and mass. We're going to build
+up an entire data science environment dedicated to exploring that
+relationship.
 
-![](intro-images/lab-arch.jpeg)
+The front end of this environment is going to be a website that contains
+an app that allows you to get predictions from a machine learning model
+of a penguin's mass based on bill length and other features. We're also
+going to include pages dedicated to exploratory data analysis and model
+building on the website.
+
+On the backend, we're going to build a data science workbench on an AWS
+EC2 instance where we can do this work. It will include RStudio Server
+and JupyterHub for working. It will additionally host the machine
+learning model as an API and the Shiny app that appears on the website.
+
+The whole thing will get auto-deployed from a git repo using GitHub
+Actions.
+
+From an architectural perspective, it'll look something like this:
+
+![](intro-images/lab-arch.png)
 
 If you're interested in exactly which pieces get completed in each
 chapter, check out [Appendix @sec-append-lab].
