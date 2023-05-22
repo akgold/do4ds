@@ -297,5 +297,38 @@ From an architectural perspective, it'll look something like this:
 
 ![](intro-images/lab-arch.png)
 
+```{mermaid}
+%%| eval: true
+
+graph LR
+    subgraph Palmer Penguins Site
+        A["EDA 
+        R Quarto"] 
+        B["Model Build 
+        Jupyter"] 
+        C["Model Explorer 
+        PyShiny"]
+    end
+    subgraph Git Repo
+        D[Repo] --> |GHA| A
+        D --> |GHA| B
+    end
+    subgraph AWS
+        subgraph EC2
+            F[Shiny]
+            G(RStudio Server)
+            H(Jupyter Hub)
+            I[FastAPI]
+            J[DuckDB]
+            J --> I
+            F --> C
+        end
+        subgraph S3
+            E[Model]
+        end
+    end
+
+```
+
 If you're interested in exactly which pieces get completed in each
 chapter, check out [Appendix @sec-append-lab].
