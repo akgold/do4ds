@@ -15,7 +15,7 @@ software that's running smoothly tends -- for the most part -- to
 continue running smoothly. But it's the getting it there that gets you.
 
 That's why *deployment* is one of the primary concerns of DevOps best
-practices*.*
+practices.
 
 Deployment is the process of taking code that isn't in production right
 now -- whether it's an entirely new piece of software or an update to
@@ -23,6 +23,11 @@ something existing -- and turn it into something in production. That
 moment when your Shiny app goes live or you run your report or job for
 real for the first time, or when you add a new feature to your model --
 that's a deployment process.
+
+In DevOps speak, good deployment processes are referred to as Continuous
+Integration and Continuous Deployment (CI/CD). The idea is that
+deployment to production is very low friction (preferably automated), so
+deployments are incremental, frequent, and low drama.
 
 A good deployment process has three major components:
 
@@ -71,11 +76,6 @@ prod environments and promotion processes:
     lower environment. Nothing gets tried for the first time in prod.
     It's tried and tested in a lower environment before ever touching
     the prod environment.
-
-In most cases, the right tooling to implement these rules is a
-Continuous Integration/Continuous Deployment (CI/CD) pipeline that runs
-based on pushes and merges to a git repo. Most often, the git repo is
-where the permissions management lives.
 
 ## Dev and test environments
 
@@ -153,18 +153,128 @@ and Python packages in dev and test. You'll need a process to get free
 reign over packages in dev and test and to lock down package access in
 prod.
 
-STOPPED HERE
+The rest of this chapter will explain the actual procedures and tooling
+that comprise a good code promotion process.
 
-## Taking data science to production with CI/CD
+## Environment Variables  {#sec-env-vars}
 
-The common term for the mechanics of code promotion is Continuous
-Integration/Continuous Deployment (CI/CD).
+Environment variables are extremely important for code promotion process
+because they provide a way to manage secrets across multiple
+environments, as well as a way to change behavior of your project in
+different environments.
 
-CI/CD is about moving your data science projects, including code, data,
-and environment, into successively more formal states of production.
-While it's not a requirement to use source control to make this happen,
-the *mechanics* of CI/CD is usually tightly linked to source control
-procedures.
+An environment variable is a value that is set in the environment. That
+means unlike a regular R or Python variable that is expected to change
+throughout the runtime, environment variables are set at the outset of
+your code to change the behavior throughout the runtime.
+
+Inside your code, you'll use the *name* of the environment variable, so
+your app can use secrets and have different behavior without your code
+changing at all from environment to environment.
+
+## Environment Variables to inject secrets
+
+When you're moving your code across environments, one of the most
+delicate parts is managing secrets like passwords and secret access
+keys. Let's start with the wrong way to do this. *Do not hardcode your
+secrets in your code*.
+
+Putting secrets directly in your code is a great way to end up with them
+leaking on GitHub or to people who aren't supposed to have them.
+Instead, the best way to manage secrets is to reference them by name in
+your code. When you manage secrets by name, it makes it safe to share
+your code freely and make secrets management a separate concern.
+
+::: callout-note
+It is convention to make environment variable names in all caps with
+words separated by underscores. The values are always simple character
+values, though these can be cast to some other type inside R or Python.
+:::
+
+In Python, you can read environment variables from the `os.environ`
+dictionary or by using `os.getenv("<VAR_NAME>")`. In R, you can get and
+set environment variables with `Sys.getenv("<VAR_NAME>")`.
+
+In your Dev environment, you'll probably load in secrets manually. Most
+often this is done in plain text from a file on disk, though
+organizations are increasingly moving to secrets management tools so you
+get these secrets via an API of some sort.
+
+If you are loading in secrets from a plain text file, in Python,
+environment variables are usually set by explicitly reading a `.env`
+file into your Python session. The [`{python-dotenv}`
+package](https://pypi.org/project/python-dotenv/) is a good choice for
+doing this.
+
+R automatically reads the `.Renviron` file as environment variables and
+also sources the `.Rprofile` file, where you can set environment
+variables with `Sys.setenv()`. I personally prefer putting everything in
+`.Rprofile` for simplicity -- but that's not a universal opinion.
+
+Depending on the tooling you're using, your Test and Prod environment
+may well come with integrated secrets management. The exact
+configuration will depend on that environment, but you should use those
+tools when they're available.
+
+## Different behavior per environment
+
+Let's think about the world from the perspective of your data science
+project as it moves through Dev, Test, and Prod. If your it's very
+simple -- perhaps a Shiny app that just reads a local CSV file -- then
+the world will look exactly the same in the three environments.
+
+But in many cases, something will actually look different to the app.
+You might want to switch data sources from a Dev database to a prod one,
+or you want to write to a real output location, or you want to use a
+different level of logging.
+
+That means your project needs the ability to know which environment it's
+in and then to respond accordingly.
+
+-   **Environment Names** Very often, you want your code to know where
+    it is. Having a variable that specifies the name of the environment
+    (Dev, Test, or Prod) can be useful.
+
+-   **Behavioral Configuration** If you've got a Dev, Test, Prod setup,
+    you may want specific behavior -- like whether something actually
+    writes or logging levels to be different. You can use an environment
+    variable to let your code know what to do.
+
+-   **Data Access Parameters** The most common difference across
+    environments is the location of data. Putting these values into
+    environment variables that change across environments is a great way
+    to store them.
+
+The basic idea is that you set up a config file with named sections.
+There's a default section with overrides for higher values. Then, you
+tell your code which environment it's in so that it picks up the right
+section.
+
+There are a variety of ways to do this in Python -- many of which
+involve creating a custom class for each of the environments you want to
+use and then selecting the right class based on the value of an
+environment variable.
+
+In R, the `{config}` package is the standard way to load an
+environmental configuration. You use the `config::get()` uses the value
+of the `R_CONFIG_ACTIVE` environment variable to choose which
+configuration to use.
+
+That means that switching from the dev to the prod version of the app is
+as easy as making sure you've got the correct environment variable set
+on your system.
+
+## Automated Promotion
+
+It's possible to manually promote code from one environment to another.
+Some organizations write procedures for how code gets promoted. The
+issue with this approach is that humans aren't great at following
+procedures. Environments often drift apart, and your rigorous code
+promotion strategy is suddenly coming undone.
+
+Computers, on the other hand, are great at following procedures. The
+best way to automate CI/CD is to attach it to version control. These
+days, [git](https://git-scm.com/) is the industry standard.
 
 ### A Rough Intro to Git
 
@@ -177,7 +287,8 @@ entire workflow at any moment.
 
 I'm not going to get into the mechanics of git in this book-- what it
 means to add, commit, push, pull, merge, and more. There are lots of
-great resources out there that I'm not aiming to reproduce.
+great resources out there that I'm not aiming to reproduce, though there
+is a git [cheatsheet](#cheat-git) at the end of the chapter.
 
 ::: rmdinfo
 If you don't already know git and want to learn, I'd recommend
@@ -189,15 +300,14 @@ on basic git concepts, and on workflows will be useful since they
 approach git from a data science perspective.
 :::
 
-There's a git [cheatsheet](#cheat-git) at the end of the chapter, and I
-will talk about some git *strategies* that match well with using git to
-execute a data science code promotion strategy.
+Instead, I want to talk about git *strategies* that match well with
+using git to execute a data science code promotion strategy.
 
 For production data science assets, I generally recommend long-running
-dev (or test) and prod branches, with feature branches for developing
-new things. The way this works is that new features are developed in a
-feature branch, merged into dev for testing, and then promoted to prod
-when you're confident it's ready.
+dev (and/or test) and prod branches, with feature branches for
+developing new things. The way this works is that new features are
+developed in a feature branch, merged into dev for testing, and then
+promoted to prod when you're confident it's ready.
 
 For example, if you had two new plots you were adding to an existing
 dashboard, your git commit graph might look like this:
@@ -207,7 +317,7 @@ dashboard, your git commit graph might look like this:
 CI/CD adds a layer on top of this. CI/CD allows you to integrate
 functional testing by automatically running those tests whenever you do
 something in git. These jobs can run when a merge request is made, and
-are useful for tasks like spellchecking, linting, and running tests.
+are useful for tasks like spell checking, linting, and running tests.
 
 For the purposes of CI/CD, the most interesting jobs are those that do
 something after there's a commit or a completed merge, often deploying
@@ -244,181 +354,6 @@ website you're currently viewing using GHA. I'm not going to get deep
 into the guts of GHA, but instead talk generally about the pattern for
 deploying data science assets, and then go through how I set up this
 book on GHA.
-
-### Using CI/CD to deploy data science assets
-
-In general, using a CI/CD tool to deploy a data science asset is pretty
-straightforward. The mental model to have is that the CI/CD tool stands
-up a completely empty server for you, and runs some code on it.
-
-That means that if you're just doing something simple like
-spellchecking, you can probably just specify to run spellcheck. If
-you're doing something more complicated, like rendering an R Markdown
-document or Jupyter Notebook and then pushing it to a server, you'll
-have to take a few extra steps to be sure the right version of R or
-Python is on the CI/CD server, that your package environment is properly
-reproduced, and that you have the right code to render your document.
-
-## Per-Environment Configuration {config-swap=""}
-
-Sometimes you want a little more flexibility -- for example the option
-to switch many the environment variables depending on the environment.
-
-In R, the standard way to do this is using the
-[`config`](https://cran.r-project.org/web/packages/config/index.html)
-package. There are many options for managing runtime configuration in
-Python, including a package called config.
-
-For example, let's consider this shiny app. In this app, every time I
-press the button, the app sends a `POST` request to an external service
-indicating that the button has been pressed.
-
-```{r}
-#| eval: false
-
-library(shiny)
-
-# UI that's just a button
-ui <- fluidPage(
-  actionButton("button", "Press Me!")
-)
-
-# Do something on button press
-server <- function(input, output) {
-  observeEvent(
-    input$button, 
-    httr::POST(
-      "www.my-external-system.com", 
-      body = list(button_pressed = TRUE)
-    )
-  )
-}
-
-# Run the application 
-shinyApp(ui = ui, server = server)
-```
-
-With the URL hardcoded like this, it's really hard to imagine doing this
-in a Dev or Test environment.
-
-However, with R's config package, you can create a config.yml file that
-looks like this:
-
-```{default}
-dev:
-  url: "www.test-system.com"
-  
-prod:
-  url: "www.my-external-system.com"
-```
-
-Then you can switch to the correct config and apply that configuration
-inside the app.
-
-```{r}
-#| eval: false
-
-library(shiny)
-config <- config::get("prod")
-
-# UI that's just a button
-ui <- fluidPage(
-  actionButton("button", "Press Me!")
-)
-
-# Do something on button press
-server <- function(input, output) {
-  observeEvent(
-    input$button, 
-    httr::POST(
-      config$url, 
-      body = list(button_pressed = TRUE)
-    )
-  )
-}
-
-# Run the application 
-shinyApp(ui = ui, server = server)
-```
-
-## The power of environment variables {#sec-env-vars}
-
-Environment variables are an extremely powerful way to manage the
-context in which your code is running.
-
-Whenever your code is running, your system maintains a number of
-different values to be used by processes running on the system. These
-variables are not specific to the R or Python process on the system --
-but they are usable by R or Python to powerful ends.
-
-It is convention to make environment variable names in all caps, words
-separated by underscores. The values are always simple character values,
-though these can be cast to some other type inside R or Python.
-
-In R, you can set environment variables in an `.Renviron` file or using
-`Sys.setenv(VAR_NAME = VALUE)` in a `.Rprofile`. These files are sourced
-on process startup, so the values are always available inside the
-running process with `Sys.getenv("VAR_NAME")`. You can have user and/or
-project level files and even server-level ones with `.Renviron.site` and
-`.Rprofile.site`.
-
-In Python, environment variables are accessible one-by-one using the
-`os.getenv` function or as a dictionary in `os.environ`. If you're using
-a lot of environment variables, it's common to import them using a
-statement like `from os import environ as env`.
-
-There is no equivalent of the `.Rprofile` that's sourced before startup
-in Python, but it's common to use the `python-dotenv` package to
-manually load the contents of a `.env` file into the environment as one
-of the first few lines in your code.
-
-You should not commit these files to git, but should manually move them
-across environments, so they never appear anywhere centrally accessible.
-
-Once you're using environment variables, they're extremely powerful.
-It's very common to set the default value of a function argument to be
-the value of an environment variable. For example, in the example using
-the R `{config}` package, `config::get()` uses the value of the
-`R_CONFIG_ACTIVE` environment variable to choose which configuration to
-use.
-
-That means that switching from the dev to the prod version of the app is
-as easy as making sure you've got the correct environment variable set
-on your system.[^1-1-code-promotion-3]
-
-[^1-1-code-promotion-3]: If you're deploying to Posit Connect,
-    `R_CONFIG_ACTIVE` is locked to `rsconnect`. If you've got multiple
-    deployments to Connect that you want to differentiate, you may want
-    to use a different environment variable, which you would specify
-    manually like `config::get(config = Sys.getenv("WHICH_CONFIG"))` .
-
-It can also be a great way to safely store secrets on your system. If
-you've got a function that, for example, creates a database connection,
-it's a good idea to have the `username` and `password` arguments of your
-function default to reading from an environment variable so you don't
-ever have to expose them in your code.
-
-That might look something like this in R:
-
-```{r}
-#| eval: false
-
-my_db_con <- function(user = Sys.getenv("DB_USER"), pw = Sys.getenv("DB_PW")) {
-  make_db_con(user, pw)
-}
-```
-
-and in Python
-
-TODO: Check python version works
-
-```{python}
-#| eval: false
-
-def my_db_con(user = os.getenv("db_user"), pw = os.getenv("db_pw")):
-  make_db_con(user, pw)
-
-```
 
 ## Comprehension Questions
 
@@ -541,4 +476,3 @@ reflected on your website.
 | `git checkout <branch name>`    | Checkout a branch.                                     |
 | `git checkout -b <branch name>` | Create and checkout a branch.                          |
 | `git branch -d <branch name>`   | Delete a branch.                                       |
-
