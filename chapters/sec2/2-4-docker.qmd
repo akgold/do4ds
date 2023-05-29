@@ -1,10 +1,11 @@
 # Demystifying Docker {#sec-docker}
 
 Docker is an incredible tool for reproducing a finished analysis
-somewhere else or sometime else. In a data science context, my
-recommendation is to treat Docker as a tool for enhancing
-reproducibility by putting finished analyses into a Docker container for
-deployment or archiving.
+somewhere else or sometime else, especially in concert with creating R
+and Python environments as code like we discussed in [Chapter
+@sec-env-as-code]. In a data science context, my recommendation is to
+treat Docker as a tool for enhancing reproducibility by putting finished
+analyses into a Docker container for deployment or archiving.
 
 ::: callout-note
 Before you start, make sure to install [Docker
@@ -73,8 +74,8 @@ almost never run it. `docker run` auto-pulls the container(s) it needs.
 
 You can control Docker Containers from the Docker Desktop app. But if
 you're going to be using Docker on a server, you'll mostly be
-interacting via the CLI. There's a [cheatsheet](#cheat-docker) for Docker CLI commands at
-the end of this chapter.
+interacting via the CLI. There's a [cheatsheet](#cheat-docker) for
+Docker CLI commands at the end of this chapter.
 
 ### Flags for `docker run`
 
@@ -280,12 +281,12 @@ that the logs go away when the container does. That's obviously bad if
 the container dies because something goes wrong. How might you make sure
 that the container's logs get written somewhere more permanent?
 
-## Cheatsheet: Docker  {#cheat-docker}
+## Cheatsheet: Docker {#cheat-docker}
 
 ### Docker CLI Commands
 
 | Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
-|---------|-------------------------|--------------------|------------------|
+|-------|-------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
 | Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
 | Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
 | Run   | `docker run <image>`                | Run a container.                                          | See section below.                                                                                |
@@ -297,7 +298,7 @@ that the container's logs get written somewhere more permanent?
 ### **Flags for `docker run`**
 
 | Flag               | Effect                                         | Notes                                                                                                                                                            |
-|------------------|--------------------|-----------------------------|
+|--------------------|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided. Then you'll need to discover name with `docker ps`.                                                             |
 | `--rm`             | Remove container when its stopped.             | Very useful when playing around because it cleans things up. Almost never used in prod, because you usually want to be able to inspect logs from old containers. |
 | `-d`               | Detach container (don't block the terminal).   | Almost always used in production. Sometimes useful to stay attached when troubleshooting.                                                                        |
@@ -311,7 +312,7 @@ that the container's logs get written somewhere more permanent?
 These are the commands that go in a Dockerfile when you're building it.
 
 | Command | Purpose                                              | Example                   |
-|----------------|---------------------------------|------------------------------|
+|---------|------------------------------------------------------|---------------------------|
 | `FROM`  | Indicate base container                              | `FROM rocker/r-ver:4.1.0` |
 | `RUN`   | Run a command when building                          | `RUN apt-get update`      |
 | `COPY`  | Copy from build directory into the container         | `COPY . /app/`            |
