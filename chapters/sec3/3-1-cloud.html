@@ -708,21 +708,20 @@ Note
 <div class="code-with-filename-file">
 <pre><strong>model.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb1" data-startfrom="47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 46;"><span id="cb1-47"><a href="#cb1-47"></a><span class="op">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> HEAD</span>
-<span id="cb1-48"><a href="#cb1-48"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel</span>
-<span id="cb1-49"><a href="#cb1-49"></a><span class="op">=======</span></span>
-<span id="cb1-50"><a href="#cb1-50"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel, VetiverAPI</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1" data-startfrom="47"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 46;"><span id="cb1-47"><a href="#cb1-47"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverModel</span>
+<span id="cb1-48"><a href="#cb1-48"></a><span class="im">from</span> pins <span class="im">import</span> board_temp</span>
+<span id="cb1-49"><a href="#cb1-49"></a></span>
+<span id="cb1-50"><a href="#cb1-50"></a>v <span class="op">=</span> VetiverModel(model, model_name<span class="op">=</span><span class="st">'penguin_model'</span>, prototype_data<span class="op">=</span>X)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>That line will now become</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>model.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb2" data-startfrom="64"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 63;"><span id="cb2-64"><a href="#cb2-64"></a><span class="im">from</span> vetiver <span class="im">import</span> vetiver_pin_write</span>
-<span id="cb2-65"><a href="#cb2-65"></a></span>
-<span id="cb2-66"><a href="#cb2-66"></a><span class="op">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> HEAD</span>
-<span id="cb2-67"><a href="#cb2-67"></a>model_board <span class="op">=</span> board_folder(<span class="st">"/data/model"</span>, allow_pickle_read <span class="op">=</span> <span class="va">True</span>)</span>
-<span id="cb2-68"><a href="#cb2-68"></a>vetiver_pin_write(model_board, v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2" data-startfrom="64"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 63;"><span id="cb2-64"><a href="#cb2-64"></a>```{python}</span>
+<span id="cb2-65"><a href="#cb2-65"></a><span class="im">from</span> vetiver <span class="im">import</span> VetiverAPI</span>
+<span id="cb2-66"><a href="#cb2-66"></a>app <span class="op">=</span> VetiverAPI(v, check_prototype <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb2-67"><a href="#cb2-67"></a>```</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now, if you try this line in your code, it won’t work. Why? Because of authentication. The bucket we’re using isn’t public and AWS needs to know that we’re actually allowed to access it.</p>
 <p>In this case, we’re going to use <a href="@sec-env-vars">environment variables</a> to give access to the S3 bucket. If you play around a little, you’ll discover that <code>{pins}</code> does authentication via the <code>s3fs</code> package, which can do authentication in several different ways. We’re going to use environment variables because they work nicely locally and from GitHub Actions.</p>
@@ -742,9 +741,9 @@ Note
 <div class="code-with-filename-file">
 <pre><strong>model.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb4" data-startfrom="56"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 55;"><span id="cb4-56"><a href="#cb4-56"></a></span>
-<span id="cb4-57"><a href="#cb4-57"></a><span class="co">## Save to Board</span></span>
-<span id="cb4-58"><a href="#cb4-58"></a><span class="op">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> HEAD</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb4" data-startfrom="56"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 55;"><span id="cb4-56"><a href="#cb4-56"></a><span class="im">from</span> pins <span class="im">import</span> board_folder</span>
+<span id="cb4-57"><a href="#cb4-57"></a><span class="im">from</span> vetiver <span class="im">import</span> vetiver_pin_write</span>
+<span id="cb4-58"><a href="#cb4-58"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>If these variables are in the environment, the call to <code>board_s3</code> should just work locally.</p>
 <p>We have one more step to make this work so that the model can also be written from GitHub actions. GitHub Actions needs to know how to access those environment variables too.</p>
