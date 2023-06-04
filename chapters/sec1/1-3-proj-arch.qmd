@@ -1,0 +1,919 @@
+# Data Project Architecture {#sec-proj-arch}
+
+There are two layers in a data science project where you get to choose
+the architecture -- the presentation and processing layers. In this
+chapter, we'll get into a discussion of how to architect these layers
+from the perspective of making data flows optimal.
+
+## Presentation Layer Architecture
+
+As you're designing the data project architecture that's right for your
+project, the first step is to figure out your *presentation layer*. The
+presentation layer is the actual thing that will be consumed by someone
+else at your organization or the public.
+
+Relative to the innumerable different types and purposes for general
+purpose software, basically all data science software falls into one of
+four categories.
+
+The first category is a *job*. A job matters because it changes
+something in another system. It might move data around in an ETL job,
+build a model, or produce plots, graphs, or numbers to be used in a
+Microsoft Office report.
+
+Frequently, jobs are written in a SQL-based pipelining tool ([*dbt*](#0)
+has been quickly rising in popularity) or in a `.R` or `.py`
+script.[^1-3-proj-arch-1]
+
+[^1-3-proj-arch-1]: Though I'll argue in [Chapter @sec-log-monitor] that
+    you should always use a literate programming tool like Quarto, R
+    Markdown, or Jupyter Notebook.
+
+The second type of data science software is an interactive web *app*.
+These apps are created in frameworks like Shiny (R or Python), Dash
+(Python), or Streamlit (Python). In contrast to general purpose web
+apps, which are for all sorts of purposes, data science web apps are
+usually used to give non-coders a way to explore data sets and see data
+insights.
+
+The third type is a *report*. Reports are anything where you're turning
+code into an output you care about like a document, book, presentation,
+or website.
+
+You create a report by rendering an R Markdown doc, Quarto doc, or
+Jupyter Notebook into a final documents for people to consume on their
+computer, in print, or in a presentation. These docs may be completely
+static (this book is a Quarto doc) or they may have some interactive
+elements.
+
+Exactly how much interactivity turns a report into an app is completely
+subjective. I generally think that the distinction is whether there's a
+running R or Python process in the background, but it's not a
+particularly sharp line.
+
+The first three types of data science software are specific to data
+science. The fourth type of data science software is much more general
+-- it's an *API* (application programming interface), which is for
+machine-to-machine communication. In the general purpose software world,
+APIs are the backbone of how two distinct pieces of software
+communicate. In the data science world, APIs are most often used to
+provide data feeds and on-demand predictions from machine learning
+models.
+
+Here's a little flow chart for how I think about which of the four
+things you should build.
+
+```{mermaid}
+%%| eval: true
+
+flowchart TD
+    A{For human\n consumption?}
+    B{Static?} 
+    C{Lots of data\n on backend?}
+    D{Can responses be \npre-cached?}
+
+    E[Report\n (Static)] 
+    F[App] 
+    G[Report\n (Interactive)]
+    H[API]
+    J[Job]
+
+    A -->|Yes| B
+    A -->|No| D
+    B -->|Yes| E
+    B -->|No| C
+    C -->|Yes| F
+    C -->|No| G
+    D -->|Yes| H
+    D -->|No| J
+```
+
+### Aim for small presentation layers
+
+As a data scientist, you're probably well familiar with the concept of
+functions in your chosen programming language. The advantage of
+functions is that once you've written one, you can focus exclusively on
+what's happening inside the function. When you're not, you can logically
+abstract away what the function does and just assume that you'll write a
+function to do that thing.
+
+You should be thinking similarly about the architecture of your data
+science project.
+
+As you're building out your app, report, or API, you should be thinking
+about how to architect your project so that you can do updates in the
+future in a way that is painless. You want to modularize your app so
+that you can apply the other best practices in this book -- like using
+CI/CD easily and painlessly.
+
+All too often, I see monolithic Shiny apps of thousands or tens of
+thousands of lines of code, with button definitions, UI bits, and user
+interaction definitions mixed in among the actual work of the app.
+
+There are two reasons this doesn't work particularly well.
+
+It's much easier to read through your app or report code and understand
+what it's doing when the app itself is only concerned with displaying UI
+elements to the user, passing choices and actions to the backend, and
+then displaying the result back to the user.
+
+The application tier is where your business logic should live. The
+business logic is that actual work that the application does. For a data
+science app, this is often slicing and dicing data, computing statistics
+on that data, generating model predictions, and constructing plots.
+
+Separating presentation from business layers means that you want to
+encapsulate the business logic somehow so that you can work on how the
+business logic works independently from changing the way users might
+interact with the app. For example, this might mean creating standalone
+functions to write plots or create statistics.
+
+If you're using Shiny, R Markdown, or Quarto, this will mean passing
+values to those functions that are no longer reactive and that have been
+generated from input parameters.
+
+Let's start with a counterexample.
+
+Here's a simple app in Shiny for R that visualizes certain data points
+from the Palmer Penguins data set. This is an example of bad app
+architecture.
+
+```{r}
+#| eval: false
+
+library(ggplot2)
+library(dplyr)
+library(palmerpenguins)
+library(shiny)
+
+all_penguins <- c("Adelie", "Chinstrap", "Gentoo")
+
+# Define UI
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      # Select which species to include
+      selectInput(
+        inputId = "species", 
+        label = "Species", 
+        choices = all_penguins, 
+        selected = all_penguins,
+        multiple = TRUE
+      )
+    ),
+    # Show a plot of penguin data
+    mainPanel(
+      plotOutput("penguinPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  output$penguinPlot <- renderPlot({
+    # Filter data
+    dat <- palmerpenguins::penguins %>%
+      dplyr::filter(
+        species %in% input$species
+      )
+    
+    # Render Plot
+    dat %>%
+      ggplot(
+        aes(
+          x = flipper_length_mm,
+          y = body_mass_g,
+          color = sex
+        )
+      ) +
+      geom_point()
+  })
+  
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+The structure of this Shiny app is bad. Now, it's not a huge deal,
+because this is a simple Shiny app that's pretty easy to parse if you
+are reasonably comfortable with R and Shiny.
+
+Why is this bad? Look at the app's server block. Because all of the
+app's logic is contained inside a single `plotRender` statement.
+
+`plotRender` is a presentation function -- it renders plots. But I've
+got logic in there that generates the data set I need and generates the
+plot.
+
+Again, because this app is simple, it's not a huge deal here. But
+imagine if this app had several tabs, multiple input dropdowns, a dozen
+or more plots, and complicated logic dictating how to process the
+dropdown choices into the plots. It would be a mess!
+
+Instead, we should separate the presentation logic from the business
+logic. That is, let's separate the code for generating the UI, taking
+the user's choice of penguin
+
+The business logic -- what those decisions mean, and the resulting
+calculations -- should, at minimum, be moved into standalone functions.
+
+```{r}
+#| eval: false
+
+library(ggplot2)
+library(dplyr)
+library(palmerpenguins)
+library(shiny)
+
+all_penguins <- c("Adelie", "Chinstrap", "Gentoo")
+
+# Define UI
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      # Select which species to include
+      selectInput(
+        inputId = "species", 
+        label = "Species", 
+        choices = all_penguins, 
+        selected = all_penguins,
+        multiple = TRUE
+      )
+    ),
+    # Show a plot of penguin data
+    mainPanel(
+      plotOutput("penguinPlot")
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  # Filter data
+  dat <- reactive(
+    filter_data(input$species)
+  )
+  
+  # Render Plot
+  output$penguinPlot <- renderPlot(
+    make_penguin_plot(dat())
+  )
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
+```
+
+Now you can see that the app itself had gotten much simpler. The UI
+hasn't changed at all, but the server block is effectively now just two
+lines! And since I used descriptive function names, it's really easy to
+understand what happens in each of the places where my app has reactive
+behavior.
+
+Either in the same file, or in another file I can source in, I can now
+include the two functions that include my business logic:
+
+```{r}
+#| eval: false
+
+#' Get the penguin data
+#'
+#' @param species character, which penguin species
+#' @return data frame
+#'
+#' @examples
+#' filter_data("Adelie")
+filter_data <- function(species = c("Adelie", "Chinstrap", "Gentoo")) {
+  palmerpenguins::penguins %>%
+    dplyr::filter(
+      species %in% !!species
+    )
+}
+
+#' Create a plot of the penguin data
+#'
+#' @param data data frame
+#'
+#' @return ggplot object
+#'
+#' @examples
+#' filter_data("Adelie") |> plot_gen()
+plot_gen <- function(data) {
+  data %>%
+    ggplot(
+      aes(
+        x = flipper_length_mm,
+        y = body_mass_g,
+        color = sex
+      )
+    ) +
+    geom_point()
+}
+```
+
+Note that somewhere along the way, I also added function definitions and
+comments using ROxygen. This isn't an accident! Writing standalone
+functions is a great way to force yourself to be clear about what should
+happen, and writing examples is the first step towards writing tests for
+your code.
+
+### Data size in the presentation layer dictates data access pattern
+
+The second question to answer about your data source is how large is the
+data.
+
+I generally classify data sizes into three categories:
+
+-   **Small** data is loadable into memory quickly enough that you don't
+    have to think twice.
+
+-   **Medium** data is loadable into memory, but it's big enough that
+    it's slow and you may want to be a little clever.
+
+-   **Big** data can't fit into the memory on your computer all at once
+    and requires a completely different approach.
+
+Depending on what your data size is, you'll have to choose different
+design patterns.
+
+The design pattern for small data is just loading all your data into
+memory at the top of your script.
+
+If you can do this, it's awesome. You don't have to figure out any
+clever way to access the data or how to make sure you're getting all the
+data you need.
+
+"Real engineers" may scoff at this pattern, but don't let their
+criticism dissuade you. If your data size is small and your app
+performance is good enough, just read in all of your data and operate on
+it live. Don't complicate things any more than needed.
+
+Moveover, computers keep getting better and memory keeps getting bigger,
+so the scale that is small keeps growing. In a lot of cases, datasets
+into the millions of rows are small by modern standards.
+
+Let's say you tried this and it didn't work -- either your data was
+actually big and you crashed your session or you've got medium data and
+it was just impractical because things were slow.
+
+The key question is whether and how you can compress your data before
+you pull it so the amount of data you read in is much less than the
+total amount of data. This would mean filtering or summarizing the data
+before you pull it into your app.
+
+The degree to which you can do this depends a lot on the requirements of
+your presentation layer. For example, let's suppose you work for a large
+retailer and are responsible for creating a dashboard of last week's
+sales.
+
+Let's say your dashboard just needs to provide total weekly sales for
+each department for each store. Even with a lot of stores and a lot of
+departments, you're probably still squarely in the small data
+department.
+
+On the other hand, let's say
+
+One of the most important questions is how much you can cache before
+someone even opens the app. For example, if you need to provide total
+weekly sales at the department level, that's probably just a few data
+points. And even if you need to go back a long ways, it's just a few
+hundred data points -- load all that in!
+
+But if you start needing to slice and dice the data in a lot of
+directions, then the data size starts multiplying, and you may have to
+include the entire raw data set in the report. For example, if you need
+to include weekly sales at the department level, then the size of your
+data is the $\text{number of weeks} * \text{number of departments}$. If
+you need to include more dimensions -- say you need to add geographies,
+then your data size **multiplies** by the number of geographies.
+
+Now that you've figured out how big the data is, you need to determine
+whether it's too big. In this case, too big is really a matter of
+performance.
+
+For some apps, you want the data to be snappy throughout runtime, but
+it's ok to have a lengthy startup process (perhaps because it can happen
+before the user actually arrives). In that case, it's probably still ok
+to use a flat file and read it all in on startup.
+
+One crucial question for your project is how much wait time is
+acceptable for people wanting to see the project -- and when is that
+waiting ok? For example, if people need to be able to make selections
+and see the results in realtime, then you probably need a snappy
+database, or all the data preloaded into memory when they show up.
+
+But maybe you have high performance requirements or a lot of data. Or
+maybe you know your data will grow over time. In that case, you're going
+to want to choose some other system for accessing your data.
+
+If you can just load in all your data, the question then becomes how.
+One common way to load all your data is just to read in a whole database
+table. If that's an option for you, it can be really nice.
+
+If you don't have a database handy, the most common way to save and read
+data is with a flat file. A flat file is what happens when you just save
+an active data frame somewhere. If you have relatively small data in a
+flat file or a database table, just moving flat files around is by far
+the simplest way to manage your data pipeline.
+
+### Data update frequency dictates where the data lives
+
+So let's say you've decided that you're ok to just load all the data,
+and you don't have a database to store it in.
+
+There's one place you usually should not save your data, and that's
+inside your presentation bundle. The bundle is the set of code and
+assets that make up your presentation layer. For example, let's say
+you're building a simple Dash app that's just a single file. You could
+create a project structure like this.
+
+```         
+my-project/
+├─ my_app.py
+├─ data/
+│  ├─ my_data.csv
+│  ├─ my_model.pkl
+```
+
+You could do this, but you shouldn't.
+
+There's one situation in which it's ok to just put the data inside the
+project, and that's when your data will be updated at the same cadence
+as the app or report itself. This is pretty rare for an in-production
+app, but sometimes there are cases where you're just sharing an existing
+dataset in the form of a report/app.
+
+This is convenient as a first cut at a project, but it can make it
+really difficult to update the data once your project is in production.
+You have to keep track of where the project is on your deployment file
+system, reach in, and update it.
+
+Instead, you want to decouple the data location from the project
+location.
+
+There are a few ways you can do this. The most basic way is just to put
+the data on a location in your file system that isn't inside the app
+bundle. This is, again, easy. Just make a different location in your
+directory and you're good.
+
+But when it comes to deployment this can also be complicated. If you're
+writing your app and deploying it on the same server, then you can
+access the same directory. If not, you'll need to worry about how to
+make sure that directory is also accessible on the server where you're
+deploying your project.
+
+Additionally, if you just put the file somewhere on the file system,
+you'll need to control access using Linux file permissions. That's not
+the end of the world, but controlling Linux file permissions is
+generally harder than controlling other sorts of access.
+
+If you're not going to store the flat file on the filesystem and you're
+in the cloud, the most common option for where it can go is in blob
+storage. Blob storage is the term for storage where you store and recall
+things by name.[^1-3-proj-arch-2] Each cloud provider has blob storage
+-- AWS's is s3 (short for simple storage service), Azure has Azure Blob
+store, and GCP has Google Storage.
+
+[^1-3-proj-arch-2]: The term blob is great to describe the thing you're
+    saving in blob storage, but it's actually an abbreviation for
+    **b**inary **l**arge **ob**ject. I think it's very clever.
+
+The nice thing about blob storage is that it can be accessed from
+anywhere that has access to the cloud. You can also control access using
+standard cloud identity management tooling, so you could control who has
+access using individual credentials or could just say that any request
+for a blob coming from a particular server would be valid.
+
+There are packages in both R and Python for interacting with AWS that
+are very commonly used for getting access to s3 -- Boto3 in Python, and
+paws in R.
+
+There's also the popular `pins` package in both R and Python that
+basically wraps using blob storage into neater code. It can use a
+variety of storage backends, including cloud blob storage, networked or
+cloud drives like Dropbox, Microsoft365 sites, and Posit Connect.
+
+Lastly, a google sheet can be a great, temporary, way to save and recall
+a flat file. While this isn't the most robust from an engineering
+perspective, it can often be a good first step while you're still
+figuring out what the right answer is for your pipeline. It's primary
+engineering weakness -- that it's editable by someone who logs in -- can
+also be an asset if you need someone to edit the data. If you have to
+get something up and running right away, storing the data in a google
+sheet can be a great temporary solution while you figure out the
+long-term home for your data.
+
+### What to do when you can't load all the data
+
+There are some scales at which you literally cannot hold all your data
+in memory. It also may be the case that your data isn't literally too
+big to fit into memory but its impractical -- usually because it would
+make app startup times unacceptably long.
+
+In this case, you'll need to store your data somewhere else and run live
+queries against the data as you're using it.
+
+If you are using a database, you'll want to be careful about how you
+construct your queries to make sure they perform well. The main way to
+think about this is whether your queries will be eager or lazy.
+
+In an eager app, you'll pull basically all of the data for the project
+as it starts up, while a lazy project will pull data only as it is need.
+
+\<TODO: Diagram of eager vs lazy data pulling\>
+
+Making your project eager is usually much simpler -- you just read in
+all the data at the beginning. This is often a good first cut at writing
+an app, as you're not sure exactly what requirements your project has.
+For relatively small datasets, this is often good enough.
+
+If it seems like your project is starting up slowly -- or your data's
+too big to all pull in, you may want to pull data more lazily.
+
+::: callout-tip
+Before you start converting queries to speed up your app, it's always
+worthwhile to profile your project and actually check that the data
+pulling is the slow step. I've often been wrong in my intuitions about
+what the slow step of the project is.
+
+There's nothing more annoying than spending hours refactoring your
+project to pull data more lazily only to realize that pulling the data
+was never the slow step to begin with.
+:::
+
+It's also worth considering how to make your queries perform better,
+regardless of when they occur in your code. You want to pull the minimum
+amount of data possible, so making data less granular, pulling in a
+smaller window of data, or pre-computing summaries is great when
+possible (though again, it's worth profiling before you take on a lot of
+work that might result in minimal performance improvements).
+
+Once you've decided whether to make your project eager or lazy, you can
+think about whether to make the query eager or lazy. In most cases, when
+you're working with a database, the slowest part of the process is
+actually pulling the data. That means that it's generally worth it to be
+lazy with your query. And if you're using `dplyr` from R, being eager vs
+lazy is simply a matter of where in the chain you put the `collect`
+statement.
+
+So you're better off sending a query to the database, letting the
+database do a bunch of computations, and pulling a small results set
+back, rather than pulling in a whole data set and doing computations in
+R or Python.
+
+### Your authentication may determine your data access pattern
+
+The best and easiest case here is that everyone who views the app has
+the same permissions to see the data. In that case, you can just allow
+the app access to the data, and you can check whether someone is
+authorized to view the app as a whole, rather than at the data access
+layer.
+
+In some cases, you might need to provide differential data access to
+different users. Sometimes this can be accomplished in the app itself.
+For example, if you can identify the user, you can gate access to
+certain tabs or features of your app. Many popular app hosting options
+for R and Python data science apps pass the username into the app as an
+environment variable.
+
+Sometimes you might also have a column in a table that allows you to
+filter by who's allowed to view, so you might just be able to filter to
+allowable rows in your database query.
+
+Sometimes though, you'll actually have to pass database credentials
+along to the database, which will do the authorization for you. This is
+nice, because then all you have to do is pass along the correct
+credential, but it's also a pain because you have to somehow get the
+credential and send it along with the query.
+
+## Processing Layer Architecture
+
+I usually include creating machine learning models or other artifacts in
+processing, but you may choose to separate it into a separate layer or
+have sub-layers in processing.
+
+Generally, your processing workflows might produce three kinds of
+output:
+
+1.  Processed data -- this would be the result of your data processing.
+    It might be an analytical data set ready for modeling or that you'll
+    display to users in the presentation layer.
+2.  Non-Display Artifacts -- these are things that end-users don't
+    interact with directly, but they will use under the hood. Machine
+    learning models are by far the most common non-display artifact for
+    data science projects. This category also might include things like
+    the lists of available categories for a dropdown or slicer in an
+    app.
+3.  Display Artifacts -- these are things you create during your
+    processing phase and that you need to save to display in the
+    presentation layer. These might be things like rendered reports,
+    plots, or tables that need to be imported into the presentation
+    layer.
+
+### Artifact type dictates how they should be stored
+
+**Flat file** storage describes writing the data out into a simple file.
+The canonical example of a flat file is a `csv` file. However, there are
+also other formats that may make data storage smaller because of
+compression, make reads faster, and/or allow you to save arbitrary
+objects rather than just rectangular data. In R, the `rds` format is the
+generic binary format, while `pickle` is the generic binary format in
+python.
+
+Flat files can be moved around just like any other file on your
+computer. You can put them on your computer, and share them through
+tools like dropbox, google drive, scp, or more.
+
+The biggest disadvantage of flat file data storage is twofold -- and is
+related to their indivisibility. In order to use a flat file in R or
+Python, you'll need to load it into your R or Python session. For small
+data files, this isn't a big deal. But if you've got a large file, it
+can take a long time to read, which you may not want to wait for. Also,
+if your file has to go over a network, that can be a very slow
+operation. Or you might have to load it into an app at startup. Also,
+there's generally no way to version data, or just update part, so, if
+you're saving archival versions, they can take up a lot of space very
+quickly.
+
+There are a few different options for types of flat files. The most
+common is a comma separated value (csv) file, which is just a literal
+text file of the values in your data with commas as
+separators.[^1-3-proj-arch-3] You could open it in a text editor and
+read it if you wanted to.
+
+[^1-3-proj-arch-3]: There are other separators you can use. Tab
+    separated value files (tsv) are something you'll see occasionally.
+
+The advantage of csvs is that they're completely ubiquitous. Basically
+every programming language has some way to read in a csv file and work
+with it.
+
+On the downside, csvs are completely uncompressed and they can only hold
+rectangular data. That makes them quite large relative to other sorts of
+files and slow to read and write. So if you're trying to save a machine
+learning model, a csv doesn't make any sense.
+
+Both R and Python have language-specific flat-file types -- rds in R and
+pickle in Python. Relative to csvs, these are nice because they usually
+include some amount of compression. They also can hold non-rectangular
+data, which can be great if you want to save a machine learning model or
+some other sort of object. The other advantage of rds and pickle is that
+they can be used with built-in data types that might not come through
+when saving to csv. For example, if you're saving dates, an rds or
+pickle file will be able to save the data frame so that it knows to come
+back as a date. If you're reading from a csv, you'd probably need to
+read it in as text and cast it to a character that can be annoying and
+-- depending on the size of your data -- time-consuming.
+
+The other option, which have been rising in popularity for medium-sized
+data is on-disk storage of data that is offline query-able. DuckDB is
+the most popular of these tools. The basic idea is that you just store
+your data on disk and then you run a process only when you need to that
+is able to query the data and load just what you need into memory.
+
+DuckDB is most powerful when backed with Apache Parquet or Arrow --
+these relatively new data formats save your data in a clever way that
+make it really quick to query it without loading it into memory.
+
+I can't stress enough how cool these tools are -- all of a sudden you
+don't really need a database for data well into the 10s of Gb or more.
+
+If you have even more data than that, you need a big data tool.
+
+### Frequency of data updates dictate whether you need an API
+
+In the case of a true three-layer app, it is almost always the case that
+the middle tier will be an application programming interface (API). In a
+data science app, separating business logic into functions is often
+sufficient. But if you've got a long-running bit of business logic, it's
+often helpful to separate it into an API.
+
+You can basically think of an API as a "function as a service". That is,
+an API is just one or more functions, but instead of being called within
+the same process that your app is running or your report is processing,
+it will run in a completely separate process.
+
+Before we get any deeper into building your own APIs, let's understand
+how an API works. What does an API in R or Python look like?
+
+A great mental model for an API is as a "function as a service". So if
+we think about our Palmer Penguins endpoint, it's just a function for
+filtering the Palmer Penguins dataset that we can access over a network.
+
+A single API may have many different functions available -- each
+function is available at an *endpoint*.
+
+An endpoint is denoted by a path. So for example, if I had an API
+available at `my-api.com`, I might have my penguins function available
+at the `/penguins` endpoint and it would be accessible by querying
+`my-api.com/penguins`.
+
+`{plumber}` and `FastAPI` both include frameworks for auto-generating
+documentation and interactive testing facilities for your API using the
+Swagger framework. Most often, these docs are available on the root path
+`/` of your API, though they may default to another path like
+`/__docs__`.
+
+For example, let's say you've got an app that allows users to feed in
+input data and then generate a model based on that data. If you generate
+the model inside the app, the user will have the experience of pressing
+the button to generate the model and having the app seize up on them
+while they're waiting. Moreover, other users of the app will find
+themselves affected by this behavior.
+
+If, instead, the button in the app ships the long-running process to a
+separate API, it gives you the ability to think about scaling out the
+presentation layer separate from the business layer.
+
+Luckily, if you've written functions for your app, turning them into an
+API is trivial.
+
+Let's take that first function for getting the appropriate data set and
+turn it into an API using the `plumber` library in R. The `FastAPI`
+library is a popular Python library for writing APIs.
+
+```{r}
+#| eval: false
+
+library(plumber)
+
+#* @apiTitle Penguin Explorer
+#* @apiDescription An API for exploring palmer penguins.
+
+#* Get data set based on parameters
+#* @param species character, which penguin species
+#* @get /data
+function(species = c("Adelie", "Chinstrap", "Gentoo")) {
+  palmerpenguins::penguins %>%
+    dplyr::filter(
+      species %in% !!species
+    )
+}
+```
+
+You'll notice that there are no changes to the actual code of the
+function. The commented lines that provide the function name and
+arguments are now prefixed by `#*` rather than `#'`, and there are a few
+more arguments, including the type of query this function accepts and
+the path.
+
+I'll also need to change my function in the app somewhat to actually
+call the API, but it's pretty easy using a package like `httr2` in R or
+`requests` in Python.
+
+## Writing a data flow chart
+
+Once you've figured out the project architecture you need, you may want
+to write a data flow chart.
+
+A data flow chart is a mapping of the different components of your data
+science project. Once you've mapped your project, figuring out the data
+flows will be relatively easy.
+
+A data flow chart splits out the three parts of the project -- data
+sources, processing, and presentation. I like to annotate my data
+sources with the three important attributes as well as any artifacts
+that are created.
+
+For example, here's the data flow chart for the labs in this book.
+
+```{mermaid}
+%%| eval: true
+
+flowchart LR
+    A[Palmer Penguins \nData Package]
+    B[Model Creation Job] 
+    C[Model Serving API]
+    D[Model Explorerer App]
+    E[EDA Report]
+    F[Model Creation Report]
+
+    subgraph Data Sources
+        A
+    end
+
+    subgraph Processing
+        B -->|Model| C
+    end
+
+    subgraph Presentation
+        D
+        E
+        F
+    end
+
+    A --> B
+    B --> F
+    A --> E
+    C --> D
+```
+
+## Comprehension Questions
+
+1.  What are the layers of a three-layer application architecture? What
+    libraries could you use to implement a three-layer architecture in R
+    or Python?
+2.  What is the relationship between an R or Python function and an API?
+3.  What information goes in each of the following: request method,
+    response code, headers, body, query parameters
+
+## Lab 4: Turn your Penguins model into an API {#lab4}
+
+In this lab, we're going to create an API from our Penguin prediction
+model and get some predictions out.
+
+::: callout-note
+The `{vetiver}` package auto-generates the API. If you're interested in
+getting better at writing APIs in general, I encourage you to consult
+the documentation for `{plumber}` or `{fastAPI}`.
+:::
+
+Going back to our modeling code, you can get your model back from your
+pin with:
+
+```{python}
+b = pins.board_folder('data/model', allow_pickle_read=True)
+v = VetiverModel.from_pin(b, 'penguin_model')
+```
+
+Vetiver can auto-generate a `{fastAPI}` from this model with
+
+``` python
+app = VetiverAPI(v, check_prototype=True)
+```
+
+You can run this in your Python session with `app.run(port = 8080)`. You
+can then access run your model API by navigating to
+`http://localhost:8080` in your browser.
+
+You can play around with the front end there, including trying the
+provided examples.
+
+If you want to call the model in code, you can use any http request
+library. In R you should use `httr2` and in Python you should use
+`requests`. Here's what it looks like to call the API.
+
+```{r}
+r <- httr2::request("http://127.0.0.1:8080/predict") |>
+  httr2::req_body_json(
+  list(
+      "bill_length_mm" = 0,
+      "species_Chinstrap" = FALSE,
+      "species_Gentoo" = FALSE,
+      "sex_male" = FALSE
+  )
+  ) |>
+  httr2::req_perform()
+httr2::resp_body_json(r)$predict[[1]]
+```
+
+Or equivalently, in Python
+
+```{python}
+import requests
+
+req_data = {
+  "bill_length_mm": 0,
+  "species_Chinstrap": False,
+  "species_Gentoo": False,
+  "sex_male": False
+}
+r = requests.post('http://127.0.0.1:8080/predict', json = req_data)
+r.json().get('predict')[0]
+```
+
+::: callout-note
+The `{vetiver}` package also includes the ability to auto-query a
+vetiver API without having to manually perform the request in R or
+Python. That capability is documented in the [vetiver package
+documentation](https://vetiver.rstudio.com/get-started/deploy.html#predict-from-your-model-endpoint).
+:::
+
+Now, if your job is to build machine learning models for others to
+consume, you're done. For many data scientists, the idea is to share
+insights with people who don't code.
+
+So let's build out a little interactive front end for our model in a web
+app. I'm going to use the Shiny package, which has both R and Python
+versions.
+
+I'm going to build an app that looks like this:
+![](images/penguin_app.png)
+
+In R, the code for the app looks like this:
+
+``` {.r include="../../_labs/shiny-app/app-basic.R" filename="app.R"}
+```
+
+And in Python, it looks like this
+
+``` {.python include="../../_labs/shiny-app/app-log.py" filename="app.py"}
+```
+
+This isn't a Shiny book, so I'm not going to go into why all of this
+works. If you're interested in getting better at Shiny, I'd recommend
+the excellent [Mastering Shiny](https://mastering-shiny.org/) book.
+
+In both apps, the most relevant section for this chapter is the part
+that calls the API.
