@@ -34,188 +34,203 @@ Data sources come in three basic types:
 -   **Data APIs** are external entities query-able from your R and
     Python code that return data in the body of an HTTP return.
 
-The main implications of the data source type is how you connect to it.
+The data source type mainly dictates how you connect to it from your R
+or Python session.
 
 ### Connecting to flat files
 
 For flat files, you'll just read them into memory in R or Python using
 standard file read methods.
 
-You may need to mount drives in.
+In some cases, you'll need to connect to files that are on some sort of
+share drive. That means that the share drive will need to be accessible
+from the place where you're working. This process is called *mounting* a
+drive and you'll need to coordinate with the IT/Admins at your
+organization to get it done.
 
 If you have flat files that are too big to read into memory all at once,
 you'll have to process them first - more on that in [Chapter
 @sec-proj-arch].
 
-### Connecting to Databases
+### Connecting to and using Databases
 
-In both R and Python, there are two general ways to connect to a
-database.
+In both R and Python you connect to a database by creating a database
+connection object in your code and then using that object as part of the
+operations you're doing on the database like reading and writing.
 
-The first option is to use a direct connector to connect to the
-database. These connectors are most often thin R or Python wrappers
-around a bunch of C++ code. If this exists for the database you're
-using, it's generally the most optimized for your database and your
-should probably use it.
+Whenever you connect to a database, you need a *driver* specific to that
+database to establish connections and send data back and forth. In the
+best case, there is a driver package that is specific to your database.
+For example, when you're connecting to a Postgres database, there are
+Postgres-specific connectors -- `{psychopg2}` in Python and
+`{RPostgreSQL}` in R or `{pyspark}` and `{sparklyr}` for a Spark
+cluster.
 
-If your database is a Spark cluster, you may not be using it to its
-utmost if you just treat it as a database. You can access more advanced
-computational methods with `{pyspark}` in Python and `{sparklyr` in R.
+These connectors are most often thin R or Python wrappers around a bunch
+of C++ code. If this exists for the database you're using, it's
+generally the most optimized for your database and your should probably
+use it.
 
-::: callout-tip
-If you're just getting started with Spark, I strongly recommend the book
-[Mastering Spark with R](https://therinspark.com) (free online version,
-like this book!) for getting started. Even if you're a Python user, the
-conceptual introduction is fantastic.
-:::
+If there isn't a driver specific to the database in your language of
+choice, you can use a system-level database driver and then call the
+driver from R or Python.
 
-The second option is to connect to the database using a system-level
-driver and then connect to that database from R or Python. Many
-organizations like these because IT/Admins can configure them on behalf
-of users and can be agnostic about whether users are using them from R,
+Many organizations like this pattern because IT/Admins can configure the
+drivers and be agnostic about whether users are using them from R,
 Python, or something else entirely.
 
-\<TODO: image of direct connection vs through driver\>
+There are two main standards for system drivers -- Java Database
+Connectivity (JDBC) and Open Database Connectivity (ODBC).
 
-In this case, you'll have to get the driver from your database provider,
-configure it on the system, and connect to it from R or Python. There
-are two main standards for system drivers -- Java Database Connectivity
-(JDBC) and Open Database Connectivity (ODBC).
+::: callout-tip
+If you're using R and have the choice, I strongly recommend using an
+ODBC driver. If you're using a JDBC driver, you've got an additional hop
+through Java and the `{rJava}` package, which is a huge pain to
+configure.[^1-2-data-access-1]
+:::
 
-In general, I recommend using ODBC over JDBC if available. If you're
-using JDBC, you have to deal with configuring Java in addition to your
-driver. Anyone who's ever had to configure the `rJava` package will
-share horror stories. Enough said.
+[^1-2-data-access-1]: I have heard that some write operations may be
+    faster with a JDBC driver than an ODBC one. I would argue that if
+    you're doing enough writing to a database that speed matters, you
+    probably should be using database-specific data loading tools, not
+    just writing from R or Python.
 
-In R I strongly recommend using an ODBC driver and using the `odbc` and
-`DBI` packages to make this connection. There are other ODBC packages
-and there are JDBC drivers available. But `odbc` and `DBI` are very
-actively maintained by Posit.
+If you are using a system driver, you may want to consider configuring a
+Data Source Name (DSN). A DSN provides connection details for the driver
+connection. They can be configured at a system or a user level. This
+means that you could put the connection details like the hostname, port,
+and database name into a simple text file right on your system and users
+don't need to know anything beyond their username and password to login.
+If you're sharing database credentials among many users, you can also
+include the credentials in the DSN and then users really only need to
+know the name of the DSN.
 
-In Python, `pyodbc` is the main package for using ODBC connections.
+Once the driver is configured on the system outside Python and/or R, you
+have to connect. In Python, `{pyodbc}` is the main package for using
+ODBC connections and `{JayDeBeApi}` for connecting using JDBC. In R,
+`{odbc}` is the best package for using system ODBC connections and
+`{RJDBC}` is the standard way to use JDBC.
+
+Both Python and R have standardized database connection APIs that
+facilitate operations like connecting and disconnecting, sending
+queries, and getting back results from a query.
+
+In Python, the connection API is in a [database API
+specification](https://peps.python.org/pep-0249/) and is implemented in
+each database's packages. In R, it is implemented in the `{DBI}`
+package. Packages that interface with `{DBI}` are called
+*DBI-compliant*. Not every database package uses the Python database API
+specification or is DBI-compliant, but you should prefer packages that
+are.
+
+That means that creating a connection looks somewhat different in R and
+Python.
+
+In Python, the connector package returns a connection you use directly.
+For example, the `{psychopg2}` package has a `connect` method you call
+directly to get the database connection.
+
+```{python}
+con = psycopg2.connect()
+```
+
+In R, it is `{DBI}` that returns the connection and you supply the
+connection type and details to it.
+
+```{r}
+con <- DBI::dbConnect(RPostgres::postgres())
+```
+
+From that point on, you can send literal SQL queries to the database
+using the connection -- directly in Python or as an argument to
+functions in the `{DBI}` package in R, or from packages that generate
+SQL from R or Python code like `{sqlalchemy}` in Python and `{dplyr}` in
+R.[^1-2-data-access-2]
+
+[^1-2-data-access-2]: Again, the mental model here holds, but the code
+    pattern may be somewhat different. `{dplyr}` explicitly consumes a
+    database connection object whereas it's idiomatic to provide the
+    driver as an argument to a `create_engine` statement in
+    `{sqlalchemy}`.
 
 ### Connecting to APIs
 
-If you're using R, you'll use the `httr2` package to query an API. In
-Python, you'll use `requests`. Both of these packages have great
-documentation and you can look at the specifics of *how* to use them in
-those packages.
+An *API* (application programming interface) is the standard way for two
+computer systems to communicate with each other. APIs are the backbone
+of machine-to-machine communcation in the general purpose software.
 
-But both of those packages are just wrappers to help you write idiomatic
-R or Python that gets passed along to the system `curl` command to
-actually get information from an API via an `http` call.
+In the data science world, APIs are most often used to provide data
+feeds and on-demand predictions from machine learning models.
 
-In this section, we're going to focus on what happens at that level.
-What is an `http` call `curl` might make and how to understand what it
-requests and what comes back.
+In both R and Python, it's common to have in-language packages that wrap
+APIs to provide a nice interface without having to worry about the API
+itself. However, if you're consuming a private API that package probably
+doesn't exist, or you may have to write it.
 
-An API call asks for an endpoint to do something.
+If you have to access an API without a helper package, you can directly
+use the `{requests}` package in Python or `{httr2}` in R. These packages
+are wrappers to pass commands along to the system-level `curl` command,
+which communicates with APIs via the `http` protocol.
 
-Your computer communicates with an API via a request-response model.
-Your computer requests a resource and the API sends it back. Your
-computer actually does this constantly as your navigate across the web.
+You are probably most familiar with `http` as the thing at the beginning
+of a URL in your browser. The `http` protocol defines a
+requests-response model that is the basic way that information is
+transmitted over the web.
 
-What you experience as visiting a website, your computer views as a
-handful of `http` requests to a server to fetch whatever is at that URL.
-The site owner's server responds with the various assets that make up
-the web page, which might include the HTML skeleton for the site, the
-CSS styling, interactive javascript elements, and more.
+When you're making an API call, there are a few things you'll need to
+know. The first thing is the endpoint.
 
-Once your computer receives them, your browser reassembles them into a
-webpage for you to interact with. And when you click on a button in the
-site, one or more `http` requests go off and the responses dictate what
-happens next.
+Next is the verb you need.
 
-So when you manually query an API via `httr2` or `requests`, you're just
-manually making the kind of requests your computer is already making
-constantly.
+The `http` protocol defines several *verbs* that computers can use to
+communicate with each other. When you're using an API to load data,
+you'll probably almost exclusively use `GET` requests, which fetch
+something.
 
-You may have heard the term REST API or REST-ful.
+The other basic `http` methods are `POST`, `PUT`, or `PATCH` to change
+or update something or a `DELETE` to (you guessed it) delete something.
+There are also a number of more esoteric `http` methods, but I've never
+seen a need for one.
 
-REST is a set of architectural standards for how to build an API. An API
-that conforms to those standards is called REST-ful or a REST API.
+Depending on the type of request, you also may need to provide specifics
+on what you're asking the endpoint on the other side to do.
 
-If you're using standard methods for constructing an API like R's
-`{plumber}` package or `FastAPI` in Python, they're going to be REST-ful
--- or at least close enough for standard usage.
+For `GET` requests, the details are specified via *query parameters*
+that end up embedded in the URL after a `?`. So if you ever see a URL in
+your browser that looks like `?first_name=alex&last_name=gold`, those
+are query parameters.
 
-In this section, I'm using the term API and REST API interchangeably.
+For `POST`, `PUT`, and `PATCH` requests, details are provided in a
+*body*, which is usually formatted as *JSON*. Both Python and R have
+packages for formatting and reading JSON -- `{json}` in Python and
+`{jsonlite}` in R.
 
-The best way to understand `http` traffic is to take a close look at
-some. Luckily, you've got an easy tool -- your web browser!
+Lastly, you may need to provide credentials or other authentication as
+*headers* to your API call. Headers specify metadata information about
+the request. These appear on both requests and responses and include a
+lot of information, like the type of machine that is sending the
+request, authentication credentials or tokens, cookies, and more. Most
+often you'll only need to manually alter them to provide credentials to
+your API.
 
-Open a new tab in your browser and open your developer tools. How this
-works will depend on your browser. In Chrome, you'll go to View \>
-Developer \> Developer Tools and then make sure the Network tab is open.
+When you get a response back, there are a few key components.
 
-Now, navigate to a URL in your browser (say google.com).
+The first is the *status code*. Status codes indicate what happened with
+your request to the server. You always hope to see `200` codes, which
+indicate a successful response. There's a [cheatsheet](#cheat-http)
+below with some other codes and what they mean.
 
-As you do this, you'll see the traffic pane fill up. These are the
-individual requests and responses going back and forth between your
-computer and the server.
+Responses also include a *body*, which are the actual contents of what
+you got back. Most often bodies are in `json`, but other response types
+are possible.
 
-There are a few parts of the requests and responses that are worth
-understanding in some depth. The first is the *status code*. Status
-codes appear only on responses and indicate what happened with your
-request to the server. In your browser, you're probably seeing mostly
-200 codes, which indicates a successful response. There's a cheatsheet
-below of some other codes and what they mean.
-
-If you click on an individual line in the traffic pane, you can see some
-additional details. One key component is the *request method*. The
-`http` protocol specifies a number of verbs or request methods you're
-allowed to use.
-
-When you're just loading a page on the web, it'll be almost entirely
-`GET` requests, which fetch something. The other three basic `http`
-methods are `POST` or `PUT` to change or update something or a `DELETE`
-to (you guessed it) delete something. There are also a number of more
-esoteric `http` methods, but I've never seen a need for one.
-
-You can see the response codes right next to each request, in chrome,
-codes other than 200s show up in other colors to make them easy to find.
-
-The other most useful part of the display is the waterfall chart on the
-far right. This shows how long each request took to come back. If you're
-finding that something is slow to load, inspecting the waterfall chart
-can help diagnose which requests are taking a long time.
-
-If you click into an individual request, you can see a variety of
-information, including the headers and the response. Very often,
-inspecting the headers is a great way to debug malfunctioning `http`
-requests.
-
-Another important component of both requests and responses are the
-*headers.*
-
-Headers specify metadata information about the request or response.
-These often include the type of machine that is sending the request,
-authentication credentials or tokens, cookies, and more. Making sure
-you've got the correct headers on requests and responses is an important
-thing to check if you're running into trouble with API calls --
-especially with authentication.
-
-Lastly, requests and responses often include a *body*.
-
-Bodies are *allowed* for `GET` and `DELETE` requests, but they generally
-are not used. Instead, the request endpoint should fully specify the
-resource for a `DELETE`, and details for `GET` requests are specified
-via *query parameters*, the part of the URL that shows up after the `?`,
-like `?first_name=alex&last_name=gold`.
-
-In a request, the body is going to provide details on what you're trying
-to do with your request. In a response, the body is the information that
-is being sent back. JSON is the most common body response types for an
-API you might build, but a website is likely to have other types of
-bodies, like images.
-
-#### Special HTTP Codes
+#### Special HTTP Codes  {#cheat-http}
 
 As you work more with `http` traffic, you'll learn some of the common
 codes. Here's a cheatshet for some of the most frequent you'll see.
 
 | Code            | Meaning                                                                                                                                                    |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|------------------|------------------------------------------------------|
 | `200`           | Everyone's favorite, a successful response.                                                                                                                |
 | `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
 | `4xx`           | Errors with the request                                                                                                                                    |
@@ -249,14 +264,6 @@ The single most important thing you can do to secure your credentials
 for your outside services is to avoid ever putting credentials in your
 code. That means that the actual value of your username or password or
 API key should never actually appear in your code.
-
-If you are using ODBC, you or your admin may want to consider
-configuring a Data Source Name (DSN). A DSN provides connection details
-for an ODBC connection. They can be configured at a system or a user
-level. This means that you could put the connection details like the
-hostname, port, database name, etc into a simple text file right on your
-system and users don't need to know anything beyond their username and
-password to login.
 
 For an API, authentication is generally provided as a header. Sometimes
 you'll provide a token of some sort in the API header.
