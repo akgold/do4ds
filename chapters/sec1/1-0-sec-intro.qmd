@@ -6,46 +6,14 @@ It might not be your title, which is probably something like data
 scientist or statistician or data engineer. But if you're writing R or
 Python code for production, you're developing software.
 
-And as a software developer, even a reticent one, you will probably
-recognize the problems DevOps addresses.
+DevOps principles aim to create software that builds scalability,
+security, and stability into the software from the very beginning. The
+whole idea is to avoid creating software that works locally, but doesn't
+work well in collaboration or production.
 
-The first is the dreaded "works on my machine" phenomenon. If you've
-ever collaborated on a data science project, you've almost certainly
-reached a point where something worked on your laptop but not for your
-colleague, and *you just don't know why.*
-
-The issue is that the code you're writing relies on the environment in
-which it runs. and you've shared the code but not the environment.The
-DevOps solution is to create explicit linkages between the code and the
-environment so you can share both together.
-
-DevOps also addresses the "breaks on deployment" issue. Perhaps your
-code was thoroughly tested, but only locally, or perhaps you don't test
-your code. DevOps patterns are designed to increase the likelihood your
-code will deploy right *the first time*.
-
-Finally, DevOps addresses the "what's happening in there" issue. It's
-bad to find out from someone else that your app was down or that your
-model was producing bad results. DevOps practices aim to make the what's
-happening inside the system visible during and after the code runs.
-
-This section consists of five chapters that are my best effort to show
-how DevOps practices can address these problems for data science
-software. Each chapter addresses one important aspect of making your
-code more robust and resilient.
-
-The rest of this introductory chapter will all that up with a little
-discussion on the history and insights of DevOps and why you can't just
-take standard DevOps principles and direclty apply them to data science
-work.
-
-## Core principles of DevOps
-
-Following DevOps principles result in software that is immune to the
-problems in the last section because you build scalability, security,
-and stability into the software from the very beginning. The whole idea
-is to avoid creating software that works locally, but doesn't work well
-in collaboration or production.
+You could just take general purpose DevOps principles and apply them to
+data science. If you talk to a software engineer or IT/Admin who doesn't
+know about data science, they'll probably encourage you to do so.
 
 But the specifics of those principles are squishy. Basically every
 resource on DevOps lists a different set of core principles and
@@ -59,38 +27,8 @@ DataOps, MLOps, and more.
     described it as, "a trashy romance novel about DevOps". It's a very
     fun read.
 
-That said, here's my best shot at enumerating some general principles of
-DevOps.
-
-1.  **Code** should be **well-tested** and tests should be
-    **automated**.
-2.  **Code updates** should be **frequent, incremental**, and
-    **low-risk**.
-3.  **Security** should be considered as part of **architecture**.
-4.  Production **systems** should have **monitoring** and **logging**.
-5.  Frequent opportunities for reviewing, changing, and updating
-    **process** should be **built into the system** -- both culturally
-    and technically.
-
-I hope you'll agree that these are unobjectionable -- if lofty --
-principles. Over time, DevOps professionals have built tooling and best
-practices to bring these principles to life.
-
-## Applying DevOps to Data Science
-
-You could just take general purpose DevOps principles and apply them to
-data science. If you talk to a software engineer or IT/Admin who doesn't
-know about data science, they'll probably encourage you to do so.
-
-But the type of software you're creating as a data scientist isn't
-general purpose software. It's software to do data science. That means
-you'll need different tooling and best practices as a data scientist
-versus a general purpose software developer.
-
-As a data professional, your job is to take data generated elsewhere --
-by a business, social, or natural process -- derive some sort of signal
-from it, and make that signal available to the systems and people that
-need it.
+Moreover, the type of software you're creating as a data scientist isn't
+general purpose software.
 
 A general purpose software engineer is like an architect -- they have a
 known spot to build something that needs to meet certain specifications.
@@ -99,14 +37,56 @@ a needle of signal in a haystack of noise. General purpose software
 engineers get to dream up data structures and data flows from scratch,
 designing them to work optimally for their systems.
 
-In contrast, a data scientist is like an archaeologist. You're pointed
-at a spot where there's some data and told to figure out what -- if
-anything -- can be built to deliver value from it. The path to finished
-data science software is usually much more meandering than general
-purpose software engineering.
+As a data professional, your job is to take data generated elsewhere --
+by a business, social, or natural process -- derive some sort of signal
+from it, and make that signal available to the systems and people that
+need it.
 
-This has a few implications for the software you develop as a data
-scientist.
+That means that if the sofware developer is an architecture, you as a
+data scientist are an archaeologist. You're pointed at a spot where
+there's some data and told to figure out what -- if anything -- can be
+built to deliver value from it. The path to finished data science
+software is usually much more meandering than general purpose software
+engineering.
+
+That means the software you write is software for data science. And the
+tooling and best practices for a resilient production experience are
+different than for general purpose software development.
+
+In the chapters in this section, we'll explore the best practices and
+choices you can make as a data scientist to make your apps and
+environments as robust as possible.
+
+### Managing environments
+
+One of the core issues DevOps addresses is the dreaded "works on my
+machine" phenomenon. If you've ever collaborated on a data science
+project, you've almost certainly reached a point where something worked
+on your laptop but not for your colleague, and *you just don't know
+why.*
+
+The issue is that the code you're writing relies on the environment in
+which it runs. and you've shared the code but not the environment.The
+DevOps solution is to create explicit linkages between the code and the
+environment so you can share both together, which is what [Chapter
+@sec-env-as-code] is all about.
+
+### App Architecture
+
+Despite the fact that you're more archaeologist than architect, you do
+have some space to play architect as you take your work to production.
+At that point you should know what you've unearthed and you're trying to
+figure out how to best share it.
+
+Software development best practices and DevOps have a lot to say about
+app architecture patterns that work well. One of the key concepts is of
+*app layers*. In traditional software engineering, the most common
+architecture is a *three-layer app*. In a three layer app, the
+*front-end* or *presentation layer*, is divided up from the *back-end*
+or the *application layer* and *data layer*.
+
+But there are two big differences between general purpose software and
+data science software.
 
 First, the software you create is much more likely to *consume* data
 than to *produce* it. And you're probably stuck with existing data flows
@@ -120,75 +100,32 @@ Microsoft Word, electronic health records, and Twitter all produce much
 more data then they consume, and most of the data they previously
 produced.
 
-The other major difference is the number of times the software is run.
-Your report or app that runs one a day or a month is hardly ever running
-compared to most general purpose software, which is designed to run as
-often as thousands or millions of times a day.
+That means that instead of designing a database layer for your app,
+you're probably using a preexisting data source. [Chapter
+@sec-data-access] is all about how to connect to securely connect to
+data sources from your data science projects.
 
-Relative to general purpose software developers, data scientists need to
-think much more about how to optimize the development process and less
-about how to optimize the code itself.
+[Chapter @sec-proj-arch] is all about how to take DevOps and Software
+Engineering best practices and apply them to the layers of your app you
+**can** control -- the processing and presentation layers.
 
-::: callout-note
-Also, while there are dozens of popular general purpose programming
-languages, almost all data science work is done in R, Python, or SQL.
-That means Data Science best practices are much more specific to those
-languages than general purpose DevOps.
-:::
+### Monitoring and Logging
 
-Relative to the innumerable different types and purposes for general
-purpose software, basically all data science software falls into one of
-four categories.
+DevOps addresses the "what's happening in there" issue. It's bad to find
+out from someone else that your app was down or that your model was
+producing bad results. DevOps practices aim to make the what's happening
+inside the system visible during and after the code runs. [Chapter
+@sec-log-monitor] addresses how to build monitoring and logging into
+your data science projects.
 
-The first category is a *job*. A job matters because it changes
-something in another system. It might move data around in an ETL job,
-build a model, or produce plots, graphs, or numbers to be used in a
-Microsoft Office report.
+### Deployments
 
-Frequently, jobs are written in a SQL-based pipelining tool ([*dbt*](#0)
-has been quickly rising in popularity) or in a `.R` or `.py`
-script.[^1-0-sec-intro-2]
-
-[^1-0-sec-intro-2]: Though I'll argue in [Chapter @sec-log-monitor] that
-    you should always use a literate programming tool like Quarto, R
-    Markdown, or Jupyter Notebook.
-
-The second type of data science software is an interactive web *app*.
-These apps are created in frameworks like Shiny (R or Python), Dash
-(Python), or Streamlit (Python). In contrast to general purpose web
-apps, which are for all sorts of purposes, data science web apps are
-usually used to give non-coders a way to explore data sets and see data
-insights.
-
-The third type is a *report*. Reports are anything where you're turning
-code into an output you care about like a document, book, presentation,
-or website.
-
-You create a report by rendering an R Markdown doc, Quarto doc, or
-Jupyter Notebook into a final documents for people to consume on their
-computer, in print, or in a presentation. These docs may be completely
-static (this book is a Quarto doc) or they may have some interactive
-elements.
-
-::: callout-note
-Exactly how much interactivity turns a report into an app is completely
-subjective. I generally think that the distinction is whether there's a
-running R or Python process in the background, but it's not a
-particularly sharp line.
-:::
-
-The first three types of data science software are specific to data
-science. The fourth type of data science software is much more general
--- it's an API (application programming interface), which is for
-machine-to-machine communication. In the general purpose software world,
-APIs are the backbone of how two distinct pieces of software
-communicate. In the data science world, APIs are most often used to
-provide data feeds and on-demand predictions from machine learning
-models.
-
-This section of the book is an attempt to distill the general lessons of
-DevOps into a form that's useful for someone primarily interested in
-creating these four types of data science software in R and/or Python.
+DevOps also addresses the "breaks on deployment" issue. Perhaps your
+code was thoroughly tested, but only locally, or perhaps you don't test
+your code. DevOps patterns are designed to increase the likelihood your
+code will deploy right *the first time*. [Chapter @sec-code-promotion]
+gets into how to design a deployment and promotion system that is
+robust.
 
 ## Labs in this section
 

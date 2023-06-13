@@ -87,21 +87,23 @@ environmental layers you need to target putting into code.
 
 **Layers of a Data Science Environments**
 
-+-------------------+---------------------------------------+
-| Layer             | Contents                              |
-+===================+=======================================+
-| Packages          | R + Python Packages                   |
-+-------------------+---------------------------------------+
-| System            | R + Python Language Versions          |
-|                   |                                       |
-|                   | Other System Libraries                |
-|                   |                                       |
-|                   | Operating System                      |
-+-------------------+---------------------------------------+
-| Hardware          | Virtual Hardware                      |
-|                   |                                       |
-|                   | Physical Hardware                     |
-+-------------------+---------------------------------------+
++--------------+-----------------------+
+| Layer        | Contents              |
++==============+=======================+
+| Packages     | R + Python Packages   |
++--------------+-----------------------+
+| System       | R + Python Language   |
+|              | Versions              |
+|              |                       |
+|              | Other System          |
+|              | Libraries             |
+|              |                       |
+|              | Operating System      |
++--------------+-----------------------+
+| Hardware     | Virtual Hardware      |
+|              |                       |
+|              | Physical Hardware     |
++--------------+-----------------------+
 
 Fundamentally, the hardware and software layers should be the
 responsibility of an IT/Admin. It may be the case that you're
@@ -147,8 +149,8 @@ It's probable that future you or your colleague you won't have the right
 versions and your code will break.
 
 What would've been better is if you'd had an environments as code
-strategy that created a portable environment for each **project** on your
-system.
+strategy that created a portable environment for each **project** on
+your system.
 
 A successful package Environment as Code setup has two key attributes:
 
@@ -391,8 +393,8 @@ as a tool for reproducing a data science project and moving it around.
     reproducibility increase for a data science project. In your
     day-to-day work, what's the hardest reproducibility challenge?
 2.  Draw a mental map of the relationships between the 7 levels of the
-    reproducibility stack. Pay particular attention to **why** the higher
-    layers depend on the lower ones.
+    reproducibility stack. Pay particular attention to **why** the
+    higher layers depend on the lower ones.
 3.  What are the two key attributes of environments as code? Why do you
     need both of them? Are there cases where you might only care about
     one?
@@ -457,90 +459,88 @@ before you start `pip install`-ing packages into the environment. Check
 the [cheatsheet](#cheat-renv-venv) if you need help with the specific
 commands.
 
-Here's what's in my model..qmd, but you should feel free to include
+Here's what's in my `model.qmd`, but you should feel free to include
 whatever you want.
 
-``` {.yml filename="model.qmd" include="../../_labs/model/model-basic.qmd"}
+``` {.yml filename="model.qmd" include="../../_labs/model/model-basic-py.qmd"}
 ```
 
 Once you're happy with how the page is working, capture your
 dependencies in a `requirements.txt` using
 `pip freeze > requirements.txt` on the command line.
 
-Now your website is ready to be shared or deployed. In the next lab,
-we'll get into how to deploy it as a live website.
-
 ## Cheatsheet: Environments as Code {#cheat-renv-venv}
 
 ### Checking library + repository status
 
-+----------------------+--------------------+----------------+
-| Step                 | R Command          | Python Command |
-+======================+====================+================+
-| Check whether        | `renv::status()`   | None           |
-| library in sync with |                    |                |
-| lockfile.            |                    |                |
-+----------------------+--------------------+----------------+
++------------------------------------+---------------+---------------+
+| Step                               | R Command     | Python        |
+|                                    |               | Command       |
++====================================+===============+===============+
+| Check whether library in sync with | `re           | None          |
+| lockfile.                          | nv::status()` |               |
++------------------------------------+---------------+---------------+
 
 ### Creating and Using a Standalone Project Library
 
 Make sure you're in a standalone project library.
 
-+----------------+----------------------+-----------------------+
-| Step           | R Command            | Python Command        |
-+================+======================+=======================+
-| Make sure      | `in s t a            | Included w/ Python    |
-| you've got     | ll.packages("renv")` | 3.5+                  |
-| `{r            |                      |                       |
-|  env}/{venv}`. |                      |                       |
-+----------------+----------------------+-----------------------+
-| Create a       | `renv::init()`       | `                     |
-| standalone     |                      | python -m venv <dir>` |
-| library.       |                      |                       |
-|                |                      | Convention:           |
-|                |                      | `use .venv for <dir>` |
-+----------------+----------------------+-----------------------+
-| Activate       | `renv::activate()`   | `sou r c e            |
-| project        |                      |  <dir> /bin/activate` |
-| library.       | Happens              |                       |
-|                | automatically if     |                       |
-|                | using projects.      |                       |
-+----------------+----------------------+-----------------------+
-| Install        | `ins t a l           | `pyth o n             |
-| packages as    | l.packages("<pkg>")` | -m pip install <pkg>` |
-| normal.        |                      |                       |
-+----------------+----------------------+-----------------------+
-| Snapshot       | `renv::snapshot()`   | `pip fr e e z         |
-| package state. |                      | e > requirements.txt` |
-+----------------+----------------------+-----------------------+
-| Exit project   | Leave R project.     | `deactivate`          |
-| environment.   |                      |                       |
-+----------------+----------------------+-----------------------+
++--------------------+--------------------+--------------------+
+| Step               | R Command          | Python Command     |
++====================+====================+====================+
+| Make sure you've   | `in s t a l l      | Included w/ Python |
+| got                | .packages("renv")` | 3.5+               |
+| `{r  env}/{venv}`. |                    |                    |
++--------------------+--------------------+--------------------+
+| Create a           | `renv::init()`     | `p y t             |
+| standalone         |                    | hon -m venv <dir>` |
+| library.           |                    |                    |
+|                    |                    | Convention:        |
+|                    |                    | `u s               |
+|                    |                    | e .venv for <dir>` |
++--------------------+--------------------+--------------------+
+| Activate project   | `renv::activate()` | `sou r c e < d     |
+| library.           |                    | ir> /bin/activate` |
+|                    | Happens            |                    |
+|                    | automatically if   |                    |
+|                    | using projects.    |                    |
++--------------------+--------------------+--------------------+
+| Install packages   | `ins t a l l .     | `pyth o n - m      |
+| as normal.         | packages("<pkg>")` | pip install <pkg>` |
++--------------------+--------------------+--------------------+
+| Snapshot package   | `renv::snapshot()` | `pip fr e e z e >  |
+| state.             |                    |  requirements.txt` |
++--------------------+--------------------+--------------------+
+| Exit project       | Leave R project.   | `deactivate`       |
+| environment.       |                    |                    |
++--------------------+--------------------+--------------------+
 
 ### Collaborating on someone else's project
 
 Start by downloading the project into a directory on your machine.
 
-+----------------+--------------------+--------------------------+
-| Step           | R Command          | Python Command           |
-+================+====================+==========================+
-| Move into      | `se t w d          | `cd <project-dir>`       |
-| project        | ("<project-dir>")` |                          |
-| directory.     |                    |                          |
-|                | Or just open R     |                          |
-|                | project in         |                          |
-|                | RStudio.           |                          |
-+----------------+--------------------+--------------------------+
-| Create project | `renv::init()`     | `python -m venv <dir>`   |
-| environment.   |                    |                          |
-|                |                    | Recommend:               |
-|                |                    | `use .venv for <dir>`    |
-+----------------+--------------------+--------------------------+
-| Enter project  | Happens            | `s o u                   |
-| environment.   | automatically or   | rce <dir> /bin/activate` |
-|                | `renv::activate()` |                          |
-+----------------+--------------------+--------------------------+
-| Restore        | Happens            | `pip i n s t             |
-| packages.      | automatically or   | all -r requirements.txt` |
-|                | `renv::restore()`  |                          |
-+----------------+--------------------+--------------------------+
++--------------------+--------------------+--------------------+
+| Step               | R Command          | Python Command     |
++====================+====================+====================+
+| Move into project  | `se t w d          | `cd <project-dir>` |
+| directory.         | ("<project-dir>")` |                    |
+|                    |                    |                    |
+|                    | Or just open R     |                    |
+|                    | project in         |                    |
+|                    | RStudio.           |                    |
++--------------------+--------------------+--------------------+
+| Create project     | `renv::init()`     | `p y t             |
+| environment.       |                    | hon -m venv <dir>` |
+|                    |                    |                    |
+|                    |                    | Recommend:         |
+|                    |                    | `u s               |
+|                    |                    | e .venv for <dir>` |
++--------------------+--------------------+--------------------+
+| Enter project      | Happens            | `s o u rce < d     |
+| environment.       | automatically or   | ir> /bin/activate` |
+|                    | `renv::activate()` |                    |
++--------------------+--------------------+--------------------+
+| Restore packages.  | Happens            | `p                 |
+|                    | automatically or   | ip i n s t all - r |
+|                    | `renv::restore()`  |  requirements.txt` |
++--------------------+--------------------+--------------------+

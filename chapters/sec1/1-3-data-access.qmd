@@ -1,0 +1,599 @@
+# Using databases and data APIs {#sec-data-access}
+
+As a data scientist, your job is to sift through a massive pile of data
+to extract nuggets of real information -- and then use that information.
+Working at the end of an external process, you're going to have to meet
+the data where it is.
+
+In most cases, that will be in a database or a data API. This chapter is
+about the mechanics of working with those data sources -- how to access
+the data and how to keep those connections secure.
+
+## Accessing and using databases
+
+Databases are defined by their query-able interface, usually through
+*structured query language (SQL)*.
+
+::: callout-note
+There are many, many different kinds of databases, and choosing the
+right one for your project is beyond the scope of this book. One
+recommendation: open source [PostgreSQL](https://www.postgresql.org/)
+(Postgres) is a great place to start for most general-purpose data
+science tasks.
+:::
+
+Regardless of which database you're using, you'll open a connection by
+creating a *connection object* at the outset of your code. You'll then
+use this object to send SQL queries -- either literal ones you've
+written, or the output of a package that generates SQL code, like
+`{sqlalchemy}` in Python and `{dplyr}` in R.
+
+For example, in Python you might write the following to connect to a
+Postgres database:
+
+```{python}
+import psychopg2
+
+con = psycopg2.connect()
+```
+
+In R, it might look like this:
+
+```{r}
+con <- DBI::dbConnect(RPostgres::postgres())
+```
+
+In order to develop a mental model for working with databases, let's
+reverse engineer this example code.
+
+Python or R both have standard connection APIs that define operations
+like connecting and disconnecting, sending queries, and retrieving
+results.
+
+In Python, packages for individual databases like `{psychopg2}` directly
+implement the API, which is why the example above calls the `connect()`
+method of the `{psychopg2}` package.
+
+In R, the API is split into two parts. The `{DBI}` package (short for
+database interface) implements the actual connections. It works with a
+database driver package, whtich is the first argument to
+`DBI::dbConnect()`. Packages that implement the `{DBI}` interface are
+called *DBI-compliant*.
+
+::: callout-note
+There are Python packages that don't implement the connections API, and
+there are non DBI-compliant database connector packages in R. These
+packages may work for you, but I'd recommend sticking with the standard
+route.
+:::
+
+In a lot of cases, there will be a Python or R package that directly
+implements your database driver. For example, when you're connecting to
+a Postgres database, there are Postgres-specific connectors --
+`{psychopg2}` in Python and `{RPostgres}` in R. For Spark, you've got
+`{pyspark}` and `{sparklyr}`.
+
+If there's a package specific to your database, it's probably faster and
+may provide additional database-specific functionality than other
+options.
+
+If there isn't a database-specific package that directly implements the
+driver, you'll need to use a generic *system driver* in concert with a
+Python or R package that can interface with system drivers.
+
+In that case, the example code above might look like in Python
+
+```{python}
+import pyodbc
+
+con = pyodbc.connect("DSN=MY_DSN")
+```
+
+In R, it might look like this:
+
+```{r}
+con <- DBI::dbConnect(odbc::odbc(), dsn = "MY_DSN")
+```
+
+While performance sometimes isn't as good for system drivers, the
+tradeoff is that IT/Admins can pre-configure details of the connection
+in a *data source name (DSN)*. If one is pre configured for you, you
+don't have to remember -- or even learn -- the database name, host, and
+port, even username and password if they're shared. All you need in your
+code is the DSN name, which is `MY_DSN` in the example above.
+
+System drivers come in two main varieties Java Database Connectivity
+(JDBC) and Open Database Connectivity (ODBC).
+
+In Python, `{pyodbc}` is the main package for using ODBC connections and
+`{JayDeBeApi}` for connecting using JDBC. In R, `{odbc}` is the best
+package for using system ODBC connections and `{RJDBC}` is the standard
+way to use JDBC.
+
+::: callout-tip
+If you're using R and have the choice between JDBC and ODBC, I strongly
+recommend ODBC. JDBC requires an extra hop through Java and the
+`{rJava}` package, which is painful to configure.[^1-3-data-access-1]
+:::
+
+[^1-3-data-access-1]: I have heard that some write operations may be
+    faster with a JDBC driver than an ODBC one. I would argue that if
+    you're doing enough writing to a database that speed matters, you
+    probably should be using database-specific data loading tools, not
+    just writing from R or Python.
+
+## Connecting to APIs
+
+Some data sources come in the form of an API (application programming
+interface).
+
+In the data science world, APIs are most often used to provide data
+feeds and on-demand predictions from machine learning models.
+
+It's common to have Python or R packages that wrap APIs, so you just
+write Python or R code without needing to think about the API
+underneath. The usage of these patterns often looks similar to databases
+-- you create and use a connection object that stores the connection
+details. If your API has a package like this, you should just use it.
+
+If you're consuming a private API at your organization, a helper package
+probably doesn't exist or you may have to write it yourself.
+
+::: callout-note
+There's increasingly good tooling to auto-generate packages based on API
+documentation, so you may never have to write an API wrapper package by
+hand. It's still helpful to understand how it works.
+:::
+
+If find yourself having to call an API directly, you can use the
+`{requests}` package in Python or `{httr2}` in R.
+
+These packages idiomatic R and Python ways to call APIs. It's worth
+understanding that they're purely syntactic sugar. There's nothing
+special about calling an API from inside Python or R versus using the
+`curl` command on the command line and you can go back and forth as you
+please.
+
+### What's in an API?
+
+APIs are the standard way for two computer systems to communicate with
+each other. It's an extremely general term that describes the definition
+of machine-to-machine communication.
+
+The APIs used by data scientists are usually `http`-based `REST`-ful
+APIs. What exactly that means isn't really important, but the rest of
+this section just addresses the subset of the wild world of APIs you're
+likely to encounter as a data scientist.
+
+`http` operates on a request-response model. So when you use an API, you
+send a request to the API and it sends a response back.
+
+The best way to learn about a new API is to read the documentation,
+which will include a lot of details about how to use it. Let's go
+through some of the most salient ones.
+
+### API Endpoints and Paths
+
+Each request to an API is directed to a specific *endpoint*. An API can
+have many endpoints, each of which you can think of like a function in a
+package. Each endpoint lives on a *path*, which is where you find that
+particular endpoint.
+
+For example, if you did the lab in [Chapter @sec-proj-arch] and used
+`{vetiver}` to create an API for serving the penguin mass model, you
+found your API at `http://localhost:8080`. By default, you went to the
+*root* path at `/` and found the API documentation there.
+
+As you scrolled the documentation, there were two endpoints -- `/ping`
+and `/predict`. Those paths are relative to the root, so you could
+access `/ping` at `http://localhost:8080/ping`.
+
+### HTTP verbs
+
+When you make a request over HTTP, you are asking a server to do
+something. The *http* *verb*, also known as the *request method*,
+describes the type of operation you're asking for. Each endpoint has one
+or more verbs that it knows how to use.
+
+If you look at the penguin mass API, you'll see that `/ping` is a `GET`
+endpoint and `/predict` is a `POST`. This isn't coincidence. I'd
+approximate that 95% of the API endpoints you'll use as a data scientist
+are `GET` and `POST`, which respectively fetch information from the
+server and provide information to the server.
+
+To round out the basic http verbs you might see, `PUT` and `PATCH`
+change or update something and `DELETE` (you guessed it) deletes
+something. There are more esoteric ones you'll probably never see.
+
+### Request parameters and bodies
+
+Like a function in a package, each endpoint accepts specific arguments
+in a required format. Again, like a function, some arguments may be
+optional and some may be required.
+
+For `GET` requests, the arguments are specified via *query parameters*
+that end up embedded in the URL after a `?`. So if you ever see a URL in
+your browser that looks like `?first_name=alex&last_name=gold`, those
+are query parameters.
+
+For `POST`, `PUT`, and `PATCH` requests, arguments are provided in a
+*body*, which is usually formatted as *JSON*.[^1-3-data-access-2] Both
+`{httr2}` and `{requests}` have built-in functionality for converting
+standard Python and R data types to their JSON equivalents, but it can
+sometimes take some experimentation to figure out exactly how to match
+the argument format. Experimenting with conversions using `{json}` in
+Python and `{jsonlite}` in R can be very useful.
+
+[^1-3-data-access-2]: In a lot of cases, people use `POST` for things
+    that look like `GET`s to my eyes. The reason is request bodies.
+    `GET` endpoints only recently started allowing bodies -- and it's
+    still discouraged. In the `{vetiver}` API example, I think of
+    fetching results from an ML model as a `GET`-type operation, but it
+    uses a `POST` because it also uses a body in the query.
+
+### (Auth) Headers
+
+You will need to figure out how to authenticate to the API. The most
+common forms of authentication are a username and password combination,
+an API key, or an OAuth token.
+
+API keys and OAuth tokens are often associated with particular *scopes*.
+Scopes are permissions to do particular things. For example, an API key
+might be scoped to have `GET` access to a given endpoint, but not `POST`
+access.
+
+Regardless of your authentication type, it will be provided in a
+*header* to your API call. Your API documentation will tell you how to
+provide your username and password, API key, or token to the API in a
+header. Both `{requests}` and `{httr2}` provide easy helpers for adding
+authentication headers and also general ways to set headers if you need
+to.
+
+Aside from authentication, headers are also used for a variety of
+different metadata like the type of machine that is sending the request
+and cookies that are set. You'll rarely interact directly with these.
+
+### Request Status Codes
+
+The first thing you'll consult when you get a result back is the *status
+code*. Status codes indicate what happened with your request to the
+server. You always hope to see `200` codes, which indicate a successful
+response.
+
+There are also a two common types of error codes. `4xx` codes indicate
+that there's a problem with your request and the API couldn't understand
+what you were asking. `5xx` codes indicate that your request was fine,
+but some sort of error happened in processing your request.
+
+There's a [cheatsheet](#cheat-http) below with some other codes and what
+they mean.
+
+### Response Bodies
+
+Then there's the actual contents of the response in the *body*. You'll
+need to turn the body into a Python or R object you can work with.
+
+Most often, bodies are in JSON and you'll decode them with `{json}` or
+`{jsonlite}`. Usually JSON is the default and you may be given the
+option to specify something else if you've got a preference.
+
+### Common API patterns
+
+Here are a couple of common API patterns that are good to be familiar
+with:
+
+-   **Pagination** -- many data-feed APIs implement pagination. A
+    paginated API returns only a certain number of results at a time to
+    keep data sizes modest. You'll need to figure out how to get all the
+    pages back when you make a request.
+
+-   **Job APIs** -- HTTP is designed for relatively quick
+    request-response cycles. So if your API kicks off a long-running
+    job, it's rare to wait until the job is done to get a response.
+    Instead, the API immediately returns an acknowledgement and a
+    `job-id` which you can use to poll a `job-status` endpoint to check
+    how things are going and eventually find your result.
+
+-   **Multiple Verbs** -- a single endpoint often accepts multiple verbs
+    -- for example a `GET` and a `POST` at the same endpoint for getting
+    and setting the data that endpoint stores.
+
+## Environment variables to secure data connections  {#env-vars}
+
+When you take an app to production, authenticating to your data source
+while keeping your secrets secure is crucial.
+
+The single most important thing you can do to secure your credentials is
+to avoid ever putting credentials in your code. **Your username and
+password or API key should never appear in your code.**
+
+The simplest way to provide credentials without the values appearing in
+your code is with an *environment variable*. Environment variables are
+set before your code starts -- sometimes from completely outside Python
+or R.
+
+### Getting environment variables
+
+The power of using an environment variable is that you reference them
+*by name*. Just sharing that there's an environment variable called
+`API_KEY` doesn't reveal anything secret, so if your code just includes
+environment variables, it's completely safe to share with others.
+
+::: callout-note
+It is convention to make environment variable names in all caps with
+words separated by underscores. The values are always simple character
+values, though these can be cast to some other type inside R or Python.
+:::
+
+In Python, you can read environment variables from the `os.environ`
+dictionary or by using `os.getenv("<VAR_NAME>")`. In R, you can get
+environment variables with `Sys.getenv("<VAR_NAME>")`.
+
+It's common to provide environment variables directly to functions as
+arguments, though you can also put the values in normal Python or R
+variables and use them from there.
+
+### Setting environment variables
+
+The most common way to set environment variables in a development
+environment is to load secrets from a plain text file. In Python,
+environment variables are usually set by reading a `.env` file into your
+Python session. The [`{python-dotenv}`
+package](https://pypi.org/project/python-dotenv/) is a good choice for
+doing this.
+
+R automatically reads the `.Renviron` file as environment variables and
+also sources the `.Rprofile` file, where you can set environment
+variables with `Sys.setenv()`. I personally prefer putting everything in
+`.Rprofile` for simplicity -- but that's not a universal opinion.
+
+Some organizations don't ever want credentials files in plain text.
+After all, if someone stole a plain text secrets file, there's nothing
+to stop them from using them.
+
+There are packages in both R and Python called `{keyring}` that allow
+you to use the system keyring to securely store environment variables
+and recall them at runtime.
+
+Setting environment variables in production is a little harder.
+
+Just moving your secrets from your code into a different file you push
+to prod is still bad. And using `{keyring}` in a production environment
+is quite cumbersome.
+
+Your production environment may provide environment management tools.
+For example, GitHub Actions and Posit Connect both provide you the
+ability to set secrets that aren't visible to the users, but are
+accessible to the code at runtime in an environment variable.
+
+Increasingly, organizations are using token-based authorization schemes
+that just exchange one cryptographically secure token for another, never
+relying on credentials at all. The tradeoff for the enhanced security is
+that they can be difficult to implement, likely requiring coordination
+with an IT/Admin to use technologies like Kerberos or OAuth. There's
+more on how to do that in [Chapter @sec-auth].
+
+## Data Connection Packages
+
+It's very common for organizations to write their own data connector
+packages in Python or R that include all of the shared connection
+details so users don't have to remember them. If everyone has their own
+credentials, it's also nice if those packages set standard names for the
+environment variables so they can be more easily set in production.
+
+Whether you're using R or Python, the function in your package should
+return the database connection object for people to use.
+
+Here's an example of what that might look like if you were using a
+Postgres database from R:
+
+```{r}
+#' Return a database connection
+#'
+#' @param user username, character, defaults to value of DB_USER
+#' @param pw password, character, defaults to value of DB_PW
+#' @param ... other arguments passed to 
+#' @param driver driver, defaults to RPostgres::Postgres
+#'
+#' @return DBI connection
+#' @export
+#'
+#' @examples
+#' my_db_con()
+my_db_con <- function(
+    user = Sys.getenv("DB_USER"), 
+    pw = Sys.getenv("DB_PW"), 
+    ..., 
+    driver = RPostgres::Postgres()
+) {
+  DBI::dbConnect(
+    driver = driver,
+    dbname = 'my-db-name', 
+    host = 'my-db.example.com', 
+    port = 5432, 
+    user = user,
+    password = pw, 
+    ...
+  )
+}
+```
+
+Note that the function signature defines default environment variables
+that will be consulted. If those environment variables are set ahead of
+time by the user, this code will just work.
+
+## Comprehension Questions
+
+1.  Draw two mental map for connecting to a database. One usinga
+    database driver in a Python or R package vs an ODBC or JDBC driver.
+    You should (at a minimum) include the nodes database package, DBI (R
+    only), driver, system driver, ODBC, JDBC, and database.
+2.  Draw a mental map for using an API from R or Python. You should (at
+    a minimum) include nodes for `{requests}`/`{httr2}`, request, http
+    verb/request method, headers, query parameters, body, json,
+    response, and response code.
+3.  How can environment variables be used to keep secrets secure in your
+    code?
+
+## Lab 3: Use a database and an API
+
+In this lab, we're going to build out both the data layer and the
+presentation layer for our penguin mass model exploration. We're going
+to create an app to explore the model, which will look like this:
+![](images/penguin_app.png)
+
+Let's start by moving the data into a real data layer.
+
+### Step 1: Put the data in DuckDB
+
+Let's start by moving the data into a DuckDB database and use it from
+there for the modeling and EDA scripts.
+
+To start, let's load the data.
+
+Here's what that looks like in R:
+
+``` {.r include="../../_labs/data-load/r-data-load.R"}
+```
+
+Or equivalently, in Python:
+
+``` {.python include="../../_labs/data-load/py-data-load.py"}
+```
+
+Now that the data is loaded, let's adjust our scripts to use the
+database.
+
+In R, we are just going to replace our data loading with connecting to
+the database. Leaving out all the parts that don't change, it looks like
+
+``` {.r include="../../_labs/eda/eda-db.qmd" filename="eda.qmd" start-line="14" end-line="19"}
+```
+
+We also need to call to `DBI::dbDisconnect(con)` at the end of the
+script.
+
+Because we wrote our data processing code in `{dplyr}`, we actually
+don't have to change anything. Under the hood, `{dplyr}` can switch
+seamlessly to a database backend, which is really cool.
+
+``` {.r include="../../_labs/eda/eda-db.qmd" filename="eda.qmd" start-line="23" end-line="32"}
+```
+
+It's not necessary, but I've added a call to `dplyr::collect` in line
+31. It will be implied if I don't put it there manually, but it helps
+make obvious that all the work before there has been pushed off to the
+database. Only the result of this code is coming back to the R process.
+Obviously it doesn't matter for this small dataset, but this would be a
+huge benefit if the dataset were much larger.
+
+In Python, we're just going to load the entire dataset into memory for
+modeling, so the line loading the dataset changes to
+
+``` {.python include="../../_labs/model/model-db.qmd" filename="model.qmd" start-line="18" end-line="21"}
+```
+
+Now let's switch to figuring out the connection we'll need to our
+processing layer in the presentation layer.
+
+### Step 2: Call the model API from code
+
+Before you start, make sure the API is running on your machine from the
+last lab.
+
+::: callout-note
+I'm assuming it's running on port `8080` in this lab. If you've put it
+somewhere else, change the `8080` in the code below to match the port on
+your machine.
+:::
+
+If you want to call the model in code, you can use any http request
+library. In R you should use `httr2` and in Python you should use
+`requests`.
+
+Here's what it looks like to call the API in Python
+
+```{python}
+import requests
+
+req_data = {
+  "bill_length_mm": 0,
+  "species_Chinstrap": False,
+  "species_Gentoo": False,
+  "sex_male": False
+}
+req = requests.post('http://127.0.0.1:8080/predict', json = req_data)
+res = req.json().get('predict')[0]
+```
+
+or equivalently in R
+
+```{r}
+req <- httr2::request("http://127.0.0.1:8080/predict") |>
+  httr2::req_body_json(
+    list(
+      "bill_length_mm" = 0,
+      "species_Chinstrap" = FALSE,
+      "species_Gentoo" = FALSE,
+      "sex_male" = FALSE
+    )
+  ) |>
+  httr2::req_perform()
+res <- httr2::resp_body_json(r)$predict[[1]]
+```
+
+Note that there's no translation necessary to send the request. The
+`{requests}` and`{httr2}` packages automatically know what to do with
+the Python dictionary and the R list.
+
+Getting the result back takes a little more work to find the right spot
+in the JSON returned. This is quite common.
+
+::: callout-note
+The `{vetiver}` package also includes the ability to auto-query a
+`{vetiver}` API. I'm not using it here to expose the details of calling
+an API.
+:::
+
+Now, let's take this API-calling code and build the presentation layer
+around it.
+
+### Step 3: Build a shiny app
+
+We're going to use the `{shiny}` package, which is an R and Python
+package for creating interactive web apps using just Python code. If you
+don't know much about `{shiny}`, you can choose to just blindly follow
+the examples here, or you could spend some time with the [Mastering
+Shiny](https://mastering-shiny.org/) book to learn to use it yourself.
+
+Either way, an app that looks like the picture above would look like
+this in Python
+
+``` {.python include="../../_labs/app/app-api.py" filename="app.py"}
+```
+
+And like this in R
+
+``` {.python include="../../_labs/app/app-api.R" filename="app.R"}
+```
+
+Over the next few chapters, we're going to implement more architectural
+best practices for the app, and in [Chapter @env-as-code] we'll actually
+go to deployment.
+
+## HTTP Code Cheatsheet
+
+As you work more with `http` traffic, you'll learn some of the common
+codes. Here's a cheatsheet for some of the most frequent you'll see.
+
+| Code            | Meaning                                                                                                                                                    |
+|----------------|--------------------------------------------------------|
+| `200`           | Everyone's favorite, a successful response.                                                                                                                |
+| `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
+| `4xx`           | Errors with the request                                                                                                                                    |
+| `400`           | Bad request. This isn't a request the server can understand.                                                                                               |
+| `401` and `403` | Unauthorized or forbidden. Required authentication hasn't been provided.                                                                                   |
+| `404`           | Not found. There isn't any content to access here.                                                                                                         |
+| `5xx`           | Errors with the server once your request got there.                                                                                                        |
+| `500`           | Generic server-side error. Your request was received, but there was an error processing it.                                                                |
+| `504`           | Gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
