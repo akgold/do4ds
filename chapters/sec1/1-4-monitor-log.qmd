@@ -1,224 +1,252 @@
 # Logging and Monitoring {#sec-log-monitor}
 
-"The app is down."
+You get a call, a text, a slack. A bead of cold sweat runs down your
+back. All you know -- it seems all you've every known -- is your failed
+job or error-bound app, which the CEO, of course, needs *right now*.
 
-You know the moment. You get a call, a text, a slack. A bead of cold
-sweat runs down your back. Your world narrows to you and your broken app
-that the CEO, of course, needs *right now*.
+It didn't have to be this way. You can't control whether code will fail
+-- it will. And you can't ensure it'll happen at a convenient time. But
+you can live in a world where you sleep soundly at night knowing that
+you'll know when issues arise and that you'll be able to quickly figure
+out why they're happening.
 
-Jobs fail. Apps mysteriously quit. These things happen.
+The key to living in that world is *observability*. If your code is
+observable, you'll be alerted when something goes wrong because you have
+enabled *monitoring* on the system and when you dig in, you'll have
+*logging* that lets you reconstruct the pathway to failure.
 
-When they do, I'd much rather find out from an automated email or slack
-message than an angry message from the CTO.
+Beyond sleeping soundly, making your work more observable can also help
+you demonstrate its value. Being able to demonstrate who is using your
+work and what they're accessing can really help show decision makers
+that your team matters.
 
-The state of knowing how things are going with your system and being
-able to reconstruct what happened when something (inevitably) does go
-awry is generally called *observability* in DevOps lingo.
+In this chapter we'll get into how to make your code observable. You'll
+learn how to use tooling in R and Python to see what's going on inside
+your data science project. I'll also give you some tips on particular
+things I always monitor or log and how to consume and use the metrics
+and logs your project is now emitting.
 
-When software engineers think about observability, they're generally
-thinking about observing the *operational* qualities of their app. When
-they think about errors or performance, they're thinking in terms of
-actual code error states that crash the app and performance is basically
-synonymous with the app being fast enough for users. As a data
-scientist, you should care about these things.
+## Observing Correctness
 
-Understanding *access patterns* for your app is important. It's useful
-to know if your app is getting usage and if so whether people are using
-certain parts. You want to make sure they're having a good experience
-when they do so.
+Observability of general purpose software is primarily concerned with
+the *operational* qualities of the software. A software engineer wants
+to know whether their software is using too much RAM or CPU, whether its
+fast enough, and whether its crashed.
 
-Knowing that people are using your project is important to understand if
-there are extensions to your project that might be useful and also to
-make the case inside your organization that you are doing valuable work.
-It's also useful in the case that your organization requires an *audit
-trail* or who read or wrote particular data.
+For a general purpose software engineer, an uncaught exception that
+makes the software crash is about as bad as it gets.
 
-Unlike when you're running code right in your terminal, you're not going
-to be paying close attention to code running in production. If (when,
-really) there's an error, you may not get to it right away, and you'll
-want the necessary information to re-create the state of the system just
-before the error occurred. Knowing that an error has occurred and what
-the system looked like when an error occurred is extremely useful to
-figure out why it happened.
+But for a data scientist there's something even scarier -- an issue that
+doesn't result in code failure but yields incorrect answers. Data joins
+usually complete even if the merge quality is really bad. Model APIs
+will return a prediction even if the prediction is very, very bad.
 
-In addition to these operational concerns you share with software
-engineers, there's an additional level of complexity to observability
-related to the actual data science profile of your app. An error doesn't
-always mean that your app crashes -- it could just return an incorrect
-result, which is often scarier. For example, your ETL pipeline could
-complete on time, but data quality could've deteriorated so much that
-the output data is basically meaningless. Or your machine learning model
-could have fallen out of alignment, so it's still returning predictions
--- just wrong ones.
+It's hard to check the actual correctness of the numbers and figures
+work work returns because you're (basically by definition) doing
+something novel. So you're basically left putting process metrics in
+place that can help reveal a problem before it surfaces.
 
-There are two general practices that enable observability of software --
-*logging* and *monitoring.*
+One important tool you have in your toolbox is correctly architecting
+your project. Jobs are generally much easier to check for correctness
+than presentation layers. By moving as much processing as possible out
+of the presentation layer and into the data and processing layers, you
+can make it easier to observe.
 
-Logging is the process of documenting and saving a record of what
-happened when a piece of software ran in the form of a *log*. Logs are
-useful for documenting what's happening inside a software system under
-both normal operations and reconstructing the sequence of events prior
-to a failure.
+Moreover, you're already very familiar with tools for *literate
+programming* like Jupyter Notebooks, R Markdown Documents, and Quarto
+Documents.
 
-Monitoring is the process of generating and tracking *metrics* of how
-the system is doing. Metrics are quantitative measurements of the
-system, which include things like CPU, RAM, and disk usage as well as
-numbers of users and response times. Monitoring involves making sure
-those metrics are within normal operating parameters, and alerting the
-right people when -- or ideally before -- something goes wrong.
+One of my spicier opinions is that *all* jobs should be in a literate
+programming format. These tools, when used well, intersperse code,
+commentary, and output, which is one of the best ways of observing the
+correctness of a job.
 
-For both monitoring and logging, there are two separate things to think
-about: how does your system *emit* logs and metrics and how do you
-consume those logs and metrics to make them useful?
+On a job, there are three particular things I always monitor.
 
-The good news it that as a data scientist, you're probably very familiar
-with one form of logging.
+The first is the quality of data joins. Based on the number of rows (or
+unique ids), you know how many rows should be in the data set after a
+join. Checking that the joined data matches expectations can reveal many
+data quality issues just waiting to ruin your day.
 
-A lot of data science work is done in a literate programming format --
-Jupyter Notebooks, R Markdown Documents, and Quarto Documents. If used
-right, the beauty of these documents is that they are self-logging in
-most cases!
+The second checking is cross-tabulations before and after recoding a
+categorical variable. Making sure the recode logic does what you think
+and that the values coming in aren't changing over time is always worth
+the effort.
 
-In one of my spicier opinions, data scientists should do *all* jobs in a
-literate programming format. If you write your code in a literate
-programming format and include metrics in the document, you've got a
-self-logging job.
+The last is goodness-of-fit metrics of an ML model in production. There
+are many, many frameworks and products for monitoring model quality and
+model drift once your model is in production. I don't have strong
+opinions on these other than that you need to use one if you've got a
+model that's producing results you hope to rely on.
 
-::: callout-note
-## Literate ETL Jobs
+## Observing Operations
 
-For ETL jobs in particular, there are two things I find are always
-essential to log.
+Now let's turn to the issue of observing the operational qualities of
+your code. The operational qualities of your project are things like the
+system resources its consuming, the number of users, and user
+interactions just before an error occurred.
 
-The first is the quality of data joins. If you suddenly have a lot of
-non-matches -- or duplicate matches, things can get very, very weird.
+The first step to making your app or API observable is to add logging.
+You may be used to just adding `print` statements throughout your code.
+And, honestly, this is far better than nothing. But purpose-built
+tooling for logging includes ways to apply consistent formats, emit logs
+in useful ways, and provide visibility into severity of issues.
 
-The second is cross-tabulations before and after recoding the values of
-a variable. Making sure your recode logic does what you think and that
-the values coming in aren't changing over time has saved my butt many
-times.
-:::
+There are great logging packages in both Python and R. Python's logging
+package is standard. There is not a standard logging package in R, but I
+recommend
+[`{log4r}`](https://cran.r-project.org/web/packages/log4r/index.html).
 
-But we don't get to ignore the software engineering concerns of a good
-service experience for our users. This makes observability *even more*
-important in a data science context than in a pure software engineering
-one. You'll still need to think about monitoring metrics and how to log
-in the event of an actual code failure, but you've at least documented
-the data science qualities of your work.
+These packages -- and basically every other logging package -- work very
+similarly. At the outset of your code, you'll create and parameterize a
+*log session* that persists as long as the Python or R session. When
+your code does something you want to love, you'll you'll use the log
+session to write *log statements*. When the log statement runs, it
+creates a *log entry*.
 
-## Working with logs and metrics
+For example, here's what logging for an app starting up might look like
+in Python
 
-I'm assuming you already have a good sense of how to include helpful
-tabulations in your literate programming formats, so the rest of this
-chapter is going to be able logging and monitoring as distinct from just
-including the right output in your Jupyter Notebook, Quarto document, or
-R Markdown document.
+```{python filename="app.py"}
+import logging
 
-Monitoring and logging are somewhat nascent practices for data
-scientists. Part of the purpose of this chapter is to convince you they
-shouldn't be! And to show you that they're really not that hard.
+# Configure the log object
+logging.basicConfig(
+    format='%(asctime)s - %(message)s',
+    level=logging.INFO
+)
 
-Emitting logs can be as simple as just putting `print` statements
-throughout your code -- but there are much better ways.
+# Log app start
+logging.info("App Started")
+```
 
-And you're a data scientist -- if you're putting information into your
-logs, it's probably not hard to scrape that data into structured metrics
-data should the need ever arise. That said, the barrier to entry for
-actually emitting metrics is way lower than you might realize, and most
-data scientists should probably pay more attention to emitting metrics
-than they do.
+And here's what that looks like using `{log4r}`
 
-Whether you need to emit metrics is a more subtle question. It really
-depends on the criticality of your system. In many data science
-contexts, you aren't going to do monitoring on a real-time basis, so
-emitting metrics that can be used by a real-time monitoring system is
-less important than for other types of software.
+```{r filename="app.R"}
+# Configure the log object
+log <- log4r::logger()
 
-### How to write logs
+# Log app start
+log4r::info(log, "App Started")
+```
 
-Python has a standard logging package that is excellent and you should
-use that. R does not have a standard logging package, but there are a
-number of excellent CRAN packages for logging. My personal favorite is
-[`log4r`](https://cran.r-project.org/web/packages/log4r/index.html).
+When the R or Python interpreter hits either of these lines, it will
+create a log entry that looks something like this:
 
-Every time you log something, that is a *log entry*. Every log entry has
-*log data* -- that would be a description of what's being logged,
-perhaps something like "Button A Pressed". Every entry also has a *log
-level*. The log level describes how scary the thing you're logging is.
+```         
+2022-11-18 21:57:50 INFO App Started
+```
 
-Most logging libraries have 5-7 levels of logging. Both the Python
-`logging` library and `log4r` use these five levels from most to least
-scary:
+Like all log entries, this entry has three components:
 
-1.  *Critical*: an error so big that the app itself shuts down. For
-    example, if your app cannot run without a connection to an outside
-    service, you might log an inability to connect as a Critical error.
-2.  *Error*: an issue that will make an operation not work, but that
-    won't bring down your app. In the language of software engineering,
-    you might think of this as a caught exception. An example might be a
-    user submitting invalid input.
+-   The *log metadata* is data what the logging library automatically
+    includes on every entry. It is configured when you initialize
+    logging. In the example above, the only metadata is the timestamp.
+    Log metadata can include additional information, like which server
+    you're running on.
+
+-   The second component is the *log level*. The log level indicates the
+    severity of the event you're logging. In the example above the log
+    level was `INFO`.
+
+-   The last component is the *log data*, which provides details on the
+    event you want to log -- `App Started` in this case.
+
+### Understanding log levels
+
+The log level indicates how serious the logged event is. Most logging
+libraries have 5-7 log levels. As you're writing statements into your
+code, you'll have to think carefully about the appropriate logging level
+for a given event.
+
+Both the Python `{logging}` library and `{log4r}` have five levels from
+least to most scary:
+
+1.  *Debug*: what the code was doing in detail that will only make sense
+    to someone who really knows the code. For example, you might include
+    which function ran and with what arguments in a debug log.
+2.  *Info*: something normal happened in the app. Info statements record
+    things like starting and stopping, successfully making database and
+    other connections, and runtime configuration options.
 3.  *Warn/Warning*: an unexpected application issue that isn't fatal.
     For example, you might include having to retry doing something or
     noticing that resource usage is high. If something were to go wrong
     later, these might be helpful breadcrumbs to look at.
-4.  *Info*: something normal happened in the app. These record things
-    like starting and stopping, successfully making database and other
-    connections, and configuration options that are used.
-5.  *Debug*: a deep record of what the app was doing. The debug log is
-    meant for people who understand the app code to be able to
-    understand what functions ran and with what arguments.
+4.  *Error*: an issue that will make an operation not work, but that
+    won't bring down your app. An example might be a user submitting
+    invalid input and the app recovering.
+5.  *Critical*: an error so big that the app itself shuts down. This is
+    the SOS your app sends as it shuts down. For example, if your app
+    cannot run without a connection to an outside service, you might log
+    an inability to connect as a Critical error.
 
-The nice thing about using a logger as opposed to just print statements
-is that they make it easy to consistently use these log levels. They
-also can automatically append other helpful information to each log
-record -- like the timestamp or the active user.
+When you initialize your logging session, you'll set your log level,
+which is the **least critical** level you want to see in the session. In
+development, you probably want to log everything down to the debug
+level, while that probably isn't ideal in prod.
 
-As the log record is written, it has to be formatted using a *formatter*
-or *layout*. In most cases, the default log format is in plain text.
+### Configuring log formats and log handling
 
-So if you log "Button pressed" at the info level, your log record might
-look something like this in the file:
+When you initialize your logging session, you'll choose where logs will
+be written and in what format. You'll configure the format with a
+*formatter* or *layout* and where it goes with a *handler* or an
+*appender*.
+
+For most logging frameworks, the default is to emit logs to the
+*console* in *plain text*.
+
+For example, a plain text log of an app starting might put this on your
+console
 
 ```         
-2022-11-18 21:57:50 INFO Button Pressed
+2022-11-18 21:57:50 INFO App Started
 ```
 
-But if you're shipping your logs off to have them consumed by some other
-service, you might prefer to have a highly structured log file. The most
-common structured logging format is JSON, though it's also possible to
-use something like YAML or XML. If you used JSON logging, the same
-record might be emitted as:
+You'll decide the format of your log based on how you're planning to
+consume them.
+
+Plain text logs is a great choice if humans are going to be directly
+reading them. If you're shipping your logs off to an aggregation
+service, you might prefer to have structured logs.
+
+The most common structured logging format is JSON, though YAML and XML
+are often options. If you used JSON logging, the same record might be
+emitted as
 
 ```         
 {
   "time": "2022-11-18 21:57:50",
   "level": "INFO", 
-  "data": "Button Pressed"
+  "data": "App Started"
 }
 ```
 
-Once your log record is created, it needs to be put somewhere for you to
-get it later via a *handler* in `logger` or an *appender* in `log4r`.
+Where your logs go should be determined by where your code is running.
 
-The first (and most common) way to handle logs is just to append them to
-a file on disk. Many logging consumers are very comfortable watching a
-file somewhere and aggregating lines of the log as they are written to
-the file. If you're not already familiar with how to consume log files,
-you'll learn a lot more about this in [Chapter @sec-cmd-line] on using
-the command line.
+In development, printing logs for the console makes it easy to iterate
+quickly.
+
+In production, the most common way to handle logs is to append them to a
+file. It makes them easy for humans to access and many tools for
+aggregating and consuming logs are comfortable watching a file and
+aggregating lines as they are written.
 
 If you are emitting logs to file, you may also want to consider how long
-those logs stay around. *Log rotation* is the process of storing logs
-for a period of time and then deleting the old ones. A common log
-rotation pattern is to have a 24-hour log file. Each day, the system
-automatically sets up a new log file and deletes the oldest one (30 days
-is a typical retention period). The Python `logging` library does log
-rotation itself. `log4r` does not, but there is a Linux library called
-`logrotate` that you can use in concert with
-`log4r`.[^1-4-monitor-log-1]
+those logs stay around.
+
+*Log rotation* is the process of periodically creating new log files,
+storing old logs for a set retention period, and deleting files outside
+that period. A common log rotation pattern is to have a log file that
+lasts for 24 hours, is retained for 30 days, and is then deleted.
+
+The Python `{logging}` library does log rotation itself. `{log4r}` does
+not, but there is a Linux library called `logrotate` that you can use in
+concert with `{log4r}`.[^1-4-monitor-log-1]
 
 [^1-4-monitor-log-1]: There are two common naming patterns with rotating
-    log files. The first is to have dated log filenames that look like
+    log files.
+
+    The first is to have dated log filenames that look like
     `my-log-20221118.log`.
 
     The other pattern is to keep one file that's current and have the
@@ -229,48 +257,39 @@ rotation itself. `log4r` does not, but there is a Linux library called
     anything about the log rotation. It's just always writing to
     `my-log.log`.
 
-In some cases, you may not want to write to a file on disk. This is most
-common because you're running in a Docker container -- perhaps in a
-Kubernetes cluster. As you'll learn more about in [Chapter @sec-docker],
+If you're running in a Docker container you don't want to write to a
+file on disk. As you'll learn more about in [Chapter @sec-docker],
 anything that lives inside a Docker container is ephemeral. This is
 obviously bad if you're writing a log that might contain clues for why a
 Docker container was unexpectedly killed.
 
-In that case, you may want to direct log entries somewhere alternative
-or additional to a log file. Linux provides one facility specifically
-for receiving normal output called *stdout* (usually pronounced standard
-out) and one for errors called *stderr* (standard error).
+In that case, it's common practice for a service running in a container
+to emit logs inside the container and then have some sort of more
+permanent service collecting the logs outside. This is usually
+accomplished by sending normal operating logs to go to *stdout* (usually
+pronounced standard out) and failures to go to *stderr* (standard
+error).
 
-In a Docker/Kubernetes context, you'll usually emit your logs inside the
-running container to stdout/stderr and then have some sort of more
-permanent service collecting the logs outside.
+It's also possible you want to do something else completely custom with
+your logs. This is most common for critical or error logs. For example,
+you may want to send an email, slack, or text message immediately if
+your system emits a high-level log message.
 
-Lastly, it's possible you want to do something else completely custom
-with your logs. This is most common for critical or error logs. For
-example, you may want to send an email, slack, or text message
-immediately if your system emits a high-level log message.
+It's also very common to have different format and location settings in
+development vs in production. The most common way to enable different
+logging configurations in different environments is with config files
+and environment variables. More on how to use these tools in [Chapter
+@sec-env-as-code].
 
-Both `logger` and `log4r` have various ways of sending arbitrary
-messages to other services.
+### Working with Metrics
 
-The last piece to logging is configuring your logging environment. When
-you initialize your logger, you'll set the default level at which to log
-events. In `log4r`, the default level is INFO. For `logger`, it's
-WARNING. This means that, by default, any log less critical than those
-levels won't be logged.
+The most common place to see metrics in a data science context is when
+deploying and monitoring ML models in production. Additionally,
+monitoring ETL data quality is ripe for more monitoring.
 
-This is a great use case for environment variables, as explained in
-[Section @sec-env-vars]. It's likely that you'll want to configure
-different levels of logging in production vs development apps.
-
-### How to emit metrics
-
-Monitoring is a much more nascent practice in Data Science than logging.
-The main place metrics have a footprint is in the MLOps/ModelOps domain.
-For many data science use cases, emitting metrics may not be necessary.
-
-These days, most people use the Prometheus/Grafana stack for open source
-monitoring of servers and their resources.
+If you are going to configure metrics emission or consumption, most
+modern metrics stacks are built around the open source tools
+*Prometheus* and *Grafana*.
 
 [Prometheus](https://prometheus.io/) is an open source monitoring tool
 that makes it easy to store metrics data, query that data, and alert
@@ -279,45 +298,24 @@ dashboarding tool that sits on top of Prometheus to do visualization of
 the metrics. They are usually used together to do monitoring and
 visualization of metrics.
 
-It's very easy to monitor the server your data science asset might sit
-on. Prometheus includes something called a *node exporter*, which makes
-it extremely easy to monitor the system resources of your server.
+You can run Prometheus and Grafana yourself, but Grafana Labs provides a
+generous free tier for their SaaS service. This is great because you can
+just set up their service and point your app to it.
 
-Python has an official Prometheus client you can use for emitting
-metrics from a Python asset, and the
-[openmetrics](https://github.com/atheriel/openmetrics) package in R
-makes it easy to emit metrics from a Plumber API or Shiny app.
+Because the Prometheus/Grafana stack started out in the DevOps world,
+they are most optimized to do monitoring of a whole server or fleet of
+servers -- but it's not hard to use them to monitor things you might
+care about like data quality, API response times, or other things.
 
-This means that you can instrument your Python or R asset to emits
-metrics in a format that Prometheus recognizes, Prometheus watches the
-metrics and stores them and alerts if necessary, and you have a Grafana
-dashboard available for visualizing those metrics as needed.
-
-For ModelOps in particular, there are also many specialized platforms
-for monitoring the performance of models over time. The open source
-`vetiver` package in R and Python is a model deployment framework that
-offers built-in facilities for extracting model metrics and putting them
-in a dashboard (there is currently no prometheus integration).
-
-### Consuming Logs and Metrics
-
-Once you've got your asset instrumented and your logging going, you'll
-want to use them. If you're using a professional product like Posit
-Connect to host your asset, you will probably get some degree of support
-for finding and reading relevant logs out of the box.
-
-If not, you'll probably be making good use of the skills we'll review in
-[Chapter @sec-linux-admin] to watch logs and parse them.
-
-You also can configure the Prometheus and Grafana stack to do both
-metrics monitoring and log aggregation. Grafana provides a generous free
-tier that allows you to use Prometheus and Grafana to do your monitoring
-without having to set up your own server. You can just set up their
-service and point your app to it.
+If you want to register metrics from your API or app with Prometheus,
+there is an official [Prometheus
+client](https://github.com/prometheus/client_python) in Python and the
+`{openmetrics}` package in R makes it easy to register metrics from a
+Plumber API or Shiny app.
 
 There's a great [Get Started with Grafana and
 Prometheus](https://grafana.com/docs/grafana/latest/getting-started/get-started-grafana-prometheus/)
-doc on the GrafanaLabs website if you want to actually try it out.
+doc on the Grafana Labs website if you want to actually try it out.
 
 ## Comprehension Questions
 
@@ -335,7 +333,7 @@ doc on the GrafanaLabs website if you want to actually try it out.
     4.  The numeric values that are going into your computational
         function.
 
-## Lab 5: An App with Logging
+## Lab 4: An App with Logging
 
 Let's go back to the prediction generator app from the last lab and add
 a little logging. This is quite easy in both R and Python. In both, we
