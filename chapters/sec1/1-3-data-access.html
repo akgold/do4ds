@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 3&nbsp; Using databases and data APIs</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec1/1-4-monitor-log.html" rel="next">
+<link href="../../chapters/sec1/1-2-proj-arch.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-EQR1RYSHQK"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec1/1-0-sec-intro.html">DevOps Lessons for Data Science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec1/1-3-data-access.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DevOps Lessons for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-env-as-code.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Environments as Code</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-proj-arch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Project Architecture Guidelines</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-access.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-deployments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Deployments and code promotion</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">IT/Admin Tools</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-terminal.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The Terminal</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-ssh.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Connecting Securely with SSH</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-cmd-line.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Getting comfortable on the Command Line</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-docker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Demystifying Docker</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">IT/Admin for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-cloud.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Getting Started with the Cloud</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-linux-admin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Basic Linux SysAdmin</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-networking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-dns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-5-ssl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-6-servers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Choosing the right server for you</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec4/4-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Making it Enterprise-Grade</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-2-ent-networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-3-auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec4/4-4-ent-servers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">19</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Lab Map</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#accessing-and-using-databases" id="toc-accessing-and-using-databases" class="nav-link active" data-scroll-target="#accessing-and-using-databases"><span class="header-section-number">3.1</span> Accessing and using databases</a></li>
+  <li><a href="#connecting-to-apis" id="toc-connecting-to-apis" class="nav-link" data-scroll-target="#connecting-to-apis"><span class="header-section-number">3.2</span> Connecting to APIs</a>
+  <ul class="collapse">
+  <li><a href="#whats-in-an-api" id="toc-whats-in-an-api" class="nav-link" data-scroll-target="#whats-in-an-api"><span class="header-section-number">3.2.1</span> What’s in an API?</a></li>
+  <li><a href="#api-endpoints-and-paths" id="toc-api-endpoints-and-paths" class="nav-link" data-scroll-target="#api-endpoints-and-paths"><span class="header-section-number">3.2.2</span> API Endpoints and Paths</a></li>
+  <li><a href="#http-verbs" id="toc-http-verbs" class="nav-link" data-scroll-target="#http-verbs"><span class="header-section-number">3.2.3</span> HTTP verbs</a></li>
+  <li><a href="#request-parameters-and-bodies" id="toc-request-parameters-and-bodies" class="nav-link" data-scroll-target="#request-parameters-and-bodies"><span class="header-section-number">3.2.4</span> Request parameters and bodies</a></li>
+  <li><a href="#auth-headers" id="toc-auth-headers" class="nav-link" data-scroll-target="#auth-headers"><span class="header-section-number">3.2.5</span> (Auth) Headers</a></li>
+  <li><a href="#request-status-codes" id="toc-request-status-codes" class="nav-link" data-scroll-target="#request-status-codes"><span class="header-section-number">3.2.6</span> Request Status Codes</a></li>
+  <li><a href="#response-bodies" id="toc-response-bodies" class="nav-link" data-scroll-target="#response-bodies"><span class="header-section-number">3.2.7</span> Response Bodies</a></li>
+  <li><a href="#common-api-patterns" id="toc-common-api-patterns" class="nav-link" data-scroll-target="#common-api-patterns"><span class="header-section-number">3.2.8</span> Common API patterns</a></li>
+  </ul></li>
+  <li><a href="#env-vars" id="toc-env-vars" class="nav-link" data-scroll-target="#env-vars"><span class="header-section-number">3.3</span> Environment variables to secure data connections</a>
+  <ul class="collapse">
+  <li><a href="#getting-environment-variables" id="toc-getting-environment-variables" class="nav-link" data-scroll-target="#getting-environment-variables"><span class="header-section-number">3.3.1</span> Getting environment variables</a></li>
+  <li><a href="#setting-environment-variables" id="toc-setting-environment-variables" class="nav-link" data-scroll-target="#setting-environment-variables"><span class="header-section-number">3.3.2</span> Setting environment variables</a></li>
+  </ul></li>
+  <li><a href="#data-connection-packages" id="toc-data-connection-packages" class="nav-link" data-scroll-target="#data-connection-packages"><span class="header-section-number">3.4</span> Data Connection Packages</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">3.5</span> Comprehension Questions</a></li>
+  <li><a href="#lab-3-use-a-database-and-an-api" id="toc-lab-3-use-a-database-and-an-api" class="nav-link" data-scroll-target="#lab-3-use-a-database-and-an-api"><span class="header-section-number">3.6</span> Lab 3: Use a database and an API</a>
+  <ul class="collapse">
+  <li><a href="#step-1-put-the-data-in-duckdb" id="toc-step-1-put-the-data-in-duckdb" class="nav-link" data-scroll-target="#step-1-put-the-data-in-duckdb"><span class="header-section-number">3.6.1</span> Step 1: Put the data in DuckDB</a></li>
+  <li><a href="#step-2-call-the-model-api-from-code" id="toc-step-2-call-the-model-api-from-code" class="nav-link" data-scroll-target="#step-2-call-the-model-api-from-code"><span class="header-section-number">3.6.2</span> Step 2: Call the model API from code</a></li>
+  <li><a href="#step-3-build-a-shiny-app" id="toc-step-3-build-a-shiny-app" class="nav-link" data-scroll-target="#step-3-build-a-shiny-app"><span class="header-section-number">3.6.3</span> Step 3: Build a shiny app</a></li>
+  </ul></li>
+  <li><a href="#http-code-cheatsheet" id="toc-http-code-cheatsheet" class="nav-link" data-scroll-target="#http-code-cheatsheet"><span class="header-section-number">3.7</span> HTTP Code Cheatsheet</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/1-3-data-access.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-data-access" class="quarto-section-identifier"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>As a data scientist, your job is to sift through a massive pile of data to extract nuggets of real information – and then use that information. Working at the end of an external process, you’re going to have to meet the data where it is.</p>
+<p>In most cases, that will be in a database or a data API. This chapter is about the mechanics of working with those data sources – how to access the data and how to keep those connections secure.</p>
+<section id="accessing-and-using-databases" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="accessing-and-using-databases"><span class="header-section-number">3.1</span> Accessing and using databases</h2>
+<p>Databases are defined by their query-able interface, usually through <em>structured query language (SQL)</em>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are many, many different kinds of databases, and choosing the right one for your project is beyond the scope of this book. One recommendation: open source <a href="https://www.postgresql.org/">PostgreSQL</a> (Postgres) is a great place to start for most general-purpose data science tasks.</p>
+</div>
+</div>
+<p>Regardless of which database you’re using, you’ll open a connection by creating a <em>connection object</em> at the outset of your code. You’ll then use this object to send SQL queries – either literal ones you’ve written, or the output of a package that generates SQL code, like <code>{sqlalchemy}</code> in Python and <code>{dplyr}</code> in R.</p>
+<p>For example, in Python you might write the following to connect to a Postgres database:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> psychopg2</span>
+<span id="cb1-2"><a href="#cb1-2"></a></span>
+<span id="cb1-3"><a href="#cb1-3"></a>con <span class="op">=</span> psycopg2.<span class="ex">connect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In R, it might look like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(RPostgres<span class="sc">::</span><span class="fu">postgres</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In order to develop a mental model for working with databases, let’s reverse engineer this example code.</p>
+<p>Python or R both have standard connection APIs that define operations like connecting and disconnecting, sending queries, and retrieving results.</p>
+<p>In Python, packages for individual databases like <code>{psychopg2}</code> directly implement the API, which is why the example above calls the <code>connect()</code> method of the <code>{psychopg2}</code> package.</p>
+<p>In R, the API is split into two parts. The <code>{DBI}</code> package (short for database interface) implements the actual connections. It works with a database driver package, whtich is the first argument to <code>DBI::dbConnect()</code>. Packages that implement the <code>{DBI}</code> interface are called <em>DBI-compliant</em>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are Python packages that don’t implement the connections API, and there are non DBI-compliant database connector packages in R. These packages may work for you, but I’d recommend sticking with the standard route.</p>
+</div>
+</div>
+<p>In a lot of cases, there will be a Python or R package that directly implements your database driver. For example, when you’re connecting to a Postgres database, there are Postgres-specific connectors – <code>{psychopg2}</code> in Python and <code>{RPostgres}</code> in R. For Spark, you’ve got <code>{pyspark}</code> and <code>{sparklyr}</code>.</p>
+<p>If there’s a package specific to your database, it’s probably faster and may provide additional database-specific functionality than other options.</p>
+<p>If there isn’t a database-specific package that directly implements the driver, you’ll need to use a generic <em>system driver</em> in concert with a Python or R package that can interface with system drivers.</p>
+<p>In that case, the example code above might look like in Python</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="im">import</span> pyodbc</span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a>con <span class="op">=</span> pyodbc.<span class="ex">connect</span>(<span class="st">"DSN=MY_DSN"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In R, it might look like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(odbc<span class="sc">::</span><span class="fu">odbc</span>(), <span class="at">dsn =</span> <span class="st">"MY_DSN"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>While performance sometimes isn’t as good for system drivers, the tradeoff is that IT/Admins can pre-configure details of the connection in a <em>data source name (DSN)</em>. If one is pre configured for you, you don’t have to remember – or even learn – the database name, host, and port, even username and password if they’re shared. All you need in your code is the DSN name, which is <code>MY_DSN</code> in the example above.</p>
+<p>System drivers come in two main varieties Java Database Connectivity (JDBC) and Open Database Connectivity (ODBC).</p>
+<p>In Python, <code>{pyodbc}</code> is the main package for using ODBC connections and <code>{JayDeBeApi}</code> for connecting using JDBC. In R, <code>{odbc}</code> is the best package for using system ODBC connections and <code>{RJDBC}</code> is the standard way to use JDBC.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you’re using R and have the choice between JDBC and ODBC, I strongly recommend ODBC. JDBC requires an extra hop through Java and the <code>{rJava}</code> package, which is painful to configure.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+</div>
+</div>
+</section>
+<section id="connecting-to-apis" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="connecting-to-apis"><span class="header-section-number">3.2</span> Connecting to APIs</h2>
+<p>Some data sources come in the form of an API (application programming interface).</p>
+<p>In the data science world, APIs are most often used to provide data feeds and on-demand predictions from machine learning models.</p>
+<p>It’s common to have Python or R packages that wrap APIs, so you just write Python or R code without needing to think about the API underneath. The usage of these patterns often looks similar to databases – you create and use a connection object that stores the connection details. If your API has a package like this, you should just use it.</p>
+<p>If you’re consuming a private API at your organization, a helper package probably doesn’t exist or you may have to write it yourself.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There’s increasingly good tooling to auto-generate packages based on API documentation, so you may never have to write an API wrapper package by hand. It’s still helpful to understand how it works.</p>
+</div>
+</div>
+<p>If find yourself having to call an API directly, you can use the <code>{requests}</code> package in Python or <code>{httr2}</code> in R.</p>
+<p>These packages idiomatic R and Python ways to call APIs. It’s worth understanding that they’re purely syntactic sugar. There’s nothing special about calling an API from inside Python or R versus using the <code>curl</code> command on the command line and you can go back and forth as you please.</p>
+<section id="whats-in-an-api" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="whats-in-an-api"><span class="header-section-number">3.2.1</span> What’s in an API?</h3>
+<p>APIs are the standard way for two computer systems to communicate with each other. It’s an extremely general term that describes the definition of machine-to-machine communication.</p>
+<p>The APIs used by data scientists are usually <code>http</code>-based <code>REST</code>-ful APIs. What exactly that means isn’t really important, but the rest of this section just addresses the subset of the wild world of APIs you’re likely to encounter as a data scientist.</p>
+<p><code>http</code> operates on a request-response model. So when you use an API, you send a request to the API and it sends a response back.</p>
+<p>The best way to learn about a new API is to read the documentation, which will include a lot of details about how to use it. Let’s go through some of the most salient ones.</p>
+</section>
+<section id="api-endpoints-and-paths" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="api-endpoints-and-paths"><span class="header-section-number">3.2.2</span> API Endpoints and Paths</h3>
+<p>Each request to an API is directed to a specific <em>endpoint</em>. An API can have many endpoints, each of which you can think of like a function in a package. Each endpoint lives on a <em>path</em>, which is where you find that particular endpoint.</p>
+<p>For example, if you did the lab in <a href="1-2-proj-arch.html">Chapter&nbsp;<span>2</span></a> and used <code>{vetiver}</code> to create an API for serving the penguin mass model, you found your API at <code>http://localhost:8080</code>. By default, you went to the <em>root</em> path at <code>/</code> and found the API documentation there.</p>
+<p>As you scrolled the documentation, there were two endpoints – <code>/ping</code> and <code>/predict</code>. Those paths are relative to the root, so you could access <code>/ping</code> at <code>http://localhost:8080/ping</code>.</p>
+</section>
+<section id="http-verbs" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="http-verbs"><span class="header-section-number">3.2.3</span> HTTP verbs</h3>
+<p>When you make a request over HTTP, you are asking a server to do something. The <em>http</em> <em>verb</em>, also known as the <em>request method</em>, describes the type of operation you’re asking for. Each endpoint has one or more verbs that it knows how to use.</p>
+<p>If you look at the penguin mass API, you’ll see that <code>/ping</code> is a <code>GET</code> endpoint and <code>/predict</code> is a <code>POST</code>. This isn’t coincidence. I’d approximate that 95% of the API endpoints you’ll use as a data scientist are <code>GET</code> and <code>POST</code>, which respectively fetch information from the server and provide information to the server.</p>
+<p>To round out the basic http verbs you might see, <code>PUT</code> and <code>PATCH</code> change or update something and <code>DELETE</code> (you guessed it) deletes something. There are more esoteric ones you’ll probably never see.</p>
+</section>
+<section id="request-parameters-and-bodies" class="level3" data-number="3.2.4">
+<h3 data-number="3.2.4" class="anchored" data-anchor-id="request-parameters-and-bodies"><span class="header-section-number">3.2.4</span> Request parameters and bodies</h3>
+<p>Like a function in a package, each endpoint accepts specific arguments in a required format. Again, like a function, some arguments may be optional and some may be required.</p>
+<p>For <code>GET</code> requests, the arguments are specified via <em>query parameters</em> that end up embedded in the URL after a <code>?</code>. So if you ever see a URL in your browser that looks like <code>?first_name=alex&amp;last_name=gold</code>, those are query parameters.</p>
+<p>For <code>POST</code>, <code>PUT</code>, and <code>PATCH</code> requests, arguments are provided in a <em>body</em>, which is usually formatted as <em>JSON</em>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Both <code>{httr2}</code> and <code>{requests}</code> have built-in functionality for converting standard Python and R data types to their JSON equivalents, but it can sometimes take some experimentation to figure out exactly how to match the argument format. Experimenting with conversions using <code>{json}</code> in Python and <code>{jsonlite}</code> in R can be very useful.</p>
+</section>
+<section id="auth-headers" class="level3" data-number="3.2.5">
+<h3 data-number="3.2.5" class="anchored" data-anchor-id="auth-headers"><span class="header-section-number">3.2.5</span> (Auth) Headers</h3>
+<p>You will need to figure out how to authenticate to the API. The most common forms of authentication are a username and password combination, an API key, or an OAuth token.</p>
+<p>API keys and OAuth tokens are often associated with particular <em>scopes</em>. Scopes are permissions to do particular things. For example, an API key might be scoped to have <code>GET</code> access to a given endpoint, but not <code>POST</code> access.</p>
+<p>Regardless of your authentication type, it will be provided in a <em>header</em> to your API call. Your API documentation will tell you how to provide your username and password, API key, or token to the API in a header. Both <code>{requests}</code> and <code>{httr2}</code> provide easy helpers for adding authentication headers and also general ways to set headers if you need to.</p>
+<p>Aside from authentication, headers are also used for a variety of different metadata like the type of machine that is sending the request and cookies that are set. You’ll rarely interact directly with these.</p>
+</section>
+<section id="request-status-codes" class="level3" data-number="3.2.6">
+<h3 data-number="3.2.6" class="anchored" data-anchor-id="request-status-codes"><span class="header-section-number">3.2.6</span> Request Status Codes</h3>
+<p>The first thing you’ll consult when you get a result back is the <em>status code</em>. Status codes indicate what happened with your request to the server. You always hope to see <code>200</code> codes, which indicate a successful response.</p>
+<p>There are also a two common types of error codes. <code>4xx</code> codes indicate that there’s a problem with your request and the API couldn’t understand what you were asking. <code>5xx</code> codes indicate that your request was fine, but some sort of error happened in processing your request.</p>
+<p>There’s a <a href="#cheat-http">cheatsheet</a> below with some other codes and what they mean.</p>
+</section>
+<section id="response-bodies" class="level3" data-number="3.2.7">
+<h3 data-number="3.2.7" class="anchored" data-anchor-id="response-bodies"><span class="header-section-number">3.2.7</span> Response Bodies</h3>
+<p>Then there’s the actual contents of the response in the <em>body</em>. You’ll need to turn the body into a Python or R object you can work with.</p>
+<p>Most often, bodies are in JSON and you’ll decode them with <code>{json}</code> or <code>{jsonlite}</code>. Usually JSON is the default and you may be given the option to specify something else if you’ve got a preference.</p>
+</section>
+<section id="common-api-patterns" class="level3" data-number="3.2.8">
+<h3 data-number="3.2.8" class="anchored" data-anchor-id="common-api-patterns"><span class="header-section-number">3.2.8</span> Common API patterns</h3>
+<p>Here are a couple of common API patterns that are good to be familiar with:</p>
+<ul>
+<li><p><strong>Pagination</strong> – many data-feed APIs implement pagination. A paginated API returns only a certain number of results at a time to keep data sizes modest. You’ll need to figure out how to get all the pages back when you make a request.</p></li>
+<li><p><strong>Job APIs</strong> – HTTP is designed for relatively quick request-response cycles. So if your API kicks off a long-running job, it’s rare to wait until the job is done to get a response. Instead, the API immediately returns an acknowledgement and a <code>job-id</code> which you can use to poll a <code>job-status</code> endpoint to check how things are going and eventually find your result.</p></li>
+<li><p><strong>Multiple Verbs</strong> – a single endpoint often accepts multiple verbs – for example a <code>GET</code> and a <code>POST</code> at the same endpoint for getting and setting the data that endpoint stores.</p></li>
+</ul>
+</section>
+</section>
+<section id="env-vars" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="env-vars"><span class="header-section-number">3.3</span> Environment variables to secure data connections</h2>
+<p>When you take an app to production, authenticating to your data source while keeping your secrets secure is crucial.</p>
+<p>The single most important thing you can do to secure your credentials is to avoid ever putting credentials in your code. <strong>Your username and password or API key should never appear in your code.</strong></p>
+<p>The simplest way to provide credentials without the values appearing in your code is with an <em>environment variable</em>. Environment variables are set before your code starts – sometimes from completely outside Python or R.</p>
+<section id="getting-environment-variables" class="level3" data-number="3.3.1">
+<h3 data-number="3.3.1" class="anchored" data-anchor-id="getting-environment-variables"><span class="header-section-number">3.3.1</span> Getting environment variables</h3>
+<p>The power of using an environment variable is that you reference them <em>by name</em>. Just sharing that there’s an environment variable called <code>API_KEY</code> doesn’t reveal anything secret, so if your code just includes environment variables, it’s completely safe to share with others.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It is convention to make environment variable names in all caps with words separated by underscores. The values are always simple character values, though these can be cast to some other type inside R or Python.</p>
+</div>
+</div>
+<p>In Python, you can read environment variables from the <code>os.environ</code> dictionary or by using <code>os.getenv("&lt;VAR_NAME&gt;")</code>. In R, you can get environment variables with <code>Sys.getenv("&lt;VAR_NAME&gt;")</code>.</p>
+<p>It’s common to provide environment variables directly to functions as arguments, though you can also put the values in normal Python or R variables and use them from there.</p>
+</section>
+<section id="setting-environment-variables" class="level3" data-number="3.3.2">
+<h3 data-number="3.3.2" class="anchored" data-anchor-id="setting-environment-variables"><span class="header-section-number">3.3.2</span> Setting environment variables</h3>
+<p>The most common way to set environment variables in a development environment is to load secrets from a plain text file. In Python, environment variables are usually set by reading a <code>.env</code> file into your Python session. The <a href="https://pypi.org/project/python-dotenv/"><code>{python-dotenv}</code> package</a> is a good choice for doing this.</p>
+<p>R automatically reads the <code>.Renviron</code> file as environment variables and also sources the <code>.Rprofile</code> file, where you can set environment variables with <code>Sys.setenv()</code>. I personally prefer putting everything in <code>.Rprofile</code> for simplicity – but that’s not a universal opinion.</p>
+<p>Some organizations don’t ever want credentials files in plain text. After all, if someone stole a plain text secrets file, there’s nothing to stop them from using them.</p>
+<p>There are packages in both R and Python called <code>{keyring}</code> that allow you to use the system keyring to securely store environment variables and recall them at runtime.</p>
+<p>Setting environment variables in production is a little harder.</p>
+<p>Just moving your secrets from your code into a different file you push to prod is still bad. And using <code>{keyring}</code> in a production environment is quite cumbersome.</p>
+<p>Your production environment may provide environment management tools. For example, GitHub Actions and Posit Connect both provide you the ability to set secrets that aren’t visible to the users, but are accessible to the code at runtime in an environment variable.</p>
+<p>Increasingly, organizations are using token-based authorization schemes that just exchange one cryptographically secure token for another, never relying on credentials at all. The tradeoff for the enhanced security is that they can be difficult to implement, likely requiring coordination with an IT/Admin to use technologies like Kerberos or OAuth. There’s more on how to do that in <a href="../sec4/4-3-auth.html">Chapter&nbsp;<span>18</span></a>.</p>
+</section>
+</section>
+<section id="data-connection-packages" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="data-connection-packages"><span class="header-section-number">3.4</span> Data Connection Packages</h2>
+<p>It’s very common for organizations to write their own data connector packages in Python or R that include all of the shared connection details so users don’t have to remember them. If everyone has their own credentials, it’s also nice if those packages set standard names for the environment variables so they can be more easily set in production.</p>
+<p>Whether you’re using R or Python, the function in your package should return the database connection object for people to use.</p>
+<p>Here’s an example of what that might look like if you were using a Postgres database from R:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co">#' Return a database connection</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="co">#'</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="co">#' @param user username, character, defaults to value of DB_USER</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="co">#' @param pw password, character, defaults to value of DB_PW</span></span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="co">#' @param ... other arguments passed to </span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co">#' @param driver driver, defaults to RPostgres::Postgres</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#'</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#' @return DBI connection</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#' @export</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#'</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co">#' @examples</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">#' my_db_con()</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>my_db_con <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb5-14"><a href="#cb5-14"></a>    <span class="at">user =</span> <span class="fu">Sys.getenv</span>(<span class="st">"DB_USER"</span>), </span>
+<span id="cb5-15"><a href="#cb5-15"></a>    <span class="at">pw =</span> <span class="fu">Sys.getenv</span>(<span class="st">"DB_PW"</span>), </span>
+<span id="cb5-16"><a href="#cb5-16"></a>    ..., </span>
+<span id="cb5-17"><a href="#cb5-17"></a>    <span class="at">driver =</span> RPostgres<span class="sc">::</span><span class="fu">Postgres</span>()</span>
+<span id="cb5-18"><a href="#cb5-18"></a>) {</span>
+<span id="cb5-19"><a href="#cb5-19"></a>  DBI<span class="sc">::</span><span class="fu">dbConnect</span>(</span>
+<span id="cb5-20"><a href="#cb5-20"></a>    <span class="at">driver =</span> driver,</span>
+<span id="cb5-21"><a href="#cb5-21"></a>    <span class="at">dbname =</span> <span class="st">'my-db-name'</span>, </span>
+<span id="cb5-22"><a href="#cb5-22"></a>    <span class="at">host =</span> <span class="st">'my-db.example.com'</span>, </span>
+<span id="cb5-23"><a href="#cb5-23"></a>    <span class="at">port =</span> <span class="dv">5432</span>, </span>
+<span id="cb5-24"><a href="#cb5-24"></a>    <span class="at">user =</span> user,</span>
+<span id="cb5-25"><a href="#cb5-25"></a>    <span class="at">password =</span> pw, </span>
+<span id="cb5-26"><a href="#cb5-26"></a>    ...</span>
+<span id="cb5-27"><a href="#cb5-27"></a>  )</span>
+<span id="cb5-28"><a href="#cb5-28"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that the function signature defines default environment variables that will be consulted. If those environment variables are set ahead of time by the user, this code will just work.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">3.5</span> Comprehension Questions</h2>
+<ol type="1">
+<li>Draw two mental map for connecting to a database. One usinga database driver in a Python or R package vs an ODBC or JDBC driver. You should (at a minimum) include the nodes database package, DBI (R only), driver, system driver, ODBC, JDBC, and database.</li>
+<li>Draw a mental map for using an API from R or Python. You should (at a minimum) include nodes for <code>{requests}</code>/<code>{httr2}</code>, request, http verb/request method, headers, query parameters, body, json, response, and response code.</li>
+<li>How can environment variables be used to keep secrets secure in your code?</li>
+</ol>
+</section>
+<section id="lab-3-use-a-database-and-an-api" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="lab-3-use-a-database-and-an-api"><span class="header-section-number">3.6</span> Lab 3: Use a database and an API</h2>
+<p>In this lab, we’re going to build out both the data layer and the presentation layer for our penguin mass model exploration. We’re going to create an app to explore the model, which will look like this: <img src="images/penguin_app.png" class="img-fluid"></p>
+<p>Let’s start by moving the data into a real data layer.</p>
+<section id="step-1-put-the-data-in-duckdb" class="level3" data-number="3.6.1">
+<h3 data-number="3.6.1" class="anchored" data-anchor-id="step-1-put-the-data-in-duckdb"><span class="header-section-number">3.6.1</span> Step 1: Put the data in DuckDB</h3>
+<p>Let’s start by moving the data into a DuckDB database and use it from there for the modeling and EDA scripts.</p>
+<p>To start, let’s load the data.</p>
+<p>Here’s what that looks like in R:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(duckdb<span class="sc">::</span><span class="fu">duckdb</span>(), <span class="at">dbdir =</span> <span class="st">"my-db.duckdb"</span>)</span>
+<span id="cb6-2"><a href="#cb6-2"></a>DBI<span class="sc">::</span><span class="fu">dbWriteTable</span>(con, <span class="st">"penguins"</span>, palmerpenguins<span class="sc">::</span>penguins)</span>
+<span id="cb6-3"><a href="#cb6-3"></a>DBI<span class="sc">::</span><span class="fu">dbDisconnect</span>(con)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Or equivalently, in Python:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="im">import</span> duckdb</span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="im">from</span> palmerpenguins <span class="im">import</span> penguins</span>
+<span id="cb7-3"><a href="#cb7-3"></a></span>
+<span id="cb7-4"><a href="#cb7-4"></a>con <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="st">'my-db.duckdb'</span>)</span>
+<span id="cb7-5"><a href="#cb7-5"></a>df <span class="op">=</span> penguins.load_penguins()</span>
+<span id="cb7-6"><a href="#cb7-6"></a>con.execute(<span class="st">'CREATE TABLE penguins AS SELECT * FROM df'</span>)</span>
+<span id="cb7-7"><a href="#cb7-7"></a>con.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now that the data is loaded, let’s adjust our scripts to use the database.</p>
+<p>In R, we are just going to replace our data loading with connecting to the database. Leaving out all the parts that don’t change, it looks like</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>eda.qmd</strong></pre>
+</div>
+<div class="sourceCode" id="cb8" data-startfrom="14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r" style="counter-reset: source-line 13;"><span id="cb8-14"><a href="#cb8-14"></a></span>
+<span id="cb8-15"><a href="#cb8-15"></a>con <span class="ot">&lt;-</span> DBI<span class="sc">::</span><span class="fu">dbConnect</span>(</span>
+<span id="cb8-16"><a href="#cb8-16"></a>  duckdb<span class="sc">::</span><span class="fu">duckdb</span>(), </span>
+<span id="cb8-17"><a href="#cb8-17"></a>  <span class="at">dbdir =</span> <span class="st">"my-db.duckdb"</span></span>
+<span id="cb8-18"><a href="#cb8-18"></a>  )</span>
+<span id="cb8-19"><a href="#cb8-19"></a>df <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">tbl</span>(con, <span class="st">"penguins"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We also need to call to <code>DBI::dbDisconnect(con)</code> at the end of the script.</p>
+<p>Because we wrote our data processing code in <code>{dplyr}</code>, we actually don’t have to change anything. Under the hood, <code>{dplyr}</code> can switch seamlessly to a database backend, which is really cool.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>eda.qmd</strong></pre>
+</div>
+<div class="sourceCode" id="cb9" data-startfrom="23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r" style="counter-reset: source-line 22;"><span id="cb9-23"><a href="#cb9-23"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a>  <span class="fu">group_by</span>(species, sex) <span class="sc">%&gt;%</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb9-26"><a href="#cb9-26"></a>    <span class="fu">across</span>(</span>
+<span id="cb9-27"><a href="#cb9-27"></a>        <span class="fu">ends_with</span>(<span class="st">"mm"</span>) <span class="sc">|</span> <span class="fu">ends_with</span>(<span class="st">"g"</span>),</span>
+<span id="cb9-28"><a href="#cb9-28"></a>      \(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-29"><a href="#cb9-29"></a>      )</span>
+<span id="cb9-30"><a href="#cb9-30"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb9-31"><a href="#cb9-31"></a>  dplyr<span class="sc">::</span><span class="fu">collect</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb9-32"><a href="#cb9-32"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It’s not necessary, but I’ve added a call to <code>dplyr::collect</code> in line 31. It will be implied if I don’t put it there manually, but it helps make obvious that all the work before there has been pushed off to the database. Only the result of this code is coming back to the R process. Obviously it doesn’t matter for this small dataset, but this would be a huge benefit if the dataset were much larger.</p>
+<p>In Python, we’re just going to load the entire dataset into memory for modeling, so the line loading the dataset changes to</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>model.qmd</strong></pre>
+</div>
+<div class="sourceCode" id="cb10" data-startfrom="18"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 17;"><span id="cb10-18"><a href="#cb10-18"></a>con <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="st">'my-db.duckdb'</span>)</span>
+<span id="cb10-19"><a href="#cb10-19"></a>df <span class="op">=</span> con.execute(<span class="st">"SELECT * FROM penguins"</span>).fetchdf().dropna()</span>
+<span id="cb10-20"><a href="#cb10-20"></a>con.close()</span>
+<span id="cb10-21"><a href="#cb10-21"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now let’s switch to figuring out the connection we’ll need to our processing layer in the presentation layer.</p>
+</section>
+<section id="step-2-call-the-model-api-from-code" class="level3" data-number="3.6.2">
+<h3 data-number="3.6.2" class="anchored" data-anchor-id="step-2-call-the-model-api-from-code"><span class="header-section-number">3.6.2</span> Step 2: Call the model API from code</h3>
+<p>Before you start, make sure the API is running on your machine from the last lab.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’m assuming it’s running on port <code>8080</code> in this lab. If you’ve put it somewhere else, change the <code>8080</code> in the code below to match the port on your machine.</p>
+</div>
+</div>
+<p>If you want to call the model in code, you can use any http request library. In R you should use <code>httr2</code> and in Python you should use <code>requests</code>.</p>
+<p>Here’s what it looks like to call the API in Python</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="im">import</span> requests</span>
+<span id="cb11-2"><a href="#cb11-2"></a></span>
+<span id="cb11-3"><a href="#cb11-3"></a>req_data <span class="op">=</span> {</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  <span class="st">"bill_length_mm"</span>: <span class="dv">0</span>,</span>
+<span id="cb11-5"><a href="#cb11-5"></a>  <span class="st">"species_Chinstrap"</span>: <span class="va">False</span>,</span>
+<span id="cb11-6"><a href="#cb11-6"></a>  <span class="st">"species_Gentoo"</span>: <span class="va">False</span>,</span>
+<span id="cb11-7"><a href="#cb11-7"></a>  <span class="st">"sex_male"</span>: <span class="va">False</span></span>
+<span id="cb11-8"><a href="#cb11-8"></a>}</span>
+<span id="cb11-9"><a href="#cb11-9"></a>req <span class="op">=</span> requests.post(<span class="st">'http://127.0.0.1:8080/predict'</span>, json <span class="op">=</span> req_data)</span>
+<span id="cb11-10"><a href="#cb11-10"></a>res <span class="op">=</span> req.json().get(<span class="st">'predict'</span>)[<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>or equivalently in R</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>req <span class="ot">&lt;-</span> httr2<span class="sc">::</span><span class="fu">request</span>(<span class="st">"http://127.0.0.1:8080/predict"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>  httr2<span class="sc">::</span><span class="fu">req_body_json</span>(</span>
+<span id="cb12-3"><a href="#cb12-3"></a>    <span class="fu">list</span>(</span>
+<span id="cb12-4"><a href="#cb12-4"></a>      <span class="st">"bill_length_mm"</span> <span class="ot">=</span> <span class="dv">0</span>,</span>
+<span id="cb12-5"><a href="#cb12-5"></a>      <span class="st">"species_Chinstrap"</span> <span class="ot">=</span> <span class="cn">FALSE</span>,</span>
+<span id="cb12-6"><a href="#cb12-6"></a>      <span class="st">"species_Gentoo"</span> <span class="ot">=</span> <span class="cn">FALSE</span>,</span>
+<span id="cb12-7"><a href="#cb12-7"></a>      <span class="st">"sex_male"</span> <span class="ot">=</span> <span class="cn">FALSE</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>    )</span>
+<span id="cb12-9"><a href="#cb12-9"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb12-10"><a href="#cb12-10"></a>  httr2<span class="sc">::</span><span class="fu">req_perform</span>()</span>
+<span id="cb12-11"><a href="#cb12-11"></a>res <span class="ot">&lt;-</span> httr2<span class="sc">::</span><span class="fu">resp_body_json</span>(r)<span class="sc">$</span>predict[[<span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that there’s no translation necessary to send the request. The <code>{requests}</code> and<code>{httr2}</code> packages automatically know what to do with the Python dictionary and the R list.</p>
+<p>Getting the result back takes a little more work to find the right spot in the JSON returned. This is quite common.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The <code>{vetiver}</code> package also includes the ability to auto-query a <code>{vetiver}</code> API. I’m not using it here to expose the details of calling an API.</p>
+</div>
+</div>
+<p>Now, let’s take this API-calling code and build the presentation layer around it.</p>
+</section>
+<section id="step-3-build-a-shiny-app" class="level3" data-number="3.6.3">
+<h3 data-number="3.6.3" class="anchored" data-anchor-id="step-3-build-a-shiny-app"><span class="header-section-number">3.6.3</span> Step 3: Build a shiny app</h3>
+<p>We’re going to use the <code>{shiny}</code> package, which is an R and Python package for creating interactive web apps using just Python code. If you don’t know much about <code>{shiny}</code>, you can choose to just blindly follow the examples here, or you could spend some time with the <a href="https://mastering-shiny.org/">Mastering Shiny</a> book to learn to use it yourself.</p>
+<p>Either way, an app that looks like the picture above would look like this in Python</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>app.py</strong></pre>
+</div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1"></a><span class="im">from</span> shiny <span class="im">import</span> App, render, ui, reactive</span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="im">import</span> requests</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a>api_url <span class="op">=</span> <span class="st">'http://127.0.0.1:8080/predict'</span></span>
+<span id="cb13-5"><a href="#cb13-5"></a></span>
+<span id="cb13-6"><a href="#cb13-6"></a>app_ui <span class="op">=</span> ui.page_fluid(</span>
+<span id="cb13-7"><a href="#cb13-7"></a>    ui.panel_title(<span class="st">"Penguin Mass Predictor"</span>), </span>
+<span id="cb13-8"><a href="#cb13-8"></a>    ui.layout_sidebar(</span>
+<span id="cb13-9"><a href="#cb13-9"></a>        ui.panel_sidebar(</span>
+<span id="cb13-10"><a href="#cb13-10"></a>            [ui.input_slider(<span class="st">"bill_length"</span>, <span class="st">"Bill Length (mm)"</span>, <span class="dv">30</span>, <span class="dv">60</span>, <span class="dv">45</span>, step <span class="op">=</span> <span class="fl">0.1</span>),</span>
+<span id="cb13-11"><a href="#cb13-11"></a>            ui.input_select(<span class="st">"sex"</span>, <span class="st">"Sex"</span>, [<span class="st">"Male"</span>, <span class="st">"Female"</span>]),</span>
+<span id="cb13-12"><a href="#cb13-12"></a>            ui.input_select(<span class="st">"species"</span>, <span class="st">"Species"</span>, [<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>]),</span>
+<span id="cb13-13"><a href="#cb13-13"></a>            ui.input_action_button(<span class="st">"predict"</span>, <span class="st">"Predict"</span>)]</span>
+<span id="cb13-14"><a href="#cb13-14"></a>        ),</span>
+<span id="cb13-15"><a href="#cb13-15"></a>        ui.panel_main(</span>
+<span id="cb13-16"><a href="#cb13-16"></a>            ui.h2(<span class="st">"Penguin Parameters"</span>),</span>
+<span id="cb13-17"><a href="#cb13-17"></a>            ui.output_text_verbatim(<span class="st">"vals_out"</span>),</span>
+<span id="cb13-18"><a href="#cb13-18"></a>            ui.h2(<span class="st">"Predicted Penguin Mass (g)"</span>), </span>
+<span id="cb13-19"><a href="#cb13-19"></a>            ui.output_text(<span class="st">"pred_out"</span>)</span>
+<span id="cb13-20"><a href="#cb13-20"></a>        )</span>
+<span id="cb13-21"><a href="#cb13-21"></a>    )   </span>
+<span id="cb13-22"><a href="#cb13-22"></a>)</span>
+<span id="cb13-23"><a href="#cb13-23"></a></span>
+<span id="cb13-24"><a href="#cb13-24"></a><span class="kw">def</span> server(<span class="bu">input</span>, output, session):</span>
+<span id="cb13-25"><a href="#cb13-25"></a>    <span class="at">@reactive.Calc</span></span>
+<span id="cb13-26"><a href="#cb13-26"></a>    <span class="kw">def</span> vals():</span>
+<span id="cb13-27"><a href="#cb13-27"></a>        d <span class="op">=</span> {</span>
+<span id="cb13-28"><a href="#cb13-28"></a>            <span class="st">"bill_length_mm"</span> : <span class="bu">input</span>.bill_length(),</span>
+<span id="cb13-29"><a href="#cb13-29"></a>            <span class="st">"sex_Male"</span> : <span class="bu">input</span>.sex() <span class="op">==</span> <span class="st">"Male"</span>,</span>
+<span id="cb13-30"><a href="#cb13-30"></a>            <span class="st">"species_Gentoo"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Gentoo"</span>, </span>
+<span id="cb13-31"><a href="#cb13-31"></a>            <span class="st">"species_Chinstrap"</span> : <span class="bu">input</span>.species() <span class="op">==</span> <span class="st">"Chinstrap"</span></span>
+<span id="cb13-32"><a href="#cb13-32"></a></span>
+<span id="cb13-33"><a href="#cb13-33"></a>        }</span>
+<span id="cb13-34"><a href="#cb13-34"></a>        <span class="cf">return</span> d</span>
+<span id="cb13-35"><a href="#cb13-35"></a>    </span>
+<span id="cb13-36"><a href="#cb13-36"></a>    <span class="at">@reactive.Calc</span></span>
+<span id="cb13-37"><a href="#cb13-37"></a>    <span class="at">@reactive.event</span>(<span class="bu">input</span>.predict)</span>
+<span id="cb13-38"><a href="#cb13-38"></a>    <span class="kw">def</span> pred():</span>
+<span id="cb13-39"><a href="#cb13-39"></a>        r <span class="op">=</span> requests.post(api_url, json <span class="op">=</span> vals())</span>
+<span id="cb13-40"><a href="#cb13-40"></a>        <span class="cf">return</span> r.json().get(<span class="st">'predict'</span>)[<span class="dv">0</span>]</span>
+<span id="cb13-41"><a href="#cb13-41"></a></span>
+<span id="cb13-42"><a href="#cb13-42"></a>    <span class="at">@output</span></span>
+<span id="cb13-43"><a href="#cb13-43"></a>    <span class="at">@render.text</span></span>
+<span id="cb13-44"><a href="#cb13-44"></a>    <span class="kw">def</span> vals_out():</span>
+<span id="cb13-45"><a href="#cb13-45"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span>vals()<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb13-46"><a href="#cb13-46"></a></span>
+<span id="cb13-47"><a href="#cb13-47"></a>    <span class="at">@output</span></span>
+<span id="cb13-48"><a href="#cb13-48"></a>    <span class="at">@render.text</span></span>
+<span id="cb13-49"><a href="#cb13-49"></a>    <span class="kw">def</span> pred_out():</span>
+<span id="cb13-50"><a href="#cb13-50"></a>        <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="bu">round</span>(pred())<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb13-51"><a href="#cb13-51"></a></span>
+<span id="cb13-52"><a href="#cb13-52"></a>app <span class="op">=</span> App(app_ui, server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>And like this in R</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>app.R</strong></pre>
+</div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a>library(shiny)</span>
+<span id="cb14-2"><a href="#cb14-2"></a></span>
+<span id="cb14-3"><a href="#cb14-3"></a>api_url <span class="op">&lt;-</span> <span class="st">"http://127.0.0.1:8080/predict"</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a></span>
+<span id="cb14-5"><a href="#cb14-5"></a>ui <span class="op">&lt;-</span> fluidPage(</span>
+<span id="cb14-6"><a href="#cb14-6"></a>  titlePanel(<span class="st">"Penguin Mass Predictor"</span>),</span>
+<span id="cb14-7"><a href="#cb14-7"></a></span>
+<span id="cb14-8"><a href="#cb14-8"></a>  <span class="co"># Model input values</span></span>
+<span id="cb14-9"><a href="#cb14-9"></a>  sidebarLayout(</span>
+<span id="cb14-10"><a href="#cb14-10"></a>    sidebarPanel(</span>
+<span id="cb14-11"><a href="#cb14-11"></a>      sliderInput(</span>
+<span id="cb14-12"><a href="#cb14-12"></a>        <span class="st">"bill_length"</span>,</span>
+<span id="cb14-13"><a href="#cb14-13"></a>        <span class="st">"Bill Length (mm)"</span>,</span>
+<span id="cb14-14"><a href="#cb14-14"></a>        <span class="bu">min</span> <span class="op">=</span> <span class="dv">30</span>,</span>
+<span id="cb14-15"><a href="#cb14-15"></a>        <span class="bu">max</span> <span class="op">=</span> <span class="dv">60</span>,</span>
+<span id="cb14-16"><a href="#cb14-16"></a>        value <span class="op">=</span> <span class="dv">45</span>,</span>
+<span id="cb14-17"><a href="#cb14-17"></a>        step <span class="op">=</span> <span class="fl">0.1</span></span>
+<span id="cb14-18"><a href="#cb14-18"></a>      ),</span>
+<span id="cb14-19"><a href="#cb14-19"></a>      selectInput(</span>
+<span id="cb14-20"><a href="#cb14-20"></a>        <span class="st">"sex"</span>,</span>
+<span id="cb14-21"><a href="#cb14-21"></a>        <span class="st">"Sex"</span>,</span>
+<span id="cb14-22"><a href="#cb14-22"></a>        c(<span class="st">"Male"</span>, <span class="st">"Female"</span>)</span>
+<span id="cb14-23"><a href="#cb14-23"></a>      ),</span>
+<span id="cb14-24"><a href="#cb14-24"></a>      selectInput(</span>
+<span id="cb14-25"><a href="#cb14-25"></a>        <span class="st">"species"</span>,</span>
+<span id="cb14-26"><a href="#cb14-26"></a>        <span class="st">"Species"</span>,</span>
+<span id="cb14-27"><a href="#cb14-27"></a>        c(<span class="st">"Adelie"</span>, <span class="st">"Chinstrap"</span>, <span class="st">"Gentoo"</span>)</span>
+<span id="cb14-28"><a href="#cb14-28"></a>      ),</span>
+<span id="cb14-29"><a href="#cb14-29"></a>      <span class="co"># Get model predictions</span></span>
+<span id="cb14-30"><a href="#cb14-30"></a>      actionButton(</span>
+<span id="cb14-31"><a href="#cb14-31"></a>        <span class="st">"predict"</span>,</span>
+<span id="cb14-32"><a href="#cb14-32"></a>        <span class="st">"Predict"</span></span>
+<span id="cb14-33"><a href="#cb14-33"></a>      )</span>
+<span id="cb14-34"><a href="#cb14-34"></a>    ),</span>
+<span id="cb14-35"><a href="#cb14-35"></a></span>
+<span id="cb14-36"><a href="#cb14-36"></a>    mainPanel(</span>
+<span id="cb14-37"><a href="#cb14-37"></a>      h2(<span class="st">"Penguin Parameters"</span>),</span>
+<span id="cb14-38"><a href="#cb14-38"></a>      verbatimTextOutput(<span class="st">"vals"</span>),</span>
+<span id="cb14-39"><a href="#cb14-39"></a>      h2(<span class="st">"Predicted Penguin Mass (g)"</span>),</span>
+<span id="cb14-40"><a href="#cb14-40"></a>      textOutput(<span class="st">"pred"</span>)</span>
+<span id="cb14-41"><a href="#cb14-41"></a>    )</span>
+<span id="cb14-42"><a href="#cb14-42"></a>  )</span>
+<span id="cb14-43"><a href="#cb14-43"></a>)</span>
+<span id="cb14-44"><a href="#cb14-44"></a></span>
+<span id="cb14-45"><a href="#cb14-45"></a>server <span class="op">&lt;-</span> function(<span class="bu">input</span>, output) {</span>
+<span id="cb14-46"><a href="#cb14-46"></a>  <span class="co"># Input params</span></span>
+<span id="cb14-47"><a href="#cb14-47"></a>  vals <span class="op">&lt;-</span> reactive(</span>
+<span id="cb14-48"><a href="#cb14-48"></a>    <span class="bu">list</span>(</span>
+<span id="cb14-49"><a href="#cb14-49"></a>      bill_length_mm <span class="op">=</span> input$bill_length,</span>
+<span id="cb14-50"><a href="#cb14-50"></a>      species_Chinstrap <span class="op">=</span> input$species <span class="op">==</span> <span class="st">"Chinstrap"</span>,</span>
+<span id="cb14-51"><a href="#cb14-51"></a>      species_Gentoo <span class="op">=</span> input$species <span class="op">==</span> <span class="st">"Gentoo"</span>,</span>
+<span id="cb14-52"><a href="#cb14-52"></a>      sex_male <span class="op">=</span> input$sex <span class="op">==</span> <span class="st">"Male"</span></span>
+<span id="cb14-53"><a href="#cb14-53"></a>    )</span>
+<span id="cb14-54"><a href="#cb14-54"></a>  )</span>
+<span id="cb14-55"><a href="#cb14-55"></a></span>
+<span id="cb14-56"><a href="#cb14-56"></a>  <span class="co"># Fetch prediction from API</span></span>
+<span id="cb14-57"><a href="#cb14-57"></a>  pred <span class="op">&lt;-</span> eventReactive(</span>
+<span id="cb14-58"><a href="#cb14-58"></a>    input$predict,</span>
+<span id="cb14-59"><a href="#cb14-59"></a>    httr2::request(api_url) <span class="op">|&gt;</span></span>
+<span id="cb14-60"><a href="#cb14-60"></a>      httr2::req_body_json(vals()) <span class="op">|&gt;</span></span>
+<span id="cb14-61"><a href="#cb14-61"></a>      httr2::req_perform() <span class="op">|&gt;</span></span>
+<span id="cb14-62"><a href="#cb14-62"></a>      httr2::resp_body_json(),</span>
+<span id="cb14-63"><a href="#cb14-63"></a>    ignoreInit <span class="op">=</span> TRUE</span>
+<span id="cb14-64"><a href="#cb14-64"></a>  )</span>
+<span id="cb14-65"><a href="#cb14-65"></a></span>
+<span id="cb14-66"><a href="#cb14-66"></a>  <span class="co"># Render to UI</span></span>
+<span id="cb14-67"><a href="#cb14-67"></a>  output$pred <span class="op">&lt;-</span> renderText(pred()$predict[[<span class="dv">1</span>]])</span>
+<span id="cb14-68"><a href="#cb14-68"></a>  output$vals <span class="op">&lt;-</span> renderPrint(vals())</span>
+<span id="cb14-69"><a href="#cb14-69"></a>}</span>
+<span id="cb14-70"><a href="#cb14-70"></a></span>
+<span id="cb14-71"><a href="#cb14-71"></a><span class="co"># Run the application</span></span>
+<span id="cb14-72"><a href="#cb14-72"></a>shinyApp(ui <span class="op">=</span> ui, server <span class="op">=</span> server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Over the next few chapters, we’re going to implement more architectural best practices for the app, and in <span class="citation" data-cites="env-as-code">[Chapter @env-as-code]</span> we’ll actually go to deployment.</p>
+</section>
+</section>
+<section id="http-code-cheatsheet" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="http-code-cheatsheet"><span class="header-section-number">3.7</span> HTTP Code Cheatsheet</h2>
+<p>As you work more with <code>http</code> traffic, you’ll learn some of the common codes. Here’s a cheatsheet for some of the most frequent you’ll see.</p>
+<table class="table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>200</code></td>
+<td>Everyone’s favorite, a successful response.</td>
+</tr>
+<tr class="even">
+<td><code>3xx</code></td>
+<td>Your query was redirected somewhere else, usually ok.</td>
+</tr>
+<tr class="odd">
+<td><code>4xx</code></td>
+<td>Errors with the request</td>
+</tr>
+<tr class="even">
+<td><code>400</code></td>
+<td>Bad request. This isn’t a request the server can understand.</td>
+</tr>
+<tr class="odd">
+<td><code>401</code> and <code>403</code></td>
+<td>Unauthorized or forbidden. Required authentication hasn’t been provided.</td>
+</tr>
+<tr class="even">
+<td><code>404</code></td>
+<td>Not found. There isn’t any content to access here.</td>
+</tr>
+<tr class="odd">
+<td><code>5xx</code></td>
+<td>Errors with the server once your request got there.</td>
+</tr>
+<tr class="even">
+<td><code>500</code></td>
+<td>Generic server-side error. Your request was received, but there was an error processing it.</td>
+</tr>
+<tr class="odd">
+<td><code>504</code></td>
+<td>Gateway timeout. This means that a proxy or gateway between you and the server you’re trying to access timed out before it got a response from the server.</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>I have heard that some write operations may be faster with a JDBC driver than an ODBC one. I would argue that if you’re doing enough writing to a database that speed matters, you probably should be using database-specific data loading tools, not just writing from R or Python.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>In a lot of cases, people use <code>POST</code> for things that look like <code>GET</code>s to my eyes. The reason is request bodies. <code>GET</code> endpoints only recently started allowing bodies – and it’s still discouraged. In the <code>{vetiver}</code> API example, I think of fetching results from an ML model as a <code>GET</code>-type operation, but it uses a <code>POST</code> because it also uses a body in the query.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec1/1-2-proj-arch.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Project Architecture Guidelines</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec1/1-4-monitor-log.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
