@@ -365,24 +365,18 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#you-need-a-prod" id="toc-you-need-a-prod" class="nav-link active" data-scroll-target="#you-need-a-prod"><span class="header-section-number">5.1</span> You need a prod</a></li>
-  <li><a href="#dev-and-test-environments" id="toc-dev-and-test-environments" class="nav-link" data-scroll-target="#dev-and-test-environments"><span class="header-section-number">5.2</span> Dev and test environments</a></li>
-  <li><a href="#sec-env-vars" id="toc-sec-env-vars" class="nav-link" data-scroll-target="#sec-env-vars"><span class="header-section-number">5.3</span> Environment Variables</a>
+  <li><a href="#separate-the-prod-environment" id="toc-separate-the-prod-environment" class="nav-link active" data-scroll-target="#separate-the-prod-environment"><span class="header-section-number">5.1</span> Separate the prod environment</a>
   <ul class="collapse">
-  <li><a href="#secrets-management" id="toc-secrets-management" class="nav-link" data-scroll-target="#secrets-management"><span class="header-section-number">5.3.1</span> Secrets management</a></li>
+  <li><a href="#dev-and-test-environments" id="toc-dev-and-test-environments" class="nav-link" data-scroll-target="#dev-and-test-environments"><span class="header-section-number">5.1.1</span> Dev and test environments</a></li>
   </ul></li>
-  <li><a href="#environment-variables-for-per-environment-behavior" id="toc-environment-variables-for-per-environment-behavior" class="nav-link" data-scroll-target="#environment-variables-for-per-environment-behavior"><span class="header-section-number">5.4</span> Environment variables for per environment behavior</a></li>
-  <li><a href="#automated-promotion" id="toc-automated-promotion" class="nav-link" data-scroll-target="#automated-promotion"><span class="header-section-number">5.5</span> Automated Promotion</a>
+  <li><a href="#version-control-implements-code-promotion" id="toc-version-control-implements-code-promotion" class="nav-link" data-scroll-target="#version-control-implements-code-promotion"><span class="header-section-number">5.2</span> Version control implements code promotion</a></li>
+  <li><a href="#cicd-automates-git-operations" id="toc-cicd-automates-git-operations" class="nav-link" data-scroll-target="#cicd-automates-git-operations"><span class="header-section-number">5.3</span> CI/CD automates git operations</a>
   <ul class="collapse">
-  <li><a href="#a-rough-intro-to-git" id="toc-a-rough-intro-to-git" class="nav-link" data-scroll-target="#a-rough-intro-to-git"><span class="header-section-number">5.5.1</span> A Rough Intro to Git</a></li>
+  <li><a href="#configuring-per-environment-behavior" id="toc-configuring-per-environment-behavior" class="nav-link" data-scroll-target="#configuring-per-environment-behavior"><span class="header-section-number">5.3.1</span> Configuring per-environment behavior</a></li>
   </ul></li>
-  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">5.6</span> Comprehension Questions</a></li>
-  <li><a href="#lab2" id="toc-lab2" class="nav-link" data-scroll-target="#lab2"><span class="header-section-number">5.7</span> Lab 2: Host a website with automatic updates</a></li>
-  <li><a href="#cheat-git" id="toc-cheat-git" class="nav-link" data-scroll-target="#cheat-git"><span class="header-section-number">5.8</span> Cheatsheet: Git</a>
-  <ul class="collapse">
-  <li><a href="#freezing-quarto-computations" id="toc-freezing-quarto-computations" class="nav-link" data-scroll-target="#freezing-quarto-computations"><span class="header-section-number">5.8.1</span> Freezing Quarto Computations</a></li>
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"><span class="header-section-number">5.8.2</span> </a></li>
-  </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">5.4</span> Comprehension Questions</a></li>
+  <li><a href="#lab5" id="toc-lab5" class="nav-link" data-scroll-target="#lab5"><span class="header-section-number">5.5</span> Lab 5: Host a website with automatic updates</a></li>
+  <li><a href="#cheat-git" id="toc-cheat-git" class="nav-link" data-scroll-target="#cheat-git"><span class="header-section-number">5.6</span> Cheatsheet: Git</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec1/1-5-deployments.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -406,140 +400,149 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>The most dangerous parts of a flight are when you’re closest to the ground. Things can go wrong at altitude, but there’s a lot more leeway with 35,000 feet of air below than 50.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>It’s the same with software. Properly tested software tends to continue running smoothly. It’s getting it up that gets you.</p>
-<p>That’s why <em>deployment</em> is one of the primary concerns of DevOps best practices.</p>
-<p>Deployment is the process of taking code that isn’t in production and putting it there – for both new code and upgrades. That moment when your Shiny app goes live or you run your report or job for real for the first time or when you add a new feature to your model – that’s the result of a deployment.</p>
-<p>DevOps has a lot to say about deployments. In particular, DevOps suggests a framework called <em>Continuous Integration and Continuous Deployment (CI/CD)</em>. The idea of CI/CD is to create a deployment process that is low friction so deployments can be incremental, frequent, and low drama.</p>
-<p>A CI/CD process has three major components:</p>
-<ol type="1">
-<li>Separate production and non-production environments.</li>
-<li>An explicit code deployment process.</li>
-<li>Automation that executes the deployment.</li>
-</ol>
-<p>In this chapter, I hope to convince you that you need to create a code promotion workflow, help you understand how a data science promotion workflow is different from a general purpose software one, and illuminate tooling you can use to build your own promotion workflows.</p>
-<section id="you-need-a-prod" class="level2" data-number="5.1">
-<h2 data-number="5.1" class="anchored" data-anchor-id="you-need-a-prod"><span class="header-section-number">5.1</span> You need a prod</h2>
-<p>One of the primary risks to production code is that a deployment could happen accidentally. To mitigate that risk, you need to separate the production environment and create a process to promote things into prod.</p>
+<p>Data science work doesn’t count if it just sits around on your computer. Your goal is to be useful, and the only way your work becomes useful is if you share it with the people and systems that matter. That requires putting it into production.</p>
+<p>Putting code into production might sound like an ordeal, and it can be. But it would really be nice if putting code into production was a low-drama affair. That’s why <em>deployment</em> is one of the primary concerns of DevOps best practices.</p>
+<p>The DevOps way to deploy code is called <em>CI/CD</em>, which is short for Continuous Integration and Continuous Deployment and Continuous Delivery (yes, the CD stands for two different things). CI/CD is a set of principles to ease the deployment process through a combination of good workflows and automation.</p>
+<p>A few of the principles of CI/CD workflows include:</p>
+<ul>
+<li><p>Central availability of source code that allows you to build the project from scratch – almost always in version control.</p></li>
+<li><p>Frequent and incremental additions to the production version of the code.</p></li>
+<li><p>Automation for carrying out the actual deployment.</p></li>
+<li><p>Automated testing on a pre-deployment version of the code.</p></li>
+</ul>
+<p>In this chapter, I’ll talk about how to create a code promotion process that allows you to incorporate CI/CD principles into your data science deployment projects.</p>
+<section id="separate-the-prod-environment" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="separate-the-prod-environment"><span class="header-section-number">5.1</span> Separate the prod environment</h2>
+<p>The bedrock of a good CI/CD process is a production environment that’s actually separate from non-production environments.</p>
+<p>CI/CD is all about easily promoting code into production, but if the boundaries of production are a mushy mess, it’s all too easily to accidentally mess up code that’s in production.</p>
+<p>In order to structure a smooth pathway to production, software environments are separated into three – <em>dev</em>, <em>test</em>, and <em>prod</em>. Dev is the development environment where new work is produced, test is where the code is tested for performance, usability, and feature completeness, and prod is the production environment. Depending on your organization you might have just a dev and prod or you might have more environments between dev and prod.</p>
 <p><img src="images/dev-test-prod.png" class="img-fluid" alt="An app moving through dev, test, and prod environments."></p>
-<p>Here are some guidelines that, if followed, will result in a very stable prod environment:</p>
+<p>The number and configuration of lower environments will vary according to your organization and its needs. But like Tolstoy said about happy families, all prod environments are alike.</p>
+<p>Some criteria that all good prod environments meet:</p>
 <ol type="1">
-<li><p>Test looks a lot like prod. In fact, it’s best if it’s identical. You can be very confident that your code will work in prod if it works in a nearly identical test environment.</p></li>
-<li><p>No manual changes in prod. If something breaks, you don’t get to make any changes until you can re-create the issue in a lower environment. Break this rule, and you’ll quickly find your environment drifting and attribute 1 goes out the window.</p></li>
-<li><p>Changes and fixes get pushed via a promotion process, preferable automated. No making changes directly in prod that haven’t been thoroughly tested in a lower environment. This rule is very tempting to break.</p></li>
-<li><p>Only certain people can promote code into prod. The approval process is well-defined and consistently followed.</p></li>
+<li><p>The environment is created using code. For data science, that managing R and Python packages using environments as code tooling, as discussed in <a href="1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>.</p></li>
+<li><p>Changes happen via a promotion process. The process combines human approvals that the code is ready for production and automations to run tests and do the actual deployment.</p></li>
+<li><p>Changes <strong>only</strong> happen via the promotion process. This means no manual changes to the environment or the code.</p></li>
 </ol>
-<p>Now, not every prod environment need follow <em>all</em> these guidelines. It’s up to you and your team to decide how to balance making it easy to make changes to prod and making sure prod is stable. There’s no right answer – only the right answer for your situation.</p>
+<p>Rules 1 and 2 are pretty straightforward to follow. But the first time something breaks in your prod environment, you will be sorely tempted to violate rule 3. Don’t do it.</p>
+<p>If you want to run a data science project that becomes critical to your organization, keeping a pristine prod environment that you can rely on is critical. Re-create the issue in a lower environment to figure out what’s wrong and push changes through your promotion process.</p>
+<section id="dev-and-test-environments" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="dev-and-test-environments"><span class="header-section-number">5.1.1</span> Dev and test environments</h3>
+<p>These guidelines for a prod environment look almost identical to guidelines for general purpose software engineering. It’s in the composition of lower environments that the needs of data scientists diverge from general purpose software engineers.</p>
+<p>As a data scientist, dev means working in a lab environment like RStudio, Spyder, VSCode, or PyCharm and experimenting with the data. You’re slicing the data this way or that to see if anything meaningful emerges, creating plots to see if they are the right way to show off a finding, and checking whether certain features improve model performance. All this means that it’s basically impossible to do work without real data.</p>
+<p>“Duh”, you say, “Of course it’s silly to do data science on fake data.”</p>
+<p>This may be obvious to you, but doing dev data science on real data is a very common source of friction with IT/Admins.</p>
+<p>That’s because this need is unique to data scientists. For general purpose software engineering, a lower environment needs data that is <em>formatted</em> like the real data, but the actual content doesn’t matter.</p>
+<p>For example, if you’re building an online store, you need dev and test environments where the API calls from the sales system are in the same format as the real data – but you don’t actually care if it’s real data. In fact, you probably want to create some odd-looking cases for testing purposes.</p>
+<p>One way to help allay these concerns is to create a <em>data science sandbox</em>. A great data science sandbox provides:</p>
+<ul>
+<li><p>Read-only access to real data for experimentation.</p></li>
+<li><p>Places to write mock data to test out things you’ll write for real in prod.</p></li>
+<li><p>Broad access to R and Python packages to experiment with before things go to prod.</p></li>
+</ul>
+<p>Working with your IT/Admin team to get these things isn’t always easy. One thing to point out is that creating this environment actually makes things <em>more secure</em>. It gives you a place to do development without any fear that you might actually damage production data or services.</p>
 </section>
-<section id="dev-and-test-environments" class="level2" data-number="5.2">
-<h2 data-number="5.2" class="anchored" data-anchor-id="dev-and-test-environments"><span class="header-section-number">5.2</span> Dev and test environments</h2>
-<p>Creating a prod environment for data science looks very much like creating a prod environment for general purpose software development. The guidelines for data science prod would be right at home in a general purpose DevOps book.</p>
-<p><em>Lower environments</em>, on the other hand, often look very different because of the very different kind of software you’re building as a data scientist. If you’re working with IT/Admins to create your promotion process, this is likely to be one of the most important (and difficult) things to impress upon them.</p>
-<p>Whether you’re talking data science or general purpose software development, dev is an environment for building, and test is for…testing. Your testing might include security, performance, functionality, or user acceptance testing (UAT).</p>
-<p>That’s more-or-less where the similarity ends. The differences between general purpose software engineering and data science result in three big differences in dev and test environments and practices.</p>
-<p>First, for general purpose software engineering, a lower environment needs to include inputs that are <em>shaped</em> like prod, but the actual content doesn’t matter. For example, if you’re building an online store, you need dev and test environments where the API calls from the sales system are in the same format as the real data – but you don’t actually care if it’s real data. In fact, you probably want to create some odd-looking cases for testing purposes.</p>
-<p>That’s very different for a data scientist. In a dev or test environment, you don’t want <em>write</em> access to anything sensitive. But a dev environment for data science without <em>read</em> access to the real data is basically useless.</p>
-<p>This is often a point of friction with IT/Admins who might believe access to fake data is fine. Convincing them that you need <em>read-only</em> access in a dev environment can often help allay these concerns.</p>
-<p>Second, dev, test, and prod all look similar for general purpose software engineering, but there are often meaningful differences like mocked API calls or fake data. In constrast, data science dev and prod look quite different from each other, and test and prod can be extremely similar.</p>
-<p>A data science dev environment is likely to be a code-writing environment like RStudio, Spyder, VSCode, or PyCharm on your laptop or on a server. In this environment, you’ll want a lot of freedom to install and try out new R and Python packages.</p>
-<p>In contrast, test and prod should be environments with no direct editing capabilities. Instead, they should be environments for hosting with no direct ability to edit code.</p>
-<p>For many data science purposes, test and prod can actually be the same environment. You need a separate instance of your project for testing, but many data science projects are read-only. For example, if you’ve got a dashboard that just allows views of the data, you can probably do your testing on a second instance of your dashboard in the prod environment.</p>
-<p>Last, you’ve got an additional layer of testing a data science project. Because data science is about discovering and sharing insights from data, you’ll want some sort of monitoring for whether your dashboard values are accurate or for whether your model is experiencing drift over time. There are many different ways and frameworks to do this kind of testing, but you should be aware that it’s something you need to do as a data scientist that general purpose software developers don’t.</p>
 </section>
-<section id="sec-env-vars" class="level2" data-number="5.3">
-<h2 data-number="5.3" class="anchored" data-anchor-id="sec-env-vars"><span class="header-section-number">5.3</span> Environment Variables</h2>
-<p>In <a href="1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>, we got deep into the different layers of the environment. There’s one important additional piece of an environment at runtime – the environment variables.</p>
-<p>An environment variable is a value that is set in the environment. That means unlike a regular R or Python variable that is expected to change throughout the runtime, environment variables are set at the outset of your code to change the behavior throughout the runtime.</p>
+<section id="version-control-implements-code-promotion" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="version-control-implements-code-promotion"><span class="header-section-number">5.2</span> Version control implements code promotion</h2>
+<p>You need a way to actually operationalize your code promotion process. If your process says that your code needs testing and review before it’s pushed to prod, you need a place to actually do that. <em>Version control</em> is the tool to make your code promotion process real.</p>
+<p>Version control is software that allows you to keep the prod version of your code safe, gives contributors their own copy to work on, and hosts tools to manage merging changes back together. These days, <a href="https://git-scm.com/">git</a> is the industry standard for version control.</p>
+<p>Git is a system for tracking changes in computer files in a project called a <em>repository</em>. Git is open source and freely available. There are a number of different companies that host git repositories. Many of them allow you to host public – and some private - repositories for free and have enterprise products that your organization may pay for. GitHub is by far the most popular git host, but GitLab, Bitbucket, and Azure DevOps are also common.</p>
+<p>This is not a book on git. If you’re not already comfortable with using local and remote repositories, branching, and merging, the rest of this chapter is going to be completely useless. I recommend you take a break from this book and spend some time learning git.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>It is convention to make environment variable names in all caps with words separated by underscores. The values are always simple character values, though these can be cast to some other type inside R or Python.</p>
-</div>
-</div>
-<p>Environment variables are extremely important for code promotion process because they provide a way to manage secrets across multiple environments, as well as a way to change behavior of your project in different environments.</p>
-<p>Inside your code, you’ll use the <em>name</em> of the environment variable, so your app can use secrets and have different behavior without your code changing at all from environment to environment.</p>
-<section id="secrets-management" class="level3" data-number="5.3.1">
-<h3 data-number="5.3.1" class="anchored" data-anchor-id="secrets-management"><span class="header-section-number">5.3.1</span> Secrets management</h3>
-<p>When you’re moving your code across environments, one of the most delicate parts is managing secrets like passwords and secret access keys.</p>
-<p>Putting secrets directly in your code is a great way to end up with them leaking on GitHub or to people who aren’t supposed to have them. <em>Do not put your secrets in your code</em>. Instead, the best way to manage secrets is to reference them <em>by name</em>. Referencing secrets by name makes it safe to share your code freely and make secrets management a separate concern.</p>
-<p>In Python, you can read environment variables from the <code>os.environ</code> dictionary or by using <code>os.getenv("&lt;VAR_NAME&gt;")</code>. In R, you can get and set environment variables with <code>Sys.getenv("&lt;VAR_NAME&gt;")</code>.</p>
-<p>Dev environment secrets are most often loaded from a plain text from a file on disk, though organizations are increasingly moving to secrets management tools so you get these secrets via an API of some sort.</p>
-<p>If you are loading in secrets from a plain text file in Python, environment variables are usually set by explicitly reading a <code>.env</code> file into your Python session. The <a href="https://pypi.org/project/python-dotenv/"><code>{python-dotenv}</code> package</a> is a good choice for doing this.</p>
-<p>R automatically reads the <code>.Renviron</code> file as environment variables and also sources the <code>.Rprofile</code> file, where you can set environment variables with <code>Sys.setenv()</code>. I personally prefer putting everything in <code>.Rprofile</code> for simplicity – but that’s not a universal opinion.</p>
-<p>Depending on the tooling you’re using, your Test and Prod environment may well come with integrated secrets management. The exact configuration will depend on that environment, but you should use those tools when they’re available.</p>
-</section>
-</section>
-<section id="environment-variables-for-per-environment-behavior" class="level2" data-number="5.4">
-<h2 data-number="5.4" class="anchored" data-anchor-id="environment-variables-for-per-environment-behavior"><span class="header-section-number">5.4</span> Environment variables for per environment behavior</h2>
-<p>If you’ve got a very simple project – perhaps a Shiny app that just reads a local CSV file – then the world will look exactly the same regardless of the environment.</p>
-<p>But in many cases, you actually want your project to behave differently in dev, test, and prod. You might want to switch data sources from a dev database to a prod one, or you want to write to a real output location, or you want to use a different level of logging.</p>
-<p>That means your project needs the ability to know which environment it’s in and then to respond accordingly. The easiest way to make this happen is to base that behavior on the value of an environment variable and to load in different environment variables depending on the environment.</p>
-<p>Most of the time, the way this is accomplished is that you externally set the name of the environment and then your code loads up the appropriate set of environment variables.</p>
-<p>There are a variety of ways to do this in Python – many of which involve creating a custom class for each of the environments you want to use and then selecting the right class based on the value of an environment variable.</p>
-<p>In R, the <code>{config}</code> package is the standard way to load an environmental configuration. The <code>config::get()</code> function uses the value of the <code>R_CONFIG_ACTIVE</code> environment variable to choose which configuration to use. That means that switching from the dev to the prod version of the app is as easy as making sure you’ve got the correct environment variable set on your system.</p>
-</section>
-<section id="automated-promotion" class="level2" data-number="5.5">
-<h2 data-number="5.5" class="anchored" data-anchor-id="automated-promotion"><span class="header-section-number">5.5</span> Automated Promotion</h2>
-<p>It’s possible to manually promote code from one environment to another. Some organizations write <em>runbooks</em> that dictate how code is promoted. The issue is that humans aren’t great at following procedures. Environments often drift apart and your rigorous code promotion strategy comes undone.</p>
-<p>Computers, on the other hand, are great at following procedures. The best way to automate CI/CD is to attach it to version control so that automated promotion follows from changes being approved in a version control system.</p>
-<section id="a-rough-intro-to-git" class="level3" data-number="5.5.1">
-<h3 data-number="5.5.1" class="anchored" data-anchor-id="a-rough-intro-to-git"><span class="header-section-number">5.5.1</span> A Rough Intro to Git</h3>
-<p>These days, <a href="https://git-scm.com/">git</a> is the industry standard for version control.</p>
-<p>If you’re not already familiar, I’d suggest spending some time learning git.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
+Hints on Learning Git
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <p>People who say git is easy to learn are either lying or have forgotten. I am sorry our industry has standardized on a tool with such terrible ergonomics, but it’s really worth it to learn.</p>
-<p>Whether you’re an R or Python user, I’d recommend starting with <a href="https://happygitwithr.com/">HappyGitWithR</a> by Jenny Bryan. It’s a great on-ramp to learn git.</p>
-<p>Even if you’re a Python user, the sections on getting started with git, on basic git concepts, and on workflows will be useful since they approach git from a data science perspective.</p>
+<p>Whether you’re an R or Python user, I’d recommend starting with a resource designed to teach git to a data science user. My recommendation is to check out <a href="https://happygitwithr.com/">HappyGitWithR</a> by Jenny Bryan.</p>
+<p>If you’re a Python user, some of the specific tooling suggestions won’t apply, but the general principles will be exactly the same.</p>
 </div>
 </div>
-<p>I’m not going to get into the mechanics of git in this book– what it means to add, commit, push, pull, merge, and more. There are lots of great resources out there that I’m not aiming to reproduce, though there is a git <a href="#cheat-git">cheatsheet</a> at the end of the chapter.</p>
-<p>Instead, I want to talk about git <em>strategies</em> that match well with using git to execute a data science code promotion strategy.</p>
-<p>For production data science assets, I generally recommend long-running <code>test</code> and <code>prod</code> branches, with feature branches for developing new things. New code is developed in a feature branch, merged into <code>test</code> for testing, and then promoted to <code>prod</code> when you’re confident it’s ready.</p>
-<p>For example, if you had a new plots you were adding to an existing dashboard, your git commit graph might look like this:</p>
-<p><img src="images/git-branches.png" class="img-fluid" alt="Diagram showing branching strategy. A feature branch called plot 1 comes off of test. A merge reveals a bug, so a bugfix results. It is then merged back to prod."></p>
-<p>In this git graph, you added your new plot. Testing then revealed a bug, which was fixed before merging back to prod.</p>
-<p>CI/CD tooling allows you to add automation that runs on the basis of actions in git. Most commonly, CI/CD runs pre-merge checks like spell checking, code linting, and automated testing before making merges and runs automatic deployments after.</p>
-<p>A CI/CD integration using the same git graph as above would have released 2 new test versions of the app and only 1 new prod version.</p>
-</section>
-</section>
-<section id="comprehension-questions" class="level2" data-number="5.6">
-<h2 data-number="5.6" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">5.6</span> Comprehension Questions</h2>
+<p>If you understand git and just need a reminder of some common commands, there is a <a href="#cheat-git">cheatsheet</a> at the end of the chapter.</p>
+<p>The precise contours of your code promotion process – and therefore your git policies – are up to you and your organization’s needs. Do you need multiple rounds of review? Can anyone promote something to prod, or just certain people? Is automated testing required?</p>
+<p>You should make these decisions as part of designing your code promotion process, which you can then enshrine in the configuration of your project’s git repository.</p>
+<p>One important decision you’ll make is on how to configure the branches of your git repository. Here’s how I’d suggest you do it for production data science projects:</p>
 <ol type="1">
-<li>Write down a mental map of the relationship between the three environments for data science.</li>
-<li>What are the options for protecting production data in a dev or test environment?</li>
+<li>Maintain two long running branches – <code>main</code> is the prod version of your project, and <code>test</code> is a long-running pre-prod version.</li>
+<li>Code can only be promoted to <code>main</code> via a merge from <code>test</code>. Direct pushes to <code>main</code> are not allowed.</li>
+<li>New functionality is developed in short-lived <em>feature branches</em> that are merged into <code>test</code> when you think they’re ready to go. Once sufficient approvals are granted, the feature branch changes in <code>test</code> are merged into <code>main</code>.</li>
+</ol>
+<p>This framework helps maintain a reliable prod version on the <code>main</code> branch, while also leaving sufficient flexibility to accomplish basically any set of approvals and testing you might want.</p>
+<p>Here’s an example of how this might work. Let’s say you were working on a dashboard and were trying to add a new plot.</p>
+<p>You would create a new feature branch, perhaps called <code>new_plot</code> to work on the plot. When you were happy with how it looked you would merge the feature branch to <code>test</code>. Depending on your organization’s process, you might be able to merge to <code>test</code> yourself or you might require approval.</p>
+<p>If your testing turned up a bug, you’d fix the bug in the feature branch, merge the bug fix into <code>test</code>, re-test, and merge to <code>main</code> once you were satisfied.</p>
+<p>Here’s what the git graph for that sequence of events might look like:</p>
+<p><img src="images/git-branches.png" class="img-fluid" alt="Diagram showing branching strategy. A feature branch called new plot is created from and then merged back to test. A bug is revealed, so another commit fixing the bug is merged into test and then into main."></p>
+<p>One of the tenets of a good CI/CD practice is that changes are merged frequently and incrementally into production.</p>
+<p>A good rule of thumb is that you want your merges to be the smallest meaningful change that can be incorporated into main in a standalone way.</p>
+<p>Creating feature branches for every word of text you might change is clearly too small. Completely rewriting the dashboard in one merge request is also probably too big.</p>
+<p>There’s no hard and fast rules here. Knowing the appropriate scope for a single merge is an art – one that can take years to develop. Your best resource here is more senior team members who’ve already figured it out.</p>
+</section>
+<section id="cicd-automates-git-operations" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="cicd-automates-git-operations"><span class="header-section-number">5.3</span> CI/CD automates git operations</h2>
+<p>The role of git is to make your code promotion process happen. Git allows you to configure requirements for whatever approvals and testing you might need. Your CI/CD tool sits on top of that so that all this merging and branching actually <strong>does</strong> something.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>To be more precise a <em>CI/CD pipeline</em> for a project watches the git repository and does something when certain triggers are met, like a merge to a particular branch or a pull request opening.</p>
+<p>The most common CI/CD operations are <em>pre-merge checks</em> like spell checking, code linting, and automated testing and <em>post-merge deployments</em>.</p>
+<p>There are a variety of different CI/CD tools available. Because of the tight linkage between GitHub repos and CI/CD, CI/CD pipelines built right into git providers are very popular.</p>
+<p>GitHub Actions (GHA) was released a few years ago and is eating the world of CI/CD. Depending on your organization and the age of your CI/CD pipeline, you might also see Jenkins, Travis, Azure DevOps, or GitLab.</p>
+<p>If you’re curious how exactly this works, you’ll get your hands dirty in the lab at the end of the chapter.</p>
+<section id="configuring-per-environment-behavior" class="level3" data-number="5.3.1">
+<h3 data-number="5.3.1" class="anchored" data-anchor-id="configuring-per-environment-behavior"><span class="header-section-number">5.3.1</span> Configuring per-environment behavior</h3>
+<p>As you promote an app from dev to test and prod, you probably want behavior to look different across the environments. For example, you might want to switch data sources from a dev database to a prod one, or switch a read-only app into write mode, or use a different level of logging.</p>
+<p>The easiest way to create per-environment behavior is to write code that behaves differently based on on the value of an environment variable and to set that environment variable in each environment.</p>
+<p>My recommendation is to use a <em>config file</em> to store the values you want for your environment variables for each environment. My preference is to use YAML to store configuration, but there are different ways it can be done.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Only non-secret configuration settings should go in a config file. Secrets should always be configured using secrets management settings in the tooling you’re using so they don’t appear in plain text.</p>
+</div>
+</div>
+<p>For example, you could write a project that knows whether to write or not based on the value of the config’s <code>write</code> and which database using the config’s <code>db-path</code>. Then you could use the YAML below to specify which environments write and which ones use which database:</p>
+<p><code>{yaml filename="config.yml"} dev:   write: false   db-path: dev-db test   write: true prod:   write: true   db-path: prod-db</code></p>
+<p>You would set a relevant environment variable so your code pulls the <code>dev</code> configuration in dev, <code>test</code> in test, and <code>prod</code> in prod.</p>
+<p>In Python there are many different ways to set and read in your a per-environment configuration. If you want to use YAML like in the example above, you could save it as <code>config.yml</code> and use the <code>{yaml}</code> package to read it in as a dictionary, and choose which part of the dictionary to at the start of your script.</p>
+<p>In R, the <code>{config}</code> package is the standard way to load an environmental configuration from a YAML file. The <code>config::get()</code> function uses the value of the <code>R_CONFIG_ACTIVE</code> environment variable to choose which configuration to use. That means that switching from the dev to the prod version of the app is as easy as making sure you’ve got the correct environment variable set on your system.</p>
+</section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">5.4</span> Comprehension Questions</h2>
+<ol type="1">
+<li>Write down a mental map of the relationship between the three environments for data science?</li>
 <li>Why is git so important to a good code promotion strategy? Can you have a code promotion strategy without git?</li>
 <li>What is the relationship between git and CI/CD? What’s the benefit of using git and CI/CD together?</li>
+<li>Write out a mental map of the relationship of the following terms: git, GitHub, CI/CD, GitHub Actions, Version Control</li>
 </ol>
 </section>
-<section id="lab2" class="level2" data-number="5.7">
-<h2 data-number="5.7" class="anchored" data-anchor-id="lab2"><span class="header-section-number">5.7</span> Lab 2: Host a website with automatic updates</h2>
-<p>In <a href="1-1-env-as-code.html#lab1">Lab 1</a>, we created a Quarto website with some EDA and model building. In this lab, we’re going to actually deploy that website to a public site and render the EDA and modeling steps every time we push a new version up.</p>
-<p>We’re going to do all this using GitHub and GitHub Actions. GitHub is the most popular git hosting service around. A few years ago, they released a CI/CD tool called GitHub Actions (GHA). It’s free for public repositories and is easy to use.</p>
-<p>It’s safe to say GHA is eating the world of CI/CD.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<section id="lab5" class="level2" data-number="5.5">
+<h2 data-number="5.5" class="anchored" data-anchor-id="lab5"><span class="header-section-number">5.5</span> Lab 5: Host a website with automatic updates</h2>
+<p>In labs 1 through 4, you’ve created a Quarto website for the penguin model. You’ve got sections on EDA and model building. But it’s still just on your computer.</p>
+<p>In this lab, we’re going to actually deploy that website to a public site on GitHub and and set up GitHub Actions as CI/CD so the EDA and modeling steps re-render every time we make changes.</p>
 <p>Before we get into the meat of the lab, there are a few things you have to do on your own. If you don’t know how to do these things, there are plenty of great tutorials online.</p>
 <ol type="1">
 <li>Create an empty public git repo on GitHub.</li>
-<li>Configure your Quarto project directory to push to your GitHub repo.</li>
+<li>Configure the repo as the remote for your Quarto project directory.</li>
 </ol>
-<p>Once you’ve got your GitHub repo up and connected, you want to set up your website to publish via GitHub Actions. There are great directions on how to get that configured on the <a href="https://quarto.org/docs/publishing/github-pages.html#github-action">Quarto website</a>.</p>
-<p>In those instructions, you’ll set up GitHub Pages to serve your website off a long-running standalone branch called <code>gh-pages</code>. Along the way, you’ll generate an <code>_publish.yml</code>, which is a Quarto-specific file for configuring publishing locations.</p>
-<p>You’ll also generate the GitHub Action workflow file, which will live at <code>.github/workflows/publish.yml</code>. Since the main point here is to learn about CI/CD like GitHub Actions, let’s take a minute to make sure you understand what the GitHub Action does.</p>
+<p>Once you’ve got the GitHub repo connected to your project, you need to set up the Quarto project to publish via GitHub Actions. There are great directions on how to get that configured on the <a href="https://quarto.org/docs/publishing/github-pages.html#github-action">Quarto website</a>.</p>
+<p>Following those instructions will accomplish three things for you:</p>
+<ol type="1">
+<li>Generate a <code>_publish.yml</code>, which is a Quarto-specific file for configuring publishing locations.</li>
+<li>Configure GitHub Pages to serve your website off a long-running standalone branch called <code>gh-pages</code>.</li>
+<li>Generate a GitHub Actions workflow file, which will live at <code>.github/workflows/publish.yml</code>.</li>
+</ol>
+<p>Here’s the basic GitHub Actions file (or close to it) that the process will auto-generate for you.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>.github/workflows/publish.yml</strong></pre>
@@ -570,14 +573,32 @@ Note
 <span id="cb1-24"><a href="#cb1-24"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
 <span id="cb1-25"><a href="#cb1-25"></a><span class="at">          </span><span class="fu">GITHUB_TOKEN</span><span class="kw">:</span><span class="at"> ${{ secrets.GITHUB_TOKEN }}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This action has three high-level sections – <code>on</code>, <code>name</code>, and <code>jobs</code>.</p>
-<p>This particular syntax is unique to GitHub Actions. The basic idea is universal to all CI/CD systems – you define a trigger and a job to do when it’s triggered.</p>
-<p>The <code>on</code> section defines <strong>when</strong> the workflow occurs. In this case, we’ve configured the workflow only to trigger on a push to the <code>main</code> branch, which includes a merge.</p>
-<p>The <code>jobs</code> section defines what happens when the job is triggered. The most common way to define what happens is to use preexisting GitHub Actions steps with <code>uses</code>.</p>
-<p>As you can see from the <code>runs-on</code> field, we’re starting with a very basic Ubuntu setup. After that, the first two workflow steps set up our environment, with our website’s GitHub repository checked out into the Actions environment and Quarto installed.</p>
-<p>In the third step, we’re actually rendering the website and then pushing it back to the repository. This third step makes use of arguments in GitHub Actions. In GitHub Actions, <code>with</code> defines variables used by the workflow, and <code>env</code> defines values in the environment – often secrets used by the workflow, like in this case.</p>
+<p>One of the reasons GitHub Actions has gotten so popular is that the actions defined in a very human-readable YAML file and it’s very likely you can read and understand this without much editorializing. But let’s still go through it in some detail.</p>
+<p>This particular syntax is unique to GitHub Actions, but the idea is universal to all CI/CD systems – you define a trigger and a job to do when it’s triggered.</p>
+<p>In GitHub Actions, the <code>on</code> section defines <strong>when</strong> the workflow occurs. In this case, we’ve configured the workflow only to trigger on a push to the <code>main</code> branch.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Another common case would be to trigger on a pull request to <code>main</code> or another branch.</p>
+<p>The <code>jobs</code> section defines <strong>what</strong> happens.</p>
+<p>When your action starts up, it’s in a completely standalone environment. This is actually a great thing – if you can easily specify how to start from zero and get your code running in GitHub actions, you can bet it’ll do the same in prod.</p>
+<p>The <code>runs-on</code> field specifies exactly where we start, which in this case is the latest version of the Ubuntu and not much else.</p>
+<p>Once that environment is up, each step in <code>jobs</code> runs sequentially.</p>
+<p>The most common way to define a step is with <code>uses</code>, which calls a preexisting GitHub Actions step that someone else has written. In some cases, you’ll want to specify variable values using <code>with</code> or environment variables with <code>env</code>.</p>
+<p>Take a close look at how this action uses the <code>GITHUB_TOKEN</code>. That’s an environment secret that’s auto-provisioned for an action. By using it as a variable here, it’s easy to see what happens, but the value is still totally secret.</p>
 <p>Now, if you try to run this, it probably won’t work.</p>
-<p>That’s because the CI/CD process occurs in a completely isolated environment, so we need to set up the versions of R and Python, as well as the packages to run our EDA and modeling scripts.</p>
+<p>That’s because the CI/CD process occurs in a completely isolated environment. This auto-generated action doesn’t including setting up versions of R and Python or the packages to run our EDA and modeling scripts. We have to get that configured before this action will work.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you read the Quarto documentation, they recommend freezing your computations. Freezing is very useful if you want to render your R or Python code only once and just update the text of your document. You wouldn’t need to set up R or Python in CI/CD and the document would render faster.</p>
+<p>That said, freezing isn’t an option if you intend the R or Python code to re-run because it’s a job you care about.</p>
+<p>Because the main point here is to learn about getting environments as code working in CI/CD you <strong>should not</strong> freeze your environment.</p>
+</div>
+</div>
 <p>First, add the commands to install R, <code>{renv}</code>, and the packages for your content to the GitHub Actions workflow.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -596,8 +617,21 @@ Note
 <span id="cb2-30"><a href="#cb2-30"></a><span class="at">        </span><span class="fu">env</span><span class="kw">:</span></span>
 <span id="cb2-31"><a href="#cb2-31"></a><span class="at">          </span><span class="fu">RENV_CONFIG_REPOS_OVERRIDE</span><span class="kw">:</span><span class="at"> https://packagemanager.rstudio.com/all/latest</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>One important thing to note is the repos override. This is because I’d like <code>{renv}</code> to install packages from binaries rather than compiling them because it’s much faster. But my CI/CD environment is using Ubuntu, not whatever I’m using on my desktop. So I’ve got to let <code>{renv}</code> in GitHub Actions know to use public Posit Package Manager for my current operating system.</p>
-<p>Then you add a workflow to GitHub Actions to install Python and the necessary Python packages from the <code>requirements.txt</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you’re having slow package installs in CI/CD for R, I’d strongly recommend using a repos override like in the example above.</p>
+<p>The issue is that CRAN doesn’t serve binary packages for Linux, which means really slow installs. You’ve got to direct <code>{renv}</code> to install from Public Posit Package Manager, which does have Linux binaries.</p>
+</div>
+</div>
+<p>You’ll also need to add a workflow to GitHub Actions to install Python and the necessary Python packages from the <code>requirements.txt</code>.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>.github/workflows/publish.yml</strong></pre>
@@ -610,25 +644,14 @@ Note
 <span id="cb3-38"><a href="#cb3-38"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">run</span><span class="kw">:</span><span class="at"> pip install jupyter</span></span>
 <span id="cb3-39"><a href="#cb3-39"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">run</span><span class="kw">:</span><span class="at"> pip install -r requirements.txt</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Note that in this case, we run the Python environment restore commands with <code>run</code> rather than <code>uses</code>. Where <code>uses</code> takes an existing GitHub Action and runs it, <code>run</code> just runs the code included there in the terminal.</p>
-<p>Once you’ve done that, your website should be good to go. If you want to check, make a change to your website and push to the main branch. If you click on the <code>Actions</code> tab on GitHub you’ll be able to see the Action running. Once it finishes, you should be able to see your change reflected on your website.</p>
+<p>Note that in this case, we run the Python environment restore commands with <code>run</code> rather than <code>uses</code>. Where <code>uses</code> takes an existing GitHub Action and runs it, <code>run</code> just runs the shell command natively.</p>
+<p>Once you’ve made those changes, try pushing or merging your project to <code>main</code>. If you click on the <code>Actions</code> tab on GitHub you’ll be able to see the Action running.</p>
+<p>In all honesty, it will probably fail the first time or five. You will almost never get your Actions correct on the first try. Just breathe deeply and know we’ve all been there. You’ll figure it out.</p>
+<p>Once it finishes, you should be able to see your change reflected on your website.</p>
 <p>Once it’s up, your website will be available at <code>https://&lt;username&gt;.github.io/&lt;repo-name&gt;</code>.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Don’t worry if you don’t like that URL. We’ll set up a custom domain in <a href="../sec3/3-4-dns.html">Chapter&nbsp;<span>13</span></a>.</p>
-</div>
-</div>
 </section>
-<section id="cheat-git" class="level2" data-number="5.8">
-<h2 data-number="5.8" class="anchored" data-anchor-id="cheat-git"><span class="header-section-number">5.8</span> Cheatsheet: Git</h2>
+<section id="cheat-git" class="level2" data-number="5.6">
+<h2 data-number="5.6" class="anchored" data-anchor-id="cheat-git"><span class="header-section-number">5.6</span> Cheatsheet: Git</h2>
 <table class="table">
 <colgroup>
 <col style="width: 37%">
@@ -675,23 +698,14 @@ Note
 </tr>
 </tbody>
 </table>
-<section id="freezing-quarto-computations" class="level3" data-number="5.8.1">
-<h3 data-number="5.8.1" class="anchored" data-anchor-id="freezing-quarto-computations"><span class="header-section-number">5.8.1</span> Freezing Quarto Computations</h3>
-<p>If you read the Quarto documents, they recommend freezing your computations. This is very useful if you want to render your R or Python code locally and only render the markdown elsewhere.</p>
-<p>Because the main point here is to learn about getting environments as code working in CI/CD you <em>should not</em> freeze your environment.</p>
-</section>
-<section id="section" class="level3" data-number="5.8.2">
-<h3 data-number="5.8.2" class="anchored" data-anchor-id="section"><span class="header-section-number">5.8.2</span> </h3>
 
 
-</section>
 </section>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>It’s worth noting that commercial air travel is exceptionally safe – including takeoff and landing. But we’re talking relative risk here.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Prior to the release of GHA, Travis and Jenkins were the industry standards for CI/CD. GitLab, another git host, has long offered a very good CI/CD integration.</p>
-<p>Lots of organizations have Azure DevOps, formerly known as Visual Studio Team Services. Microsoft, who owns Azure, acquired GitHub in 2018, so who knows what the future holds.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>Strictly speaking, this is not true. There are a lot of different ways to kick off CI/CD jobs. But the right way to do it is to base it on git operations.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>A completed merge counts as a push.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
