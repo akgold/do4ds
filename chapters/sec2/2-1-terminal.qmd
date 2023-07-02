@@ -1,71 +1,48 @@
 # The Terminal {#sec-terminal}
 
-If you want to adjust the system settings on your laptop or navigate
-from directory to directory, you can click through a file tree or open
-up your preferences pane.
+You're probably used to being able to click through a file tree or open
+your preferences pane when you want to adjust some settings or navigate
+to a file or directory on your computer.
 
-Usually, there are no graphical user interafaces (GUIs) at all. On a
+But IT/Admins spend most of their time working with servers, which
+generally have no *graphical user interfaces (GUIs)* at all. On a
 server, interaction is via the command line -- an all-text interface
 where you type commands.
 
-Once you feel comfortable using the command line on a server, you'll
-probably find that there are many things that will get easier for you
-locally as well!
+Additionally, I've found that there are a variety of things that are
+faster and easier on the terminal. Plus you get to feel like a hacker.
 
 This chapter is all about the terminal itself -- by the end of the
 chapter, you'll understand what the terminal is, how to get it open on
-your machine, and how to customize it to your liking.
+your machine, and how to customize it to your liking. In later chapters
+we'll get into how to actually do things there.
 
-## What makes up the command line?
+## Getting the command line you want
 
-It is possible to spend *a lot*of time customizing your terminal to be
-exactly what you like. Some might argue it wouldn't be the best use of
-your time to do so.
+The command line itself seems like a pretty simple thing. It's just a
+blank line where you type the things you want your computer to do.
 
-Such people are no fun, and having a terminal that's super customized to
-what you like is great. Plus you get to feel like a real hacker.
+But pretty quickly after getting started on the command line, you'll
+probably realize that some customization is in order. Maybe the colors
+aren't quite right, or you want shortcut commands for things you do a
+lot, or you want to add some information to the default display.
 
-One of the confusing things about customizing your command line is
-understanding what program you're actually interacting with and where
-it's customized. So here's a little intro.
+Pretty soon you'll find yourself neck deep in Stack Overflow posts on
+how to customize your `.bashrc`, or wait, is it the `.zshrc`, or wait,
+is it the terminal program settings pane.
 
-There are three programs that sit on top of each other when you interact
-with the command line -- the terminal, the shell, and the operating
-system.
+In fact, some people might argue that spending so much time customizing
+your terminal isn't the best use of your time.
 
-The *terminal* is the visual program where you'll type in commands. The
-terminal program you use will dictate the colors and themes available
-for the window, how tabs and panes work, and the keyboard shortcuts
-you'll use to manage them.
+Those people are no fun. Having a terminal that's super customized to
+what you like is awesome and will make you feel super legit.
 
-The *shell* is the program you're interacting with as you're typing in
-commands. It's what matches the words you type to actual commands or
-programs on your system. Depending on which shell you choose, you'll get
-different options for autocompletion, options for plugins for things
-like git, and coloring and theming of the actual text in your terminal.
-
-There is some overlap of things you can customize via the terminal vs
-the shell, so mix and match to your heart's content.
-
-Lastly, the *operating system* is what actually runs the commands you're
-typing in. So the set of commands available to you will differ by
-whether you're using Windows or Mac or Linux.
-
-```{mermaid}
-%%| eval: true
-
-graph LR
-    A[A Human] --> |Types| B[Commands]
-    A --> |Opens| E
-    E[Terminal] --> |Opens| C
-    C[Shell] --> |Dispatches| B
-    D[Operating System] --> |Defines the set of| B
-    D[Operating System] --> |Runs| B
-```
-
-In the next few sections of this chapter, we'll get into how to set up
-your terminal and shell so that it looks and behaves exactly the way you
-want.
+The command line you interact with is actually two or three programs
+that sit on top of each other. Let's get into how to customize each. The
+options you've got will depend on your operating system -- Windows or
+Mac. I'm not addressing Linux here because if you're running Linux on
+your desktop, you already have strong opinions on window managers,
+terminals, shells, and more.
 
 ::: callout-note
 I haven't used a Windows machine in many years. I've collected some
@@ -73,77 +50,106 @@ recommendations here, but I can't personally vouch for them the way I
 can my Mac recommendations.
 :::
 
-## Choose your terminal
+## Your terminal
+
+The terminal is the GUI where you'll type in commands. The terminal
+program you use will dictate the colors and themes available for the
+window, how tabs and panes work, and the keyboard shortcuts you'll use
+to manage them.
 
 ::: panel-tabset
 ### MacOS
 
-If you're using a Mac, you can use the built-in terminal app,
-conveniently called `Terminal`. It's fine.
+I'd recommend against using the built-in terminal app (called
+`Terminal`). It's fine, but there are better options.
 
-If you're going to be using your terminal more than occasionally, I'd
-recommend downloading and switching to the the free
-[iTerm2](https://iterm2.com/), which adds a bunch of niceties like
-better theming and multiple tabs.
+My personal favorite is the free [iTerm2](https://iterm2.com/), which
+adds a bunch of niceties like better theming and multiple tabs.
 
 ### Windows
 
-If you're using Windows, there are a variety of alternative terminals
-you can try, but the built-in terminal is the favorite of many users.
-Experiment if you like, but feel free to stick with the default.
+The built-in terminal is the favorite of many users. There are a variety
+of alternatives you can try, but feel free to stick with the default.
 :::
 
-## Choosing and configuring your shell
+## Your shell
+
+The shell is the program that takes the commands you're typing and runs
+them. It's what matches the words you type to actual commands or
+programs on your system. Depending on which shell you choose, you'll get
+different options for auto-completion, plugins for things like git, and
+theming of the text in your terminal.
 
 ::: panel-tabset
 ### MacOS
 
-The default shell for MacOS (and Linux) is called bash. It's pretty
-great shell. There's nothing to really *replace* bash, but there are
-*bash alternatives* that extend bash in various ways.
+The default shell for MacOS (and Linux) is called *bash*. I'd advise you
+to switch it out for *zsh*, which is the most popular *bash
+alternative*.[^2-1-terminal-1]
 
-The most popular bash alternatives include zsh, Ksh, and Fish. If you
-don't already have a favorite, I recommend zsh.[^2-1-terminal-1]
+You shouldn't worry that you're losing something by using a bash
+alternative. All of the so-called bash alternatives are just bash with
+some extra bells and whistles. If you ever find yourself back to using
+default bash, you might be annoyed that some of your shortcuts don't
+work, but you won't be lost.
 
-It has a few advantages over bash out of the box, like better
-autocompletion. It also has a huge ecosystem of themes and plugins that
-can make your shell way prettier and more functional. There are plugins
-that do everything from displaying your git status on the command line
-to controlling your Spotify playlist.
+Relative to bash, zsh has a few advantages out of the box, like better
+auto-completion. It also has a huge ecosystem of themes to enhance
+visual appeal and functionality, and plugins that let your command line
+do everything from displaying your git status to controlling your
+Spotify playlist.
 
-There are two popular plugin managers for zsh -- OhMyZsh and Prezto. I
-prefer and recommend Prezto, but the choice is really up to you.
-
-I'm not going to go through the steps of installing these tools -- there
-are numerous online walkthroughs and guides that you can google.
-
-But it is a little confusing to know what to customize where, so here's
-the high level overview if you've installed iTerm2, zsh, and prezto.
-You'll customize the look of the window and the tab behavior in the
-iTerm2 preferences and customize the text theme and plugins via prezto.
-You can mostly skip any customization of zsh in the `.zshrc` since
-you'll be doing that in Prezto.
+I'd recommend looking up instructions for how to install zsh using
+*Homebrew*, which you should also install if you haven't already.
 
 ### Windows
 
-Windows comes with two shells built in, the Command shell (`cmd`) and
-the PowerShell.
+Windows comes with two shells built in, the *Command Shell* (`cmd`) and
+the *PowerShell*.
 
 The command shell is older and has been superseded by PowerShell. If
 you're just getting started, you absolutely should just work with
-PowerShell. If you've been using Command shell on a Windows machine for
-a long time, most Command shell command work in PowerShell, so it may be
-worth switching over.
-
-Once you've installed PowerShell, many people like customizing it with
-Oh My Posh.
+PowerShell. If you've been using Command Shell on a Windows machine for
+a long time, most Command Shell commands work in PowerShell, so it may
+be worth switching over.
 :::
 
-[^2-1-terminal-1]: zsh is pronounced by just speaking the letters aloud.
-    Some people say it *zeesh*, but they're not writing this book, are
-    they?
+[^2-1-terminal-1]: zsh is pronounced by just speaking the letters aloud,
+    *zee-ess-aitch*. Some people might disagree and say it's *zeesh*,
+    but they're not writing this book, are they?
+
+## Make it look and work great
+
+Now that you've got your shell and terminal installed, let's get it
+customized just to your liking. It is possible to directly customize
+both zsh and PowerShell, but in most cases, you'll want to use a
+configuration manager to manage your themes and plugins.
+
+::: panel-tabset
+### MacOS
+
+There are two popular plugin managers for zsh -- OhMyZsh and Prezto. You
+should choose just one. I prefer Prezto, but the choice is really up to
+you.
+
+Once you've installed Prezto, you've got (at least) three different
+places you could configure your command line -- iTerm2 preferences,
+`.zshrc`, and `.zpreztorc`. I'd recommend leaving `.zshrc` alone,
+customizing the look of the window and the tab behavior in the iTerm2
+preferences, and customizing the text theme and plugins via prezto in
+the `.zpreztorc` file.
+
+I tend to be a pretty light on customizations, but I'd particularly
+recommend looking into git plugins and some of the advanced
+auto-completion and command history search functionality.
+
+### Windows
+
+Many people like customizing PowerShell with [*Oh My
+Posh*](https://ohmyposh.dev/).
+:::
 
 ## Comprehension Questions
 
 1.  Draw a mental map that includes the following: terminal, shell,
-    operating system, my laptop
+    theme manager, operating system, my laptop
