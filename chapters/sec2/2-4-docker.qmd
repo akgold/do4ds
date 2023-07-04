@@ -1,207 +1,310 @@
 # Demystifying Docker {#sec-docker}
 
-Docker is an incredible tool for reproducing a finished analysis
-somewhere else or sometime else, especially in concert with creating R
-and Python environments as code like we discussed in [Chapter
-@sec-env-as-code]. In a data science context, my recommendation is to
-treat Docker as a tool for enhancing reproducibility by putting finished
-analyses into a Docker container for deployment or archiving.
+Docker is an open source tool for building, sharing, and running
+software. These days, Docker is the dominant way software developers
+capture a development environment and is an increasingly popular tool to
+take code to production.
+
+Docker has become so popular because it makes code portable. In most
+cases, the only system prerequisite to run most any Docker container is
+Docker itself.[^2-4-docker-1] Everything else comes in the container.
+
+[^2-4-docker-1]: This was truer before the introduction of M-series
+    chips for Macs. Chip architecture differences fall below the level
+    that a container captures, and many popular containers wouldn't run
+    on new Macs. These issues are getting better over time and will
+    probably fully disappear relatively soon.
+
+Unlike language-specific environment as code tools like `{renv}` or
+`{venv}`, Docker captures the entire reproducibility stack all the way
+down to the operating system. If you've ever tried to have someone else
+run code you've written, the appeal is obvious.
+
+Docker has so many strengths that it's easy to believe it will solve all
+reproducibility problems. It's worth keeping a little perspective.
+
+While Docker usually ensures that the code inside will **run**, it
+doesn't fully solve reproducibility or IT/Admin concerns. Some
+highly-regulated contexts consider a container insufficiently rigorous
+for reproducibility purposes.
+
+Running a container also makes it easy to stand things up, but
+integrations to other services, like data sources and authentication,
+still have to be configured externally.
+
+Lastly, running a container adds one more service between you and the
+code you're trying to run. Without a very good mental model of how the
+various services interact, trying to get Docker to work can be a
+frustrating mess.
 
 ::: callout-note
-Before you start, make sure to install [Docker
-Desktop](https://www.docker.com/products/docker-desktop) on your laptop.
+This chapter is solely on the local use of Docker for building and
+running containers. For more on running containers in a production
+context, including using Kubernetes, see [Chapter @sec-ent-servers].
 :::
 
-This chapter is designed to give you an introduction to how to use
-Docker containers other people have created and how to create your own.
+Really learning to use Docker is the subject of many books and online
+tutorials. In this chapter, I'm just aiming to give you a little
+familiarity with basic terminology and concepts for how to run other
+people's Docker containers and how to create your own. In the lab at the
+end of the chapter, we'll practice hosting an API inside a container.
 
-## Container Lifecycle
+## Container lifecycle
 
-Let's spend just a minute digging into the the lifecycle of a Docker
-container.
+Docker is primarily concerned with the creation, movement, and running
+of *containers*. A container is a software entity that packages code and
+its dependencies down to the operating system. Containers make it
+possible to have completely different environments coexisting side by
+side on one physical machine.
 
-This image explains the different states a Docker container can be in,
-and the commands you'll need to move them around.
+::: callout-note
+Containers aren't the only way to run multiple virtual environments
+side-by-side -- they're just the most popular.
 
-TODO: change Docker Container to Docker Container Instance, add 3
-vertical stages: build, move, run
+Docker Containers also aren't the only type of container, though they're
+often treated that way. You may run across other kinds, like Apptainer
+(formerly Singularity), which is often used in high performance
+computing contexts.
+:::
 
-![](images-docker/docker-lifecycle.png){width="561"}
+A *Docker Image* is an immutable snapshot of a container. When you want
+to run a container, you *pull* the image and run it as an *instance*,
+which is what you'll actually interact with.
 
-The most pure distillation of a Docker Container is the *Docker Image*.
-An image is an immutable snapshot of a container, suspended in time. It
-is totally possible to have multiple similar images, but images are
-immutable by definition. Any changes would make it a different image.
-
-The most common place to store images is in a *Docker Registry*, but
-they can also be moved around like regular files.
-
-Docker Registries are quite similar to git repositories. Some
-organizations run their own registries, most often using offerings from
-cloud providers.[^2-4-docker-1] The Docker company also runs [Docker
+Images are most often stored in *registries*, which are similar to git
+repositories. The most common registry is [Docker
 Hub](https://hub.docker.com/), which allows public hosting and private
-hosting of images in free and paid tiers.
+hosting of images in free and paid tiers. Docker Hub includes official
+images for operating systems and programming languages, as well as many,
+many community-contributed containers. Some organizations run their own
+private registries, usually using *registry as a service* offerings from
+cloud providers.[^2-4-docker-2]
 
-[^2-4-docker-1]: The big three container registries are AWS Elastic
+[^2-4-docker-2]: The big three container registries are AWS Elastic
     Container Registry (ECR), Azure Container Registry, and Google
     Container Registry.
 
-Images have names that consist of an *id* and a *tag*. If you're using
-the public Docker Hub registry, container ids take the form
-`<user>/<name>`, so my penguin model container is
-`alexkgold/penguin-model`.
+Images are built from *Dockerfiles* -- the code that defines the image.
+Dockerfiles are usually stored in a git repository. It's common to build
+images in a CI/CD pipeline so changes to the Dockerfile are immediately
+built and pushed to the registry.
 
-Tags are used to specify versions -- sometimes of the container itself,
-but also sometimes of the software it contains. If you don't specify a
-tag, it defaults to `latest`. For example, the `rocker/r-ver` container,
-which is a container pre-built with a version of R in it uses tags for
-the version of R.
+All instances run on an underlying machine, called a *host*. A primary
+feature -- also a liability -- of using containers is that they are
+completely ephemeral. Unless configured otherwise, anything inside an
+instance when it shuts down vanishes without a trace.
 
-Before the Docker Image exists, it has to get built somehow. It is
-possible, but not recommended, to interactively build a Docker
-Container. Instead, containers are usually built from a *Dockerfile*.
-Dockerfiles are just code, so they're often stored in a git repository
-and it's common to build and store them with CI/CD.
+You can control Docker Containers from the Docker Desktop app. If you're
+going to be using Docker on a server, you'll mostly be interacting via
+the command line interface (CLI). All Docker CLI commands are formatted
+as `docker <command>`.
 
-A *Docker Container Instance* is the Docker Container running somewhere
-at a given point in time. It's the thing you'll actually interact with
-as a running service.
+The graphic below shows the different states for a container and the CLI
+commands to move from one to another.
+
+![](images/docker-lifecycle.png){fig-alt="A diagram. A dockerfile turns into a Docker Image with docker build. The image can push or pull to or from an image registry. The image can run as a container instance."
+width="450"}
 
 ::: callout-note
 I've included `docker pull` on the graphic for completeness, but you'll
 almost never run it. `docker run` auto-pulls the container(s) it needs.
 :::
 
-You can control Docker Containers from the Docker Desktop app. But if
-you're going to be using Docker on a server, you'll mostly be
-interacting via the CLI. There's a [cheatsheet](#cheat-docker) for
-Docker CLI commands at the end of this chapter.
+There's a [cheatsheet](#cheat-docker) for Docker CLI commands at the end
+of this chapter.
 
-### Flags for `docker run`
+### Image Names
 
-You run a container by using the `docker run` command on the command
-line.
-
-At its most basic, `docker run <image name>` will give you a running
-container. However, Docker commands usually use *a lot* of command line
-flags -- so many that it's easy to miss what the command actually is.
-
-One of the things to consider about running a Docker container is how
-restricted its access is. By default, the container can't access
-anything from the host where it's running. This is a great security
-feature, but if you want to make data or code available from your host
-inside the container -- or you want to run the container to host an app
-or API, you'll need to include those permissions in your `docker run`
-command.
-
-One of the important things to include in your mental model is that the
-container has its own networking and file system. For example, the `-v`
-flag makes a volume (directory) from outside the container available
-inside.
-
-So let's say you've got some data in your `~/Documents/my-project/data`
-directory. You might just want to make it available to the container at
-`/data` or `/mnt/data`. That's easy to do with the `-v` command:
-`-v ~/Documents/my-project/data:/data`.
-
-TODO: slashes are wrong.
-
-![](images-docker/docker-on-host.png){width="593"}
-
-## Building from Dockerfiles
-
-A Dockerfile is a set of instructions that you use to build a Docker
-Image. Dockerfiles have a particular syntax, but it's quite readable and
-if you know how to accomplish something on a running machine, you
-shouldn't have too much trouble building a Dockerfile to do the same.
-
-The basic notion to have in mind is building up *layers* -- each one
-being a usable container.
-
-Your first layer is always the container you're starting from --
-sometimes a barebones operating system-only container like
-`ubuntu:latest` and sometimes a much richer starting point like
-`rocker/shiny` or `python/3.10`.
-
-Then you'll take action on top of that layer, installing some software,
-copying in files or directories, or telling the container what to do
-when it starts.
+In order to build, push, pull, or run an image, you'll need to know
+which image you're talking about. Every image has a name that consists
+of an *id* and a *tag*.
 
 ::: callout-note
-One of the nicest conveniences of building Docker Containers is that
-Docker understands your container's layers and will only rebuild changed
-layers and subsequent ones.
+If you're using Docker Hub, container ids take the form
+`<user>/<container name>`, so I might have the container
+`alexkgold/my-container`. This should look familiar to GitHub users.
 
-For example, let's say you have a Dockerfile with 3 layers -- a starting
-container, copy in some files, and setting the run time command. If you
-change the run time command in your Dockerfile and rebuild, the build
-process will start from the container after everything's been copied in.
-This drastically speeds up the container development process.
+Other registries may enforce similar conventions for ids, or they may
+allow ids in any format they want.
 :::
 
-As you design your Dockerfile, you'll have to think about what should
-get put into the container at *build* time. Your container gets frozen
-in time during the build, so that's when you want to put everything the
-container needs into the container. Moreover, the building script has
-pretty much free-regin over your system, so that's when you'll do things
-like setting up the versions of R and Python, copying in your project
-code, and installing system requirements.
+Tags are used to specify versions of variants of containers and come
+after the `id` and `:`. For example, the official Python docker image
+has versions for each version of Python like `python:3` as well as
+variants for different operating systems and a `slim` version that saves
+space by excluding recommended packages.
 
-### Dockerfile Commands
+Some tags, usually used for versions, are immutable. For example, the
+`rocker/r-ver` container is a container that is built on Ubuntu and has
+a version of R built in. There's a `rocker/r-ver:4.3.1`, which is a
+container with R 4.3.1.
 
-The [Dockerfile
-documentation](https://docs.docker.com/engine/reference/builder/)
-provides many different commands you can use during build, but here are
-the handful that are enough to build most images you might need.
+Other tags are relative to the point in time. If you don't see a tag on
+a container name, it's using the default `latest`. Other common relative
+tags refer to the current development state of the software inside like
+`devel`, `release`, or `stable`.
 
--   `FROM` -- specify the base image.
+## Running Containers
+
+The `docker run` command runs container images as an instance. You can
+run `docker run <image name>` to get a running container. However, most
+things you want to do with your instance require several command line
+flags.
+
+There are a few flags that are useful to manage how your containers run
+and get cleaned up.
+
+The `-name <name>` flag names an instance. It's not required, but can be
+useful to give the instance a name you can remember or use in code. If
+you don't provide a name, each instance gets a random alphanumeric id on
+start.
+
+The `-rm` flag automatically removes the container after its done. If
+you don't use the `-rm` flag, the container will stick around until you
+clean it up manually with `docker rm`. The `-rm` flag can be useful when
+you're iterating quickly -- especially because you can't re-use names
+until you remove the container.
+
+The `-d` flag will run your container in detached mode. This is useful
+when you want your container to run in the background and not block your
+terminal session. It's useful when running containers in production, but
+you probably don't want to use it when you're trying things out and want
+to see logs streaming out as the container runs.
+
+### Getting information in and out
+
+When a container runs, it is isolated from the host. This is a great
+feature -- it means programs running inside the container can address
+the container's filesystem and networking without worrying about the
+host outside. But it also means that using resources on the host
+requires explicit declarations as part of the `docker run` command.
+
+In order to get data in or out of a container, you need to mount a
+shared *volume* (directory) between the container and host with the `-v`
+flag. You specify a host directory and a container directory separated
+by `:`. Anything in the volume will be available to both the host and
+the container at the file paths specified.
+
+For example, maybe you've got a container that runs a job against data
+it expects in the `/data` directory. On your host machine, this data
+lives at `/home/alex/data`. You could make this happen with
+
+```{bash filename=Terminal}
+docker run -v /home/alex/data:/data
+```
+
+Here's a diagram of how this works.
+
+![](images/docker-on-host.png){fig-alt="A diagram showing how the flag -v /home/data:/data mounts the /home/data directory of the host to /data in the container."
+width="450"}
+
+Similarly, if you have a service running in a container on a particular
+port, you'll need to map the container port to a host port with the `-p`
+flag.
+
+### Other runtime commands
+
+If you want to see what containers you've got, `docker ps` lists them.
+This is especially useful to get instance ids if you didn't bother with
+names.
+
+To stop a running container `docker stop` does so nicely and
+`docker kill` terminates a container immediately.
+
+You can view the logs from a container with `docker logs`.
+
+Lastly, if you need to run a command inside a running instance, you can
+use `docker exec`. This is most commonly used to access the command line
+inside the container as if SSH-ing to a server with
+`docker exec -it <container> /bin/bash`.
+
+While it's normal to SSH into a server to poke around, it's somewhat of
+an anti-pattern to do the same in a container. In general you should
+prefer to review logs and adjust Dockerfiles and `run` commands rather
+than `exec` in.
+
+## Building Images from Dockerfiles
+
+A Dockerfile is a set of instructions that you use to build a Docker
+Image. If you know how to accomplish something from the command line,
+you shouldn't have too much trouble building a Dockerfile to do the
+same.
+
+One thing to consider when creating Dockerfiles is that the resulting
+image is immutable. That means anything you build into the image is
+forever frozen in time. So you'll definitely want to set up the versions
+of R and Python and install system requirements. Depending on the
+purpose of your container, you may want to copy in code, data, and/or R
+and Python packages, or you may want to mount those in a volume at
+runtime.
+
+There are many Dockerfile commands. You can review them all in the
+[Dockerfile
+documentation](https://docs.docker.com/engine/reference/builder/), but
+here are the handful that are enough to build most images.
+
+-   `FROM` -- specify the base image. Usually the first line of the
+    Dockerfile.
 
 -   `RUN` -- run any command as if you were sitting at the command line
-    inside the container. Just remember, if you're starting from a very
-    basic container, you may need to make a command available before you
-    can run it (like `wget` in my container below).
+    inside the container.
 
 -   `COPY` -- copy a file from the host filesystem into the container.
 
--   `CMD` - Specifies what command to run on the container's shell when
-    it runs. This would be the same command you'd use to run your data
-    science project from the command line.[^2-4-docker-2]
+-   `CMD` - Specify what command to run on the container's shell when it
+    runs, usually the last line of the Dockerfile.[^2-4-docker-3]
 
-[^2-4-docker-2]: You may also see `ENTRYPOINT`, which sets the command
+[^2-4-docker-3]: You may also see `ENTRYPOINT`, which sets the command
     `CMD` runs against. Usually the default `/bin/sh -c` to run `CMD` in
     the shell will be the right choice.
+
+Every Dockerfile command defines a new *layer*.
+
+A great feature of Docker is that it only rebuilds the layers it needs
+to when you make changes. For example, take the following Dockerfile:
+
+``` {.dockerfile Filename="Dockerfile"}
+FROM ubuntu:latest
+
+COPY my-data.csv /data/data.csv
+
+RUN ["head", "/data/data.csv"]
+```
+
+Let's say I wanted to change the `head` command to `tail`. Rebuilding
+this container would be nearly instantaneous because the container would
+only start rebuilding after the `COPY` command.
 
 Once you've created your Dockerfile, you build it into an image using
 `docker build -t <image name> <build directory>`. If you don't provide a
 tag, the default tag is `latest`.
 
-You can then push that to DockerHub or another registry using
+You can then push the image to DockerHub or another registry using
 `docker push <image name>`.
 
 ## Comprehension Questions
 
-1.  What does using a Docker container for a data science project make
-    easier? What does it make harder?
-2.  Draw a mental map of the relationship between the following:
+1.  Draw a mental map of the relationship between the following:
     Dockerfile, Docker Image, Docker Registry, Docker Container
-3.  When would you want to use each of the following flags for
+2.  When would you want to use each of the following flags for
     `docker run`? When wouldn't you?
     -   `-p`, `--name`, `-d`, `--rm`, `-v`
-4.  What are the most important Dockerfile commands?
+3.  What are the most important Dockerfile commands?
 
 ## Lab: Putting an API in a Container
 
-Let's put our Penguin model prediction API from [Chapter @sec-proj-arch] into
-a container.
+Putting an API into a container is popular way to host them. In this
+lab, we're going to put the Penguin Model Prediction API from [Chapter
+@sec-proj-arch] into a container.
 
-Again, Vetiver has some nice tooling to make this very easy to do. You
-should follow the instructions on the `{vetiver}` website for how to
-generate your Dockerfile.
+If you've never used Docker before, start by installing [Docker
+Desktop](https://www.docker.com/products/docker-desktop) on your
+computer.
 
-One thing to note about this container -- it follows best practices for
-how to put data (in this case the machine-learning model) into the
-container. That means the model *isn't* built into the container.
-Instead, the container knows how to fetch the model.
+You should feel free to write your own Dockerfile to put the API in a
+container. If you want to make it easy, the `{vetiver}` package, which
+you'll remember auto-generated the API for us, can also auto-generate a
+Dockerfile. Look at the package documentation for details.
 
 I'm using this code to generate my Dockerfile
 
@@ -217,15 +320,23 @@ for my model:
 This auto-generated Dockerfile is very nicely commented, so its easy to
 follow.
 
+::: callout-note
+This container follows the best practices from [Chapter @sec-proj-arch].
+We'd expect the model to be updated much more frequently than the
+container itself, so the model **isn't** built into the container.
+Instead, the container knows how to fetch the model using the `{pins}`
+package.
+:::
+
 Now build the container using `docker build -t penguin-model .`.
 
-Ok, now let's run the container using
+You can run the container using
 
 ``` {.bash eval="false"}
 docker run --rm -d \
   -p 8080:8080 \
   --name penguin-model \
-  penguin-model-local
+  penguin-model
 ```
 
 If you go to `http://localhost:8080` you'll find that...it doesn't work?
@@ -260,45 +371,39 @@ docker run --rm -d \
 
 And NOW you should be able to get your model up in no time.
 
-It's worth noting that it's somewhat rare that you want to put the
-volume at the same location inside the container as it is outside. But
-because of the `{vetiver}` tooling, it expects it to be at the same
-place.
-
-Now, thinking back to [Chapter @sec-data-access], we're going to run into
-some trouble when when and if we move the API off of our laptop and onto
-a server. We'll address that in [Chapter @sec-cloud].
-
 ### Lab Extension
 
-Right now, logs from the API just stay inside the app. But that means
-that the logs go away when the container does. That's obviously bad if
-the container dies because something goes wrong. How might you make sure
-that the container's logs get written somewhere more permanent?
+Right now, logs from the API just stay inside the container instance.
+But that means that the logs go away when the container does. That's
+obviously bad if the container dies because something goes wrong.
+
+How might you make sure that the container's logs get written somewhere
+more permanent?
 
 ## Cheatsheet: Docker {#cheat-docker}
 
 ### Docker CLI Commands
 
 | Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
-|-------|-------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+|-----------------|-----------------|-----------------|-----------------------|
 | Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
 | Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
-| Run   | `docker run <image>`                | Run a container.                                          | See section below.                                                                                |
+| Move  | `docker pull <image>`               | Pull a container from a registry.                         | Rarely used because `run` pulls the container if needed.                                          |
+| Run   | `docker run <image>`                | Run a container.                                          | See flags in next table.                                                                          |
 | Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
 | Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
 | Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
-| Run   | `docker logs <container>`           |                                                           |                                                                                                   |
+| Run   | `docker logs <container>`           | Views logs for a container.                               |                                                                                                   |
 
 ### **Flags for `docker run`**
 
-| Flag               | Effect                                         | Notes                                                                                                                                                            |
-|--------------------|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided. Then you'll need to discover name with `docker ps`.                                                             |
-| `--rm`             | Remove container when its stopped.             | Very useful when playing around because it cleans things up. Almost never used in prod, because you usually want to be able to inspect logs from old containers. |
-| `-d`               | Detach container (don't block the terminal).   | Almost always used in production. Sometimes useful to stay attached when troubleshooting.                                                                        |
-| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access anything inside the container with HTTP.                                                                                            |
-| `-v <dir>:<dir>`   | Mount volume into the container.               | Make a directory (volume) on the host available to the container for reading and writing.                                                                        |
+| Flag               | Effect                                         | Notes                                                                    |
+|-------------------|--------------------------|---------------------------|
+| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided.                         |
+| `--rm`             | Remove container when its stopped.             | Don't use in production. You probably want to inspect failed containers. |
+| `-d`               | Detach container (don't block the terminal).   | Almost always used in production.                                        |
+| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access an app or API running inside the container. |
+| `-v <dir>:<dir>`   | Mount volume into the container.               |                                                                          |
 
 : *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
 
@@ -306,9 +411,9 @@ that the container's logs get written somewhere more permanent?
 
 These are the commands that go in a Dockerfile when you're building it.
 
-| Command | Purpose                                              | Example                   |
-|---------|------------------------------------------------------|---------------------------|
-| `FROM`  | Indicate base container                              | `FROM rocker/r-ver:4.1.0` |
-| `RUN`   | Run a command when building                          | `RUN apt-get update`      |
-| `COPY`  | Copy from build directory into the container         | `COPY . /app/`            |
-| `CMD`   | Specify the command to run when the container starts | `CMD quarto render .`     |
+| Command | Purpose                                               | Example                   |
+|-------------------|-------------------------------|-----------------------|
+| `FROM`  | Indicate base container.                              | `FROM rocker/r-ver:4.1.0` |
+| `RUN`   | Run a command when building.                          | `RUN apt-get update`      |
+| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`            |
+| `CMD`   | Specify the command to run when the container starts. | `CMD quarto render .`     |
