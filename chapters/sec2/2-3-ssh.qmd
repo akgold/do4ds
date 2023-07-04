@@ -1,0 +1,194 @@
+# Secure server connections with SSH {#sec-ssh}
+
+One common IT/Admin task is remotely managing a server from the command
+line on your machine. SSH -- short for Secure (Socket) Shell -- is the
+program that allows direct interactions with a server's command line
+from the command line of your computer.[^2-3-ssh-1]
+
+[^2-3-ssh-1]: SSH actually can be used between any two machines,
+    provided at least one is accepting SSH connections. For data
+    scientists, SSH is almost always use to connect from a local machine
+    to a server.
+
+Using SSH requires invoking the `ssh` command line interface with a
+username and the address of the *remote host* [(]{.underline}server).
+For example, to connect to the user `alex` on the remote host
+`server.example.com`, it would look like:
+
+``` {.bash filename="Terminal"}
+> ssh alex@server.example.com
+```
+
+When this command runs, the local machine would request an SSH session
+from `server.example.com` and offer a *private ssh key* to verify that
+who's asking. The remote host would use a *public ssh key* that's
+already been registered with it to verify the private key and open an
+encrypted connection between the two machines.
+
+![](images/ssh.png){fig-alt="A diagram of SSH initialization. The local host sends the private key, the remote checks against the public key, and then opens the session."
+width="450"}
+
+Once the SSH session was established, any command line commands would
+run against the remote host, rather than against the local machine.
+
+SSH requires creating and using matching *ssh keypairs*. The public part
+of the keypair can be shared far and wide, while the private keys must
+be treated as danagerous secrets. That seems weird.
+
+::: callout-note
+Honestly, I'm not a huge fan of the terms public key and private key. I
+think the terms *SSH key* for the private key and *SSH lock* for the
+public key makes the intent much clearer. But no one asked me.
+:::
+
+Until you have some understanding of how SSH works, you can set up SSH
+by following online tutorials, but it always feels a little like a
+guessing game.
+
+SSH works because public keys and private keys are really different.
+Given both a public and a private key, it's easy to check whether they
+fit. But if you only have a public key, it's nearly impossible to
+fabricate the private key that goes with it.
+
+This is possible through the magic of *public key cryptography*, which
+uses mathematical operations that are easy in one direction but really
+hard to reverse.
+
+As a simple example, think of the number $91$ and its prime factors. Do
+you know what the prime factors of $91$ are offhand? I do not.
+
+If I give you the numbers $7$ and $13$, it's easy and fast to verify
+that $7 * 13 = 91$. But if I'd left you hanging, it probably would've
+taken you a minute or two to figure out.
+
+In this example, the number $91$ would be the public key and the prime
+numbers $7$ and $13$ together would be the private key. This wouldn't
+actually make for very good public key cryptography because it doesn't
+take more than a few moments to figure out that $7$ and $13$ are prime
+factors of $91$.
+
+In real public key cryptography, the idea is fundamentally similar, but
+the mathematical operations are substantially more complex and the
+numbers much, much bigger.[^2-3-ssh-2] So much so that it's basically
+impossible to break public ssh keys. Someone could try, but brute force
+guessing would take more time than we have left before the heat death of
+the universe.
+
+[^2-3-ssh-2]: And prime numbers generally loom large in the operation.
+
+That means that it's safe to share your public key anywhere you might
+need to access using SSH like a remote server or git host, like GitHub.
+
+But that doesn't make SSH foolproof. While it's basically impossible to
+fabricate a private key, it's totally possible to steal one.
+
+Your private key **must** be kept secret. The best practice is to never
+move it from the computer where it was created and to never share them.
+
+In summary, do what you want with your public keys, but don't share your
+private keys. Don't share your private keys. Seriously, do not share
+your private keys.
+
+## Practical SSH usage
+
+Now that you've got an understanding of how SSH works, the steps should
+be easy to remember.
+
+1.  Create an SSH keypair on any machine you'll be SSH-ing from (local
+    host).
+2.  Put the public key anywhere you'll be SSH-ing to (remote host).
+3.  Use the `ssh` command to connect.
+
+### Step 1: Create Keypair
+
+You'll create a keypair on any server you're SSH-ing **from**. Remember,
+you should never move your private key. If you think the answer to a
+problem you're having is to move your private key, think again. You
+should create a new private key wherever you want to move it to.
+
+To create an SSH keypair, you should just follow a tutorial online.
+There are many.
+
+Creating the keypair will result in two parts. The one that ends in
+`.pub` is -- you guessed it -- the public key.
+
+In most cases, you'll only create one private key on each machine. If
+you follow standard instructions for creating a key, it will use the
+default name, probably `id_ed25519`.[^2-3-ssh-3] If you're only creating
+one key, I'd recommend sticking with the default name because the `ssh`
+command will atuomatically use your keys if they have the default name.
+
+[^2-3-ssh-3]: The pattern is `id_<encryption type>`. `ed25519` is the
+    standard SSH key encryption type as of this writing.
+
+You may not be able to use the default names if your organization
+mandates a unique keypair for every service you're reaching out to.
+There isn't a cryptographic reason for this. It's mostly to make it
+easier to swap out the keypair later if you need to.
+
+### Step 2: Register the public keys
+
+To register a public key on a server you control, you'll add the public
+key to the end of the user's `.ssh/authorized_keys` file in their home
+directory. You'll have to make sure the permissions on the
+`authorized_keys` file are correct. More on that in [Chapter
+@sec-linux-admin].
+
+If you're registering with a service, like GitHub.com, find a guide to
+registering SSH keys and it will show you how to do so.
+
+### Step 3: Use SSH
+
+To use SSH, you type `ssh <user>@<host>`. There are also other commands
+that can use SSH under the hood, like `git` or `scp`.
+
+::: callout-note
+## For Windows users
+
+For a long time, Windows didn't support SSH out of the box, so SSH-ing
+from Windows required a separate utility called *PuTTY*. More recent
+versions of Windows support using SSH directly in PowerShell or in
+Windows Subsystem for Linux (WSL). If SSH isn't enabled on your machine,
+google for instructions.
+:::
+
+If you have multiple SSH keys or didn't use the default flag, you can
+specify a particular key with the `-i` flag.
+
+If you're using SSH a lot, I'd recommend setting up an SSH config file.
+An SSH config file allows you to create aliases that are shortcuts to
+SSH commands including users, hosts, and other details. So if you had a
+long SSH command like `ssh -i my-ssh-key alex@server.example.com`, you
+could shorten it to `ssh alex-server` or whatever you want.
+
+Many people also like using *tmux* with SSH. tmux is a terminal
+multiplexer, which allows you to manipulate terminal sessions from the
+command line. SSH sessions block the terminal session they're using and
+will break when your computer goes to sleep. tmux allows you to create
+sessions and make them durable through sleeps and other operations. To
+be honest, I'm including tmux because lots of people love it, but I've
+tried using it and found the learning curve too steep for it to come
+into regular usage. Your mileage may vary.
+
+Lastly, if you ever run into trouble using SSH, it has one of my
+favorite debugging modes. Just add a `-v` to your command for verbose
+mode. If that's not enough information, add another `v` for more
+verbosity, and if **that's** not enough, just add another `v` for super
+verbose mode.
+
+## Comprehension Questions
+
+1.  Under what circumstances should you move or share your SSH private
+    key?
+2.  What is it about SSH public keys that makes them safe to share?
+
+## Cheatsheet: `ssh` {#cheat-ssh}
+
+``` bash
+ssh <user>@<host>
+```
+
+| Flag | What it does                       | Notes                                         |
+|----------------|------------------------|---------------------------------|
+| `-v` | Verbose, good for debugging.       | Add more `v`s as you please, `-vv` or `-vvv`. |
+| `-i` | Choose identity file (private key) | Not necessary with default key names.         |

@@ -1,0 +1,581 @@
+# Using the Command Line {#sec-cmd-line-use}
+
+If you've never worked much on the command line, it takes some getting
+used to. You have no mouse or keyboard to work with -- all you've got is
+written commands.
+
+The good news is that the command line is conceptually pretty simple.
+You've got directories you can traverse, files that you can read, move,
+or edit, and settings you can change. That's pretty much it.
+
+In this chapter, we'll spend some time on how a bash command works (or
+zsh or ksh or fish -- they're all the same) and then get into how to do
+common tasks on the command line including looking at directories and
+files, and reading, moving, and writing files.
+
+If you just want reference materials, there's a [cheatsheet](#cheat-cli)
+with all the content at the end of the chapter.
+
+## Using bash
+
+The philosophy behind bash and its derivatives says that you should be
+able to accomplish anything you want with small programs invoked via a
+*bash* *command*. Each command should do just one thing, and complicated
+things should be accomplished by *composing* commands -- taking the
+output from one as the input to the next.
+
+::: callout-note
+I'm mostly targeting using Linux servers in this chapter, so you won't
+see much about Windows PowerShell commands in this chapter. If you have
+a Windows machine and you want to use bash, you can with the
+increasingly powerful *Windows Subsystem for Linux (WSL)*.
+:::
+
+Calling a command is as simple as typing the command on the command line
+and hitting `enter`.
+
+Helpfully, most bash commands are an abbreviation of the word for what
+the command does. Unhelpfully, the letters often seem somewhat random.
+For example, the command to *list* the contents of a directory is `ls`,
+which sorta makes sense. Over time the commands you use frequently will
+become second hand.
+
+Bash commands can be modified with *command arguments*, *flags*, and
+*flag arguments*. Bash commands are always formatted as
+`<command> <flags + flag args> <command args>`. It's nice that this
+structure is standard. The downside is that having the main argument
+come all the way at the end, after all the flags, can make it hard to
+mentally parse commands.
+
+Command arguments provide details to the command. They come after the
+command with a space in between. For example, if I want to run `ls` on
+the directory `/home/alex`, I can run `ls /home/alex` on the command
+line.
+
+Some commands have default arguments. For example the default argument
+for the `ls` command is the current directory. So if I'm in
+`/home/alex`, I'd get the same thing from either `ls` or
+`ls /home/alex`.
+
+Options or flags modify how the command operates and come between the
+command and arguments. Flags are denoted by having one or more dashes
+before them. For example, `ls` allows the `-l` flag, which displays the
+output as a list. So, `ls -l /home/alex` would get the files in
+`/home/alex` as a list.
+
+Some flags themselves have arguments. For example, the `-D` flag allows
+specifying a format for how the datetime is displayed from `ls -l`. So
+running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` lists all the files in
+`/home/alex` with the date-time of the last update formatted in
+*ISO-8601* format, which is always the correct format for dates.
+
+Because there can be so many arguments and flags, bash commands can get
+long. It's often nice to include one flag or argument per line to make
+it more readable. You can tell bash you want it to keep reading after a
+line break by ending the line with a space and a `\`.
+
+For example, here's that long `ls` command more nicely formatted:
+
+``` {.bash filename="Terminal"}
+> ls -l \
+  -D %Y-%m-%dT%H:%M:%S \
+  /home/alex
+```
+
+There is also help available!
+
+All of the flags and arguments for commands can be found in the
+program's *man page* (short for manual). You can access the man page for
+any command with `man <command>`. You can scroll the man page with arrow
+keys and exit with `q`.
+
+If you ever can't figure out how to quit, `ctrl + c` will quit from most
+command line situations.
+
+For the most part, you'll write commands directly on the command line.
+It's also possible to write and run bash scripts, which usually end in
+`.sh`. The advantage of writing bash scripts is that they can run
+basically anywhere. The disadvantage is that the ergonomics of scripting
+bash are terrible, but sometimes it's worth it.
+
+## File paths
+
+You're probably used to clicking around your computer's filesystem to
+find files and folders. On the command line, you have to traverse the
+filesystem via written commands, so getting comfortable reading and
+writing file paths is important.
+
+::: callout-note
+Since this chapter is just on tooling, I'm skipping a lot of background
+about the filesystem and how it's structured.
+
+You'll find that material in [Chapter @sec-linux-admin] on Linux
+Administration.
+:::
+
+Whenever you're on the command line, you are at a particular place in
+the filesystem called the *working directory*. File paths can be
+*absolute* so they operate the same irrespective of the current working
+directory. An absolute file path is easy to recognize because it starts
+with `/`.
+
+You can also use a *relative* file path, which starts at the current
+working directory, `.`
+
+Depending on what you're doing, absolute or relative paths might make
+more sense. Absolute file paths are useful when you want to access the
+same resource regardless of where a command is run, and relative file
+paths make more sense when you want the command to be contextual to the
+working directory.
+
+The working directory's parent is at `..`. So, for example, you could
+see everything in the parent directory of your current working directory
+with `ls ..` or its parent with `ls ../..`. The users's home directory
+is always easily accessible at `~`.
+
+You can get the full path to your working directory with the `pwd`
+command, which is an abbreviation for *print working directory*.
+
+Along with being able to inspect directories, it's useful to be able to
+change your working directory with the `cd` command, short for *change
+directory*. You can use either absolute or relative file paths with
+`cd`. So if you were in `/home/alex` and wanted to navigate to `/home`,
+either `cd ..` or `cd /home` would work.
+
+Some files or directories are *hidden* so they don't appear in a normal
+`ls`. You know a file or directory is hidden because its name starts
+with `.`. Hidden files are usually configuration files that you aren't
+manipulating in normal usage. These aren't secret or protected in any
+way, they're just skipped by `ls` for convenience.
+
+You've already seen a couple in this book -- your GitHub Action was
+configured in the `.github` directory and your Prezto configuration was
+done in the `.zpreztorc` file. You might also be familiar with
+`.gitignore`, `.Rprofile`, and `.Renviron`. If you want to display
+hidden files in a directory, you can use the `-a` flag (for all) with
+`ls`.
+
+## Reading text files
+
+On a server, a huge fraction of what you'll be doing is reading
+configuration and log files from the server, so being comfortable with
+the commands to do so is essential.
+
+There are a few different commands I frequently use for reading files:
+
+-   `cat` is the basic command to print a file, starting at the
+    beginning.
+
+-   `less` prints a file, starting at the beginning, but only a few
+    lines at a time.
+
+-   `head` prints only the first few lines and exits. It is especially
+    useful to peer at the beginning of a large file, like a `csv` file
+    -- so you can quickly preview the column heads and the first few
+    values.
+
+-   `tail` prints a file going up from the end. This is especially
+    useful for log files, as the newest logs are appended to the end of
+    a file. This is such a common practice that "tailing a log file" is
+    a common phrase.
+
+    -   Sometimes, you'll want to use the `-f` flag (for *follow*) to
+        tail a file with a live view as it updates.
+
+Sometimes you want to search around inside a text file. You're probably
+familiar with the power of *regular expressions (regex)* to search for
+specific character sequences in text strings. The Linux command `grep`
+is the main regex command.
+
+In addition to searching in text files, `grep` is often useful in
+combination with other commands. For example, it's often useful to put
+the output of `ls` into `grep` to search for a particular file in a big
+directory.
+
+The Linux *pipe operator*, `|`, takes the output of the previous command
+and sends it into the next one. So if I was searching for a file whose
+name contained the word `data`, that might look something like
+`ls ~/projects/my-project | grep data`.
+
+::: callout-note
+## Ceci n'est pas une pipe?
+
+The pipe should feel extremely familiar to R users.
+
+The pipe from the `{magrittr}` package, `%>%`, was introduced in 2013,
+and is a popular part of the `{tidyverse}`.[^2-2-cmd-line-use-1] The
+`{magrittr}` pipe was inspired by both the Unix (Linux) pipe and the
+pipe operator in the `F#` programming language.
+
+Due to its popularity, the pipe `|>` was formally added to the base R
+language in R 4.1 in 2021.
+:::
+
+[^2-2-cmd-line-use-1]: The title of this callout box is also the tagline
+    for the `{magrittr}` package.
+
+## Manipulating files and directories
+
+You'll often need to manipulate files and directories. Here's how.
+
+You can copy a file or directory from one place to another using the
+`cp` command. `cp` leaves behind the old file or directory and adds the
+new one at the specified location. You can use the `-r` flag to
+recursively copy everything in a directory.
+
+You can move a file with the `mv` command, which does not leave the old
+file behind.
+
+If you want to remove a file entirely, you can use the `rm` command.
+There is also a version to remove a directory, `rmdir`.
+
+::: callout-warning
+Be very careful with the `rm` command.
+
+Unlike on your desktop there's no recycle bin! Things that are deleted
+are instantly deleted forever.
+:::
+
+If you want to make a directory, `mkdir` makes a directory. `mkdir` gets
+mad if it's not creating the whole file path, so the `-p` flag can be
+handy to create only the parts of the path that don't exist.
+
+Sometimes it's useful to operate on every file inside a directory. You
+can get every file that matches a pattern with the wildcard, `*`. You
+can also do partial matching with the wildcard to get all the files that
+match part of a pattern.
+
+For example, let's say I have a `/data` directory and I want to put a
+copy of only the `.csv` files inside into a new `data-copy`
+sub-directory. I could do the following:
+
+```         
+> mkdir -p /data/data-copy
+> cp /data/*.csv /data/data-copy
+```
+
+## Moving things to and from the server
+
+It's very common to have a file on your server you want to move to your
+desktop or vice versa.
+
+If you're moving multiple files, it's easier to combine them into a
+single object and move that.
+
+The `tar` command turns a set of files or whole directory into a single
+archive file, usually with the file suffix `.tar.gz`. Creating an
+archive also does some compression. The amount depends on the content.
+
+In my opinion, `tar` is a rare failure of bash to provide standalone
+commands for anything you need to do. `tar` is used to both create and
+unpack (extract) archive files. Telling it which one requires the use of
+several flags. You'll basically never use `tar` without a bunch of flags
+and the incantation is hard to remember. I google it every time I use
+it. The flags you'll use most often are in the cheatsheet below.
+
+Once you've created an archive file, you can move it to or from a server
+with the `scp` command. `scp` -- short for secure copy -- is basically
+`cp`, but with an SSH connection in the middle.[^2-2-cmd-line-use-2]
+
+[^2-2-cmd-line-use-2]: It's worth noting that `scp` is now considered
+    "insecure and outdated". The ways it is insecure are rather obscure
+    and not terribly relevant for most people. But if you're moving a
+    lot of data, you may want something faster. If so, I'd recommend
+    more modern options like `sftp` and `rsync`. I probably wouldn't
+    bother if you're only occasionally `scp`-ing small files to or from
+    your server.
+
+Since `scp` establishes an SSH connection, you need to make the request
+to somewhere that is accepting SSH connections. Since your server is
+probably accepting SSH connections and your laptop probably (hopefully)
+is not. That means that whether you're copying something to or from a
+server, you'll run `scp` from a regular terminal on your laptop, not one
+that's already SSH-ed into your server.
+
+Regular `ssh` options work with `scp`, like `-i` and `-v`.
+
+## Writing text files
+
+There will be many situations where writing into a text file will be
+handy. There are several ways to write into a text file without opening
+it to edit.
+
+You may have some preexisting text you want to add to a file. You can do
+this with the `>` command, which takes the output of a command on the
+left and writes it as a file. If the file you specify already exists, it
+will be overwritten. If you want to append the new text, rather than
+overwrite, `>>` appends to the end of the file.
+
+A common reason you might want to do this is to add something to the end
+of your `.gitignore`. For example, if you want to add your `.Rprofile`
+file to your `.gitignore`, you could do that with
+`echo .Rprofile >> .gitignore`. Note that `echo` is a command that just
+repeats the input as a character string. Otherwise `.Rprofile` would be
+treated as a command.
+
+There are times when you want to make files or directories with nothing
+in them. The `touch` command makes a blank file at the specified file
+path. If you `touch` a preexisting file, it updates the time the file
+was last updated without actually making any changes.
+
+### Text editors - vim and nano
+
+There are two command line text editors you'll probably encounter:
+`nano` and `vi`/`vim`.[^2-2-cmd-line-use-3] While they're both powerful
+text editing tools, they can also be intimidating if you've never used
+them before.
+
+[^2-2-cmd-line-use-3]: `vi` is the original fullscreen text editor for
+    Linux. `vim` is its successor (`vim` stands for `vi` improved). I'm
+    not going to worry about the distinction.
+
+You can open a file in either by typing `nano <filename>` or
+`vi <filename>`.
+
+At this point many newbie command line users find themselves completely
+stuck, unable to do anything -- even just exit and try again. But don't
+worry, there's a way out of this labyrinth!
+
+In `nano` there will be some helpful-looking prompts at the bottom.
+You'll see that once you're ready to go, you can exit with `^x`. But
+you'll find yourself stymied when you try to exit with the caret
+character, `^`, and an `x`.
+
+Never fear. On Windows, `^` is short for `Ctrl` and on Mac it's for
+Command (`⌘`), so `Ctrl + x` or `⌘ + x` will exit.
+
+Where `nano` gives you helpful -- if obscure -- hints, a first
+experience in `vim` is the stuff of command line nightmares. Typed words
+don't appear in your on the screen, but instead cause dizzying jumps
+around the page and words and lines of text disappear without a trace.
+
+This is all because you always enter `vim` in the (poorly named) *normal
+mode* where you use the letter keys to navigate, type, and interact with
+`vim` itself. Normal mode exists because `vim` was created before
+keyboards uniformly had arrow keys. These days, `vim` still operates
+this way because people are used to it and because it minimizes how much
+your hands have to move on the keyboard.
+
+While I've never felt taxed from using the arrow keys, `vim` keybindings
+are worth spending some time learning. `vim` includes some powerful
+shortcuts for moving within and between lines and selecting and editing
+text. Most IDEs you might use, including RStudio, JupyterLab, and VSCode
+have vim modes. Learning some of the basics can make you way faster
+editing code files, plus you'll feel really cool.
+
+Here I'm only going to teach you how to make changes, save, and exit
+without issue.
+
+When you're in normal mode, pressing the `i` key activates *insert
+mode*, which will feel normal for those of us used to arrow keys. You
+can type and words will appear and you can navigate with the arrow keys.
+
+Now that you've figured out how to exit normal mode, you may wish never
+to return. But it's the only way to save files and exit `vim`. You can
+do so with the `escape` key.
+
+In order to do file operations, you type a colon, `:`, followed by the
+shortcut for what you want to do, and `enter`. The two most common
+commands you'll use are save (write) with `w` and quit with `q`. You can
+combine these together, so you can save and quit in one command using
+`:wq`.
+
+Sometimes you may want to exit without saving. If you've made changes
+and try to exit with `:q`, you'll find yourself in an endless loop of
+warnings that your changes won't be saved. You can tell `vim` you mean
+it with the exclamation mark, `!`, and exit using `:q!`.
+
+## Comprehension Questions
+
+1.  What are the parts of a bash command?
+2.  Where do commands run? How do you know where they're going to run or
+    specify a relative path?
+3.  What are 4 commands to read text files?
+4.  How can you copy, move, or delete a file? What about to or from a
+    server?
+5.  How do you know if you've opened `nano` or `vim`? How would you exit
+    in either case?
+
+## Cheatsheet: Command Line {#cheat-cli}
+
+### General Command Line
+
++----------------+----------------------------------------------+
+| Symbol         | What it is                                   |
++================+==============================================+
+| `              | Open manual for `command`                    |
+| man <command>` |                                              |
++----------------+----------------------------------------------+
+| `q`            | Quit the current screen                      |
++----------------+----------------------------------------------+
+| `\`            | Continue bash command on new line            |
++----------------+----------------------------------------------+
+| `ctrl + c`     | Quit current execution                       |
++----------------+----------------------------------------------+
+
+### Linux Navigation
+
++----------------+-----------------------+---------------------------+
+| Command        | What it does/is       | Notes + Helpful options   |
++================+=======================+===========================+
+| `/`            | System root or file   |                           |
+|                | path separator        |                           |
++----------------+-----------------------+---------------------------+
+| `.`            | current working       |                           |
+|                | directory             |                           |
++----------------+-----------------------+---------------------------+
+| `..`           | Parent of working     |                           |
+|                | directory             |                           |
++----------------+-----------------------+---------------------------+
+| `~`            | Home directory of the |                           |
+|                | current user          |                           |
++----------------+-----------------------+---------------------------+
+| `ls <dir>`     | List objects in a     | `-l` - format as list     |
+|                | directory             |                           |
+|                |                       | `-a` - all (include       |
+|                |                       | hidden files that start   |
+|                |                       | with `.`)                 |
++----------------+-----------------------+---------------------------+
+| `pwd`          | Print working         |                           |
+|                | directory             |                           |
++----------------+-----------------------+---------------------------+
+| `cd <dir>`     | Change directory      | Can use relative or       |
+|                |                       | absolute paths            |
++----------------+-----------------------+---------------------------+
+
+### Reading Text Files
+
++------------------+-----------------------+-----------------------+
+| Command          | What it does          | Notes + Helpful       |
+|                  |                       | options               |
++==================+=======================+=======================+
+| `cat <file>`     | Print a file from the |                       |
+|                  | top.                  |                       |
++------------------+-----------------------+-----------------------+
+| `less <file>`    | Print a file, but     | Can be very helpful   |
+|                  | just a little.        | to look at a few rows |
+|                  |                       | of csv.               |
+|                  |                       |                       |
+|                  |                       | Lazily reads lines,   |
+|                  |                       | so can be *much*      |
+|                  |                       | faster than `cat` for |
+|                  |                       | big files.            |
++------------------+-----------------------+-----------------------+
+| `head <file>`    | Look at the beginning | Defaults to 10 lines, |
+|                  | of a file.            | can specify a         |
+|                  |                       | different number with |
+|                  |                       | `-n <n>`.             |
++------------------+-----------------------+-----------------------+
+| `tail <file>`    | Look at the end of a  | Useful for logs where |
+|                  | file.                 | the newest part is    |
+|                  |                       | last.                 |
+|                  |                       |                       |
+|                  |                       | The `-f` flag is      |
+|                  |                       | useful to follow for  |
+|                  |                       | a live view.          |
++------------------+-----------------------+-----------------------+
+| `gr              | Search a file using   | Writing regex can be  |
+| ep <expression>` | regex.                | a pain. I suggest     |
+|                  |                       | testing expressions   |
+|                  |                       | on regex101.com.      |
+|                  |                       |                       |
+|                  |                       | Often useful in       |
+|                  |                       | combination with the  |
+|                  |                       | pipe.                 |
++------------------+-----------------------+-----------------------+
+| `|`              | The pipe              |                       |
++------------------+-----------------------+-----------------------+
+
+### Manipulating Files
+
++----------------+----------------+-------------------------------+
+| Command        | What it        | Notes + Helpful Options       |
+|                | does/is        |                               |
++================+================+===============================+
+| `rm <path>`    | Remove         | `-r` - recursively remove     |
+|                |                | everything below a file path  |
+|                |                |                               |
+|                |                | `-f` - force - don't ask for  |
+|                |                | each file                     |
+|                |                |                               |
+|                |                | **Be very careful, it's       |
+|                |                | permanent**                   |
++----------------+----------------+-------------------------------+
+| `c             | Copy           |                               |
+| p <from> <to>` |                |                               |
++----------------+----------------+-------------------------------+
+| `m             | Move           |                               |
+| v <from> <to>` |                |                               |
++----------------+----------------+-------------------------------+
+| `*`            | Wildcard       |                               |
++----------------+----------------+-------------------------------+
+| `              | Make/remove    | `-p` - create any parts of    |
+| mkdir`/`rmdir` | directory      | path that don't exist         |
++----------------+----------------+-------------------------------+
+
+### Move things to/from server
+
++----------------+----------------+--------------------------+
+| Command        | What it does   | Notes + Helpful options  |
++================+================+==========================+
+| `tar`          | Create/extract | Almost always used with  |
+|                | archive file   | flags.                   |
+|                |                |                          |
+|                |                | Create is usually        |
+|                |                |                          |
+|                |                | `tar -czf <              |
+|                |                | archive name> <file(s)>` |
+|                |                |                          |
+|                |                | Extract is usually       |
+|                |                |                          |
+|                |                | `                        |
+|                |                | tar -xfv <archive name>` |
++----------------+----------------+--------------------------+
+| `scp`          | Secure copy    | Run on laptop to server  |
+|                | via `ssh`      |                          |
+|                |                | Can use most `ssh` flags |
+|                |                | (like `-i` and `-v`)     |
++----------------+----------------+--------------------------+
+
+### Write files from the command line
+
++----------------+----------------+-------------------------+
+| Command        | What it does   | Notes                   |
++================+================+=========================+
+| `touch`        | Creates file   | Updates last updated to |
+|                | if doesn't     | current time if it does |
+|                | already exist. | exist.                  |
++----------------+----------------+-------------------------+
+| `>`            | Overwrite file | Creates a new file if   |
+|                | contents       | it doesn't exist        |
++----------------+----------------+-------------------------+
+| `>>`           | Concatenate to | Creates a new file if   |
+|                | end of file    | it doesn't exist        |
++----------------+----------------+-------------------------+
+
+### Command Line Text Editors (Vim + Nano)
+
++----------------+-----------------------+------------------+
+| Command        | What it does          | Notes + Helpful  |
+|                |                       | options          |
++================+=======================+==================+
+| `^`            | Prefix for file       | Its the `⌘` or   |
+|                | command in `nano`     | `Ctrl` key, not  |
+|                | editor.               | the caret        |
+|                |                       | symbol.          |
++----------------+-----------------------+------------------+
+| `i`            | Enter insert mode     |                  |
+|                | (able to type) in     |                  |
+|                | `vim`                 |                  |
++----------------+-----------------------+------------------+
+| `escape`       | Enter normal mode     |                  |
+|                | (navigation) in       |                  |
+|                | `vim`.                |                  |
++----------------+-----------------------+------------------+
+| `:w`           | Write the current     | Can be combined  |
+|                | file in `vim` (from   | to save and quit |
+|                | normal mode)          | in one, `:wq`    |
++----------------+-----------------------+------------------+
+| `:q`           | Quit `vim` (from      | `:q!` quit       |
+|                | normal mode)          | without saving   |
++----------------+-----------------------+------------------+
