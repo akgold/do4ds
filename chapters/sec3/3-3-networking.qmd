@@ -1,324 +1,140 @@
 # Intro to Computer Networks {#sec-basic-networks}
 
-These days using a computer is basically synonymous with using a
-computer network. When you visit a website, print a document, or login
-to your email, you are making use of a computer network.
+After the last two chapters, you understand how to get a server up and
+running from AWS and how to get applications you want running on that
+server. That's great...but you're still not at the point of providing a
+great experience. After all, if you want to share a Shiny app with your
+boss, you don't want to have to explain SSH tunneling.
 
-This chapter is an introduction to how computer networks work. This
-chapter is heavy on introducing mental models for how network traffic
-works. There is no lab in this chapter.
+For your server to be useful to the people who need it, it needs to be
+accessible to them in their web browser. They'll want to view the Shiny
+app at a normal URL, and they'll want to access RStudio Server and
+JupyterLab in their browser.
 
-The computer network we're most familiar with is the biggest of them
-all: The Internet. But there are myriad other networks, like the very
-small private network of the devices (phones, computers, TVs, etc)
-connected to your home wifi router, to the somewhat larger VPN (which
-stands for virtual private network) you might connect to for school or
-work.
+All that means that you're going to have to care about computer
+*networking*, whether you like it or not.
 
-The good news is that computer networks are basically all the same. If
-you understand one, you understand them all. Each step in the process is
-governed by a *protocol* that defines what is valid.
+Computer networking is accomplished using the *Transmission Control
+Protocol/Internet Protocol (TCP/IP)* stack of protocols, which define
+how messages can be sent across the network. There's a lot of depth and
+complexity in TCP/IP, all the way down to how to defining how physical
+hardware works. Luckily, as the administrator of a cloud-based EC2
+instance, you don't have to be super concerned with all of TCP/IP.
 
-There are two basic levels of protocols that are helpful to understand
--- the transport + address layer, and the application layer.
+Instead, we're just going to discuss a few things that are helpful to
+understand as you administer a server. These things mostly concern
 
-Just as you and your friend could communicate in any number of human
-languages, computers define what a valid message is with an *application
-layer protocol*.
+1.  What type of traffic is going to be coming to my server?
+2.  How will the traffic get to the applications I have running?
+3.  How will the traffic know how to get to my server?
 
-There are numerous application layer protocols. Some you will see in
-this book include `SSH` for access to the terminal on a remote machine,
-`(S)FTP` for file transfers, `SMTP` for email, `LDAP(S)` for
-authentication and authorization, and `websockets` for persistent
-bi-directional communication, which is what the Shiny and Streamlit
-packages use.
+Luckily, there's a familiar piece of technology that combines the
+answers to all of these questions, the Uniform Resource Locator (URL).
+You use URLs like $google.com$ all the time as your browse the internet.
+So let's talk about how a URL answers the questions we need to know to
+get to our server from a browser.
 
-The most common application layer protocol, used for all standard web
-traffic, is **h**yper**t**ext **t**ransfer **p**rotocol (*http*), which
-we discussed in some depth in [Chapter @sec-proj-arch] on using APIs for data
-science purposes.
+The first thing to understand is that $google.com$ is not actually a
+URL. Instead, it's just one of the four parts of a
+URL.[^3-3-networking-1] Your browser assumes defaults for the other
+parts, so you usually don't see them. If you wanted to provide the full
+URL to $google.com$, it would actually include four pieces of
+information and would look like this:
+$$\overbrace{\text{https://}}^\text{protocol}\overbrace{\text{google.com}}^\text{domain}\overbrace{\text{:443}}^\text{port}\overbrace{\text{/}}^\text{path}$$
 
-For the purposes of this chapter, we're going to completely set aside
-physical network infrastructure. Yes, there are wires, cables,
-satellites, routers, server farms, and more that allow computer
-networking to work. For the purposes of this chapter, we're going to
-focus entirely on the software side of networking.
+[^3-3-networking-1]: Different resources list different numbers of parts
+    for URLs. I believe this way of dividing a URL is most useful for
+    the purposes of this book.
 
-One cool thing about the cloud is that it allows you to abstract away
-all of the physical hardware and focus completely on how the software
-interacts.
+Let's dig into what each of these four parts are and how they allow you
+to access resources over the web.
 
-## TCP/IP and the mail
+## Protocols define communication type
 
-Let's start by imagining you have a penpal, who lives in an apartment
-building across the country.[^3-3-networking-1]
+The first part of a URL is the *application layer protocol*, or just
+protocol for short. The protocol is the top layer of the TCP/IP stack
+and defines how one application can communicate with another. A helpful
+analogy is to think about sending a letter to a penpal, in which case
+the application layer protocol is the language -- English or Spanish or
+some made up buddy language -- you've agreed to write in.
 
-[^3-3-networking-1]: For this analogy to work, everyone lives in
-    apartment buildings rather than standalone houses.
-
-Let's say you've got some juicy gossip to share with your penpal.
-Because this gossip is so juicy, you're not going to put it on a
-postcard. You'd write your letter, put it inside an envelope, address
-the letter to the right spot, and put it in the mail.
-
-You trust the postal service to take your letter, deliver it to the
-correct address, and then your friend will be able to read your letter.
-
-The process of actualy getting data from one computer to another is
-governed by the *TCP/IP* protocol and is called *packet
-switching*.[^3-3-networking-2]
-
-[^3-3-networking-2]: TCP and IP are actually two separate protocols at
-    different layers of the protocol stack. But they're so closely
-    linked that we can talk about them as one.
-
-When a computer has data to send to another computer, it takes that
-information and packages it up into a bundle called a
-*packet*.[^3-3-networking-3]
-
-[^3-3-networking-3]: One of the biggest ways the mail *is not* like
-    packet switching is that your message gets chopped up among lots of
-    different packets, which are routed independently, and are
-    reassembled when they get where they're going. Works well for
-    computers, not so well for real-world mail. It's also pretty much an
-    irrelevant detail, since this whole process works quite invisibly.
-
-The data in the packet is like the contents of your letter.
-
-Just as the postal service defines permissible envelope sizes and
-address formats, the *TCP/IP* protocol defines what a packet has to look
-like from the outside, including what constitutes a valid address.
-
-A uniform resource locator (URL) is the way to address a specific
-resource on a network.
-
-A full URL includes 4 pieces of information:
-$$\overbrace{\text{https://}}^\text{protocol}\overbrace{\text{example.com}}^\text{address}\overbrace{\text{:443}}^\text{port}\overbrace{\text{/}}^\text{resource}$$
-
-The protocol starts the URL. It is separated from the rest of the URL by
-`://`.
-
-Each of the rest of the pieces of the URL is needed to get to a specific
-resource and has a real-world analog.
-
-The address is like the street address of your penpal's building. It
-specifies the host where your data should go.[^3-3-networking-4]
-
-[^3-3-networking-4]: Often it's not a single server at the address --
-    but it behaves like one. It could instead be a proxy in front of a
-    cluster of servers or even more complicated routing. All that
-    matters is that it behaves like a single server from the outside.
-
-A host is any entity on a network that can receive requests and send
-responses. So a server is a common type of host on a network, but so is
-a router, your laptop, and a printer.
-
-The port is like your friend's apartment. It specifies which service on
-the server to address.
-
-Lastly, the resource dictates what resource you want on the server. It's
-like the name on the address of the letter, indicating that you're
-writing to your penpal, not their mom or sister.
-
-This full URL may look a little strange to you. You're probably used to
-just putting a standalone domain like $google.com$ into your browser
-when you want to go to a website. That's because `https`, port `443`,
-and `/` are all defaults, so modern browsers don't make you specify
-them.
-
-But what if you make it explicit? Try going to
-`https://google.com:443/`. What do you get?
-
-## Ports get you to the right service
-
-A port is a location on a server where a network connection is possible.
-It's like the apartment number for the mail. Each port has a unique
-number 1 to just over 65,000. By default, the overwhelming majority of
-the ports on the server are closed for security reasons.
-
-Your computer automatically opens ports to make outgoing connections,
-but if you want to allow someone to make inbound connections -- like to
-access RStudio or a Shiny app on a server -- you need to manually
-configure and open a port.
-
-Any program that is running on a server and that you intend to be
-accessible from the outside is called a service. For example, we set up
-RStudio, JupyterHub, and a Plumber API as services in the lab in
-[Chapter @sec-linux-admin]. Each service lives on a unique port on the
-server.
-
-Since each service running on a server needs a unique port, it's common
-to choose a somewhat random relatively high-numbered port. That makes
-sure it's unlikely that the port will conflict with another service
-running on the server.
-
-For example RStudio Server runs on port `8787` by default. According to
-JJ Allaire, there's no special meaning to this port. It was chosen
-because it was easy to remember and not `8888`, which some other popular
-projects had taken.
-
-There's a [cheatsheet](#cheat-ports) of commonly used ports at the end of the chapter.
-
-## Assigning addresses
-
-The proper address of a server on a network is defined by the *Internet
-Protocol* (IP) and is called an *IP Address*. IP addresses are mapped to
-human-friendly domains like $google.com$ with the *Domain Name Service
-(DNS)*.
+You've seen at least two protocols so far in this book. In [Chapter
+@sec-ssh] you learned about how to connect to the command line of
+another computer using SSH. And in the last chapter, we created an SSH
+tunnel so we could use HTTP to view a webpage using our browser.
 
 ::: callout-note
-In this chapter, we're going to set DNS aside and talk exclusively about
-IP Addresses.
-
-[Chapter @sec-dns] is all about DNS.
+You've probably also heard of HTTPS. We'll get more into the distinction
+in [Chapter @sec-ssl].
 :::
 
-Every host on the internet has a public IP address.
+The most common application layer protocol is HTTP(S), which is what web
+traffic uses. In [Chapter @sec-data-arch], we talked a lot about how
+APIs can use HTTP to communicate with each other. Your browser works
+very similarly. When you got to a webpage, it makes HTTP `GET` calls to
+that webpage, requesting the contents of the page. Once all of the
+page's assets come in, the HTML and CSS and Javascript that define the
+page, your browser reassembles the webpage and shows it to you. As you
+interact with the webpage, traffic goes back and forth between your
+computer and the server, sending and receiving data.
 
-A public IP address is an IP address that is valid across the entire
-internet. That means that each public IP address is unique across the
-entire internet. You can think of a public IP address like the public
-street address of a building.
+Other important protocols that you might see in this book or elsewhere
+are SFTP for file transfers, SMTP for emails, LDAP(S) for auth, and
+websockets, which are used by Shiny and Streamlit.
 
-But many hosts are not publicly accessible on the internet. Many are
-housed in private networks. A private network is one where the hosts
-aren't directly accessible to the public. You can think of a host in a
-private network like a building inside a gated community. You may still
-be able to get there from the public, but you can't just walk up to the
-building from the street. Instead you need to come in through the
-specific gates that have been permitted and approach only on the roads
-that are allowed.
+## Domains map to network locations
 
-TODO: Image of public IPs like street address, private like cul-de-sac
+The domain provides a human-readable the address for the site you're
+trying to visit. But a domain doesn't actually address a particular
+*host*, the networking term for a computer that's connected to a
+network. Instead, the true address of a host is an *IP address*, which
+is mapped to a domain using *Domain Name Service (DNS)*. [Chapter
+@sec-dns] is all about DNS. For now, let's stick with IP addresses.
 
-There are many different kinds of private networks. Some are small and
-enforced by connection to a physical endpoint, like the private network
-your WiFi router controls that houses your laptop, phone, TV, Xbox, and
-anything else you allow to connect to your router. In other cases, the
-network is a software network. Many organizations have virtual private
-networks (VPNs). In this case, you connect to the network via software.
-There may be resources you can only connect to inside your VPN and there
-also might be limitations about what you can go out and get.
+An IP addresses, which looks something like `65.77.154.233` or
+`3da4:66a::1`, is the proper addresses of a host on the internet. If you
+think of sending a message, like a request for a webpage, as like
+sending a letter to a friend, the digital analog of their street address
+would be the IP address.
 
-There are a few different reasons for this public/private network split.
-The first is security. If you've got a public IP address, anyone on the
-internet can come knock on your virtual front door. That's actually not
-so bad. What's more problematic is that they can go all the way around
-the building looking for an unlocked side door. Putting your host inside
-a private network is a way to ensure that people can only approach the
-host through on the pathways you intend.
+Now, you can have a host with a public IP address. For example, as we've
+been accessing our data science workbench, we've been SSH-ing in with
+the public IP address. But there are many devices that don't have a
+public IP address. Instead, they're connected only to a private network
+with a private IP address. For example, your computer, phone, TV, and
+smart appliances are all hosts on a network, but they don't have public
+IP addresses. Instead, they connect to the private network maintained by
+your home router, which does have a public IP address.
 
-The second reason is convenience.
+In that case, your public IP address is less like a front door, and more
+like the front gate of a gated community. Your router is what does
+*network address* *translation* back and forth between public and
+private IP addresses. For the purposes of the labs in this book, we're
+just using one server with a public IP address. But in a lot of
+environments, you'll have a number of different servers inside a private
+network that don't have public IP addresses. That kind of more advanced
+network topology is beyond what we'll set up in this book, but it's
+discussed more in [Chapter @sec-ent-networks].
 
-Private networks provide a nice layer of abstraction for network
-addresses.
-
-You probably have a variety of network-enabled devices in your home,
-from your laptop and phone to your TV, Xbox, washing machine, and smart
-locks. But from the outside, your house has only one public IP address
--- the address of the router in your home. That means that your router
-has to keep track of all the devices you've got, but they don't need to
-register with any sort of public service just to be able to use the
-internet.
-
-As we'll get into in [Chapter @sec-dns], keeping track of IP Addresses
-is best left to machines. If you're managing a complex private network,
-it's really nice to give *hostnames* to individual hosts. A nice feature
-of a private hostname compared to a public address is that you don't
-have to worry if the hostname is unique across the entire internet -- it
-just has to be unique inside your private network.
-
-### Firewalls, allow-lists, and other security settings
-
-One of the most basic ways to keep a server safe is to not allow traffic
-from the outside to come in. Generally that means that in addition to
-keeping the server ports themselves closed, you'll also have a firewall
-up that defaults to all ports being closed.
-
-In AWS, the basic level of protection for your server is called the
-security group. If you remember, we used a default security group in
-launching your server. When you want to go add more services to your
-server, you'll have to open additional ports both on the server and in
-the security group.
-
-In addition to keeping particular ports closed, you can also set your
-server to only allow incoming traffic from certain IP addresses. This is
-generally a very coarse way to do security, and rather fragile. For
-example, you could configure your server to only accept incoming
-requests from your office's IP address, but what if someone needs to
-access the server from home or the office's IP address is reassigned?
-
-One thing that is *not* a security setting is just using a port that's
-hard to guess. For example, you might think, "Well, if I were to put SSH
-on port 2943 instead of 22, that would be safer because it's harder to
-guess!" I guess so, but it's really just an illusion of security. There
-are ways to make your server safer. Choosing esoteric port numbers
-really isn't it.
-
-## How packets are routed
-
-The way packets travel from one computer to another is called routing. A
-router is a hardware or software device that route packets.
-
-You can think of routers and public networks as existing in trees. Each
-router knows about the IP addresses downstream of it and also the single
-upstream *default address*.[^3-3-networking-5]
-
-[^3-3-networking-5]: There are actually a few different types of
-    addresses used to do this. IP addresses are used for identifying
-    network resources and the MAC address used for physical hardware.
-    Your router is also responsible for assigning IP addresses to
-    devices as they join the network via the dynamic host configuration
-    protocol (DHCP). I'm glossing over all these details as they're
-    immaterial to the understanding important for this chapter.
-
-TODO: diagram of routers in trees
-
-For example, the router in your house just keeps track of the actual
-devices that are attached to it. So if you were to print something from
-your laptop, the data would just go to your router and then to your
-printer.
-
-On the other hand, when you look at a picture on Instagram, that traffic
-has to go over the public network. The default address for your home's
-router is probably one owned by your internet service provider (ISP) for
-your neighborhood. And that router's default address is probably also
-owned by your ISP, but for a broader network.
-
-So your packet will get passed upstream to a sufficiently general
-network and then back downstream to the actual address you're trying to
-reach.
-
-Meanwhile, your computer just waits for a response. Once the server has
-a response to send, it comes back using the same technique. Obviously a
-huge difference between sending a letter to a penpal and using a
-computer network is the speed. Where sending a physical letter takes a
-minimum of days, sending and receiving packets over a network is so fast
-that the delay is imperceptible when you're playing a multiplayer video
-game or collaborating on a document online.
-
-## How to recognize an IP address
-
-You've probably seen IPv4 addresses many times. They're four blocks of
+There are two different kinds of IP addresses. So far we've been using
+the *IPv4* address of your server. IPv4 addresses are four blocks of
 8-bit fields (numbers between `0` and `255`) with dots in between, so
 they look something like `65.77.154.233`.
 
 If you do the math, you'll realize there are "only" about 4 billion of
-these. While we can stretch those 4 billion IP addresses to many more
-devices since most devices only have private IPs, we are indeed running
-out of public IPv4 addresses.
+these. There are so many things on the public internet that we are
+running out of IPv4 addresses, even though many devices only have only
+private IP addresses.
 
 The good news is that smart people started planning for this a while
-ago. In the last few years, adoption of the new IPv6 standard has
+ago. In the last few years, adoption of the new *IPv6* standard has
 started. IPv6 addresses are eight blocks of hexadecimal (`0-9` + `a-f`)
 digits separated by colons, with certain rules that allow them to be
 shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1`
-are both examples of valid IPv6 addresses.
-
-IPv6 will coexist with IPv4 for a few decades and we'll eventually
-switch entirely to IPv6. There's no worry about running out of IPv6
-addresses any time soon, because the total quantity of IPv6 addresses is
-a number with 39 zeroes.
+are both examples of valid IPv6 addresses. IPv6 will coexist with IPv4
+for a few decades and we'll eventually switch entirely to IPv6. There's
+no worry about running out of IPv6 addresses any time soon, because the
+total quantity of IPv6 addresses is a number with 39 zeroes.
 
 ### Reserved IP Addresses
 
@@ -332,39 +148,160 @@ The first IP address you'll see a lot is `127.0.0.1`, also known as
 For example, if you open a Shiny app in RStudio Desktop, the app will
 pop up in a little window along with a notice that says
 
-`Listening on http://127.0.0.1:6311`
+```{bash}
+Listening on http://127.0.0.1:6311
+```
 
-That `http://127.0.0.1` is indicating that your computer is serving the
-Shiny app to itself on the localhost address.
+That means that the Shiny app is running on the same computer and
 
-There are also a few blocks of addresses that are reserved for use on
-private networks, so they're never assigned in public.
+There are also a few blocks of IPv4 addresses -- those that start with
+`192.168`, `172.16`, and `10` that are reserved for use on private
+networks, so they're never assigned in public.
 
-+-----------------------+-----------------------------------+
-| Code                  | Meaning                           |
-+=======================+===================================+
-| 127.0.0.1             | `localhost` or loopback -- the    |
-|                       | machine that originated the       |
-|                       | request                           |
-+-----------------------+-----------------------------------+
-| 192.168.x.x           | Protected address blocks used for |
-|                       | private IP addresses.             |
-| 172.16.x.x.x          |                                   |
-|                       |                                   |
-| 10.x.x.x              |                                   |
-+-----------------------+-----------------------------------+
+## Ports and paths provide access to services
 
-You don't really need to remember these, but it's very likely you've
-seen an address like `192.168.0.1` or `192.168.1.1` if you've ever tried
-to configure a router or modem for your home wifi.
+The IP address, whether public or private, can get traffic to the front
+door of your server, but that traffic still needs to get to the right
+*service.* Any program that is running on a server and that you intend
+to be accessible from the outside is called a service. For example, we
+set up RStudio, JupyterHub, a Shiny app, and a Plumber API as services
+in the lab in [Chapter @sec-linux-admin].
 
-Now you know why.
+The service is accessible to the outside world via a *port*, which is a
+virtual location where network connections originate and terminate. If
+an IP address is like a street address, the port is like the apartment
+number within the building. Each service that is listening for inbound
+communication needs a dedicated port for it to listen
+on.[^3-3-networking-2]
+
+[^3-3-networking-2]: Ports are also used for outbound communication.
+    Computers know how to automatically open ports for outbound
+    communication and specify that's where the response should come, so
+    we're not going to get into them here.
+
+Each port has a unique number 1 to just over 65,000. At any given time,
+the overwhelming majority of the ports on a host are closed. Most
+services you might run have a default port they listen on. So one option
+to make those services available would be to publicly open those ports
+to the internet. For example, RStudio Server defaulted to port `8787`,
+so if you wanted to make it available you could just just open `8787` to
+the world and then people could access RStudio Server by putting `:8787`
+at the end of the URL for your server.
+
+But wait, you might be thinking, I access services of all different
+types over the internet all the time and I basically never type in a
+port. What gives?
+
+The answer is that it's rare to provide direct access to a service via a
+particular port. Instead, ports are usually used to listen for
+particular protocols.
+
+By default, HTTP runs on `80` and HTTPS on `443`. So if you've got just
+one service running on your server that uses HTTP or HTTPS, you can just
+bind that service to `80` or `443` and you're good to go.
+
+But that's often not the case. For example, on our workbench server,
+we've got four different services, all of which use HTTP(S) to
+communicate and also, as I mentioned, need a unique port.
+
+The solution here is to add another hop. That's why most server-based
+applications that use HTTP(S) bind to a reasonably random high-numbered
+port. This makes it unlikely that the service will conflict with another
+running on the server. This can also work when you've got a server
+dedicated to a particular task. For example, you might use HTTP to route
+traffic inside the private network to a computational node and just keep
+the traffic on the high port to avoid potential conflicts and
+accidentally opening it to the outside world.
+
+::: callout-note
+According to JJ Allaire, founder of Posit (formerly RStudio) there's no
+special reason RStudio Server runs on `8787`. It was chosen because it
+was easy to remember and not `8888`, which some other popular projects
+had taken.
+:::
+
+Then, HTTP(S) traffic will come in as usual over `80` or `443` and then
+will be redirected to the port where the service is actually running.
+The most common way to accomplish this is by using a *proxy*, which is a
+piece of software that exists for managing network traffic. There are
+many different kinds of proxies. There are two particularly popular open
+source proxies -- nginx and apache.
+
+TODO: diagram of proxy redirecting from 443 to 8787 via /rstudio
+
+Usually, the human-facing part of this is by specifying a path, like
+`/rstudio` or `/jupyter`, which is how the proxy knows which traffic to
+redirect where.
+
+::: callout-note
+## Container networking
+
+Now that you've got a pretty good understanding of public and private IP
+addresses, we can go back to a place where using Containers actually
+makes things harder -- networking. This is because, like with storage
+volumes, containers exist within their own private network. If you want
+to connect to something running in a container from the outside, you
+need to connect the container's port to an external one. It's not an
+insurmountable problem, but it does add another layer of private network
+that has to be configured for things to work properly.
+:::
+
+## Firewalls, allow-lists, and other security settings
+
+Anything that has a public IP address can be found by the outside world,
+and any host with a public IP address, it is a target and needs to be
+hardened to avoid infiltration.
+
+You might think that your little data science workbench doesn't have
+anything valuable on it and isn't a target. Unfortunately, that's wrong.
+While no one might care about stealing your data, they do want to hijack
+your server itself. The internet is, unfortunately, crawling with bots
+trying to access spare computational resources to harness in distributed
+denial of service (DDOS) attacks or to take over for Bitcoin mining.
+
+Similarly, the only completely safe port is a closed port. One that's
+open can be a target for entry for unsavory actors. You should open as
+few ports as necessary into your machine, and they generally should be
+standard ones for the protocols you're using. Your server will
+automatically open ports when there's a service listening on that port.
+
+If you're in AWS, there's another default layer of security. In AWS, the
+basic level of protection for your server is called the *Security
+Group*. These security groups define which ports are available for hosts
+inside that security group. When you want to go add more services to
+your server, you'll have to open additional ports both on the server and
+in the security group.
+
+::: callout-note
+If you think you've configured a service correctly and you just can't
+seem to access it, one of the first things to ask is whether you've got
+the port open in the security group.
+:::
+
+In addition to keeping particular ports closed, you can also set your
+server to only allow incoming traffic from certain IP addresses. This
+can be very useful if you can guarantee everyone is coming from a
+particular IP address, but that often isn't the case and it's a pretty
+coarse security control. For example, you could configure your server to
+only accept incoming requests from your office's IP address, but what if
+someone needs to access the server from home or the office's IP address
+is reassigned? I generally don't recommend restricting inbound IP
+address ranges.
+
+One thing that is *not* a security setting is just using a port that's
+hard to guess. For example, you might think, "Well, if I were to put SSH
+on port 2943 instead of 22, that would be safer because it's harder to
+guess!" I guess so, but it's really just an illusion of security. There
+are ways to make your server safer. Choosing esoteric port numbers
+really isn't it.
 
 ## Basic network troubleshooting
 
-Networking can be difficult to manage because there are so many layers
-where it can go awry. Let's say you've configured a service on your
-server, but you just can't seem to access it.
+Networking can be difficult to manage because there are so many layers.
+It will frequently happen that you think a service is configured, but
+you just can't seem to access it. Once you've SSH-ed into the server and
+checked that the application is running as expected, it's time to dig
+into network debugging.
 
 The `ping` command can be useful for checking whether your server is
 reachable on the network. For example, here's what happens when I `ping`
@@ -381,18 +318,24 @@ round-trip min/avg/max/stddev = 13.766/13.766/13.766/0.000 ms
 ```
 
 This looks great -- it sent 1 packet to the server and got one back.
-That's exactly what I want. Seeing an unreachable host or packet loss
-would be an indication that my networking probably isn't configured
-correctly somewhere between me and the server. I generally like to use
-`ping` with the `-o` option for sending just **o**ne packet -- as
-opposed to continuously trying.
+That's exactly what I want.
 
-If `ping` fails, it means that my server isn't reachable. The things I'd
-want to check is that I have the URL for the server correct, that DNS is
-configured correctly (see [Chapter @sec-dns]), that I've correctly
-configured any firewalls to have the right ports open (Security Groups
-in AWS), and that any intermediate networking devices are properly
-configured (see more on proxies in [Chapter @sec-ent-networks]).
+::: callout-note
+Packets are the atomic unit of information being transmitted over a
+computer network. How traffic gets arranged in packets and how packets
+are routed in a process called packet switching are fascinating, but
+really not necessary to understand to administer a data science
+workbench server.
+:::
+
+Seeing an unreachable host or packet loss would be an indication that my
+networking probably isn't configured correctly somewhere between me and
+the server. I generally like to use `ping` with the `-o` option for
+sending just one packet -- as opposed to continuously trying.
+
+If `ping` fails, it means that the server isn't reachable and it's time
+to check DNS, that firewalls to have the right ports open (Security
+Groups in AWS), and that any proxied are properly configured.
 
 If `ping` succeeds but I still can't access the server, `curl` is good
 to check. `curl` actually attempts to fetch the website at a particular
@@ -417,16 +360,12 @@ Content-Type: text/html
 ```
 
 The important thing here is that first line. The server is returning a
-`200` HTTP status code, which means all is well. For more on HTTP status
-codes and how to interpret them, see [Chapter @sec-proj-arch].
+`200` HTTP status code, which means all is well. If you get something
+else, take a look back at the [http code cheatsheet](#cheat-http) in
+[Chapter @sec-data-access].
 
 If `ping` succeeds, but `curl` does not, it means that the server is up
-at the expected IP address, but the service is not accessible. At that
-point, you might check whether the right ports are accessible -- it's
-possible to (for example) have port 443 or 80 accessible on your server,
-but not the port you actually need for your service. You also might
-check on the server itself that the service is running and that it is
-running on the port you think it is.
+at the expected IP address, but the service is not accessible.
 
 If you're running inside a container, you should check that you've
 properly configured the port inside container to be forwarded to the
@@ -435,15 +374,16 @@ outside.
 ## Comprehension Questions
 
 1.  What are the 4 components of a URL? What's the significance of each?
-2.  What are the two things a router keeps track of? How does it use
-    each of them?
-3.  Are there any inherent differences between public and private IP
+2.  Are there any inherent differences between public and private IP
     addresses?
-4.  What is the difference between an IP address and a port?
-5.  Let's say you've got a server at 54.33.115.12. Draw a mind map of
-    what happens when you try to SSH into the server. Your explanation
-    should include the terms: IP Address, port, 22, default address,
-    router, sever.
+3.  Draw a mind map of trying to access the following in your browser.
+    Include the following terms: URL, domain, IP Address, port, path,
+    `80`, `443`, `8000`, proxy, server, HTTP, HTTPS, status code,
+    protocol
+    1.  A Shiny app on a server at $\text{http://my-shiny.com}$ where
+        Shiny Server is sitting on port `80`.
+    2.  JupyterHub on a server at $\text{https://example.com/jupyter}$
+        where Jupyter is on port `8000`.
 
 ## Lab: Making it accessible in one place
 
@@ -498,11 +438,11 @@ Here are the steps to configure your proxy on your server:
 1.  SSH into your server.
 2.  Install Nginx with `sudo apt install nginx`.
 3.  Save a backup of the default `nginx.conf`,
-    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-3-networking-6]
+    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-3-networking-3]
 4.  Edit the Nginx configuration with `sudo vim /etc/nginx/nginx.conf`
     and replace it with:
 
-[^3-3-networking-6]: This is generally a good practice before you start
+[^3-3-networking-3]: This is generally a good practice before you start
     messing with config files. Bad configuration is usually preferable
     to a service that can't start at all because you've messed up the
     config so badly. It happens.
@@ -615,17 +555,76 @@ the server. Depending on the service you're configuring, there may be
 other configuration you'll have to do, but that will vary on a
 service-by-service basis.
 
-### Cheatsheet: Special Ports {#cheat-ports}
+### Cheatsheet: IP Addresses and Ports {#cheat-ports}
 
-All ports below 1024 are reserved for common server tasks, so you can't
-assign services to low-numbered ports.
+### Special IP Addresses
 
-There are also three common ports that will come up over and over. These
-are handy because if you're using the relevant service, you don't have
-to indicate if it's using the default port.
++---------------------------+------------------------------------------+
+| Code                      | Meaning                                  |
++===========================+==========================================+
+| 127.0.0.1                 | `localhost` or loopback -- the machine   |
+|                           | that originated the request              |
++---------------------------+------------------------------------------+
+| 192.168.x.x               | Protected address blocks used for        |
+|                           | private IP addresses.                    |
+| 172.16.x.x.x              |                                          |
+|                           |                                          |
+| 10.x.x.x                  |                                          |
++---------------------------+------------------------------------------+
 
-| Protocol | Default Port |
-|----------|--------------|
-| HTTP     | 80           |
-| HTTPS    | 443          |
-| SSH      | 22           |
+### Special Ports
+
+All ports below 1024 are reserved for server tasks and cannot be
+assigned to admin-controlled services.
+
+| Protocol/Application | Default Port |
+|----------------------|--------------|
+| HTTP                 | 80           |
+| HTTPS                | 443          |
+| SSH                  | 22           |
+| PostgreSQL           | 5432         |
+| RStudio Server       |              |
+| Shiny Server         |              |
+| JupyterHub           |              |
+
+## How packets are routed
+
+The way packets travel from one computer to another is called routing. A
+router is a hardware or software device that route packets.
+
+You can think of routers and public networks as existing in trees. Each
+router knows about the IP addresses downstream of it and also the single
+upstream *default address*.[^3-3-networking-4]
+
+[^3-3-networking-4]: There are actually a few different types of
+    addresses used to do this. IP addresses are used for identifying
+    network resources and the MAC address used for physical hardware.
+    Your router is also responsible for assigning IP addresses to
+    devices as they join the network via the dynamic host configuration
+    protocol (DHCP). I'm glossing over all these details as they're
+    immaterial to the understanding important for this chapter.
+
+TODO: diagram of routers in trees
+
+For example, the router in your house just keeps track of the actual
+devices that are attached to it. So if you were to print something from
+your laptop, the data would just go to your router and then to your
+printer.
+
+On the other hand, when you look at a picture on Instagram, that traffic
+has to go over the public network. The default address for your home's
+router is probably one owned by your internet service provider (ISP) for
+your neighborhood. And that router's default address is probably also
+owned by your ISP, but for a broader network.
+
+So your packet will get passed upstream to a sufficiently general
+network and then back downstream to the actual address you're trying to
+reach.
+
+Meanwhile, your computer just waits for a response. Once the server has
+a response to send, it comes back using the same technique. Obviously a
+huge difference between sending a letter to a penpal and using a
+computer network is the speed. Where sending a physical letter takes a
+minimum of days, sending and receiving packets over a network is so fast
+that the delay is imperceptible when you're playing a multiplayer video
+game or collaborating on a document online.
