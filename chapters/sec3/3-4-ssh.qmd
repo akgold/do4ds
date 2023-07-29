@@ -3,9 +3,9 @@
 One common IT/Admin task is remotely managing a server from the command
 line on your machine. SSH -- short for Secure (Socket) Shell -- is the
 program that allows direct interactions with a server's command line
-from the command line of your computer.[^2-3-ssh-1]
+from the command line of your computer.[^3-4-ssh-1]
 
-[^2-3-ssh-1]: SSH actually can be used between any two machines,
+[^3-4-ssh-1]: SSH actually can be used between any two machines,
     provided at least one is accepting SSH connections. For data
     scientists, SSH is almost always use to connect from a local machine
     to a server.
@@ -69,12 +69,12 @@ factors of $91$.
 
 In real public key cryptography, the idea is fundamentally similar, but
 the mathematical operations are substantially more complex and the
-numbers much, much bigger.[^2-3-ssh-2] So much so that it's basically
+numbers much, much bigger.[^3-4-ssh-2] So much so that it's basically
 impossible to break public ssh keys. Someone could try, but brute force
 guessing would take more time than we have left before the heat death of
 the universe.
 
-[^2-3-ssh-2]: And prime numbers generally loom large in the operation.
+[^3-4-ssh-2]: And prime numbers generally loom large in the operation.
 
 That means that it's safe to share your public key anywhere you might
 need to access using SSH like a remote server or git host, like GitHub.
@@ -114,11 +114,11 @@ Creating the keypair will result in two parts. The one that ends in
 
 In most cases, you'll only create one private key on each machine. If
 you follow standard instructions for creating a key, it will use the
-default name, probably `id_ed25519`.[^2-3-ssh-3] If you're only creating
+default name, probably `id_ed25519`.[^3-4-ssh-3] If you're only creating
 one key, I'd recommend sticking with the default name because the `ssh`
 command will atuomatically use your keys if they have the default name.
 
-[^2-3-ssh-3]: The pattern is `id_<encryption type>`. `ed25519` is the
+[^3-4-ssh-3]: The pattern is `id_<encryption type>`. `ed25519` is the
     standard SSH key encryption type as of this writing.
 
 You may not be able to use the default names if your organization
@@ -132,7 +132,7 @@ To register a public key on a server you control, you'll add the public
 key to the end of the user's `.ssh/authorized_keys` file in their home
 directory. You'll have to make sure the permissions on the
 `authorized_keys` file are correct. More on that in [Chapter
-@sec-linux-admin].
+@sec-server-admin].
 
 If you're registering with a service, like GitHub.com, find a guide to
 registering SSH keys and it will show you how to do so.
@@ -182,13 +182,46 @@ verbose mode.
     key?
 2.  What is it about SSH public keys that makes them safe to share?
 
-## Cheatsheet: `ssh` {#cheat-ssh}
+### Lab: Register an SSH Key for your user
 
-``` bash
-ssh <user>@<host>
+We're going to register an SSH key for our new server user by adding the
+key to the server user's `authorized_users` file.
+
+First, you need to get your public key to the server using
+`scp`.[^3-3-file-users-4]
+
+[^3-3-file-users-4]: You could alternatively open the file on the server
+    in a terminal just copy/paste the contents of your public key in
+    there. Either way works.
+
+For me, the command looks like this
+
+``` {.bash filename="Terminal"}
+scp -i ~/Documents/do4ds-lab/do4ds-lab-key.pem ~/.ssh/id_ed25519.pub ubuntu@$SERVER_ADDRESS:/home/ubuntu 
 ```
 
-| Flag | What it does                       | Notes                                         |
-|----------------|------------------------|---------------------------------|
-| `-v` | Verbose, good for debugging.       | Add more `v`s as you please, `-vv` or `-vvv`. |
-| `-i` | Choose identity file (private key) | Not necessary with default key names.         |
+Note that I'm still using the `.pem` key to SSH in, because I don't have
+another key registered yet.
+
+You may need to change the file paths to either your server's `pem` key
+or your SSH key if they're not in the same locations as mine.
+
+Now the public key is on the server, but it's in the `ubuntu` user's
+home directory. You'll need to do the following: 1. Create
+`.ssh/authorized_keys` in `test-user`'s home directory. 2. Copy the
+contents of the public key you uploaded into the `authorized_keys` file.
+3. Make sure the `.ssh` directory and `authorized_keys` files are owned
+by `test-user` with `700` permissions on `.ssh` and `600` on
+`authorized_keys`.
+
+You could do this all as the admin user, or you may want to switch to
+being `test-user` at some point with the `su` command.
+
+Once you've done all this, you should be able to log in from your
+personal computer with `ssh test-user@$SERVER_ADDRESS`.
+
+Now that we're all set up, you should store the `pem` key somewhere safe
+and never use it to log in again.
+
+When you ever want to exit SSH and get back to your machine, you can
+just type `exit`.

@@ -1,0 +1,423 @@
+# Linux Filesystem and Users {#sec-file-users}
+
+I think this lab is the most exciting in the whole book. In the lab for
+this chapter, we're going to take the EC2 instance we stood up in the
+[the last lab](@sec-aws-intro) and turn it into a data science
+workbench. We're going to configure R and Python, get both RStudio
+Server and JupyterHub running, and get our Shiny App and FastAPI going.
+
+Now, it won't be accessible from the web until we deal with networking
+concerns throughout the rest of this section, but you'll be able to use
+it for real data science tasks should you want.
+
+And at the end of the chapter, there's [a cheatsheet](#cheat-admin) of
+all the commands from throughout the chapter.
+
+## The Linux Filesystem is a tree
+
+Regardless of which Linux distro you're running, understanding where to
+find things on your system is crucial.
+
+All of the information available to a computer is indexed by its
+*filesystem*. The filesystem is made up of *directories* or *folders*,
+which are containers for other directories and files.
+
+On your laptop, you're probably used to browsing the filesystem with
+your mouse. On your phone, the filesystem is completely obscured by
+apps, but it's there.
+
+When using the command line, the only way to traverse the filesystem is
+with written commands. Having a good mental model for what the
+filesystem looks like is, therefore, really important.
+
+On Linux, the entire filesystem is a tree (or perhaps an upside-down
+tree). Every directory is contained in by a *parent directory*, and may
+contain one or more *children* or *sub-directories*. The *root
+directory, `/`* is the base of the tree and is its own parent. A `/` in
+between two directories means that it's a sub-directory.
+
+![](../sec2/images/directories.png){fig-alt="A tree of directories. / is the root, /home is a sub directory, /home/alex is a sub-sub-directory, and /etc is another sub-directory."
+width="450"}
+
+Every directory is a sub-directory of `/` or a sub-directory of a
+sub-directory of `/` or...you get the picture. So the `/home/alex` *file
+path* defines a particular location, which is the `alex` sub-directory
+of `/home`, which is a sub-directory of the root directory, `/`.
+
+::: callout-note
+## Linux filesystems in comparison
+
+Each Linux computer has exactly one filesystem based at the root. On
+Windows you can have multiple filesystems on the same machine, one for
+each physical or logical disk. You're probably familiar with `C:` as
+your main filesystem. Your machine may also have a `D:` drive.
+
+In Linux, network shares are mounted somewhere on the filesystem, often
+at `/mnt`, but the fact that they're on separate drives is obscured from
+the user. On Windows, network share drives are mounted as a separate
+filesystem, often at `M:` or `N:` or `P:`.
+
+One other difference is that Windows uses `\` to separate file path
+elements rather than `/`. This used to be a big deal, but newer versions
+of Windows accept file paths using `/`.
+
+MacOS is based on an operating system called BSD that, like Linux, is a
+Unix clone. So the Mac filesystem is very similar to a Linux one. It's
+got a single root and other drives are mounted in -- though the
+graphical file interface works pretty hard to obscure this fact.
+:::
+
+The Linux `/` contains a number of directories that are used for certain
+things. Here are some of the ones you'll use most frequently:
+
+-   `/home` - user home directories.
+
+-   `/bin`, `/opt`, `/usr/local/`, `/usr/bin`- places you're most likely
+    to install software.
+
+-   `/etc` - configuration files for applications.
+
+-   `/var` - variable data, most commonly log files.
+
+These distinctions aren't super strict, and the guide for whatever
+you're trying to do will tell you where to put important things. But
+it's worth realizing that you might have an application that's installed
+in `/opt`, is configured in `/etc`, and writes logs to `/var`.
+
+## Everything is on behalf of users
+
+Whenever a program is running in Linux, it is running as a particular
+user. Many of the users on a Linux server correspond to actual humans,
+but there are more users than that. Most programs that run on a Linux
+server run as a *service account* that represent the set of permissions
+allowed to that program.
+
+On any Unix-like system, the `whoami` command returns the *username* of
+the active user.
+
+So when I run `whoami` on my MacBook, I get:
+
+``` bash
+❯ whoami                                                       
+alexkgold
+```
+
+Usernames have to be unique on the system -- but they're not the true
+identifier for a Linux user. A user is uniquely identified by their
+*user id (`uid`)*, which maps to all the other user attributes like
+username, password, home directory, groups, and more.
+
+Many applications create users for themselves and run as those users.
+For example, installing RStudio Server will create a user with username
+`rstudio-server`. Then, when RStudio Server goes to do something --
+start an `R` session for example -- it will do so as `rstudio-server`.
+
+There's also one special user -- called the admin, root, sudo, or super
+user. They get the ultra-cool `uid` 0.
+
+::: callout-note
+## A few details on UIDs
+
+`uid`s are just numbers from 0 to over 2,000,000,000. `uid`s are
+assigned by the system at the time the user is created and usually don't
+need to be changed manually -- unless you need the same user to exist
+across multiple machines. Then the `uid`s need to match.
+
+If you are manually assigning `uid`s, you should choose a number above
+10,000 and below 2,000,000. Everything below 10,000 is reserved for
+predefined system accounts or application accounts and some applications
+can't deal with `uid`s bigger than 2,000,000.
+:::
+
+In addition to users, Linux has a notion of groups. A group is a
+collection of one or more users. Each user has exactly one *primary*
+group and can be a member of secondary groups.[^3-3-file-users-1] By
+default, each user's primary group is the same as their username.
+
+[^3-3-file-users-1]: Depending on your version of Linux, there *may* be
+    a limit of 16 groups per user.
+
+Like a user has a `uid` a group has a `gid`. User `gid`s start at 100.
+
+You can see a user's username, `uid`, groups, and `gid` with the `id`
+command. On my MacBook, I'm a member of a number of different groups,
+with the primary group `staff`.
+
+``` bash
+ ❯ id                                                                
+uid=501(alexkgold) gid=20(staff) groups=20(staff),12(everyone),61(localaccounts),79(_appserverusr),80(admin),81(_appserveradm),98(_lpadmin),701(com.apple.sharepoint.group.1),33(_appstore),100(_lpoperator),204(_developer),250(_analyticsusers),395(com.apple.access_ftp),398(com.apple.access_screensharing),400(com.apple.access_remote_ae)
+```
+
+If you ever need to add users to a server, the easiest way is with the
+`useradd` command. Once you have a user, you may need to change the
+password, which you can do at any time with the `passwd` command. Both
+`useradd` and `passwd` start interactive prompts, so you don't need to
+do much more than run those commands.
+
+If you ever need to alter a user -- the most common task being to add a
+user to a group, you would use the `usermod` command with the `-aG`
+flag.
+
+## Permissions manage what users can do
+
+Every object in Linux is just a file. Every log -- file. Every picture
+-- file. Every program -- file. Every system setting -- file.
+
+For every file, there are three possible permissions a user can have:
+read, write, and execute. Read means you're allowed to see the contents
+of a file, write means you can save a changed version of a file, and
+execute means you're allowed to run the file as a program.
+
+So determining whether a user can take a particular action is really a
+question of whether they have the right permissions on a particular
+file.
+
+The basic Linux authorization scheme is that each file has an owner, an
+owning group, and then there's everyone else and permissions are
+assigned to each of those three entities.
+
+::: callout-note
+There are more complex ways to manage Linux permissions. For example,
+you might hear about Access Control Lists (ACLs). That's beyond the
+scope of this book.
+
+There is more information on different ways organizations manage users
+and what they're allowed to do in [Chapter @sec-auth], which is all
+about auth.
+:::
+
+So you can think of permissions in Linux as being assigned in a 3x3
+grid. The owner, the owning group, and everyone else can have
+permissions to read, write, or execute the file.
+
+So, for example, here's a set of permissions that you might have for a
+program if you wanted anyone to be able to run it, group members to
+inspect it, and only the owner to change it.
+
+![](./images/perms-ex.png){fig-alt="A 3x3 grid read, write, execute, on one side and owner, owning group, and everyone else at the top. Green checks in all of the execute, write for the owner, and read for owner and owning group. Red xs everywhere else."
+width="400"}
+
+Directories also have permissions -- read allows the user see what's in
+the directory, write allows the user to alter what's in the directory,
+and execute allows the user to enter the directory. File permissions and
+directory permissions don't have to match. For example, you could have
+read permissions on a directory, allowing you to see the names of the
+files in a directory, but not actually have read permissions on any of
+the files, so you can't look at the contents.
+
+When you're working on the command line, you don't get a little grid of
+permissions. Instead permissions are expressed in one of two ways.
+
+So, for example, here's the output of running `ls -l`, which shows the
+contents of a directory along with the permissions, on a python project
+I have.
+
+``` bash
+❯ ls -l                                                           
+-rw-r--r--  1 alexkgold  staff     28 Oct 30 11:05 config.py
+-rw-r--r--  1 alexkgold  staff   2330 May  8  2017 credentials.json
+-rw-r--r--  1 alexkgold  staff   1083 May  8  2017 main.py
+drwxr-xr-x 33 alexkgold  staff   1056 May 24 13:08 tests
+```
+
+The stuff that's important to understanding permissions are the first
+ten characters on the left, and then the two words after the number.
+
+Those two words are the owner and group. In this directory, I,
+`alexkgold`, own all the files, and the group of all the files is my
+group, `staff`.
+
+Those ten-characters on the left are the permissions file permission.
+
+The first character indicates the type of file: most often `-` for
+normal or `d` for a directory.
+
+The next nine characters are indicators for the three permissions -- `r`
+for read, `w` for write, and `x` for execute (or `-` for in place of any
+of those for not) -- first for the user, then for the group, then for
+any other user on the system.
+
+So, for example, my `config.py` file with permissions of `rw-r--r--`
+indicates the user (`alexkgold`) can read and write the file, and
+everyone else -- including in the file's group `staff` -- has read-only
+permission.
+
+In the course of administering a server, you will probably need to
+change a file's permissions. You can do so using the `chmod` command.
+
+For `chmod`, permissions are indicated as a three digit number, where
+the first digit is the permission for the user, the second for the
+group, and the third for everyone else. The way you get the right digit
+is pretty clever -- you just sum up the permissions as follows: 4 for
+read, 2 for write, and 1 for execute. You can check for yourself that
+any set of permissions is uniquely identified by a number between 1 and
+7.[^3-3-file-users-2]
+
+[^3-3-file-users-2]: Clever eyes may realize that this is just the
+    base-10 representation of a three-digit binary number.
+
+So to implement the permissions in the graphic above, you'd want the
+permission set `751` to give the user full permissions (4 + 2 + 1), read
+and execute (4 + 1) to the group, and execute only (1) to everyone else.
+
+::: callout-note
+If you spend any time administering a Linux server, you almost certainly
+will at some point find yourself running into a problem and applying
+`chmod 777` out of frustration to rule out a permissions issue.
+
+I can't in good faith tell you not to do this -- we've all been there.
+But if it's something important, be sure you change it back once you're
+finished figuring out what's going on.
+:::
+
+In some cases you might actually want to change the owner or group of a
+file. You can change users and groups with either names or ids. You can
+do so using the `chown` command. Changing users just uses the username
+and changing groups get prefixed with a colon.
+
+In some cases, you might not be the correct user to take a particular
+action. If you want to change the user you are, you can use the `su`
+command to switch users. You'll be prompted for a password to make sure
+you're allowed.
+
+Every system has an admin user, who has full permissions on every file.
+That's a lot of power. Some actions are also reserved for the admin
+user. For example, here's a config file.
+
+``` bash
+ ❯ ls -l /etc/config/my-config                      
+-rw-r--r--  1 root  system  4954 Dec  2 06:37 config.conf
+```
+
+As you can see, all users can read this file to check the configuration
+settings. But this file is owned by `root`, and only the owner has
+`write` permissions. So I could run `cat config.conf` to see it. Or I
+could go into it with `vim config.conf`, but I'd find myself stuck if I
+wanted to make changes.
+
+A regular user could be given permission to access this file by adding
+them to the admin group, which would allow them to temporarily assume
+admin powers by prefixing commands with `sudo`, like
+`sudo vim config.conf`.
+
+The particular name of the admin user and group vary by distro.
+
+## Installing applications from the command line
+
+There are several different ways to install programs for Linux, and
+you'll see a few of them throughout this book.
+
+Just as CRAN and PyPI are repositories for R and Python packages and you
+have R and Python commands `install.packages` and `pip install` to
+install packages, Linux distros also have their own repositories and
+install commands.
+
+For Ubuntu, the `apt` command is used for accessing and installing
+`.deb` files from the Ubuntu repositories. For CentOS and RedHat, the
+`yum` command is used for installing `.rpm` files.
+
+::: callout-note
+The examples below are all for Ubuntu, since that's what we use in the
+lab for this book. Conceptually, using `yum` is very similar, though the
+exact commands differ somewhat.
+:::
+
+When you're installing packages in Ubuntu, you'll often see commands
+prefixed with `apt-get update && apt-get upgrade -y`. This command makes
+your machine update the list of available packages it knows about on the
+server and upgrade everything to the latest version. The `-y` flag
+bypasses a manual confirmation step, which can be convenient.
+
+Packages are installed with `apt-get install <package>`. Depending on
+which user you are, you may need to prefix the command with `sudo`.
+
+You can also install packages that aren't from the central package
+repository. Doing that will generally involve downloading a file
+directly from a URL -- usually with `wget` and then installing it from
+the file you've downloaded -- often with the `gdebi` command.
+
+## Comprehension Questions
+
+1.  Create a mind map of the following terms: Operating System, Windows,
+    MacOS, Unix, Linux, Distro, Ubuntu
+2.  What are the 3x3 options for Linux file permissions? How are they
+    indicated in an `ls -l` command?
+
+## Lab: Set up users
+
+### Step 1: Log on with the `.pem` key
+
+The `.pem` key you downloaded when you set up the server is the skeleton
+key -- it will let you SSH into your server as the admin user (named
+`ubuntu` on a Ubuntu system).
+
+The `.pem` key is just an SSH key, so you can SSH to your server with
+
+``` {.bash filename="Terminal"}
+ssh -i do4ds-lab-key.pem \
+  ubuntu@SERVER_ADDRESS
+```
+
+When you first try this, you're probably going to get an alert that
+looks something like this:
+
+``` bash
+
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+
+\@ WARNING: UNPROTECTED PRIVATE KEY FILE! \@
+
+\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@
+
+Permissions 0644 for 'do4ds-lab-key.pem' are too open.
+
+It is required that your private key files are NOT accessible by others.
+
+This private key will be ignored.
+
+Load key "do4ds-lab-key.pem": bad permissions
+
+ubuntu@ec2-54-159-134-39.compute-1.amazonaws.com: Permission denied (publickey).
+```
+
+Because the keypair is so powerful, AWS requires that you restrict the
+access pretty severely. Before you can use it to open the server, you'll
+need to change the permissions to `600` with `chmod` so only the owner
+can read and write the file and no one else can access.
+
+Once you've done that, try SSH-ing in again.
+
+### Step 2: Create a non-root user
+
+We want to create normal users for the humans who are going to log into
+the server.
+
+I'm going to use the username `test-user`. If you want to be able to
+copy/paste commands, I'd advise doing the same. If you were creating
+users based on real humans, I'd advise using their names.
+
+Let's create a user using the `adduser` command. This will walk us
+through a set of prompts to create a new user with a home directory and
+a password. Feel free to add any information you want -- or to leave it
+blank -- when prompted.
+
+``` {.bash filename="Terminal"}
+$ adduser test-user
+```
+
+We want this new user to be able to adopt root privileges. Remember that
+the way that is determined is whether the user is part of the `sudo`
+group. Here's the command you'll need to make it so.
+
+``` {.bash filename="Terminal"}
+usermod -aG sudo test-user
+```
+
+### Step 3: Switch to using your new user
+
+::: callout-tip
+If you run into trouble assuming `sudo` with your new user, try exiting
+SSH and coming back. Sometimes these changes aren't picked up until you
+restart the shell.
+:::
+

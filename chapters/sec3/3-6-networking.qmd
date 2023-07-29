@@ -36,15 +36,15 @@ get to our server from a browser.
 
 The first thing to understand is that $google.com$ is not actually a
 URL. Instead, it's just one of the four parts of a
-URL.[^3-3-networking-1] Your browser assumes defaults for the other
-parts, so you usually don't see them. If you wanted to provide the full
-URL to $google.com$, it would actually include four pieces of
+URL.[^3-6-server-networking-1] Your browser assumes defaults for the
+other parts, so you usually don't see them. If you wanted to provide the
+full URL to $google.com$, it would actually include four pieces of
 information and would look like this:
 $$\overbrace{\text{https://}}^\text{protocol}\overbrace{\text{google.com}}^\text{domain}\overbrace{\text{:443}}^\text{port}\overbrace{\text{/}}^\text{path}$$
 
-[^3-3-networking-1]: Different resources list different numbers of parts
-    for URLs. I believe this way of dividing a URL is most useful for
-    the purposes of this book.
+[^3-6-server-networking-1]: Different resources list different numbers
+    of parts for URLs. I believe this way of dividing a URL is most
+    useful for the purposes of this book.
 
 Let's dig into what each of these four parts are and how they allow you
 to access resources over the web.
@@ -69,7 +69,7 @@ in [Chapter @sec-ssl].
 :::
 
 The most common application layer protocol is HTTP(S), which is what web
-traffic uses. In [Chapter @sec-data-arch], we talked a lot about how
+traffic uses. In [Chapter @sec-data-access], we talked a lot about how
 APIs can use HTTP to communicate with each other. Your browser works
 very similarly. When you got to a webpage, it makes HTTP `GET` calls to
 that webpage, requesting the contents of the page. Once all of the
@@ -165,19 +165,19 @@ door of your server, but that traffic still needs to get to the right
 *service.* Any program that is running on a server and that you intend
 to be accessible from the outside is called a service. For example, we
 set up RStudio, JupyterHub, a Shiny app, and a Plumber API as services
-in the lab in [Chapter @sec-linux-admin].
+in the lab in [Chapter @sec-server-admin].
 
 The service is accessible to the outside world via a *port*, which is a
 virtual location where network connections originate and terminate. If
 an IP address is like a street address, the port is like the apartment
 number within the building. Each service that is listening for inbound
 communication needs a dedicated port for it to listen
-on.[^3-3-networking-2]
+on.[^3-6-server-networking-2]
 
-[^3-3-networking-2]: Ports are also used for outbound communication.
-    Computers know how to automatically open ports for outbound
-    communication and specify that's where the response should come, so
-    we're not going to get into them here.
+[^3-6-server-networking-2]: Ports are also used for outbound
+    communication. Computers know how to automatically open ports for
+    outbound communication and specify that's where the response should
+    come, so we're not going to get into them here.
 
 Each port has a unique number 1 to just over 65,000. At any given time,
 the overwhelming majority of the ports on a host are closed. Most
@@ -245,6 +245,46 @@ need to connect the container's port to an external one. It's not an
 insurmountable problem, but it does add another layer of private network
 that has to be configured for things to work properly.
 :::
+
+### Make sure the right ports are open
+
+Networking is a complicated topic, which we'll approach with great
+detail in [Chapter @sec-basic-networks]. Most often, you'll want to
+check that the application you're running is actually accessible to the
+outside world, assuming you want it to be.
+
+The main command to help you see what ports are being used and by what
+services is the `netstat` command. `netstat` returns the services that
+are running and their associated ports. `netstat` is generally most
+useful with the `-tlp` flags to show programs that are listening and the
+programs associated.
+
+Sometimes you *know* you've got a service running on your machine, but
+you just can't seem to get the networking working. It can be useful to
+access the service directly without having to deal with networking.
+
+SSH port forwarding allows you to take the output of a port on a remote
+server, route it through SSH, and display it as if it were on a local
+port. For example, let's say you've got RStudio Server running on my
+server but the web interface isn't working. If you've got SSH working
+properly, you can double check that the service is working and the issue
+really is networking.
+
+I find that the syntax for port forwarding completely defies my memory
+and I have to google it every time I use it. For the kind of port
+forwarding you'll use most often in debugging, you'll use the `-L` flag
+to get a remote port locally.
+
+`ssh -L <local port>:<remote ip>:<remote port> <ssh hostname>`
+
+The local would be your laptop and the remote your server, so if you had
+RStudio Server running on a server on port `3939`. Then you could run
+`ssh -L 3939:localhost:3939 my-user@my-ds-workbench.com`. To get
+whatever is at port `3939` on the server (hopefully RStudio Workbench!)
+by going to `localhost:3939` in the laptop's browser.
+
+Most often, you'll use the same port locally and on the remote and the
+remote ip will be `localhost`.
 
 ## Firewalls, allow-lists, and other security settings
 
@@ -438,14 +478,14 @@ Here are the steps to configure your proxy on your server:
 1.  SSH into your server.
 2.  Install Nginx with `sudo apt install nginx`.
 3.  Save a backup of the default `nginx.conf`,
-    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-3-networking-3]
+    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-6-server-networking-3]
 4.  Edit the Nginx configuration with `sudo vim /etc/nginx/nginx.conf`
     and replace it with:
 
-[^3-3-networking-3]: This is generally a good practice before you start
-    messing with config files. Bad configuration is usually preferable
-    to a service that can't start at all because you've messed up the
-    config so badly. It happens.
+[^3-6-server-networking-3]: This is generally a good practice before you
+    start messing with config files. Bad configuration is usually
+    preferable to a service that can't start at all because you've
+    messed up the config so badly. It happens.
 
 ``` {.bash include="../../_labs/server-config/http-nginx.conf" filename="/etc/nginx/nginx.conf"}
 ```
@@ -555,38 +595,6 @@ the server. Depending on the service you're configuring, there may be
 other configuration you'll have to do, but that will vary on a
 service-by-service basis.
 
-### Cheatsheet: IP Addresses and Ports {#cheat-ports}
-
-### Special IP Addresses
-
-+---------------------------+------------------------------------------+
-| Code                      | Meaning                                  |
-+===========================+==========================================+
-| 127.0.0.1                 | `localhost` or loopback -- the machine   |
-|                           | that originated the request              |
-+---------------------------+------------------------------------------+
-| 192.168.x.x               | Protected address blocks used for        |
-|                           | private IP addresses.                    |
-| 172.16.x.x.x              |                                          |
-|                           |                                          |
-| 10.x.x.x                  |                                          |
-+---------------------------+------------------------------------------+
-
-### Special Ports
-
-All ports below 1024 are reserved for server tasks and cannot be
-assigned to admin-controlled services.
-
-| Protocol/Application | Default Port |
-|----------------------|--------------|
-| HTTP                 | 80           |
-| HTTPS                | 443          |
-| SSH                  | 22           |
-| PostgreSQL           | 5432         |
-| RStudio Server       |              |
-| Shiny Server         |              |
-| JupyterHub           |              |
-
 ## How packets are routed
 
 The way packets travel from one computer to another is called routing. A
@@ -594,9 +602,9 @@ router is a hardware or software device that route packets.
 
 You can think of routers and public networks as existing in trees. Each
 router knows about the IP addresses downstream of it and also the single
-upstream *default address*.[^3-3-networking-4]
+upstream *default address*.[^3-6-server-networking-4]
 
-[^3-3-networking-4]: There are actually a few different types of
+[^3-6-server-networking-4]: There are actually a few different types of
     addresses used to do this. IP addresses are used for identifying
     network resources and the MAC address used for physical hardware.
     Your router is also responsible for assigning IP addresses to

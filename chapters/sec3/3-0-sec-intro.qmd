@@ -1,37 +1,146 @@
 # IT/Admin for Data Science {#sec-3-intro}
 
-You're a data scientist. Earlier in the book I also told you that you're
-a software developer. But you're not an IT/Admin, and I'm not going to
-make you one.
+You're reading this book because you're a data scientist who wants to
+take their work to production. I've already added software development
+to your list of responsibilities. And this section is going to be all
+about how to administer server-based data science.
 
-Unless you're feeling antsy for a career change, there's so much to know
-about servers, networking, managing users, storage, and more. And being
-responsible for a server is scary -- you can unknowingly make choices
+If I were you, I might be pretty worried you're about to have more added
+to your list of responsibilities. Rest easy. You're not an IT/Admin, and
+I'm not going to make you one.
+
+In fact, I'd kinda prefer not to write this section at all. In my
+experience, data scientists have the best time at organizations where
+there's a close partnership with highly competent IT/Admins. But that's
+often not the case.
+
+Many -- if not most -- data scientists find themselves at least
+partially responsible for the server where their work runs for at least
+some of their career. Maybe it's because the IT/Admin team is overloaded
+and doesn't have time or relevant expertise, or maybe it's because you
+work at a small organization or are a student or hobbyist trying to do
+something cheaply. Or maybe (probably) you're just a big nerd and are
+really curious about how this all works. You're in good company.
+
+That's a scary place to be. There's so much information on the internet
+and it's hard to know where to start and how much to do. Unless you're
+feeling antsy for a career change, the amount to learn about servers,
+networking, managing users, storage, and more is completely
+overwhelming. And if you do it badly, you can unknowingly make choices
 that cause security vulnerabilities, system instability, and general
 annoyance.
 
-That said, you might find yourself administering a server. Maybe you're
-a student who wants to host a portfolio for others to peruse, a hobbyist
-who's hosting a toy project, or the data science leader who has no
-choice but to host things for themselves because they just can't get
-IT/Admin support.
+Luckily, you're in the right place. This section is going to equip you
+to confidently manage a basic server setup that's accessible from the
+internet.
 
-And even if you're not the main server administrator, it's common for
-data scientists to have some level of administrative access to the
-servers they work on and share responsibility for some administration of
-their work. Additionally, even if your IT/Admin team is stellar, it's
-helpful to be able to speak their language.
+It's pretty hard to live in today's world without administering a
+computer. You've got plenty of experience managing apps on your phone
+and deleting old videos when you run out of room. You've hopefully
+figured out how to change that annoying security setting before you can
+share your screen in Zoom.
 
-There are two basic things IT/Admins do with servers: acquire and
-administer the server itself and configure networking to securely allow
-access to that server. This section of the book is designed to get you
-comfortable with the basics of acquiring and running a Linux server and
-configuring networking to securely and reliably connect to that server.
+Relative to managing a phone or a desktop computer, managing a server is
+like heading to the big leagues. Administering your personal computer is
+an unavoidable chore, but administering servers is a career.
 
-By the time you're done, you'll be ready to administer a simple
-server-based environment for doing or deploying data science in the
-cloud. And if you follow along with the labs, you'll actually have your
-own data science workbench set up on an AWS EC2 instance.
+The reason behind this is that personal computers and servers exist for
+different purposes. A personal computer exists primarily to give you
+access to the world -- you use it to access websites and read news. You
+watch TikTok videos and write documents and do Zoom calls. In contrast a
+server exists to (as the name suggests) serve something. The server
+doesn't exist to read news -- it's where you get the news from. It's not
+there to let you watch TikTok or do Zoom. It *is* TikTok or Zoom.
+
+There are a few major implications of this difference that makes server
+administration a much bigger deal than installing apps on your phone.
+
+Regardless of which distro you're using, there are a handful of
+different things you'll have to manage when you administer a Linux
+server. Here are the most important:
+
+-   **The filesystem and permissions** Most servers are used by multiple
+    users at the same time. You'll frequently be called on to create and
+    manage users and what they're allowed to access and do.
+
+-   **Applications** If you want to do data science on your server,
+    you'll need data science applications, like R, Python, RStudio,
+    JupyterHub, and more. So you'll need to install and run applications
+    and adjust them along the way.
+
+-   **Networking** Your server is only valuable if you and others can
+    connect to it, so you'll need to manage how your server can connect
+    to the local network and/or the Internet.
+
+-   **System resources** Each server has a certain amount of CPU, RAM,
+    and storage available. You'll need to keep track of how much you've
+    got of these things and make sure you've got enough for your server
+    to run well.
+
+### Servers, Linux, and the Cloud
+
+One of the first differences you'll notice between your server and the
+computers you're more used to is the operating system (OS). You're
+probably already comfortable with at least two OSes -- either MacOS or
+Windows for your computer and Android or iOS on your phone.
+
+In order to successfully administer a server, you're going to have to
+learn a little about Linux -- the OS that you may not have heard about,
+but is all around you.
+
+### Command Line
+
+First, no graphical interface. While you control your phone via taps and
+your computer via clicks, servers are generally controlled purely via
+the command line. In most cases, you can't even access your server to
+administer it without using the `ssh` command line tool.
+
+There's kinda a circular logic here -- server administration is done via
+the command line so it's a little harder to learn and therefore the
+purview of professionals but there's also relatively little incentive to
+develop graphical interfaces because it's done by professionals who have
+the right incentives to spend time learning how to use the command
+line.[^3-0-sec-intro-1]
+
+[^3-0-sec-intro-1]: There are graphical tools that allow you to do
+    server administration. An organization that uses these is a huge red
+    flag. It means one of two things -- either they're hiring -- or
+    hoping to hire -- IT/Admins who haven't bothered to invest in
+    learning to use the command line or they're trying to sharply limit
+    the power of IT/Admins. Both are bad signs if you want to get things
+    done.
+
+That's why we'll get started with some basics on using the command line.
+In [Chapter @sec-cmd-line] we'll get started by setting up your terminal
+on your local machine and learning a little about how to use the command
+line in [Chapter @sec-cmd-line-use].
+
+### Filesystem + Users
+
+Second, a server is designed from the ground up to be accessible fro
+
+Second, a server is almost always a multi-user environment. This means
+you need to be thinking more carefully about who has access to different
+files and folders, both for security and to make sure people know where
+their stuff is. Also, you'll need to make sure that Bob the resource hog
+doesn't overwhelm the server, leading to a bad experience for everyone
+else.
+
+### Applications
+
+### Networking
+
+Third, a server is accessible from the internet.
+
+### System Resources and Scaling
+
+Last, when your phone or computer gets slow or you run out of storage,
+it's probably time for a new one. But on a server, load can be much more
+variable. Maybe there are 5 people using your app this week and 50 next
+week. That means that you may have to manage the server's resources much
+more actively.
+
+### Using Cloud Services
 
 ## Labs in this Section
 
