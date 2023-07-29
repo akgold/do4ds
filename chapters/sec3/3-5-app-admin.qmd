@@ -34,69 +34,28 @@ repository. Doing that will generally involve downloading a file
 directly from a URL -- usually with `wget` and then installing it from
 the file you've downloaded -- often with the `gdebi` command.
 
-## Debugging and troubleshooting
+### Installing R and Python
 
-If things are going poorly on your server, here are some steps you might
-take to try to troubleshoot.
+As the admin of a data science server, R and Python are some of the most
+critical software you'll manage.
 
-### Check storage usage
+People pretty much only ever install R to do data science so it's
+generally not a huge deal where you install R and get it on the path.
 
-A common culprit for weird server behavior is running out of storage
-space. There are two handy commands for monitoring the amount of storage
-you've got -- `du` and `df`. These commands are almost always used with
-the `-h` flag to put file sizes in human-readable formats.
+In contrast, Python is one of the world's most popular programming
+languages for general purpose computing. This actually makes configuring
+Python **harder** than configuring R.
 
-`df`, for disk free, shows the capacity left on the device where the
-directory sits.
+That's because you have to install versions of Python elsewhere on the
+system, get them on the path, and get the system version of Python off
+the path. This is the source of much frustration trying to get Python up
+and running, both on servers and your personal computer.
 
-For example, here's the result of running the `df` command on the
-chapters directory on my laptop that includes this chapter.
+### System packages
 
-``` bash
- ❯ df -h chapters                                                    
-Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
-/dev/disk3s5  926Gi  163Gi  750Gi    18% 1205880 7863468480    0%   /System/Volumes/Data
-```
+TODO
 
-So you can see that the chapters folder lives on a disk called
-`/dev/disk3s5` that's a little less than 1Tb and is 18% full -- no
-problem. On a server this can be really useful to know, because it's
-quite easy to switch a disk out for a bigger one in the same spot.
-
-If you've figured out that a disk is full and need to figure out where
-the culprits are, the `du` can be useful. `du`, short for disk usage,
-gives you the size of individual files inside a directory. It's
-particularly useful in combination with the `sort` command.
-
-For example, here's the result of running `du` on the `chapters`
-directory where the text files for this book live.
-
-``` bash
- ❯ du -h chapters | sort -h                                      
- 44K    chapters/sec2/images-servers
-124K    chapters/sec3/images-scaling
-156K    chapters/sec2/images
-428K    chapters/sec2/images-traffic
-656K    chapters/sec1/images-code-promotion
-664K    chapters/sec1/images-docker
-1.9M    chapters/sec1/images-repro
-3.4M    chapters/sec1
-3.9M    chapters/sec3/images-auth
-4.1M    chapters/sec3
-4.5M    chapters/sec2/images-networking
-5.3M    chapters/sec2
- 13M    chapters
-```
-
-So if I were thinking about cleaning up this directory, I could see that
-my `images-networking` directory in `sec2` is the biggest single
-bottom-level directory. If you find yourself needing to find big files
-on your Linux server, it's worth spending some time with the help pages
-for `du`. There are lots of really useful options.
-
-`du` is useful for identifying large files and directories on a server.
-
-### Look at what's running
+### Managing running applications
 
 A running program is a *process*. For example, when you type `python` on
 the command line to open a REPL, that starts a single Python process. If
@@ -174,10 +133,11 @@ or Python process -- `ps aux | grep <name>` can be super useful to get
 the `pid`.
 
 For example, here are the RStudio processes currently running on my
-system.[^3-5-app-admin-1]
+system.[^3-10-troubleshoot-1]
 
-[^3-5-app-admin-1]: This command actually cuts off the header line of
-    the table. What I actually ran was `ps aux | grep "RStudio\|USER"`.
+[^3-10-troubleshoot-1]: This command actually cuts off the header line
+    of the table. What I actually ran was
+    `ps aux | grep "RStudio\|USER"`.
 
 ``` bash
  > ps aux | grep "RStudio"                                                                                      [10:21:18]
@@ -185,46 +145,6 @@ USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME C
 alexkgold        23583   0.9  1.7 37513368 564880   ??  S    Sat09AM  17:15.27 /Applications/RStudio.app/Contents/MacOS/RStudio
 alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /Applications/RStudio.app/Contents/MacOS/rsession --config-file none --program-mode desktop 
 ```
-
-### Make sure the right ports are open
-
-Networking is a complicated topic, which we'll approach with great
-detail in [Chapter @sec-basic-networks]. Most often, you'll want to
-check that the application you're running is actually accessible to the
-outside world, assuming you want it to be.
-
-The main command to help you see what ports are being used and by what
-services is the `netstat` command. `netstat` returns the services that
-are running and their associated ports. `netstat` is generally most
-useful with the `-tlp` flags to show programs that are listening and the
-programs associated.
-
-Sometimes you *know* you've got a service running on your machine, but
-you just can't seem to get the networking working. It can be useful to
-access the service directly without having to deal with networking.
-
-SSH port forwarding allows you to take the output of a port on a remote
-server, route it through SSH, and display it as if it were on a local
-port. For example, let's say you've got RStudio Server running on my
-server but the web interface isn't working. If you've got SSH working
-properly, you can double check that the service is working and the issue
-really is networking.
-
-I find that the syntax for port forwarding completely defies my memory
-and I have to google it every time I use it. For the kind of port
-forwarding you'll use most often in debugging, you'll use the `-L` flag
-to get a remote port locally.
-
-`ssh -L <local port>:<remote ip>:<remote port> <ssh hostname>`
-
-The local would be your laptop and the remote your server, so if you had
-RStudio Server running on a server on port `3939`. Then you could run
-`ssh -L 3939:localhost:3939 my-user@my-ds-workbench.com`. To get
-whatever is at port `3939` on the server (hopefully RStudio Workbench!)
-by going to `localhost:3939` in the laptop's browser.
-
-Most often, you'll use the same port locally and on the remote and the
-remote ip will be `localhost`.
 
 ### Check your path
 
@@ -287,22 +207,6 @@ file from a different directory without moving it.
 
 Symlinks are created with the `ln` command.
 
-### Installing R and Python
-
-As the admin of a data science server, R and Python are some of the most
-critical software you'll manage.
-
-People pretty much only ever install R to do data science so it's
-generally not a huge deal where you install R and get it on the path.
-
-In contrast, Python is one of the world's most popular programming
-languages for general purpose computing. This actually makes configuring
-Python **harder** than configuring R.
-
-That's because you have to install versions of Python elsewhere on the
-system, get them on the path, and get the system version of Python off
-the path. This is the source of much frustration trying to get Python up
-and running, both on servers and your personal computer.
 
 ## Comprehension Questions
 
