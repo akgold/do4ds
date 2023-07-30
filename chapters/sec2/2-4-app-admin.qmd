@@ -1,4 +1,4 @@
-# Basic Server Administration {#sec-server-admin}
+# Basic Server Administration {#sec-app-admin}
 
 ## Installing applications from the command line
 
@@ -146,6 +146,43 @@ alexkgold        23583   0.9  1.7 37513368 564880   ??  S    Sat09AM  17:15.27 /
 alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /Applications/RStudio.app/Contents/MacOS/rsession --config-file none --program-mode desktop 
 ```
 
+Check storage usage
+
+A common culprit for weird server behavior is running out of storage space. There are two handy commands for monitoring the amount of storage you've got – du and df. These commands are almost always used with the -h flag to put file sizes in human-readable formats.
+
+df, for disk free, shows the capacity left on the device where the directory sits.
+
+For example, here's the result of running the df command on the chapters directory on my laptop that includes this chapter.
+
+ ❯ df -h chapters                                                    
+Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+/dev/disk3s5  926Gi  163Gi  750Gi    18% 1205880 7863468480    0%   /System/Volumes/Data
+
+So you can see that the chapters folder lives on a disk called /dev/disk3s5 that's a little less than 1Tb and is 18% full – no problem. On a server this can be really useful to know, because it's quite easy to switch a disk out for a bigger one in the same spot.
+
+If you've figured out that a disk is full and need to figure out where the culprits are, the du can be useful. du, short for disk usage, gives you the size of individual files inside a directory. It's particularly useful in combination with the sort command.
+
+For example, here's the result of running du on the chapters directory where the text files for this book live.
+
+ ❯ du -h chapters | sort -h                                      
+ 44K    chapters/sec2/images-servers
+124K    chapters/sec3/images-scaling
+156K    chapters/sec2/images
+428K    chapters/sec2/images-traffic
+656K    chapters/sec1/images-code-promotion
+664K    chapters/sec1/images-docker
+1.9M    chapters/sec1/images-repro
+3.4M    chapters/sec1
+3.9M    chapters/sec3/images-auth
+4.1M    chapters/sec3
+4.5M    chapters/sec2/images-networking
+5.3M    chapters/sec2
+ 13M    chapters
+
+So if I were thinking about cleaning up this directory, I could see that my images-networking directory in sec2 is the biggest single bottom-level directory. If you find yourself needing to find big files on your Linux server, it's worth spending some time with the help pages for du. There are lots of really useful options.
+
+du is useful for identifying large files and directories on a server.
+
 ### Check your path
 
 Let's say you want to open Python on your command line. One option would
@@ -207,6 +244,7 @@ file from a different directory without moving it.
 
 Symlinks are created with the `ln` command.
 
+### Using Docker to host applications
 
 ## Comprehension Questions
 
