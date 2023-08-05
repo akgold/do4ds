@@ -1,65 +1,63 @@
 # Server Resources and Scaling {#sec-scale}
 
-## Computers are (just) addition factories
-
 You're probably aware that everything you've ever seen on a computer --
 from this book to your work in R or Python, your favorite internet cat
 videos, and Minecraft -- it's just 1s and 0s.
 
-The theory of why this works is deep and fascinating.[^3-9-resources-1]
-Luckily, the amount of computational theory you need to understand to be
-an effective data scientist can be can be summarized in three sentences:
+But the 1s and 0s aren't actually the interesting part. The interesting
+part is that these 1s and 0s don't directly represent a cat or a book.
+Instead, the 1s and 0s are binary representations of integers (whole
+numbers) and **the only** thing the computer does is add these
+integers.[^2-5-scale-1]
 
-[^3-9-resources-1]: The reason why this is the case and how it works is
-    fascinating. If you're interested, it comes back to Alan Turing's
-    famous paper on computability. I recommend [**The Annotated Turing:
-    A Guided Tour Through Alan Turing's Historic Paper on Computability
-    and the Turing
+[^2-5-scale-1]: This was proved in Alan Turing's 1936 paper on
+    computability. If you're interested in learning more, I recommend
+    [**The Annotated Turing: A Guided Tour Through Alan Turing's
+    Historic Paper on Computability and the Turing
     Machine**](https://www.goodreads.com/en/book/show/2333956.The_Annotated_Turing)
-    by Charles Petzold for a surprisingly readable walkthrough of the
-    paper.
+    by Charles Petzold for a surprisingly readable walkthrough.
 
-> Everything on a computer is represented by a (usually very large)
-> number.
->
-> At a hardware level the only thing computers do is add these numbers
-> together.
->
-> Modern computers add very quickly and very accurately.
+Once they've been added, they're reinterpreted back into something
+meaningful. But the bottom line is that every bit of input your computer
+gets is turned into an addition problem, processed, and the results are
+reverted back into something we interpret as meaningful.
 
-This means that for your day-to-day work, you can think of a computer as
-just a big factory for doing additions.
+In my mental model, a computer is just a factory that does addition
+problems. So as you're thinking about how to size and scale a server,
+you're really thinking about how to optimally design your factory.
 
-Every bit of input your computer gets is turned into an addition
-problem, processed, and the results are reverted back into something we
-interpret as meaningful.
+There are three essential resources a server has -- compute, memory, and
+storage. In this chapter, I'm going to share some mental models I find
+helpful about how to think of each and some recommendations for getting
+a data science server.
+
+## Recommendation 1: Fewer, faster CPU cores
 
 The addition assembly line itself -- where the work actually gets done
 -- is referred to as *compute*. It's where 2+2 gets turned into 4, and
 where 345619912 + 182347910 gets turned into 527967822.
 
-There are a number of different kinds of compute, but they all basically
-work the same. The total speed is determined by two factors -- the
-number of conveyor belts (cores) and the speed at which each belt is
-running (clock speed).
+There are multiple kinds of compute possible, but the main compute that
+all computers have is the central processing unit (CPU). Individual
+addition problems are done in a *core*.
 
-We're going to spend some time considering the three important resources
--- compute, memory, and storage -- you have to allocate and manage on
-your computer or server. We're going to spend some time generally
-exploring what each one is and then get into how you should think about
-each specifically with regard to data science.
+The first attribute that determines the speed of compute is the number
+of cores, which you can think of as like the number of conveyor belts in
+the factory.
 
-## Recommendation 1: Fewer, faster CPU cores
+These days, most consumer-grade laptops have between 4 and 16 physical
+cores. Many have software capabilities that effectively double that
+number. That means most laptop CPUs can do between 4 and 32 simultaneous
+addition problems.
 
-All computers have a central processing unit (CPU). These days, most
-consumer-grade laptops have between 4 and 16 cores, and may have
-additional capabilities that effectively doubles that number. So most
-laptop CPUs can do between 4 and 32 simultaneous addition problems.
+The second attribute is how quickly a single addition problem gets
+completed by a single core. This is called the *single core clock
+speed*. You can think of this as how fast the conveyor belt moves.
 
-Clock speeds are measured in operations per second or hertz (hz). The
+Clock speeds are measured in operations per second or *hertz (hz)*. The
 cores in your laptop probably run between two and five gigahertz (GHz),
-which means between 2 and 5 billion operations per second when running
-at full speed.
+which means between 2 billion and 5 billion operations per second when
+running at full speed.
 
 For decades, many of the innovations in computing were coming from
 increases in clock speed, but raw increases in speed have fallen off a
@@ -72,9 +70,11 @@ in clock speeds has slowed. The increase has mostly come from increases
 in the number of cores, better software usage of parallelization, and
 innovative chip architectures for special-purpose usage.
 
-R and Python are single-threaded. Unless you're using special libraries
-for parallel processing, you'll end up red-lining a single CPU core
-while the other just look on in silence.
+Unfortunately, your R and Python code only get to take advantage of some
+of these speed increases. By default, R and Python are single-threaded.
+This means that unless you're using special libraries for parallel
+processing, you'll end up red-lining a single CPU core while the others
+just look on in silence.
 
 Therefore for most R and Python work, single core clock speed matters
 more than the number of cores, and fewer, faster cores are usually
@@ -85,8 +85,8 @@ laptop or phone. The reality is that modern CPUs are pretty darn good
 and you should just buy the one that fits your budget.
 
 If you're standing up a server, you often do have an explicit choice
-between more slower cores and fewer faster ones. In AWS, the instance
-type is what dictates the tradeoff -- more on this below.
+between more slower cores and fewer faster ones, determined by the
+instance type.
 
 If you're running a multi-user server, the number of cores you need is
 really hard to estimate. If you're doing non-ML tasks like counts and
@@ -100,29 +100,31 @@ $$
 The spare core is for the server to do its own operations apart from the
 data science usage. On the other hand, if you're doing heavy-duty
 machine learning or parallelizing jobs across the CPU, you may need more
-cores than that.
+cores than this rule of thumb.
 
 ## Recommendation 2: Get as much RAM as feasible
 
-Your computer's random access memory (RAM) is its short term storage. In
-the computer as adding factory analogy, the RAM is like the stock that's
-sitting out on the factory floor ready to go right on an assembly line.
+Your computer's random access memory (RAM) is its short term storage.
+You can think of RAM like the stock that's sitting out on the factory
+floor ready to go right on an assembly line and the completed work
+that's ready to be shipped.
 
 RAM is very fast to for your computer to access, so you can read and
 write to it very quickly. The downside is that it's temporary. When your
-computer turns off, the RAM gets wiped.[^3-9-resources-2]
+computer turns off, the RAM gets wiped.[^2-5-scale-2]
 
-[^3-9-resources-2]: You probably don't experience this personally.
-    Modern computers are pretty smart about dumping RAM onto the hard
-    disk before shutting down, and bringing it back on startup, so you
+[^2-5-scale-2]: You probably don't experience this personally. Modern
+    computers are pretty smart about dumping RAM onto the hard disk
+    before shutting down, and bringing it back on startup, so you
     usually won't notice this happening.
 
 ::: callout-note
-You probably know this, but memory and storage is measured in bytes
-prefixed by metric prefixes. Common sizes for memory these days are in
-gigabytes (billion bytes) and terrabytes (trillion bytes). Some
-enterprise data stores run on the scales of thousands of terrabytes
-(pettabytes) or even thousands of pettabytes (yottabytes).
+Memory and storage is measured in bytes with metric prefixes.
+
+Common sizes for memory these days are in gigabytes (billion bytes) and
+terrabytes (trillion bytes). Some enterprise data stores run on the
+scales of thousands of terrabytes (pettabytes) or even thousands of
+pettabytes (yottabytes).
 :::
 
 Modern consumer-grade laptops come with somewhere between 4 and 16 Gb of
@@ -130,203 +132,267 @@ memory.
 
 In most cases, R and Python have to load all of your data into memory.
 Thus, the size of the data you can use is limited to the size of your
-machine's RAM. Most other limits of your machine will just result in
-things being slower than you'd really want, but trying to load too much
-data into memory will result in a session crash, and you won't be able
-to do your analysis.
+machine's RAM.
 
 ::: callout-note
-You can get around the in-memory limitation by using a
-[database](#database) or libraries that facilitate on-disk operations
-like [Apache Arrow](https://arrow.apache.org/) or
-[dask](https://docs.dask.org/en/latest/why.html).
+If you're running into this limitation go back and think about your
+project architecture as discussed in [Chapter @sec-proj-arch]. Maybe you
+can load less data into memory.
 :::
 
-Because you'll often be doing some sort of transformation that results
-in invisible data copies and your computer can't devote all of its
-memory, you'll want to leave plenty of room over your actual data size.
+Most other limits of your machine will just result in things being
+slower than you'd really want, but trying to load too much data into
+memory will result in a session crash.
 
-It's easy to say that you'll always want more RAM, but a rough rule of
-thumb for whether you've got enough is the following:
+Because your computer needs memory for things other than R and Python
+and because you'll often be doing transformations that temporarily
+increase the size of your data, you need more memory than your largest
+data set.
 
-$$\text{Amount of RAM} = \text{max amount of data} * 3$$
+In general, you'll always want more RAM, but a pretty good rule of thumb
+is that you'll be happy if:
 
-If you're thinking about running a multi-user server, you'll want to
-think about the maximum simultaneous number of users on the server, the
-most data each one would want to have loaded into memory and use that
-for your max amount of data
+$$\text{Amount of RAM} \ge 3 * \text{max amount of data}$$
+
+If you're thinking about running a multi-user server, you'll need to
+take a step back to think about how many concurrent users you expect and
+how much data you expect each one to load.
 
 ## Recommendation 3: Get lots of storage, it's cheap
+
+*Storage*, or *hard disk/drive*, is your computer's place to put things
+for the long-term. It's where applications are installed, and where you
+save things you want to keep.
 
 Relative to the RAM that's right next to the factory floor, your
 computer's storage is like the warehouse in the next building over. It's
 much, much slower to get things from storage than RAM, but it's also
 permanent once its stored there.
 
-Up until a few years ago, hard drives were very slow. HDD drives have a
-bunch of magnetic disks that spin very fast (5,400 and 7,200 RPM are
-common speeds). Magnetized read/write heads move among the disks and
-save and read your data.
+Up until a few years ago, storage was much slower than RAM. Those
+drives, called *HDD* drives, had a bunch of magnetic disks that spin
+very fast with magnetized read/write heads that move among the disks to
+save and read data.
 
-While 7,200 RPM is very fast, there were still physical moving parts,
-and reading and writing data was very slow by computational standards.
+While they spin very fast -- 5,400 and 7,200 RPM are common speeds --
+there were still physical moving parts, and reading and writing data was
+very slow by computational standards.
 
-In the last few years, solid-state drives (SSDs) have become
+In the last few years, *solid-state drives (SSDs)* have become
 more-or-less standard in laptops. SSDs, which are collections of flash
-memory chips with no moving parts, are up to 15x faster than HDDs. They
-also can take a wider variety of shapes and sizes, and are more reliable
-and durable because they have no moving parts. The main drawback is that
-they're usually more expensive per byte, but prices are still quite
-reasonable.
-
-Many consumer laptops have only an SSD at this point. Some desktops and
-high-end laptops combine a smaller SSD with a larger HDD.
+memory chips with no moving parts, are up to 15x faster than HDDs.
 
 As for storage -- get a lot -- but don't think about it too hard,
-because it's cheap. Both a 1TB SSD and a 4TB HDD are around \$100.
-Storage is cheap enough these days that it is almost always more cost
-efficient to buy more storage rather than making a highly-paid
-professional spend their time trying to figure out how to move things
-around.
+because it's cheap. Storage is cheap enough these days that it is almost
+always more cost efficient to buy more storage rather than making a
+highly-paid professional spend their time trying to figure out how to
+move things around.
 
-One litmus test of an IT organization that is well-equipped to support
-data science is whether they understand this. Smart organizations know
-that just getting more storage is almost always worth the cost in terms
-of the time of admins and data scientists.
+If the IT/Admins at your organization don't see this or aren't
+incentivized to think in this way, it's a red flag for sure.
 
 If you're running a multi-user server, the amount of storage you need
-depends a lot on your data and your workflows. A reasonable rule of
-thumb is to choose
+depends a lot on your data and your workflows.
+
+If you're not running particularly large data, or most of your data
+won't be saved into the server's storage (generally a good thing), a
+reasonable rule of thumb is to choose
 
 $$
-\text{Amount of Storage} = \text{data saved} + 1Gb * \text{n users}
+\text{Amount of Storage} = 1Gb * \text{n users}
 $$
 
-One thing to keep in mind is that you can basically just choose storage
-to match your data size and add a Gigabyte per person.
-
-Aside from actual data, the amount of space each person needs on the
-server is small. Code is very small and it's rare to see R and Python
-packages take up more than a few dozen Mb per data scientist.
+If you're not saving large data files, the amount of space each person
+needs on the server is small. Code is very small and it's rare to see R
+and Python packages take up more than a few dozen Mb per data scientist.
 
 ::: callout-note
 If you're working with a professional IT admin, they may be concerned
 about the storage implications of having package copies for each person
-on their team. I've heard this concern a lot from IT/Admins thinking
-prospectively about running their server and almost never of a case
-where it's actually been a problem.
-
-Finding a person who has more than a few hundred Mb of packages would be
-very strange indeed.
+on their team if you're following best practices for running
+[environments as code](@sec-env-as-code). I've heard this concern a lot
+from IT/Admins thinking about running their server and almost never of a
+case where it's actually been a problem.
 :::
 
-So it really comes down to how much data you expect to save on the
-server. In some organizations, each data scientist will save dozens of
-flat files of a Gb or more for each of their projects. That team would
-need a lot of storage. In other teams, all the data lives in a database
-and you basically don't need anything beyond that 1 Gb per person.
+If, on the other hand, you will be saving a lot of data, you've got to
+take that into account. In some organizations, each data scientist will
+save dozens of flat files of a Gb or more for each of their projects.
 
 If you're operating in the cloud, this really isn't an important choice.
 As you'll see in the lab, upgrading the amount of storage you have is a
-really trivial operation, requiring at most a few minutes of downtime.
-Choose a size you guess will be adequate and add more if you need.
+trivial operation, requiring at most a few minutes of downtime. Choose a
+size you guess will be adequate and add more if you need.
 
-## Recommendation 4: Get a GPU...maybe
+### Examining at storage usage
 
-The most common special architecture chips is the graphical processing
-unit (GPU). GPUs are specialized chips used for tasks like editing photo
-or videos, rendering video game graphics, some kinds of machine
-learning, and (yes) Bitcoin mining.
+A common culprit for weird server behavior is running out of storage
+space. There are two handy commands for monitoring the amount of storage
+you've got -- `du` and `df`.
 
-Like a CPU, a GPU is just an addition factory but with a different
-architecture. A CPU has a few fast cores, so it can only work on a few
-problems simultaneously, but it does them very fast. In contrast, a GPU
-takes the opposite approach, with many slower cores. Where a
-consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000 cores,
-but each one runs between 1% and 10% the speed of a CPU core.
+These commands are almost always used with the `-h` flag to put file
+sizes in human-readable formats.
 
-For GPU-centric tasks, the overwhelming parallelism of a GPU is more
-important than the speed of any individual core, and GPU computation can
-be dramatically faster. For the purposes of data science, many popular
-machine learning techniques -- including neural networks, XGBoost, and
-other tree-based models -- potentially run much much faster on GPUs
-relative to CPUs.
+`df`, for disk free, shows the capacity left on the device where the
+directory sits.
 
-Some machines are also adding other types of specialized chips to do
-machine learning -- though these generally aren't accessible for
-training models. For example, iPhone TODO.
+For example, here's the result of running the `df` command on the
+chapters directory on my laptop that includes this chapter.
+
+``` {.bash filename="Terminal"}
+❯ df -h chapters\
+Filesystem Size Used Avail Capacity iused ifree %iused Mounted on
+/dev/disk3s5 926Gi 163Gi 750Gi 18% 1205880 7863468480 0%
+/System/Volumes/Data
+```
+
+So you can see that the chapters folder lives on a disk called
+`/dev/disk3s5` that's a little less than 1Tb and is 18% full -- no
+problem. On a server this can be really useful to know, because it's
+quite easy to switch a disk out for a bigger one in the same spot.
+
+If you've figured out that a disk is full, it's usually most cost
+effective to just buy a bigger disk. But sometimes something weird
+happens. Maybe there are a few exceptionally big files, or you think
+unnecessary copies are being made.
+
+If so, the `du` command, short for disk usage, gives you the size of
+individual files inside a directory. It's particularly useful in
+combination with the sort command.
+
+For example, here's the result of running `du` on the chapters directory
+where the text files for this book live.
+
+``` {.bash filename="Terminal"}
+❯ du -h chapters \| sort -h\
+44K chapters/sec2/images-servers 124K chapters/sec3/images-scaling 156K
+chapters/sec2/images 428K chapters/sec2/images-traffic 656K
+chapters/sec1/images-code-promotion 664K chapters/sec1/images-docker
+1.9M chapters/sec1/images-repro 3.4M chapters/sec1 3.9M
+chapters/sec3/images-auth 4.1M chapters/sec3 4.5M
+chapters/sec2/images-networking 5.3M chapters/sec2 13M chapters
+```
+
+So if I were thinking about cleaning up this directory, I could see that
+my images-networking directory in `sec2` is the biggest single
+bottom-level directory. If you find yourself needing to find big files
+on your Linux server, it's worth spending some time with the help pages
+for `du`. There are lots of really useful options.
+
+## Recommendation 4: Get a GPU, maybe
+
+All computers have a CPU. It's also possible for CPUs to offload compute
+tasks to other chips with more specialized architectures. The most
+common special-purpose chip is the graphical processing unit (GPU). GPUs
+are specialized chips used for tasks like editing photo or videos,
+rendering video game graphics, some kinds of machine learning, and (yes)
+Bitcoin mining.
+
+A GPU is an addition factory just like a CPU, but with different
+architecture. As discussed above, a CPU has a handful of fast cores. So
+it can't take on that many simultaneous problems, but it can dispatch
+each one quite quickly.
+
+A GPU takes the opposite approach, with many (relatively) slow cores.
+Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000
+cores, with each one running at only about 1% to 10% the single core
+clock speed speed of a CPU core.
 
 The choice of whether you need a GPU to do your work will really depend
 on what you're doing and your budget.
 
-Only certain kinds of data science tasks are even amenable to GPU-backed
-acceleration. Many data science tasks can only be done in sequence
-others can be parallelized, but splitting it into a small number of CPU
-cores is perfectly adequate. For the most part, the things that will
-benefit most from GPU computing are training highly parallel machine
-learning models like a neural network or tree-based models.
+For the tasks GPUs are good at, the overwhelming parallelism ends up
+being more important than the speed of any individual core, and GPU
+computation can be dramatically faster.
 
-If you do have one of these use cases, GPU computing can massively speed
-up your computation -- making models trainable in hours instead of days.
+Many data science tasks can only be done in sequence, so you can't even
+use more than one CPU core. Others can be parallelized, but splitting it
+into a small number of CPU cores is perfectly adequate.
+
+The tasks that most benefit from GPU computing are training highly
+parallel machine learning models like deep learning or tree-based
+models. If you do have one of these use cases, GPU computing can
+massively speed up your computation -- making models trainable in hours
+instead of days.
 
 If you are planning to use cloud resources for your computing,
 GPU-backed instances are quite pricey, and you'll want to be careful
 about only putting those machines up when you're using them.
+
+Because GPUs are expensive, I generally wouldn't bother with GPU-backed
+computing unless you've already tried without a GPU and find that it
+takes too long to be feasible.
 
 It's also worth noting that using a GPU won't happen automatically. The
 tooling has gotten good enough that it's usually pretty easy to set up,
 but your computer won't train your XGBoost models on your GPU unless you
 tell it to do so.
 
-Because GPUs are expensive, I generally wouldn't bother with GPU-backed
-computing unless you've already tried without a GPU and find that it
-takes too long to be feasible.
+## Running out of Resources
 
-## Scaling Servers
+If you recognize that you're running out of resources on your current
+server, you may want to move to something bigger. There are two main
+reasons servers run out of room.
 
-There are two reasons you might need to scale to a bigger server. The
-first reason that people think of most often is because people are
-running big jobs. This can happen at any scale of organization. There
-are data science teams of one who have use cases that necessitate
-terrabytes of data. There are also issues that come up as your data
-science team gets bigger.
+The first reason is because people are running big jobs. This can happen
+at any scale of organization. There are data science teams of one who
+have use cases that necessitate terrabytes of data.
+
+The second reason is because you have a lot of people using your server.
+This is generally a feature of big data science teams, irrespective of
+the size of the workloads.
 
 Either way, there are two basic options for how to scale your data
 science workbench. The first is *vertical scaling*, which is just a
-fancy way of saying get a bigger server. If your budget allows it, you
-shouldn't feel shy about vertically scaling -- the complexity of
-managing a `t3.nano` with 2 cores and 0.5 Gb of memory is exactly the
-same as a `C5.24xlarge` with 96 cores and 192 Gb of memory. In fact, the
-bigger one may well be easier to manage, since you won't have to worry
-about running low on resources.
+fancy way of saying get a bigger server.
 
-AWS resource costs generally scale linearly within a server family. But
-there are limits. As of this writing, AWS's general-use instance types
-max out at 96-128 cores these days. That's probably sufficient for many
-workloads, but if you've got an RStudio Server with 50 concurrent users
-doing reasonably heavy compute loads, that can quickly get eaten up.
+The second is *horizontal scaling*, which means running a whole fleet of
+servers in parallel and spreading the workload across them.
 
-The nice thing about being in the cloud is that vertical scaling is
-almost trivially easy, as we'll see in the lab in this chapter.
+As a data scientist, you shouldn't be shy about vertically scaling if
+your budget allows it. The complexity of managing a `t3.nano` with 2
+cores and 0.5 Gb of memory is exactly the same as a `C5.24xlarge` with
+96 cores and 192 Gb of memory. In fact, the bigger one may well be
+easier to manage, since you won't have to worry about running low on
+resources.
 
-If your needs grow beyond the capacity of a single server, you're
-starting to get into *horizontal scaling* territory. Once you're
-thinking about horizontal scaling, you should almost certainly get an
-IT/Admin professional involved. See [Chapter @sec-ent-servers] for more
-on how to talk to them about it.
+There are limits to the capacity of vertical scaling. As of this
+writing, AWS's general-use instance types max out at 96-128 cores.
+That's probably sufficient for many workloads, but if you've got a data
+science workbench with 50 concurrent users doing reasonably heavy
+compute loads, that can quickly get eaten up.
 
-## AWS Costs
+Once you're thinking about horizontal scaling, you've got a distributed
+service problem on your hand, which is inherently difficult. You should
+almost certainly get an IT/Admin professional involved. See [Chapter
+@sec-ent-servers] for more on how to talk to them about it.
 
-That said, a modestly-sized server is still pretty cheap if you're only
-putting it up for a short amount of time.
+### AWS Instances for data science
 
-I'm writing this on a 2021 M1 Macbook Pro with 10 CPUs and 32 Gb of
-memory. If you wanted that same computational power from an AWS server,
-it's roughly comparable to a `t3.2xlarge` -- with 8 CPUs and 32Gb of
-memory. That server costs is \$0.33 an hour. So a full year running full
-time for an instance is nearly \$3,000, but if you're only running that
-instance for a little while -- say, the few hours it'll take you to
-complete this lab -- it will probably only be a few dollars.
+AWS offers a variety of different EC2 instance types split up by
+*family* and *size*. The family is the category of EC2 instance.
+Different types of instances are optimized for different kinds of
+workloads.
+
+Here's a table of common instance types for data science purposes:
+
+| Instance Type | What it is                                                            |
+|----------------|-----------------------------------------|
+| `t3`          | The "standard" configuration. Relatively cheap. Sizes may be limited. |
+| `C`           | CPU-optimized instances, aka faster CPUs                              |
+| `R`           | Higher ratio of RAM to CPU                                            |
+| `P`           | GPU instances, very expensive                                         |
+
+Within each family, there are different sizes available, ranging from
+*nano* to multiples of *xl*. Instances are denoted by
+*\<family\>.\<size\>*. So, for example, when we put our instance
+originally on a free tier machine, we put it on a `t2.micro`.
+
+In most cases, going up a size doubles the amount of RAM, the number of
+cores, and the cost. So you should do some quick math before you stand
+up a `C5.24xlarge` or a GPU-based `P` instance. If your instance won't
+be up very long, it may be fine, but make sure you take it down when
+you're done lest you rack up a huge bill.
 
 ## Comprehension Questions
 
@@ -350,36 +416,7 @@ complete this lab -- it will probably only be a few dollars.
 3.  What are the architectural differences between a CPU and a GPU? Why
     does this make a GPU particularly good for Machine Learning?
 
-    ## AWS Instance Classes for Data Science
-
-    AWS offers a variety of different EC2 instance types. There are a
-    few different types you'll probably consider, here's a quick guide
-    to the types most commonly used for data science purposes.
-
-    Within each family, there are different sizes available, ranging
-    from *nano* to *2xl*. Instances are denoted by
-    *\<family\>.\<size\>*. So, for example, when we put our instance
-    originally on a free tier machine, we put it on a `t2.micro`.
-
-    In most cases, going up a size doubles the amount of RAM, the number
-    of cores, and the cost.
-
-    +---------------+-------------------------------------------------+
-    | Instance Type | Notes                                           |
-    +===============+=================================================+
-    | `t3`          | The "standard" configuration. Relatively cheap  |
-    |               | per core/Gb RAM.                                |
-    |               |                                                 |
-    |               | good b/c of instance credits, limited size      |
-    +---------------+-------------------------------------------------+
-    | `C`           | Faster CPUs                                     |
-    +---------------+-------------------------------------------------+
-    | `R`           | Higher ratio of RAM to CPU                      |
-    +---------------+-------------------------------------------------+
-    | `P`           | GPU instances, very expensive                   |
-    +---------------+-------------------------------------------------+
-
-    ## Lab: Changing Instance Size
+## Lab: Changing Instance Size
 
 Ok, now we're going to experience the real magic of the cloud --
 *flexibility.*
@@ -429,14 +466,11 @@ I got twice as much RAM!
 There are some rules around being able to change from one instance type
 to another...but this is an amazing superpower if you've got variable
 workloads or a team that's growing. The ability to scale a machine so
-easily is a game-changer.
+easily is a game-changer. Once you're done with your larger server, it's
+just as easy to scale it back down.
 
-The work we did in earlier lab chapters, for example adding the elastic
-IP and daemonizing JupyterHub, are the reason that we're able to bring
-it back up so smoothly.
-
-It's similarly easy to resize the EBS volume attached to your server for
-more storage.
+If you want more storage, it's similarly easy to resize the EBS volume
+attached to your server.
 
 There are two caveats worth knowing for EBS:
 

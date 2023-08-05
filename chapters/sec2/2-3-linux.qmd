@@ -24,9 +24,9 @@ Android phone or a Chromebook -- that's Linux. Basically all of the
 world's supercomputers use Linux.
 
 Most importantly for our purposes, a majority of the world's servers
-also run on Linux.[^3-3-linux-1]
+also run on Linux.[^2-3-linux-1]
 
-[^3-3-linux-1]: The remainder are almost entirely Windows servers. There
+[^2-3-linux-1]: The remainder are almost entirely Windows servers. There
     are a few other Unix-like systems that you might encounter, like
     Oracle Solaris. There is no MacOS server. There is a product called
     *Mac Server*, but it's just a program for managing Mac desktops and
@@ -76,9 +76,9 @@ The one issue (for everyone but Bell Labs) was that they were paying
 Bell Labs a lot of money because they owned the license for Unix. So in
 the 1980s, programmers started writing Unix-like OSes. These so-called
 *Unix clones* behaved just like Unix, but didn't include any actual Unix
-code.[^3-3-linux-2]
+code.[^2-3-linux-2]
 
-[^3-3-linux-2]: Or at least they weren't supposed to. BSD is a Unix
+[^2-3-linux-2]: Or at least they weren't supposed to. BSD is a Unix
     clone that has an interesting history of lawsuits over whether it
     illegally included Unix code. BSD is the best-known Unix clone other
     than Linux, mostly because MacOS is built on it.
@@ -87,9 +87,9 @@ In 1991, Linus Torvalds -- then a 21 year-old Finnish grad student --
 released Linux, an open source Unix clone via a amusingly nonchalant
 newsgroup posting, saying, "I'm doing a (free) operating system (just a
 hobby, won't be big and professional like gnu)...Any suggestions are
-welcome, but I won't promise I'll implement them :-)."[^3-3-linux-3]
+welcome, but I won't promise I'll implement them :-)."[^2-3-linux-3]
 
-[^3-3-linux-3]: More in the [History of Linux Wikipedia
+[^2-3-linux-3]: More in the [History of Linux Wikipedia
     article](https://en.wikipedia.org/wiki/History_of_Linux).
 
     Pedants will scream that the original release of Linux was just the
@@ -106,16 +106,16 @@ smartphone or the controller for your smart thermostat.
 For server use, most organizations standardize on one of a handful of
 distros. The most common open source distros are Ubuntu or CentOS. Red
 Hat Enterprise Linux (RHEL) is the most common paid
-distro.[^3-3-linux-4] Many organizations on AWS are using Amazon Linux,
+distro.[^2-3-linux-4] Many organizations on AWS are using Amazon Linux,
 which is independently maintained by Amazon but was originally a RHEL
-derivative.[^3-3-linux-5]
+derivative.[^2-3-linux-5]
 
-[^3-3-linux-4]: RHEL and CentOS are related operating systems, but that
+[^2-3-linux-4]: RHEL and CentOS are related operating systems, but that
     relationship has changed a lot in the last few years. The details
     are somewhat complicated, but most people expect less adoption of
     CentOS in enterprise settings going forward.
 
-[^3-3-linux-5]: As I'm writing this, Amazon Linux 2 is popular, but
+[^2-3-linux-5]: As I'm writing this, Amazon Linux 2 is popular, but
     Amazon Linux 2023 (AL2023) was recently released. I'd expect AL2023
     or it's successor to be dominant by the time you read this.
 
@@ -262,10 +262,10 @@ can't deal with `uid`s bigger than 2,000,000.
 
 Users belong to *groups*, which are collections of one or more users.
 Each user has exactly one *primary* *group* and can be a member of
-secondary groups.[^3-3-linux-6] By default, each user's primary group is
+secondary groups.[^2-3-linux-6] By default, each user's primary group is
 the same as their username.
 
-[^3-3-linux-6]: Depending on your version of Linux, there may be a limit
+[^2-3-linux-6]: Depending on your version of Linux, there may be a limit
     of 16 groups per user.
 
 Like a user has a `uid` a group has a `gid`. User `gid`s start at 100.
@@ -500,9 +500,9 @@ group, and the third for everyone else. The way you get the right digit
 is pretty clever -- you just sum up the permissions as follows: 4 for
 read, 2 for write, and 1 for execute. You can check for yourself that
 any set of permissions is uniquely identified by a number between 1 and
-7.[^3-3-linux-7]
+7.[^2-3-linux-7]
 
-[^3-3-linux-7]: Clever eyes may realize that this is just the base-10
+[^2-3-linux-7]: Clever eyes may realize that this is just the base-10
     representation of a three-digit binary number.
 
 So to implement the permissions in the graphic above, you'd want the
@@ -608,9 +608,9 @@ it. The flags you'll use most often are in the cheatsheet below.
 
 Once you've created an archive file, you can move it to or from a server
 with the `scp` command. `scp` -- short for secure copy -- is basically
-`cp`, but with an SSH connection in the middle.[^3-3-linux-8]
+`cp`, but with an SSH connection in the middle.[^2-3-linux-8]
 
-[^3-3-linux-8]: It's worth noting that `scp` is now considered "insecure
+[^2-3-linux-8]: It's worth noting that `scp` is now considered "insecure
     and outdated". The ways it is insecure are rather obscure and not
     terribly relevant for most people. But if you're moving a lot of
     data, you may want something faster. If so, I'd recommend more
@@ -627,47 +627,15 @@ that's already SSH-ed into your server.
 
 Regular `ssh` options work with `scp`, like `-i` and `-v`.
 
-## Server admin = text file author
+### Writing files without opening them
 
-On a server, a huge fraction of what you'll be doing is reading and
-writing configuration and log files from the server, so being
-comfortable with the commands to do so is essential.
+There are also times when you want to take the output of a command or
+the contents and put it right into a file. While you can just always
+copy and paste things around, there are also a few handy *operators* you
+can use to make this easy.
 
-There are a few different commands I frequently use for reading files:
-
--   `cat` is the basic command to print a file, starting at the
-    beginning.
-
--   `less` prints a file, starting at the beginning, but only a few
-    lines at a time.
-
--   `head` prints only the first few lines and exits. It is especially
-    useful to peer at the beginning of a large file, like a `csv` file
-    -- so you can quickly preview the column heads and the first few
-    values.
-
--   `tail` prints a file going up from the end. This is especially
-    useful for log files, as the newest logs are appended to the end of
-    a file. This is such a common practice that "tailing a log file" is
-    a common phrase.
-
-    -   Sometimes, you'll want to use the `-f` flag (for *follow*) to
-        tail a file with a live view as it updates.
-
-Sometimes you want to search around inside a text file. You're probably
-familiar with the power of *regular expressions (regex)* to search for
-specific character sequences in text strings. The Linux command `grep`
-is the main regex command.
-
-In addition to searching in text files, `grep` is often useful in
-combination with other commands. For example, it's often useful to put
-the output of `ls` into `grep` to search for a particular file in a big
-directory.
-
-The Linux *pipe operator*, `|`, takes the output of the previous command
-and sends it into the next one. So if I was searching for a file whose
-name contained the word `data`, that might look something like
-`ls ~/projects/my-project | grep data`.
+You can take the output of any command and send it on to another with
+the *pipe operator*, `|`.
 
 ::: callout-note
 ## Ceci n'est pas une pipe?
@@ -675,7 +643,7 @@ name contained the word `data`, that might look something like
 The pipe should feel extremely familiar to R users.
 
 The pipe from the `{magrittr}` package, `%>%`, was introduced in 2013,
-and is a popular part of the `{tidyverse}`.[^3-3-linux-9] The
+and is a popular part of the `{tidyverse}`.[^2-3-linux-9] The
 `{magrittr}` pipe was inspired by both the Unix (Linux) pipe and the
 pipe operator in the `F#` programming language.
 
@@ -683,117 +651,44 @@ Due to its popularity, the pipe `|>` was formally added to the base R
 language in R 4.1 in 2021.
 :::
 
-[^3-3-linux-9]: The title of this callout box is also the tagline for
-    the `{magrittr}` package.
+[^2-3-linux-9]: The title of this callout box is also the tagline for
+    the `{magrittr}` package. When you have existing text you want to
+    add to a file, you can use the `>` command, which takes the output
+    of a command on the left and writes it as a new file. If the file
+    you specify already exists, it will be overwritten.
 
-Along with the pipe, there are a few other operators you can use to
-write into files without opening them.
+There are a few versions of the pipe operator specific to putting text
+into a file.
 
-When you have existing text you want to add to a file, you can use the
-`>` command, which takes the output of a command on the left and writes
-it as a new file. If the file you specify already exists, it will be
-overwritten. If you want to append the new text, rather than overwrite,
-`>>` appends to the end of the file.
+If you want to append the new text, rather than overwrite, `>>` appends
+to the end of the file. I generally default to `>>`, because it'll
+create a new file if one doesn't exist, and I usually don't meant to
+overwrite what's there.
 
 A common reason you might want to do this is to add something to the end
-of your `.gitignore`. For example, if you want to add your `.Rprofile`
+of your .gitignore. For example, if you want to add your `.Rprofile`
 file to your `.gitignore`, you could do that with
-`echo .Rprofile >> .gitignore`. Note that `echo` is a command that just
-repeats the input as a character string. Otherwise `.Rprofile` would be
-treated as a command.
+`echo .Rprofile >> .gitignore`.[^2-3-linux-10]
+
+[^2-3-linux-10]: Note that `echo` is needed so that the `.Rprofile` gets
+    repeated as a character string. Otherwise `.Rprofile` would be
+    treated as a command.
 
 There are times when you want to make files or directories with nothing
 in them. The `touch` command makes a blank file at the specified file
 path. If you `touch` a preexisting file, it updates the time the file
 was last updated without actually making any changes.
 
-### vim and nano are Linux text editors
-
-Sometimes, you'll need to actually open files to work with them in a
-*text editor*.
-
-There are two command line text editors you'll probably encounter:
-`nano` and `vi`/`vim`.[^3-3-linux-10] While they're both powerful text
-editing tools, they can also be intimidating if you've never used them
-before.
-
-[^3-3-linux-10]: `vi` is the original fullscreen text editor for Linux.
-    `vim` is its successor (`vim` stands for `vi` improved). I'm not
-    going to worry about the distinction.
-
-You can open a file in either by typing `nano <filename>` or
-`vi <filename>`.
-
-At this point many newbie command line users find themselves completely
-stuck, unable to do anything -- even just exit and try again. But don't
-worry, there's a way out of this labyrinth!
-
-If you opened `nano`, there will be some helpful-looking prompts at the
-bottom. You'll see that once you're ready to go, you can exit with `^x`.
-But you'll find yourself stymied when you try to exit with the caret
-character, `^`, and an `x`.
-
-On Windows, `^` is short for `Ctrl` and on Mac it's for Command (`⌘`),
-so `Ctrl + x` or `⌘ + x` will exit.
-
-Where `nano` gives you helpful -- if obscure -- hints, a first
-experience in `vim` is the stuff of command line nightmares. You'll type
-words and they won't appear onscreen. Instead, you'll experience
-dizzying jumps around the page and words and lines of text will
-disappear without a trace.
-
-This is happening because `vim` uses the letter keys not just to type,
-but also to navigate the page and interact with `vim` itself. This is
-because `vim` was created before keyboards uniformly had arrow keys.
-These days, `vim` still operates this way because people are used to it
-and because it minimizes how much your hands have to move on the
-keyboard.
-
-While I've never felt taxed from using the arrow keys, `vim` keybindings
-are worth spending some time learning. `vim` includes some powerful
-shortcuts for moving within and between lines and selecting and editing
-text. Most IDEs you might use, including RStudio, JupyterLab, and VSCode
-have vim modes. Learning some of the basics can make you way faster
-editing code files, plus you'll feel really cool.
-
-Here I'm only going to teach you how to make changes, save, and exit
-without issue. You'll have to get fancier on your own.
-
-When you enter `vim`, you're in the (poorly named) *normal mode*, which
-is for navigation only. Pressing the `i` key activates *insert mode*,
-which will feel normal for those of us used to arrow keys. You can type
-and words will appear and you can navigate with the arrow keys.
-
-Now that you've figured out how to exit normal mode, you may wish never
-to return. But it's the only way to save files and exit `vim`. You can
-do so with the `escape` key.
-
-In order to do file operations, you type a colon, `:`, followed by the
-shortcut for what you want to do, and `enter`. The two most common
-commands you'll use are save (write) with `w` and quit with `q`. You can
-combine these together, so you can save and quit in one command using
-`:wq`.
-
-Sometimes you may want to exit without saving. If you've made changes
-and try to exit with `:q`, you'll find yourself in an endless loop of
-warnings that your changes won't be saved. You can tell `vim` you mean
-it with the exclamation mark, `!`, and exit using `:q!`.
-
 ## Comprehension Questions
 
-1.  Draw a mental map that includes the following: terminal, shell,
-    theme manager, operating system, my laptop
-2.  What are the parts of a bash command?
-3.  Where do commands run? How do you know where they're going to run or
+1.  What are the parts of a bash command?
+2.  Where do commands run? How do you know where they're going to run or
     specify a relative path?
-4.  What are 4 commands to read text files?
-5.  How can you copy, move, or delete a file? What about to or from a
+3.  How can you copy, move, or delete a file? What about to or from a
     server?
-6.  How do you know if you've opened `nano` or `vim`? How would you exit
-    in either case?
-7.  Create a mind map of the following terms: Operating System, Windows,
+4.  Create a mind map of the following terms: Operating System, Windows,
     MacOS, Unix, Linux, Distro, Ubuntu
-8.  What are the 3x3 options for Linux file permissions? How are they
+5.  What are the 3x3 options for Linux file permissions? How are they
     indicated in an `ls -l` command?
 
 ## Lab: Set up a user
@@ -844,13 +739,16 @@ scp -i ~/Documents/do4ds-lab/do4ds-lab-key.pem \
 Note that I'm still using the `.pem` key to SSH in, because I don't have
 another key registered yet.
 
-Now the public key is on the server, but it's in the `ubuntu` user's home
-directory. You'll need to do the following: 
-1. Create `.ssh/authorized_keys` in `test-user`'s home directory.
-2. Copy the contents of the public key you uploaded into the `authorized_keys` file. 
-3. Make sure the `.ssh` directory and `authorized_keys` files are owned by `test-user` with `700` permissions on `.ssh` and `600` on `authorized_keys`.
+Now the public key is on the server, but it's in the `ubuntu` user's
+home directory. You'll need to do the following: 1. Create
+`.ssh/authorized_keys` in `test-user`'s home directory. 2. Copy the
+contents of the public key you uploaded into the `authorized_keys` file.
+3. Make sure the `.ssh` directory and `authorized_keys` files are owned
+by `test-user` with `700` permissions on `.ssh` and `600` on
+`authorized_keys`.
 
-You could do this all as the admin user, but I'd recommend switching to being `test-user` at some point with the `su` command.
+You could do this all as the admin user, but I'd recommend switching to
+being `test-user` at some point with the `su` command.
 
 ::: callout-tip
 If you run into trouble assuming `sudo` with your new user, try exiting
@@ -861,8 +759,8 @@ restart the shell.
 Once you've done all this, you should be able to log in from your
 personal computer with `ssh test-user@$SERVER_ADDRESS`.
 
-Now that we're all set up, you should store the `.pem` key somewhere safe
-and never use it to log in again.
+Now that we're all set up, you should store the `.pem` key somewhere
+safe and never use it to log in again.
 
 When you ever want to exit SSH and get back to your machine, you can
 just type `exit`.
