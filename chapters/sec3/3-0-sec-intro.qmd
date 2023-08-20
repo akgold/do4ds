@@ -1,217 +1,167 @@
-# IT/Admin for Data Science {#sec-3-intro}
+# Making it Enterprise-Grade {#sec-4-intro}
 
-You're reading this book because you're a data scientist who wants to
-take their work to production. In the first section of the book, I
-insisted that means you've got to add software development to your list
-of responsibilities. Going into a section about IT/Admin, it would be
-logical to worry that you're about to have more added to your list of
-responsibilities.
+Over the last few chapters, we walked through getting set up with a
+server, accessing and managing the server via SSH, understanding DNS and
+getting a real URL, securing the server with SSL/HTTPS, and right-sizing
+the server for your needs.
 
-Rest easy. You're not an IT/Admin, and I'm not going to make you one.
+And if you walked through the process with the labs, you've got a data
+science workbench running RStudio Server, JupyterHub, and a
+model-serving API all of your own. That's awesome!
 
-In fact, I'd kinda prefer not to write this section at all. In my
-experience, data scientists perform their best at organizations where
-there's a close partnership with highly competent IT/Admins.
+That server is great if you're working alone on some data science
+projects you want to host in the cloud or if you've got a small team of
+data scientists in a small organization.
 
-In the best cases, the data scientist remains responsible for the things
-we explored in [Section 1](#sec-1-intro), creating a data science
-project that's well-built to be portable, scalable, secure, and
-inspectable. Then, the IT/Admin takes care of the rest, the servers,
-networking, users, and storage that it takes to make the data science
-project usable.
+But if you work at a large organization, an organization with
+more-stringent security needs, or a larger team of data scientists,
+you're going to need to start considering some more complex ways of
+managing your data science environment for security and stability.
 
-This kind of close partnership is basically the whole point of DevOps.
-But that's often not the case.
+Broadly speaking, these concerns fall under the context of *enterprise*.
+In this context, Enterprise roughly translates to "a large organization
+with well-defined IT/Admin responsibilities and roles". If you're not in
+an Enterprise, you likely have the rights and ability to just stand up a
+data science workbench and use it, like we did in the last section.
 
-Maybe it's because the IT/Admin team is overloaded and doesn't have time
-or relevant expertise, or maybe it's because you work at a small
-organization or are a student or hobbyist trying to do something
-cheaply. Or maybe (probably) you're just a big nerd and are really
-curious about how this all works.
+If you are in an Enterprise, you probably had to do all that on a
+personal account, and almost certainly couldn't connect to your real
+data sources.
 
-At some point, many, if not most, data scientists find themselves
-responsible for some aspects for the administration of the servers where
-their work runs. Sometimes you have to be your own IT/Admin.
+In general, organizations are trying to implement something called the
+*principle of least privilege*. The idea behind this is that they are
+trying to keep systems safe and stable by giving people the permissions
+they need to get their work done -- and no more. For example, let's say
+you're working in a data science workbench environment. You need a place
+where you can write code and load data. It might occasionally be useful
+to have root access on the server to be able to make updates to the
+server. But are you going to get that in an enterprise environment?
+Almost certainly not, because you don't need it to get your work done
+day-to-day. Instead, you'll have to coordinate with the IT/Admin team if
+you need to get something done that requires root access.
 
-That's a scary place to be for a novice. IT/Admin is a whole career! In
-today's world, there are a plethora of resources available to learn
-about IT/Admin topics, but it's hard to know where to start and what's
-really relevant. Unless you're feeling antsy for a career change, the
-amount to learn about , and more is completely overwhelming. And if you
-do it badly, you can unknowingly make choices that cause security
-vulnerabilities, system instability, and general annoyance.
+Doing open source data science in an Enterprise almost certainly means
+having to work across teams to get your workbench built and having to
+convince other people that you'll be a good actor at the end of the day.
 
-So in this section you're going to be introduced to all of the major
-topics in IT/Administration that are relevant for a data science
-project. By the end, you'll be pretty comfortable administering a simple
-data science workbench or hosting platform.
+The goal of the next few chapters is to help you understand the ways
+your data science workbench isn't enterprise and how to communicate with
+the IT/Admins at your organization who are responsible for such things.
+We'll get into how to integrate open-source data science into an
+organization, what more complex network architecture might look like,
+how auth works, and how to scale your environment.
 
-## Administering a server
+Hopefully you won't have to implement much of this yourself. Instead,
+the hope is that reading and understanding the content in this chapter
+will help make you a better partner to the teams at your organization
+who *are* responsible for these things. You'll be equipped with the
+language and mental models to ask good questions and give informative
+answers to the questions the IT/Admins have about your team's
+requirements.
 
-It's pretty hard to live in today's world without administering a
-computer. You've got plenty of experience managing apps on your phone
-and deleting old videos when you run out of room. You've hopefully
-figured out how to change that annoying security setting before you can
-share your screen in Zoom.
+## What enterprise IT is about
 
-So you're not a total novice at computer administration, but there's a
-reason most people just administer their own phones and administering
-servers is a career. You're probably also a competent driver, maybe you
-love driving your Honda Civic, but you probably have no idea how to
-drive an 18-wheeler.
+As a data scientist, your primary concern about your data science
+environment is that it's useful. You want to be able to get all the data
+you want at your fingertips.
 
-It's basically the same difference with a personal computer and a
-server. A personal computer exists to give one person (or a few) a way
-to access websites, read news, play games, write documents, and do video
-calls.
+Many data scientists in enterprises find that this desire runs headlong
+into requirements from their organization's IT/Admin teams.
 
-A server, on the other hand, is a working machine. It exists to serve
-content and resources. The server doesn't exist to read news -- it's
-where you get the news from. It's not there to let you watch TikTok or
-do Zoom. It *is* TikTok or Zoom. It's reasonable that the
-high-horsepower machine that serves all of Google requires a little more
-work to run than your phone or desktop.
+This can be extremely frustrating, so it's helpful to understand the
+concerns enterprise IT/Admins have in mind. Broadly, IT/Admins care
+about the security and stability of the systems they control.
 
-To be specific, using a server introduces two major complications over
-using a personal computer.
+Great IT/Admin teams also care about the usefulness of the system to
+users (that's you), but it's usually a distant third. And there is
+sometimes a tension here. After all the only system that's completely
+secure is the one that doesn't exist at all.
 
-First, both users and administrators connect to servers over networks.
-When you use or administer your personal devices, you tap or click to
-interact and make changes. In contrast, there is no physical interface
-to a server, you only have a virtual interface over a network. And as
-we'll learn, there's usually a completely different back door for
-administrators.
+But that's not always the case. Often, there's a lot to gain by
+partnering with the IT/Admin team at your organization. You may be
+primarily focused on getting stuff done minute-to-minute, but a data
+science platform that is insecure and allows bad actors to break in and
+steal data is not useful. And one where you can do what you want but end
+up crashing the workbench for 50 other users is ultimately
+self-defeating.
 
-Moreover, the internet is a dangerous place. Personal computers aren't
-accesible from the internet, but many servers are. Because your personal
-computer has no presence on the internet, many dastardly plans are
-thwarted because the villian would need physical access to your device.
+Balancing security, stability, and usefulness is always about tradeoffs.
+Great IT/Admin organizations are constantly in conversations with other
+parts of the organization to figure out the right stance for your
+organization given the set of tradeoffs you face.
 
-In contrast, a server is only useful if it is addressable on a network
--- very often the public internet. This means that there are many more
-potential threats looking to steal data or hijack the computational
-resources you've paid for to nefarious ends and you have to be very
-intentional about how you provide access to the machine.
+Unfortunately, many IT/Admin organizations don't act that way -- they
+act as gatekeepers to the resources you need to do your job. That means
+you'll have to figure out how to communicate with those teams,
+understand what matters to them, help them understand what matters to
+you, and reach acceptable organizational outcomes.
 
-Second, a server is (usually) a multi-tenant environment. This means
-that you've got to be careful to make sure that access to content is
-properly controlled, even among people who are supposed to be able to
-get onto the server.
+You probably already have a good understanding of how a data science
+environment can be useful -- but what about secure and stable. What do
+they mean?
 
-Moreover, the more people you have on a server, the more costly downtime
-is. Crashing your laptop just messes up your day. Crashing the server
-where your team does their work is a much bigger deal. Crashing the
-server cluster used by everyone in your company is really not a great
-look.
+Security is about making sure that the right people can interact with
+the systems they're supposed to and that unauthorized people can't.
 
-In order to effectively administer a data science server, there are
-three main activities you'll have to do.
+IT security professionals think about *security in layers*. And while
+you've done a good job setting your server up to comply with basic
+security best practices, there are no layers. That server front door is
+open to the internet. Literally anyone in the world can come to that
+authentication page for your RStudio Server or JupyterHub and start
+trying out passwords. That means you're just one person choosing the
+password `password` away from a bad actor getting access to your server.
 
-### Acquire and administer a server
+Lest you think you're immune because you're not an interesting target,
+there are plenty of bots out there randomly trying to break in to every
+existing IP address, not because they care about what's inside, but
+because they want to co-opt your resources for their own purposes like
+crypto mining or virtual DDOS attacks on Turkish
+banks.[^4-0-sec-intro-1]
 
-If you want to run a server, you first have to get a server. In today's
-world, that means you're going to the cloud to stand up a machine. In
-most cases, you'll just want to stand up a cloud server. However, there
-are also cloud services you may want to use, like databases and bucket
-storage. [Chapter @sec-cloud] is an introduction to what the cloud is
-and how you might want to use it for data science purposes.
+[^4-0-sec-intro-1]: Yes, these both really happened.
 
-While you control your phone via taps and your computer via clicks,
-servers are generally controlled purely via the command line. That's why
-[Chapter @sec-cmd-line] is all about how to set up the command line on
-your local machine and the programs you're going to have to use to
-successfully administer your server, including how you'll connect to it
-with *SSH*.
+Moreover, security and IT professionals aren't just concerned with bad
+actors from outside (called outsider threat) or even someone internal
+who decides to steal data or resources (insider threat). They are (or at
+least should be) also concerned with accidents and mistakes -- data that
+is accidentally permanently deleted is bad the same way stolen data is
+bad.
 
-Once you stand up and login to your server, you'll soon notice that the
-operating system isn't what you're used to. You're already comfortable
-with at least two OSes -- MacOS and/or Windows for your computer and
-Android or iOS on your phone.
+Stability is ensuring enterprise-grade systems are around when people
+need them, and that they are stable during whatever load they face
+during the course of operating. The importance of stability tends to
+rise along with the scale of the team and the centrality of their
+operations to the functioning of your organization.
 
-But the overwhelming majority of the world's servers run Linux. In order
-to effectively administer a server, you'll need to learn a little bit
-about what Linux is, a basic introduction to Linux administration, and
-develop an understanding of how files and users work on Linux. Linux,
-and basic Linux system administration is the topic of [Chapter
-@sec-linux].
+If you're a team of three data scientists who sit in a room together, it
+probably won't be a huge deal if someone accidentally knocks your data
+science workbench offline for 30 minutes because they tried to run a job
+that was too big. You're probably all sitting in the same room and you
+can learn something from the experience.
 
-But you're not interested in just running a Linux server. You want to
-use it to accomplish data science things. In particular, you want to
-install data science tools like R, Python, RStudio, JupyterHub, and
-more. So you'll need to install and run applications and adjust them
-along the way. [Chapter @sec-app-admin] is about how to install, run,
-and monitor applications on a Linux server.
+That's not the case when you get to enterprise-grade tooling. An
+enterprise-grade data science workbench probably supports dozens or
+hundreds of professionals across multiple teams. The server being down
+isn't a sorta funny occurrence you can all fix together -- it's a
+problem that must be fixed immediately -- or even better avoided
+altogether.
 
-Last, when your phone or computer gets slow or you run out of storage,
-it's probably time for a new one. But on a server, load can be much more
-variable. Maybe there are 5 people using your app this week and 50 next
-week. That means that you may have to manage the server's resources much
-more actively. That's why [Chapter @sec-scale] is all about measuring
-and scaling server resources.
+IT/Admins think hard about how to provide resources in a way that avoids
+having servers go down because they're hitting resource constraints.
 
-### Manage Networking
+One thing that is almost certain to be untrue in an enterprise context
+is that you'll have root access as a user of the system.
 
-These days using a computer is basically synonymous with using a
-computer network. When you visit a website, print a document, or login
-to your email, you are making use of a computer network.
-
-The computer network we're most familiar with is the biggest of them
-all: The Internet. But there are myriad other networks, like the very
-small private network of the devices (phones, computers, TVs, etc)
-connected to your home wifi router, to the somewhat larger VPN (which
-stands for virtual private network) you might connect to for school or
-work.
-
-The good news is that computer networks are basically all the same. If
-you understand one, you understand them all. That's because basically
-every modern computer network uses the *TCP/IP* stack of protocols,
-which define how messages can be sent across the
-network.[^3-0-sec-intro-1]
-
-[^3-0-sec-intro-1]: TCP/IP is short for Transmission Control
-    Protocol/Internet Protocol, but that's just trivia.
-
-There's a lot of depth and complexity in TCP/IP, all the way down to how
-to defining how physical hardware works. Luckily, as the administrator
-of a cloud-based data science workbench, you don't have to be super
-concerned with all of TCP/IP.
-
-There are four basic concepts that will be important for you to
-understand.
-
-First, you'll want to understand how *IP Addresses* are assigned to
-computers, and how they allow one computer to find another. Second,
-you'll need a grasp on *ports*, which allow traffic to access a specific
-service on a server.
-
-Third, you'll need some understanding of the *domain name system (DNS)*,
-which provides human-friendly translations of IP addresses. Last, you'll
-need to understand how to secure it all with *SSL/TLS*.
-
-Instead, you mainly just have to be concerned with how *IP addresses*
-allow other computers to address things to your server and how correctly
-configuring *ports* send people to the right applications when they get
-there. That's the topic of the last three chapters in this section,
-which are a general introduction to computer networking in [Chapter
-@sec-basic-networks], an int
+There is no one-size-fits-all (or even most) position for security.
+Instead, great security teams are constantly articulating and making
+decisions about tradeoffs.
 
 ## Labs in this Section
 
-There are two basic reasons for data scientists to be interacting with a
-server -- to share their work or to collaborate with other people in a
-shared workbench. In the labs in this section, one in each chapter,
-you'll get to try out both those things.
+There are no labs in this section. This section is about how to interact
+with a professional IT/Admin group. Since it's about work you really
+shouldn't undertake yourself, there are no labs for you to DIY these
+things.
 
-We're going to stand up an AWS EC2 instance and do two different things
-there.
-
-First, you'll host the Shiny app and API that we created in the first
-two sections of the book. You'll learn how to host them there and how to
-make them available to the Quarto site you've already got stood up.
-
-Second, you'll create a data science workbench of your own. You'll stand
-up RStudio Server and JupyterHub on a server so you can do further
-development on whatever you like in a server-based environment.
-
-For more details on what you'll do in each chapter, see [Appendix
-@sec-append-lab].
+If you want to go deeper into any of the topics, there are plenty of
+great resources online -- a google search should turn them up quickly

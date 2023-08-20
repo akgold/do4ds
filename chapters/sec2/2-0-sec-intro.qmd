@@ -1,134 +1,98 @@
-# IT/Admin for Data Science {#sec-3-intro}
+# IT/Admin for Data Science {#sec-2-intro}
 
-You're reading this book because you're a data scientist who wants to
-take their work to production. In the first section of the book, I
-insisted that means you've got to add software development to your list
-of responsibilities. Going into a section about IT/Admin, it would be
-logical to worry that you're about to have more added to your list of
-responsibilities.
+You're a data scientist who wants to take work to production. In this
+book's first section, I insisted you add software development to your
+list of responsibilities.
 
-Rest easy. You're not an IT/Admin, and I'm not going to make you one.
+If I were you, a section on IT/Admin might raise worries you're about to
+get more responsibilities dumped on your head. Rest easy. You're not an
+IT/Admin, and I'm not going to make you one.
 
-In fact, I'd kinda prefer not to write this section at all. In my
-experience, data scientists perform their best at organizations where
-there's a close partnership with highly competent IT/Admins.
+Honestly, I'd prefer not to write this section at all. In my experience,
+data scientists are at their best when partnered with competent and
+attentive IT/Admins. Forging a true partnership between the code creator
+(that's you) and the people responsible for operations is kinda the
+whole point of DevOps.
 
-In the best cases, the data scientist remains responsible for the things
-we explored in [Section 1](#sec-1-intro), creating a data science
-project that's well-built to be portable, scalable, secure, and
-inspectable. Then, the IT/Admin takes care of the rest, the servers,
-networking, users, and storage that it takes to make the data science
-project usable.
+But that partnership is often unachievable.
 
-This kind of close partnership is basically the whole point of DevOps.
-But that's often not the case.
+Maybe you work at a small organization without dedicated IT/Admins, or
+maybe you're a student or hobbyist trying to do something cheaply, or
+perhaps the IT/Admin team doesn't have the time, interest, or expertise
+necessary.
 
-Maybe it's because the IT/Admin team is overloaded and doesn't have time
-or relevant expertise, or maybe it's because you work at a small
-organization or are a student or hobbyist trying to do something
-cheaply. Or maybe (probably) you're just a big nerd and are really
-curious about how this all works.
+Sometimes you have to be your own IT/Admin. At some point in their
+career, many -- if not most -- data scientists find themselves
+responsible for administering of the servers where their work runs.
 
-At some point, many, if not most, data scientists find themselves
-responsible for some aspects for the administration of the servers where
-their work runs. Sometimes you have to be your own IT/Admin.
+That's a scary place to be for a novice. IT/Admin is a whole career!
+Even with all the resources available online, the amount to learn can be
+completely overwhelming. And if you do it badly, you can unknowingly
+make choices that cause security vulnerabilities, system instability,
+and general annoyance.
 
-That's a scary place to be for a novice. IT/Admin is a whole career! In
-today's world, there are a plethora of resources available to learn
-about IT/Admin topics, but it's hard to know where to start and what's
-really relevant. Unless you're feeling antsy for a career change, the
-amount to learn about , and more is completely overwhelming. And if you
-do it badly, you can unknowingly make choices that cause security
-vulnerabilities, system instability, and general annoyance.
-
-So in this section you're going to be introduced to all of the major
+In this section, you're going to be introduced to all of the major
 topics in IT/Administration that are relevant for a data science
 project. By the end, you'll be pretty comfortable administering a simple
 data science workbench or hosting platform.
 
-## Administering a server
+But that still doesn't mean you should. If at all possible, read this
+section to try to understand better how to partner with an IT/Admin, not
+how to replace them.
 
-It's pretty hard to live in today's world without administering a
-computer. You've got plenty of experience managing apps on your phone
-and deleting old videos when you run out of room. You've hopefully
-figured out how to change that annoying security setting before you can
-share your screen in Zoom.
+## Servers are different than personal devices
 
-So you're not a total novice at computer administration, but there's a
-reason most people just administer their own phones and administering
-servers is a career. You're probably also a competent driver, maybe you
-love driving your Honda Civic, but you probably have no idea how to
-drive an 18-wheeler.
+You already do a lot of computer administration, even if you don't call
+it that. You manage the apps on your phone and delete old videos when
+you run out of room. You hopefully figured out how to change that
+security setting so you can share your screen in Zoom or Teams.
 
-It's basically the same difference with a personal computer and a
-server. A personal computer exists to give one person (or a few) a way
-to access websites, read news, play games, write documents, and do video
-calls.
+So you're not a total novice in computer administration. But switching
+from administering a phone and personal computer to a server is a bit
+like putting you, a competent driver, into an 18-wheeler. There's a
+reason we all do one of them and the other is a career.
 
-A server, on the other hand, is a working machine. It exists to serve
-content and resources. The server doesn't exist to read news -- it's
-where you get the news from. It's not there to let you watch TikTok or
-do Zoom. It *is* TikTok or Zoom. It's reasonable that the
-high-horsepower machine that serves all of Google requires a little more
-work to run than your phone or desktop.
+A personal computer, like your car, is for personal exploration and
+expression. You use your computer to access websites, read news, play
+games, write documents, and do video calls.
 
-To be specific, using a server introduces two major complications over
-using a personal computer.
+A server, on the other hand, is a machine that exists to do work. The
+server is where you get the news from. It's not there to let you watch
+TikTok or make Zoom calls. It is TikTok and Zoom. It's actually
+performing the Google search.
 
-First, both users and administrators connect to servers over networks.
-When you use or administer your personal devices, you tap or click to
-interact and make changes. In contrast, there is no physical interface
-to a server, you only have a virtual interface over a network. And as
-we'll learn, there's usually a completely different back door for
-administrators.
+There are few particular ways that driving a virtual 18-wheeler is going
+to be more complicated than using your phone or personal computer. This
+section has chapters to address those complications.
 
-Moreover, the internet is a dangerous place. Personal computers aren't
-accesible from the internet, but many servers are. Because your personal
-computer has no presence on the internet, many dastardly plans are
-thwarted because the villian would need physical access to your device.
+## Getting and running a server
 
-In contrast, a server is only useful if it is addressable on a network
--- very often the public internet. This means that there are many more
-potential threats looking to steal data or hijack the computational
-resources you've paid for to nefarious ends and you have to be very
-intentional about how you provide access to the machine.
-
-Second, a server is (usually) a multi-tenant environment. This means
-that you've got to be careful to make sure that access to content is
-properly controlled, even among people who are supposed to be able to
-get onto the server.
-
-Moreover, the more people you have on a server, the more costly downtime
-is. Crashing your laptop just messes up your day. Crashing the server
-where your team does their work is a much bigger deal. Crashing the
-server cluster used by everyone in your company is really not a great
-look.
-
-In order to effectively administer a data science server, there are
-three main activities you'll have to do.
-
-### Acquire and administer a server
-
-If you want to run a server, you first have to get a server. In today's
-world, that means you're going to the cloud to stand up a machine. In
-most cases, you'll just want to stand up a cloud server. However, there
-are also cloud services you may want to use, like databases and bucket
-storage. [Chapter @sec-cloud] is an introduction to what the cloud is
+In today's world, very few people buy servers like you buy a computer or
+phone. Instead, server capacity is rented from a cloud provider. In
+order to do data science tasks, you may additionally want to take
+advantage of other cloud services, like databases and bucket storage.
+That's why [Chapter @sec-cloud] is an introduction to what the cloud is
 and how you might want to use it for data science purposes.
 
-While you control your phone via taps and your computer via clicks,
-servers are generally controlled purely via the command line. That's why
-[Chapter @sec-cmd-line] is all about how to set up the command line on
-your local machine and the programs you're going to have to use to
-successfully administer your server, including how you'll connect to it
-with *SSH*.
+Now, you'll never physically touch this cloud server you've rented. So
+unlike your personal devices that you tap or click to interact and make
+changes. In contrast, accessing a server only occurs via a virtual
+interface over a network.
 
-Once you stand up and login to your server, you'll soon notice that the
-operating system isn't what you're used to. In order to effectively
-administer a server, you'll need to learn a little bit about what Linux
-is, a basic introduction to Linux administration, and develop an
-understanding of how files and users work on Linux. Linux, and basic
-Linux system administration is the topic of [Chapter @sec-linux].
+The first implication of network-only access is that you can't use the
+point-and-click interface you're used to. Instead, you'll have to learn
+to get to your server via *SSH*, the administrative side door, and how
+to use the command line to do actual administrative tasks. That's why
+[Chapter @sec-cmd-line] is all about how to set up the command line on
+your local machine and connecting to a server via SSH.
+
+Because a server is working device meant to accommodate many users, it's
+architected differently from the ground up. So much so that most servers
+run the Linux operating system rather than the Windows or MacOS
+operating system you're used to. So [Chapter @sec-linux] will teach you
+a little about what Linux is, and will introduce you to the basics of
+Linux administration including how to think about files and users on a
+multi-tenant server.
 
 But you're not interested in just running a Linux server. You want to
 use it to accomplish data science things. In particular, you want to
@@ -137,18 +101,79 @@ more. So you'll need to install and run applications and adjust them
 along the way. [Chapter @sec-app-admin] is about how to install, run,
 and monitor applications on a Linux server.
 
-Last, when your phone or computer gets slow or you run out of storage,
-it's probably time for a new one. But on a server, load can be much more
-variable. Maybe there are 5 people using your app this week and 50 next
-week. That means that you may have to manage the server's resources much
-more actively. That's why [Chapter @sec-scale] is all about measuring
-and scaling server resources.
+Your personal device is probably just yours. In contrast, a server is
+(usually) a multi-tenant environment to do work. And, the more people
+you have on a server, the more you have to think about resource
+management. When your phone or computer gets slow or you run out of
+storage, it's probably time for a new one.
+
+But on a server, load can be much more variable. Maybe there are 5
+people using your app this week and 50 next week. That means that you
+may have to manage the server's resources much more actively. That's why
+[Chapter @sec-scale] is all about managing and scaling server resources.
+
+## Making it (safely) accessible
+
+Unless you're doing something really silly, your personal computers
+isn't addressable by random people on the internet. In contrast, most
+servers are only useful because they're addressable by the internet.
+
+Making a server accessible to people over the internet makes it useful,
+but it also introduces risk. Many dastardly plans for your personal
+devices are thwarted because a villain would have to physically steal it
+to get access. For a server, the removal of the need for physical access
+means there are many more potential threats looking to steal data or
+hijack your computational resources for nefarious ends. You've got to be
+careful about how you're providing access to the machine.
+
+It's totally possible to just follow random instructions on the internet
+to make your server accessible over a network or the internet. But doing
+so is scary because of the risk.
+
+The good news is that all computer networks share the same basic
+architecture. So once you read [Chapter @sec-basic-networks] and learn
+how computers send data across a network, you'll understand basically
+any network all the way from from the biggest network of them all -- The
+Internet -- to the tiny private network connected to your home wifi
+router.
+
+Once you understand the basic structure and operations of a computer
+network, there are two main topics left.
+
+First, [Chapter @sec-dns] will get into the *domain name system (DNS)*,
+which provides humans an easy way to remember and access websites via
+human-friendly URLs.
+
+Second, there's one basic security configuration you should never go
+without -- *SSL/TLS*, which you'll learn how to configure in [Chapter
+@sec-ssl].
 
 ## Labs in this Section
 
-In this section, we'll stand up a server, configure the command line and
-SSH, add users, and create a data science workbench with R, Python,
-RStudio Server, and JupyterHub.
+In the first section of the book, the labs involved creating a
+DevOps-friendly data science project. In this section, the labs will
+revolve around actually putting that project into production.
+
+You'll start by standing up an AWS EC2 instance, configuring your local
+command line, and connecting to the server via SSH. Once you've done
+that, you'll learn how to create users on the server and access the
+server as that user.
+
+At that point, you'll be ready to transition into data science work.
+You'll add R, Python, RStudio Server, and JupyterHub to your server and
+get them configured for work. Additionally, you'll deploy the Shiny App
+and API you created in the book's first section onto the server.
+
+Once that's all done, you'll make all of that accessible over the
+internet. You'll open the proper ports and configure a proxy to access
+those things at subpaths, and you'll configure a DNS record so your
+server is available at a real URL, and you'll add SSL so it can all be
+done securely.
+
+By the time you've finished the labs in this section, you'll be able to
+use your EC2 instance as a data science workbench and add your penguin
+mass prediction Shiny App to the Quarto website you created in the
+book's first section.
 
 For more details on what you'll do in each chapter, see [Appendix
 @sec-append-lab].

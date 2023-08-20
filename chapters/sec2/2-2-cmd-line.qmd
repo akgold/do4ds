@@ -1,36 +1,30 @@
 # Customizing the command line {#sec-cmd-line}
 
-When you want to open a file on your computer or adjust settings, you
-just click through a file tree or open your preferences pane.
+When you want to do something on your personal computer or phone, you
+just tap or click to make it happen. But servers generally have no
+*graphical user interface (GUI)* to be tapped or clicked. On a server,
+interaction is via the *command line* -- an all-text interface where you
+type commands.
 
-Servers generally have no *graphical user interfaces (GUIs)* at all. On
-a server, interaction is via the command line -- an all-text interface
-where you type commands.
-
-There's somewhat circular logic here. There's not a ton of demand for
-graphical admin tools because most admins can use the command line and
-most admins learn to use the command line because there aren't good
-graphical alternatives. Either way, if you want to do server
-administration you have to get comfortable on the command line.
+Even if you're just a data scientist, it's worth learning your way
+around the command line. There are a variety of tasks that are quicker
+and easier that way. Most people who learn the command line end up using
+it a lot on their personal computers.
 
 ::: callout-note
-In some organizations, server admin tasks are done via a graphical tool.
-This is a red flag. It means that the organization is either trying to
-find admins who haven't bothered to learn to use the command line or are
-using an intermediary tool to limit what admins can do.
+Server admin tasks are done via a graphical tool in some organizations,
+but this is a red flag.
 
-Either way, it's going to be harder to get things done.
+It means that the organization is either trying to find relatively
+low-skill (cheap) admins who haven't bothered to learn to use the
+command line or are using an intermediary tool to limit what admins can
+do. Either way, it's going to be harder to get things done.
 :::
 
-In fact, even if you're just a data scientist, it's worth learning your
-way around the command line. There are a variety of tasks that are
-quicker and easier that way. Most people who learn the command line end
-up using it a lot on their personal computers.
-
-In this chapter, we're going to get you started with the command line on
-your computer. We're going to dive into two particular topics --
-customizing the command line so it looks and behaves the way you want
-and using SSH to securely log in to administer your server.
+In this chapter, you're going to learn to set up and customize the
+command line on your machine and to access a server via *secure socket
+shell (SSH)*, the side door you'll use to do administrative tasks on
+your server.
 
 ## Getting the command line you want
 
@@ -39,10 +33,8 @@ that some customization is in order. Maybe the colors aren't quite
 right, or you want shortcuts for commands you type a lot, or you want
 more information in the default display.
 
-Some people might argue that expending energy customizing your command
-line isn't the best use of your time.
-
-Those people are no fun.
+Some people might argue that customizing your command line isn't the
+best use of your time and energy. Those people are no fun.
 
 Having a command line that behaves exactly as you like will speed up
 your work and make you feel like a hacker.
@@ -137,10 +129,10 @@ Windows comes with two shells built in, the *Command Shell* (`cmd`) and
 the *PowerShell*.
 
 The Command Shell is older and has been superseded by PowerShell. If
-you're just getting started, you absolutely should just work with
-PowerShell. If you've been using Command Shell on a Windows machine for
-a long time, most Command Shell commands work in PowerShell, so it may
-be worth switching over.
+you're just getting started, you should just work with PowerShell. If
+you've been using Command Shell on a Windows machine for a long time,
+most Command Shell commands work in PowerShell, so it may be worth
+switching over.
 :::
 
 [^2-2-cmd-line-1]: zsh is pronounced by just speaking the letters aloud,
@@ -158,14 +150,14 @@ manager to manage your themes and plugins.
 ### MacOS
 
 *Prezto* is my favorite configuration and plugin manager for zsh.
-*OhMyZsh* is also popular and very good. Feel free to choose either --
-but you can only use one.
+*OhMyZsh* is also popular and very good. Feel free to choose either, but
+you can only use one.
 
 Once you've installed Prezto, you've got (at least) three different
-places you could configure your command line -- iTerm2 preferences,
+places you could configure your command line -- the iTerm2 preferences,
 `.zshrc`, and `.zpreztorc`. I'd recommend leaving `.zshrc` alone,
 customizing the look of the window and the tab behavior in the iTerm2
-preferences, and customizing the text theme and plugins via prezto in
+preferences, and customizing the text theme and plugins via Prezto in
 the `.zpreztorc` file.
 
 I tend to be a pretty light on customization, but I'd recommend looking
@@ -199,60 +191,53 @@ your system preferences.
 
 ## Secure server connections with SSH
 
-One common IT/Admin task is remotely managing a server from the command
-line on your machine. SSH -- short for Secure (Socket) Shell -- is the
-program that allows direct interactions with a server's command line
+One common IT/Admin task is remotely accessing a server from the command
+line on your machine. *SSH* -- short for *Secure (Socket) Shell* -- is
+the program that allows direct interactions with a server's command line
 from the command line of your computer.[^2-2-cmd-line-2]
 
-[^2-2-cmd-line-2]: SSH actually can be used between any two machines,
-    provided at least one is accepting SSH connections. For data
-    scientists, SSH is almost always use to connect from a local machine
-    to a server.
+[^2-2-cmd-line-2]: SSH actually can be used between **any** two
+    machines, provided at least one is accepting SSH connections. For
+    data scientists, it's almost always used to connect from a local
+    machine to a server.
 
 Using SSH requires invoking the `ssh` command line interface with a
 username and the address of the *remote host* [(]{.underline}server).
-For example, to connect to the user `alex` on the remote host
-`server.example.com`, it would look like:
+For example, connecting to the server at `server.example.com` as the
+user `alex` from your computer (*local host*) would look like
 
 ``` {.bash filename="Terminal"}
 > ssh alex@server.example.com
 ```
 
-SSH opens a session between the local machine and the remote host via
+Once you run this command, your terminal will open a session to the
+terminal of the server. This session is authenticated and secured via
 the exchange of *SSH keys*.
 
-SSH keys come in a set called *keypair*. Each keypair consists of a
-*public* key and a *private* key. While it seems a little strange, the
-public key can be shared far and wide, while the private key must be
-treated as a precious secret.
+In order to make this all work, you'll have to configure your *SSH
+keys*, which come in a set called *keypair*. Each keypair consists of a
+*public* key and a *private* key. You'll register your private key
+anywhere you're trying to SSH to, like a server or git host, but your
+private key must be treated as a precious secret.
 
-This seems weird. Personally, until I had a basic understanding of how
-SSH worked, I managed by just following online tutorials, but it always
-felt like a guessing game where an incorrect guess would result in
-compromising my server. That's why I'm going to spend a little time
-explaining how SSH works.
+Once you've registered your public key and youuse the `ssh` command,
+your local machine sends a request to open an SSH session to the remote
+and includes the private key with the request.
 
-When you run an SSH command, the local machine sends off a request to
-open an SSH session to the remote and includes the private key with the
-request.
-
-The remote host would then use the corresponding public key, which has
-already been registered, to verify the private key and open an encrypted
-connection.
+The remote host verifies the private key with the public key and open an
+encrypted connection.
 
 ![](images/ssh.png){fig-alt="A diagram of SSH initialization. The local host sends the private key, the remote checks against the public key, and then opens the session."
 width="450"}
 
-Honestly, I wish public and private keys were named differently. Using
-the term key for both makes them seem similar, but they're not.
+The reason this all works is that, it's easy to check whether a private
+key is the right one for the public key you've got. But if you only have
+a public key, it's nearly impossible to fabricate the private key that
+goes with it.
 
-If you have a public key and you're given a private key, it's easy to
-check whether this is the right private key for the public key you've
-got. But if you only have a public key, it's nearly impossible to
-fabricate the private key that goes with it.
-
-I think that calling the private key the *key* and the public key the
-*lock* makes the intent much clearer. But no one asked me.
+Honestly, I wish public and private keys were named differently. Calling
+the private key the *key* and the public key the *lock* makes the intent
+much clearer. But no one asked me.
 
 This asymmetry between the public and private keys is possible through
 the magic of *public key cryptography*, which uses mathematical
@@ -274,21 +259,13 @@ factors of $91$.
 
 In real public key cryptography, the idea is similar, but the
 mathematical operations are more complex and the numbers much, much
-bigger.[^2-2-cmd-line-3] So much so that it's basically impossible to
-break public ssh keys. Someone could try, but brute-force guessing would
-take more time than we have left before the heat death of the universe.
-
-[^2-2-cmd-line-3]: And prime numbers generally loom large in the
-    operation.
-
-That means that it's safe to share your public key anywhere you might
-need to access using SSH like a remote server or git host, like GitHub.
+bigger. So much so that it's basically impossible to break public SSH
+keys through guessing.
 
 But that doesn't make SSH foolproof. While it's basically impossible to
-fabricate a private key, it's totally possible to steal one.
-
-Your private key **must** be kept secret. The best practice is to never
-move it from the computer where it was created and to never share them.
+fabricate a private key, it's totally possible to steal one. Your
+private key **must** be kept secret. The best practice is to never move
+it from the computer where it was created and to never share them.
 
 In summary, do what you want with your public keys, but don't share your
 private keys. Don't share your private keys. Seriously, do not share
@@ -304,6 +281,10 @@ be easy to remember.
 2.  Put the public key anywhere you'll be SSH-ing to (remote host).
 3.  Use the `ssh` command to connect.
 
+If you're working on a server, you'll probably create at least two
+keypairs. One on your personal computer to SSH to the server, and once
+on the server to access outside services that use SSH, like GitHub.
+
 ### Step 1: Create Keypair
 
 You'll create a keypair on any server you're SSH-ing **from**.
@@ -314,12 +295,12 @@ There are many. The keypair will have two parts. The one that ends in
 
 In most cases, you'll only create one private key on each machine. If
 you follow standard instructions for creating a key, it will use the
-default name, probably `id_ed25519`.[^2-2-cmd-line-4] If you're only
-creating one key, I'd recommend sticking with the default name because
-the `ssh` command will automatically use your keys if they have the
-default name.
+default name, probably `id_ed25519`.[^2-2-cmd-line-3] If you're only
+creating one key on each machine, I'd recommend sticking with the
+default name because the `ssh` command will automatically uses keys with
+the default name.
 
-[^2-2-cmd-line-4]: The pattern is `id_<encryption type>`. `ed25519` is
+[^2-2-cmd-line-3]: The pattern is `id_<encryption type>`. `ed25519` is
     the standard SSH key encryption type as of this writing.
 
 ::: callout-note
@@ -372,13 +353,15 @@ if you had a long SSH command like
 `ssh -i my-ssh-key alex@server.example.com`, you could shorten it to
 `ssh alex-server` or whatever you want.
 
-Many people also like using *tmux* with SSH. SSH sessions block the
-terminal session they're using and will break when your computer goes to
-sleep. tmux is a terminal multiplexer, which allows you to manipulate
-terminal sessions from the command line, including making sessions
-durable through sleeps and other operations. To be honest, I'm including
-tmux because lots of people love it, but I've tried using it and found
-the learning curve too steep for it to come into regular usage. Your
+Many people also like using the *tmux* command line utility with SSH.
+SSH sessions block the terminal session they're using and will break
+when your computer goes to sleep.
+
+tmux is a terminal multiplexer, which allows you to manipulate terminal
+sessions from the command line, including making sessions durable
+through sleeps and other operations. To be honest, I'm mentioning tmux
+because lots of people love it, but I've tried using it and found the
+learning curve too steep for it to come into regular usage for me. Your
 mileage may vary.
 
 Lastly, if you ever run into trouble using SSH, it has one of my
@@ -395,7 +378,10 @@ verbose mode.
     key?
 3.  What is it about SSH public keys that makes them safe to share?
 
-### Lab: Login to the server
+## Lab: Login to the server
+
+In the last chapter we got your server up and running. In this lab,
+we'll use the provided `.pem` key to log in for the first time.
 
 ### Step 1: Grab the server address
 
@@ -467,7 +453,8 @@ navigating to the right directory with the `cd` command and running
 `chmod 600 do4ds-lab-key.pem`.
 
 Once you've done that, you should be able to login to your machine as
-the root user.
+the root user. When you want to exit an SSH session and get back to your
+machine, you can just type `exit`.
 
 ### Step 3: Create your own SSH key
 
@@ -475,4 +462,3 @@ You really shouldn't use the AWS-provided `.pem` key to login to your
 server after the first time. It's too powerful. Create a normal SSH key
 using the instructions earlier in this chapter. In the next lab, we'll
 get that SSH key configured for your user on the server.
-

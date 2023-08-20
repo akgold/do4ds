@@ -36,15 +36,15 @@ get to our server from a browser.
 
 The first thing to understand is that $google.com$ is not actually a
 URL. Instead, it's just one of the four parts of a
-URL.[^3-6-server-networking-1] Your browser assumes defaults for the
-other parts, so you usually don't see them. If you wanted to provide the
-full URL to $google.com$, it would actually include four pieces of
+URL.[^3-1-networking-1] Your browser assumes defaults for the other
+parts, so you usually don't see them. If you wanted to provide the full
+URL to $google.com$, it would actually include four pieces of
 information and would look like this:
 $$\overbrace{\text{https://}}^\text{protocol}\overbrace{\text{google.com}}^\text{domain}\overbrace{\text{:443}}^\text{port}\overbrace{\text{/}}^\text{path}$$
 
-[^3-6-server-networking-1]: Different resources list different numbers
-    of parts for URLs. I believe this way of dividing a URL is most
-    useful for the purposes of this book.
+[^3-1-networking-1]: Different resources list different numbers of parts
+    for URLs. I believe this way of dividing a URL is most useful for
+    the purposes of this book.
 
 Let's dig into what each of these four parts are and how they allow you
 to access resources over the web.
@@ -172,12 +172,12 @@ virtual location where network connections originate and terminate. If
 an IP address is like a street address, the port is like the apartment
 number within the building. Each service that is listening for inbound
 communication needs a dedicated port for it to listen
-on.[^3-6-server-networking-2]
+on.[^3-1-networking-2]
 
-[^3-6-server-networking-2]: Ports are also used for outbound
-    communication. Computers know how to automatically open ports for
-    outbound communication and specify that's where the response should
-    come, so we're not going to get into them here.
+[^3-1-networking-2]: Ports are also used for outbound communication.
+    Computers know how to automatically open ports for outbound
+    communication and specify that's where the response should come, so
+    we're not going to get into them here.
 
 Each port has a unique number 1 to just over 65,000. At any given time,
 the overwhelming majority of the ports on a host are closed. Most
@@ -335,6 +335,22 @@ guess!" I guess so, but it's really just an illusion of security. There
 are ways to make your server safer. Choosing esoteric port numbers
 really isn't it.
 
+## SSH Tunneling
+
+In addition to the use of SSH to directly access the command line on a
+remote machine, SSH can also be used to create a *tunnel* to access any
+port on a remote machine. This can be useful to see an application when
+you've only got SSH access, perhaps because you haven't yet configured a
+stable URL for the server.
+
+If you're not quite sure about what a port is or how
+
+When you establish an SSH tunnel, it makes a port on the remote server
+available at a port on your laptop.
+
+An SSH tunnel to a remote can be established with
+`ssh -L <remote port>:localhost:<local port> <user>@<server>`.
+
 ## Basic network troubleshooting
 
 Networking can be difficult to manage because there are so many layers.
@@ -464,6 +480,29 @@ authentication.
 
 Let's get it configured.
 
+### Step 8: Check it all out
+
+Just knowing that all of our services are running isn't nearly as fun as
+actually trying them out.
+
+We don't have a stable public URL for the server yet, so we can't just
+access it from our browser. This is a perfect use case for an SSH
+tunnel.
+
+If you recall, the command for an SSH tunnel from a remote server to
+`localhost` is to do
+`ssh -L <remote port>:localhost:<local port> <user>@<server>`.
+
+We've got three services running on our server, RStudio Server at
+`8787`, JupyterHub on `8000`, Shiny Server on `3838`, and our Plumber
+API on `8080`. You can try each of them out by subbing those in for the
+remote port and putting them at a local port.
+
+For example, by running
+`ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`, I can visit
+RStudio Server in my browser at `localhost:8787` and login with the
+username `test-user` and password I set on the server.
+
 ### Step 1: Configure Nginx
 
 The first thing we're going to do is to configure Nginx on our server.
@@ -478,14 +517,14 @@ Here are the steps to configure your proxy on your server:
 1.  SSH into your server.
 2.  Install Nginx with `sudo apt install nginx`.
 3.  Save a backup of the default `nginx.conf`,
-    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-6-server-networking-3]
+    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-1-networking-3]
 4.  Edit the Nginx configuration with `sudo vim /etc/nginx/nginx.conf`
     and replace it with:
 
-[^3-6-server-networking-3]: This is generally a good practice before you
-    start messing with config files. Bad configuration is usually
-    preferable to a service that can't start at all because you've
-    messed up the config so badly. It happens.
+[^3-1-networking-3]: This is generally a good practice before you start
+    messing with config files. Bad configuration is usually preferable
+    to a service that can't start at all because you've messed up the
+    config so badly. It happens.
 
 ``` {.bash include="../../_labs/server-config/http-nginx.conf" filename="/etc/nginx/nginx.conf"}
 ```
@@ -602,9 +641,9 @@ router is a hardware or software device that route packets.
 
 You can think of routers and public networks as existing in trees. Each
 router knows about the IP addresses downstream of it and also the single
-upstream *default address*.[^3-6-server-networking-4]
+upstream *default address*.[^3-1-networking-4]
 
-[^3-6-server-networking-4]: There are actually a few different types of
+[^3-1-networking-4]: There are actually a few different types of
     addresses used to do this. IP addresses are used for identifying
     network resources and the MAC address used for physical hardware.
     Your router is also responsible for assigning IP addresses to
@@ -636,3 +675,4 @@ computer network is the speed. Where sending a physical letter takes a
 minimum of days, sending and receiving packets over a network is so fast
 that the delay is imperceptible when you're playing a multiplayer video
 game or collaborating on a document online.
+

@@ -1,203 +1,159 @@
 # The Cloud {#sec-cloud}
 
-These days, almost every organization I talk to is running their servers
-in *the cloud*, or is in the midst of a transition to the cloud.
+Nearly every data science organization is already doing work in the
+cloud or is considering a cloud transition. But as a data scientist, it
+can all feel a little impenetrable. Trying to pierce the veil of
+marketing fluff and understand exactly what the cloud is feels like
+trying to catch a -- well, you know -- and pin it down.[^2-1-cloud-1]
 
-Much like trying to pin down a, you know, trying to put a finger on
-exactly what the cloud is can be a little difficult. Especially in the
-beginning of cloud-migration, there was so much marketing fluff around
-the cloud that it felt about as touchable as a fluffy white
-conglomeration of water vapor in the stratosphere.
+[^2-1-cloud-1]: Yes, that is a Sound of Music reference.
 
-But in the last decade or so, the cloud has become the primary place
-people do things with servers. It's very real, and really important to
-understand if you want to do work in a centralized way.
+Despite that feeling, the cloud is very real and very important to the
+way data science gets done. In this chapter, you'll learn about what the
+cloud is, important cloud services to know about for data science.
 
-It used to be the case that the only way to have a server for your
-organization was to buy a server and hire someone to physically install
-and maintain the server racks you needed to run your company's
-workloads. This is called running the servers *on-prem* (short for
-premises). There are some organizations, especially those with highly
-sensitive data that still run on-prem servers.
+This chapter has two labs. In the first, you'll get started with a
+server in AWS -- getting it stood up and learning how to start and stop
+it. In the second lab, you'll work with an *S3 bucket* to store the
+model from our penguin model.
 
-Around the year 2000, the Amazon.com team centralized their IT platform
-across the company so instead of each team running and hosting its own
-servers, they would get them from a centralized platform.
+## What is the cloud anyway?
 
-Over the next few years, Amazon execs realized that just like this
-service was valuable to other teams at Amazon, they could rent server
-capacity to other organizations. Amazon launched Amazon Web Services
-(AWS) in 2006, which was the first cloud service to get serious
-commercial traction.
+To explain what the cloud is today, let's start with where we're coming
+from.
 
-Since then, AWS has been joined by Microsoft Azure and Google Cloud
-Platform (GCP) as the *big three* or the *hyperscalers*, which
-collectively run nearly 2/3 of the global cloud
-marketplace.[^2-1-cloud-1] AWS is by far the biggest of the three,
-though Azure has been catching up more recently.
+At one time, the only way to get servers was to buy physical machines
+and hire someone to install and maintain them. This is called running
+the servers *on-prem* (short for premises). There are some
+organizations, especially those with highly sensitive data, that still
+run on-prem servers.
 
-[^2-1-cloud-1]: https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/
+The problem is that on-prem servers require large up-front investment in
+server hardware and professional capacity. If your company has a use
+case that only requires a single server or one with uncertain payoff, it
+probably isn't worth it to hire someone and buy a bunch of hardware.
 
-But the cloud providers didn't stop at just renting server capacity to
-other organizations. Instead, they started building layers and layers of
-services on top of the immense server farms they were now running.
+Around the year 2000, Amazon took all the server farms across the
+company and centralized them. So instead of each team running its own
+servers, one team ran all the servers and other teams could use that
+server capacity.
+
+Over the next few years, Amazon execs realized that this service could
+be valuable beyond other teams at Amazon. They decided to rent server
+capacity to other organizations. This "rent a server" business launched
+as Amazon Web Services (AWS) in 2006.
+
+These days, the cloud platform business is huge -- collectively nearly a
+quarter of a trillion dollars. AWS is still the biggest cloud platform
+by a considerable margin, but it's far from alone in the business of
+renting out server capacity. Approximately 2/3 of the market consists of
+*the big three* -- AWS, Microsoft Azure, and Google Cloud Platform
+(GCP)[^2-1-cloud-2] with the final third made up of numerous smaller
+companies.
+
+[^2-1-cloud-2]: https://www.statista.com/chart/18819/worldwide-market-share-of-leading-cloud-infrastructure-service-providers/
 
 ## Real (and fake) cloud benefits
 
-The hype around the cloud came with several purported benefits, some of
-which are true.
+The cloud arrived with an avalanche of hype and many purported benefits.
+Over a decade after the cloud went mainstream, it's clear that some of
+those benefits are real and some are less so.
 
-There are two main benefits of using the cloud.
+The most important cloud benefit is flexibility. In an on-prem-only
+world, your organization has to buy and run all the server capacity it
+needs. Adding capacity requires requisitioning a new server, ordering it
+from a hardware manufacturer, and installing it in a server rack. That
+takes time and isn't going to happen until the anticipated benefits of
+getting servers is worth the high up-front cost.
 
-The first -- and most important -- reason is flexibility. In an
-on-prem-only world, your organization has to buy and host all the server
-capacity it needs. Adding capacity requires requisitioning a new server,
-ordering it from a hardware manufacturer, and installing it in a server
-rack.
+In the cloud, you can have a new server up or re-scale an existing one
+in minutes. This has a few benefits. Most obviously, it is incredible
+for organizations whose server capacity needs change rapidly. Perhaps
+more importantly, it drastically lowers the barrier to entry to doing
+things on a server. Instead of a large up-front investment, you could
+just pay for server capacity on an hourly basis.
 
-In a world with cloud resources, you can have a new server up or rescale
-an existing one in minutes or even seconds. This is an incredible
-ability for a small organization with fewer dedicated IT/Admin
-resources, a quickly-growing organization that can't accurately predict
-how much capacity it'll need in a few months, or an organization that
-wants to run temporary workloads without buying permanent capacity for
-it.
+The other big benefit of the cloud is that it allows IT/Admin teams to
+narrow their scope and focus. For most organizations, managing physical
+servers isn't part of their core competency and outsourcing that work to
+a cloud provider is a great choice.
 
-The second reason is about IT/Admin scope and focus. For most
-organizations, managing physical servers isn't part of their core
-competency and so many would prefer to outsource that work. In today's
-world, all you need to do is feel comfortable working on the command
-line -- and you can get a server of your own. And as cloud services get
-more and more robust, you can outsource these things to a greater
-extent.
+::: callout-note
+One other dynamic is the incentives of individual IT/Admins. As
+technical professionals, IT/Admins want evidence on their resumes that
+they have experience with the latest and greatest technologies, which
+are generally cloud services these days.
+:::
 
-It's also worth considering the incentives of IT/Admin teams and
-professionals. IT/Admin teams tend to be stretched really thin, so the
-chance to offload a major component of their work is really appealing.
-Moreover, as IT/Admin professionals have observed the world moving in a
-cloud-first direction, the resume-building incentives of individual
-professionals have moved towards the clouds.
+Among all these very real benefits, the supposed cost savings from
+moving to the cloud are unlikely to materialize for most organizations.
 
-For an IT/Admin, it's way more valuable to say that I'm an expert at
-working with cloud-based Kubernetes clusters than saying that I'm really
-good at managing physical servers.
+The theory was that the cloud would enable dynamic scaling
+(*autoscaling*) to match server resources to need at any given moment.
+So even if the hourly price was higher, the organization would turn
+servers off at night or during slow periods and save money.
 
-But then there's the fake benefit of the cloud -- cost savings.
+It turns out that dynamically scaling server loads takes a fair amount
+of engineering effort and only the most sophisticated IT/Admin
+organizations have implemented effective autoscaling.
 
-It's hard to prove that any particular organization lost money in a
-cloud migration, but there's a reason why AWS was only 13% of Amazon's
-revenue in 2021, but a whopping 74% of the company's profits for that
-year.[^2-1-cloud-2]
+Even for the organizations that do autoscale, cloud providers are very
+good at pricing their products to capture a lot of those savings.
+There's a reason there's a small consulting industry solely focused on
+helping organizations save money on AWS bills and why AWS was only 13%
+of Amazon's revenue in 2021, but a whopping 74% of the company's profits
+for that year.[^2-1-cloud-3]
 
-[^2-1-cloud-2]: https://www.visualcapitalist.com/aws-powering-the-internet-and-amazons-profits/
-
-Many organizations claimed that moving to the cloud was going to reduce
-server maintenance costs. Often, the explanation was that cloud
-flexibility would enable dynamic autoscaling of server capacity. So even
-if they paid a little more per hour, they were going to save so much by
-turning capacity way down at night that it'd work out in their favor.
-
-It turns out that making this work smoothly is extremely hard and only
-the most sophisticated IT/Admin organizations have achieved anything
-close to this goal. In fact, there's a small consulting industry solely
-focused on helping organizations save money on AWS bills.
+[^2-1-cloud-3]: https://www.visualcapitalist.com/aws-powering-the-internet-and-amazons-profits/
 
 Some large organizations with stable workloads have actually started
-doing *cloud repatriations* -- bringing workloads back on-prem from the
-cloud for significant cost savings. An [a16z
+doing *cloud repatriations* -- bringing workloads back on-prem for
+significant cost savings. An [a16z
 study](https://a16z.com/2021/05/27/cost-of-cloud-paradox-market-cap-cloud-lifecycle-scale-growth-repatriation-optimization/)
-found that total cost of ownership (including staffing) after
-repatriation could be 1/3 to 1/2 the cost of using a cloud
-provider.[^2-1-cloud-3]
+found that for certain organizations, the total cost of repatriated
+workloads, including staffing, could be 1/3 to 1/2 the cost of using a
+cloud provider.[^2-1-cloud-4]
 
-[^2-1-cloud-3]: https://a16z.com/2021/05/27/cost-of-cloud-paradox-market-cap-cloud-lifecycle-scale-growth-repatriation-optimization/
+[^2-1-cloud-4]: https://a16z.com/2021/05/27/cost-of-cloud-paradox-market-cap-cloud-lifecycle-scale-growth-repatriation-optimization/
 
-Still, moving to the cloud is a good idea for many organizations. The
-higher cash costs of cloud services is more than offset by letting the
-organization iterate faster on the things it actually cares about.
+Still, moving to the cloud is a good idea for many organizations. Even
+if it doesn't save much cash, the ability to start small, focus on what
+matters, and scale up quickly is more than worth it.
 
-As a data scientist you may want to run your own server just for
-fun.[^2-1-cloud-4] That said, if you're trying to spend more time
-getting important things done and less just playing, getting a server
-from the cloud is the way to go.
+If you're just getting started with server-based work, you should do it
+in the cloud. You, nerd that you are, may be interested in buying a
+physical server or re-purposing an old computer just for fun. You're in
+good company. I've run Ubuntu Server on more than one old laptop. But if
+you're trying to spend more time getting important things done and less
+time playing, getting a server from the cloud is the way to go.
 
-[^2-1-cloud-4]: You're in good company, I once set up an old laptop as a
-    Ubuntu server.
+## Understanding cloud services 
 
-## The flavors of cloud services
+In the beginning, cloud providers did just one thing -- rent you a
+server. But they didn't stop there. Instead, they started building
+layers and layers of services that abstract away more IT/Admin tasks.
 
-The first service the cloud offered was to rent a server. Over time,
-they have added layers and layers of services on top of that basic
-premise. Having some basic understanding of the different layers of
-services makes it easier to talk about cloud offerings.
-
-In general, there are three layers people talk about -- *software as a
-service (SaaS)*, *platform as a service (PaaS)*, and *infrastructure as
-a service* (*IaaS*, pronounced eye-azz).
-
-To make these different layers clear, let's talk about a layered object
-you're familiar with -- a birthday cake.
-
-Let's say you're planning to bake and decorate a beautiful layer cake
-for your friend's birthday. It's going to have white frosting and it's
-going to say "Happy Birthday!" in teal with giant lavender frosting
-rosettes.
-
-The first option would be to buy ingredients and bake the cake from
-scratch. This is like IaaS. In an IaaS solution, you just rent
-infrastructure from the cloud provider and put it together yourself. You
-decide exactly what individual services you need -- a server here, a
-database there, and put all the pieces together yourself. Most of the
-services you'll see in the rest of this chapter are IaaS.
-
-The second option would be to buy a cake mix of some sort -- then it's
-less likely you'll get the wrong ingredients or end up with unnecessary
-leftovers. This is like a PaaS solution. In a PaaS solution, you bring
-some sort of entity, an application or container or machine image, make
-some declaration of how you want it to work and the cloud service takes
-care of the underlying servers.
-
-The last option would be to buy a pre-made blank cake and just do the
-decoration. This is a SaaS solution. In a SaaS solution, you get
-immediate access to the end-user application with minimal IT/Admin
-configuration. Gmail, Slack, and Office365 are examples of SaaS
-services.
-
-You may hear about PaaS or SaaS offerings described as "going
-serverless". The important thing to understand about serverless
-computing is that there is no such thing as serverless computing. It's a
-marketing term meant to convey that **you** don't have to manage the
-servers. The cloud provider manages them for you, but they're still
-there.
-
-In my opinion, the difference between IaaS, PaaS, and SaaS is slippery,
-and debating over whether this service is one or the other is a road to
-nowhere. The real question is what does the IT/Admin have to manage.
-
-For an IaaS implementation, they're directly managing servers and other
-entities like databases and network devices. For PaaS, they're managing
-an application -- often packaged into a container these days and the
-cloud provider takes care of everything underneath. And for SaaS,
-they're just managing an integration, which usually means just hooking
-up data connectors and authentication to the SaaS offering.
-
-## Services to know
-
-At the end of the day, cloud services, especially IaaS ones, are just
+At the end of the day, all cloud services are just
 $\text{X as a service}$. When you're trying to evaluate whether you want
 to use a cloud service, the first question is, "What is the $\text{X}$
 for this service?"
 
-Unfortunately, cloud marketing materials usually orient around the
-purported benefits of the service, making it difficult to decode what
-$\text{X}$ actually is. Moreover, cloud providers often have several
-different services for similar purposes and it can be hard to concretely
-tell the difference.
+Unfortunately, cloud marketing materials are usually oriented around the
+benefits of the service, making it difficult to decode what $\text{X}$
+actually is. Moreover, cloud providers often have several different
+services for similar purposes and it can be hard to concretely tell the
+difference.
 
-It's helpful to keep in mind that you're fundamentally renting servers,
-along with the networking and storage you need. Every other service is
-just a combination of those things that comes with software
-pre-installed or configured to make your life easier.[^2-1-cloud-5]
+It's helpful to keep in mind that you're fundamentally renting server
+capacity. These days, you might hear people talking about going
+*serverless*. The important thing to understand about serverless
+computing is that there is no such thing as serverless computing.
+
+Serverless is a marketing term meant to convey that **you** don't have
+to manage the servers. The cloud provider manages them for you, but
+they're still there. Every service that isn't directly renting server
+capacity is renting server capacity with software pre-installed to get
+you started faster.[^2-1-cloud-5]
 
 [^2-1-cloud-5]: There are also some wild services that do specific
     things, like let you rent you satellite ground station
@@ -205,85 +161,173 @@ pre-installed or configured to make your life easier.[^2-1-cloud-5]
     services are really cool, but so far outside the scope of this book
     that I'm fine with talking like they don't exist.
 
-It's most likely that you're working in one of the big three clouds. In
-this book, the labs are going to be exclusively in AWS, but I'll address
-Azure and GCP services in this chapter in case you're running there.
+These services are sometimes grouped into three categories to indicate
+whether you're renting a basic computing service or something more
+complete.
+
+An analogy to a familiar layered object may serve to make things clear.
+Let's say you're throwing a birthday party for a friend. You're planning
+to bring a chocolate layer cake with white frosting topped with lavender
+rosettes and "Happy Birthday!" in teal.[^2-1-cloud-6]
+
+[^2-1-cloud-6]: If you're planning my birthday party, this is the
+    correct cake configuration.
 
 ::: callout-note
 ## Big Three Service Naming
 
-AWS tends to name their services with cutesy names that have, at best, a
-tangential relationship to the task at hand. Azure and GCP on the other
-hand tend to name their offerings pretty literally.
+In this next section, I'll mention services for common tasks from the
+big three. AWS tends use cutesy names that have a tangential
+relationship to the task at hand. Azure and GCP name their offerings
+more literally.
 
 This makes AWS names a little harder to learn, but much easier to recall
 once you've learned them. In this section -- contrary to standard
 practice -- I'm going to use the common abbreviated names for AWS
 services and put the full name in parentheses as these are just trivia.
+
+A table of all the services mentioned in this chapter is in [Appendix
+@sec-append-cheat].
 :::
 
-There are a handful of basic cloud services whose names you should just
-know because they'll probably come up constantly.
+### IaaS Offerings
 
-The most basic cloud service is to rent a server. You can rent a server
-from any of the big three with *EC2 (Elastic Cloud Compute)* from AWS,
-*Azure VMs* from Azure, and *Google Compute Engine Instances* from GCP.
+If you've got really particular cake preferences or more time than
+money, you might choose to go to the grocery store, buy all the
+ingredients, and bake and decorate your friend's cake from scratch.
 
-When you buy a personal computer or phone, it comes with a certain CPU,
-RAM, and hard disk (storage). In the cloud, you rent a compute instance
-with a certain amount of CPU and RAM and rent storage separately.
+*I*This is the equivalent of using *Infrastructure as a service*
+(*IaaS*, pronounced eye-ahzz) offerings. IaaS is the basic rent a server
+premise from the earliest days of the cloud. Along with a server, you'll
+get storage and networking to make everything work properly.
 
-File storage is the type of storage that's attached to your server, like
-the hard drive on your laptop. In AWS, you've got *EBS (Elastic Block
-Store)*. Azure has *Azure Managed Disk*, and GCP has *Google Persistent
-Disk*.
+Some common IaaS services you're likely to use include:
 
-The major cloud providers all also have *blob (Binary Large Object)*
-storage. Blob storage allows you to store individual objects somewhere
-and recall them to any other machine that has access to the blob store.
-The major blob stores are *AWS Simple Storage Service (S3)*, *Azure Blob
-Storage*, and *Google Cloud Storage*.
+-   Renting a server with *EC2 (Elastic Cloud Compute)* from AWS, *Azure
+    VMs* from Azure, and *Google Compute Engine Instances* from GCP.
 
-There are also two important networking services for each of the clouds
--- a way to make a private network and a way to do DNS routing. If you
-don't know what these mean, there will be a lot more detail in [Chapter
-@sec-basic-networks].
+-   Unlike your laptop, rented servers don't include a hard drive, so
+    you'll have to attach storage with AWS's *EBS (Elastic Block
+    Store)*, *Azure Managed Disk*, or *Google Persistent Disk*.
 
-For now, it's enough to know that private networking is done in AWS's
-*VPC (Virtual Private Cloud)*, Azure's *Virtual Network*, and GCP's
-*Virtual Private Cloud*. DNS is done in AWS's *Route 53*, *Azure* *DNS*,
-and *Google Cloud DNS*.
+-   Creating and managing the networking where your servers sit with
+    AWS's *VPC (Virtual Private Cloud)*, Azure's *Virtual Network*, and
+    GCP's *Virtual Private Cloud*.
 
-Once you've got all this stuff up and running, you need to make sure
-that permissions are set in the right way. AWS has *IAM (Identity and
-Access Management)*, GCP has *Identity Access Management*, and Azure has
+-   Managing DNS records via AWS's *Route 53*, *Azure* *DNS*, and
+    *Google Cloud DNS*.
+
+From a data science perspective, a IaaS offering might look like what
+we're doing in the lab in this book -- acquiring a server, networking,
+and storage from the cloud provider and assembling it into a data
+science workbench. This is definitely the best way to learn how to
+administer a data science environment and the cheapest option, but it's
+also the most time-consuming.
+
+These days, many organizations are moving away from IaaS offerings.
+While IaaS means the IT/Admins don't have to be responsible for physical
+management of servers, they're responsible for everything else,
+including keeping the servers updated and secured.
+
+### PaaS Offerings
+
+Now, maybe you're not such a DIY-er or or you just don't have the time
+to do it all from scratch. In that case, you might buy a blank white
+cake along with some tins of frosting and only do the decoration
+yourself.
+
+This is like a PaaS solution. In a PaaS solution, you're not managing
+the servers, but instead are interacting with a cloud service via an API
+specific to that service. There are a handful of PaaS services that come
+up a lot in data science contexts.
+
+One PaaS service that already came up in the book is *blob (Binary Large
+Object)* storage. Blob storage allows you to store individual objects
+somewhere and recall them to any other machine that has access to the
+blob store. The major blob stores are *AWS Simple Storage Service (S3)*,
+*Azure Blob Storage*, and *Google Cloud Storage*.
+
+You're also likely to make use of cloud-based database, data lake, and
+data warehouse offerings. There are numerous different offerings, and
+the ones that you use will depend a lot on your use case and your
+organization. The ones I've seen used most frequently are *RDS* or
+*Redshift* from AWS, *Azure Database*, and *Google BigQuery.* This
+category also includes a number of offerings from outside the big three,
+most notably *Snowflake* and *Databricks*.
+
+Depending on your organization, you may also use services that run APIs
+or applications from containers or machine images like AWS's *ECS
+(Elastic Container Service)*, *Elastic Beanstalk*, or *Lambda*, Azure's
+*Container Apps* or *Functions*, or GCP's *App Engine* or *Cloud
+Functions*.
+
+Increasingly, organizations are turning to *Kubernetes* as a way to host
+services. (More on that in [Chapter @sec-ent-servers].) Most
+organizations who do so use a cloud provider's kubernetes cluster as a
+service: AWS's *EKS (Elastic Kubernetes Service)* or *Fargate*, Azure's
+*AKS (Azure Kubernetes Service)*, or GCP's *GKE (Google Kubernetes
+Engine)*.
+
+From a data science perspective, a PaaS setup might look like hosting a
+JupyterHub, RStudio, or Posit implementation in EKS, or running an ML
+API in Lambda.
+
+In general PaaS solutions abstract away the management of actual
+servers. You're usually managing some entity one level up from that. For
+example, if you want to scale to more servers, there's usually just an
+"add more servers" button for a PaaS offering, where you'd have to
+configure it all yourself in an IaaS context.
+
+### SaaS Offerings
+
+Now, if you're really not a DIY-er, you might just buy a cake for your
+friend. This is like a SaaS solution, which gives you immediate access
+to the end-user application. IT/Admin configuration is generally limited
+to hooking up integrations, most often authentication and/or data
+sources.
+
+You're already used to consumer SaaS software like Gmail, Slack, and
+Office365. Depending on your organization, you might also use a SaaS
+data science offering like AWS's *SageMaker*, Azure's *Azure ML*, or
+GCP's *Vertex AI* or *Cloud Workstations*.
+
+In my opinion, the difference PaaS and SaaS slippery. For example,
+depending on your perspective, Databricks and Snowflake could be a SaaS
+offering and as a data scientist, SageMaker would be a platform for you
+to do your work.
+
+Relative to other offerings, SaaS are obviously much simpler to get
+started with. The tradeoff is that they are generally more expensive and
+you're at the mercy of the provider for configuration and upgrades.
+
+### Common Considerations
+
+Irrespective of the particular services you are renting, there are a few
+common things you'll have to manage.
+
+You'll definitely have to interact with a service that dictates who can
+do what. In order to do this, AWS has *IAM (Identity and Access
+Management)*, GCP has *Identity Access Management*, and Azure has
 *Microsoft Entra ID*, which was called *Azure Active Directory* until
-the summer of 2023.
+the summer of 2023. You may additionally use a SaaS identity management
+solution like Okta or OneLogin.
 
-In addition to these basic cloud services, there are also a number of
-cloud services that seem to come up particularly often in the context of
-data science work, which I've listed in the table below. It's worth
-noting that I'm just trying to provide general categories of services.
-There are substantial differences in the details.
+Additionally, some cloud services are geographically specific. Each of
+the cloud providers has split the world into a number of geographic
+areas, which they all call *regions*. Regions are subdivided into
+*availability zones* (AZs).
 
-| Service                     | AWS                                                  | Azure                          | GCP                            |
-|------------------|-------------------|------------------|------------------|
-| Kubernetes cluster          | EKS (Elastic Kubernetes Service) or Fargate          | AKS (Azure Kubernetes Service) | GKE (Google Kubernetes Engine) |
-| Run a container/application | ECS (Elastic Container Service) or Elastic Beanstalk | Azure Container Apps           | Google App Engine              |
-| Run an API                  | Lambda                                               | Azure Functions                | Google Cloud Functions         |
-| Database                    | RDS or Redshift[^2-1-cloud-6]                        | Azure Database                 | Google Cloud SQL               |
-| ML Platform                 | SageMaker                                            | Azure ML                       | Vertex AI                      |
-
-[^2-1-cloud-6]: There are many others. These are just the most popular
-    I've seen for data science use cases.
-
-One other important detail about cloud services is that some are
-geographically specific. For example, AWS has split the world up into a
-number of regions. Some resources you create are region-specific and
-some are not. When you are creating region-specific resources, I
+Some services are region-specific and can only interact with other
+services in that region by default. If you're doing things yourself, I
 recommend just choosing the region where you live and putting everything
 there. It's worth noting that costs and service availability does vary
 somewhat across region.
+
+AZs are subdivisions of regions that are designed to be independent.
+Some organizations want to run services that span multiple availability
+zones to provide protection against outages in any particular geography.
+If you're running something sophisticated enough to need multi-AZ usage,
+you should really be working with a professional IT/Admin.
 
 ## Comprehension Questions
 
@@ -294,7 +338,7 @@ somewhat across region.
 3.  What are the names for AWS's services for: renting a server, file
     system storage, blob storage
 
-## Lab: Getting started with AWS
+## Introduction to Labs
 
 Welcome to the lab!
 
@@ -307,42 +351,40 @@ data science workbench. It won't suffice for any enterprise-level
 requirements, but it'll be secure enough for a hobby project or even a
 small team.
 
-These days most people are using servers from a cloud provider. We're
-going to use AWS, as they're by far the biggest cloud provider and the
-one you're most likely to run into in the real world.
+For this lab, we're going to use services from AWS, as they're the
+biggest cloud provider and the one you're most likely to run into in the
+real world. Because we'll be mostly using IaaS services, there are very
+close analogs from Azure and GCP should you want to use one of those
+services.
 
-In the lab for this chapter, we're going to get you up and running with
-an AWS account and show you how to manage, start, and stop EC2 instances
-in AWS.
+## Lab: Getting started with AWS
+
+In this first lab, we're going to get you up and running with an AWS
+account and show you how to manage, start, and stop EC2 instances in
+AWS.
 
 The server we'll stand up will be from AWS's *free tier* -- so there
 will be no cost involved as long as you haven't used up all your AWS
 free tier credits before now.
-
-For AWS things, I'm going to tell you what to do, but not the exact
-buttons, as AWS frequently changes the interface and this will almost
-certainly be out-of-date by the time you read it.
 
 ::: callout-tip
 Throughout the labs, I'll suggest you name things in certain ways. You
 can do what you want, but I'll be consistent with those names, so you
 can copy commands straight from the book if you use the same name.
 
-I'd start by creating a standalone directory for this lab, named
-`do4ds-lab`.
+If you want to follow along in that way, start by creating a standalone
+directory for this lab, named `do4ds-lab`.
 :::
 
 ### Step 1: Login to the AWS Console
 
-We're going to start by logging into AWS.
+We're going to start by logging into AWS at <https://aws.amazon.com>.
 
 ::: callout-note
 An AWS account is separate from an Amazon account for ordering stuff
 online and watching movies. You'll have to create one if you've never
 used AWS before.
 :::
-
-Start by signing in at <https://aws.amazon.com>.
 
 Once you've logged in, you'll be confronted by the AWS console. There
 are a ton of things here. Poke around if you want and then continue when
@@ -351,8 +393,8 @@ you're ready.
 ### Step 2: Stand up an EC2 instance
 
 There are five attributes about your EC2 instance you'll want to
-configure. If I don't mention it here, you should just stick with the
-defaults for now.
+configure. If it's not mentioned here, just stick with the defaults for
+now.
 
 In particular, just stick with the default *Security Group*. We'll get
 into what they are and how to configure them later.
@@ -371,7 +413,7 @@ later.
 #### Image
 
 An *image* is a snapshot of a system and serves as the starting point
-for your server. AWS's are *Amazon Machine Images* or *AMIs*. And they
+for your server. AWS's are called *AMIs* (*Amazon Machine Images*). They
 range from free images of bare operating system to paid images that come
 bundled with software you might want.
 
@@ -382,8 +424,8 @@ this writing, that's 22.04. It should say *free tier eligible*.
 
 The *instance type* identifies the capability of the machine you're
 renting. An instance type is made up of a *family* and a *size*. The
-family is the category of server. Families are denoted by letters and
-numbers, so there are T2s and T3s, C4s, R5s, and many more.
+family is the category of server and are denoted by letters and numbers,
+so there are T2s and T3s, C4s, R5s, and many more.
 
 Within each family, there are different sizes. Possible sizes vary by
 the family, but generally range from *nano* to multiples of *xlarge*
@@ -417,7 +459,7 @@ a new keypair. I'd recommend naming it `do4ds-lab-key`. Download the
 
 #### Storage
 
-Bump up the storage to as much as you can get under the free tier
+Bump up the storage to as much as you can get under the free tier,
 because why not? As of this writing, that's 30 Gb.
 
 ### Step 3: Start the Server
@@ -437,9 +479,9 @@ server so you're not paying for it overnight or using up your free tier
 hours. You can suspend an instance in the state it's in so it can be
 restarted later.
 
-If you're storing a lot of data with your instance, it may not be free
--- but it is quite cheap. In the free tier, a suspended instance should
-be free for some time.
+If you're storing a lot of data with your instance, it may not be free,
+but it is quite cheap. In the free tier, a suspended instance should be
+free for some time.
 
 Whenever you want to suspend your instance, go to the EC2 page for your
 server. Under the `Instance State` drop down in the upper right, choose
@@ -452,66 +494,79 @@ go.
 ::: callout-note
 If you stop your server, the server address will change and you'll have
 to use the new one. In [Chapter @sec-dns], we'll get into getting a
-stable IP address and URL for the server.
+stable IP address for the server.
 :::
 
 If you want to completely delete the instance at any point, you can
 choose to `Terminate Instance` from that same `Instance State` dropdown.
 
-### Step 4: Put the penguins data and model in S3
+## Lab: Put the penguins data and model in S3
 
-We're going to come back to how to use the server in future labs. Aside
-from EC2, S3 is the most common service data scientists use all the time
-from AWS. We're going to store the penguin database and mass prediction
-model we created in Chapters [@sec-proj-arch] and [@sec-data-access] in
-an S3 bucket.
+Whether or not you're hosting your own server, most data scientists
+working at an organization that uses AWS will run into S3, AWS's blob
+store.
 
-First, you'll need to create an S3 bucket in the AWS console. Give it a
-name that's descriptive and memorable -- it will also have to be unique.
-I named mine `do4ds-lab`.
+One really common thing to store in S3 is an ML model. So we're going to
+store the mass prediction model we created in Chapters [@sec-proj-arch]
+and [@sec-data-access] in an S3 bucket.
 
-Now, let's go back to the code to write our model to a board. Luckily,
-this is quite simple if you're using `{vetiver}`. All you have to do is
-change the board type to `board_s3`.
+### Step 1: Create an S3 bucket
 
-So your code to write the model to the board will look something like
+To start off with, you'll have to create a bucket, most commonly from
+the AWS console. I'm naming mine `do4ds-lab`.
+
+### Step 2: Push the model to S3 on build
+
+The first thing you'll have to do is configure the model building code
+to push the model into S3, rather that just saving it locally. Using
+`{vetiver}` makes it easy to push a model to `s3` just by changing the
+board type to `board_s3`.
+
+It'll look something like this.
 
 ``` {.python include="../../_labs/model/model-vetiver-s3.qmd" filename="model.qmd" start-line="64" end-line="68"}
 ```
 
-Now, if you try this line in your code, it won't work. Why? Because of
-authentication. The bucket we're using isn't public and AWS needs to
-know that we're actually allowed to access it. We'll provide our AWS
-secrets via environment variables.
+Under the hood, `{vetier}` is making use of standard R and Python
+tooling to access an S3 bucket. If you want to interact with AWS
+services or S3 from within Python or R, the most common ways are via
+Python's `{boto3}` package or R's `{paws}` and `{aws.s3}`. You can also
+interact directly from the command line using the AWS CLI.
 
-The 3 environment variables are `AWS_ACCESS_KEY_ID`,
+Regardless of what tooling you're using, you'll generally configure your
+credentials in three environment variables -- `AWS_ACCESS_KEY_ID`,
 `AWS_SECRET_ACCESS_KEY`, and `AWS_REGION`. You can get the access key
-and secret access key from the AWS console, and you should know the
+and secret access key from the AWS console and you should know the
 region.
 
-Then, create a `.env` or `config.yml` file and load it into your script.
+As always, when you're developing in Python or R, I'd recommend putting
+these into a `.env` or a `config.yml` file and loading them from there.
 
-Your secrets file should look look something like this.[^2-1-cloud-7]
+When you access and S3 bucket from an EC2 instance, you can also
+configure an *instance profile* using IAM, so the entire EC2 instance
+has access to the S3 bucket without needing credentials.
 
-[^2-1-cloud-7]: Not my real access key or secret access key. Never share
-    them.
+### Step 3: Pull the model from S3 for the API
 
-``` {.yaml filename=".env"}
-AWS_ACCESS_KEY_ID=AJAASJKD88ALLKAIS8A
-AWS_SECRET_ACCESS_KEY=0JAJSduasdjkASDLISjkasd8AD78
-AWS_REGION=us-east-1
+You'll also have to configure the API to load the model from the S3
+bucket. Luckily, this is very easy. Just update the script you used to
+build your `Dockerfile` so it pulls from the pin in the S3 bucket rather
+than the local folder.
+
+Now, the script to build the `Dockerfile` looks like this:
+
+``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line="11" end_line="19"}
 ```
 
-If you can't remember how to make use of environment secrets, go back to
-[Chapter @sec-data-access] for details. Once the variables are loaded
-into the environment, the call to `board_s3` should just work.
+### Step 4: Configure GitHub Actions to push on build
 
-We have one more step to make this work so that the model can also be
-written from GitHub actions. GitHub Actions needs to know how to access
-those environment variables too.
+Now, we want GitHub Actions to push both the data and the model into the
+bucket every time they're updated. And we want our code to pull from the
+bucket when it needs the model or data.
 
-So in the `Render and Publish` step, we're going to declare those
-variables as well as environment variables.
+In order to push into the bucket, you'll need to configure the GitHub
+Action to do that. So in the `Render and Publish` step, we're going to
+declare those variables as well as environment variables.
 
 Once you're done, that section of the `publish.yml` should look
 something like this.
@@ -523,17 +578,11 @@ Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions
 automatically provides to itself, we'll have to provide these secrets to
 the GitHub interface.
 
-The other thing you'll need to do is to update the API to use the S3
-pin. Luckily, this is very easy. Just update the script you used to
-build your `Dockerfile` so it pulls from the pin in the S3 bucket rather
-than the local folder.
+### Lab Extensions
 
-Now, the script to build the `Dockerfile` looks like this:
+You might also want to put the actual data you're using into S3. This
+can be a great way to separate the data from the project, as recommended
+in [Chapter @sec-proj-arch].
 
-``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line="11" end_line="19"}
-```
-
-There are a variety of ways to put the data into S3 as well. I would
-recommend doing this if you are going to be working with data that will
-update. In fact, DuckDB allows you to directly interface with parquet
-files on S3.
+Putting the data in S3 is such a common pattern that DuckDB allows you
+to directly interface with parquet files stored in S3.

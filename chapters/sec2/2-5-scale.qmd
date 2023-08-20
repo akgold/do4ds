@@ -1,5 +1,16 @@
 # Server Resources and Scaling {#sec-scale}
 
+If your server is for more than just playing, you're going to want to
+make sure you've got sufficient resources on the server to do the work
+you need.
+
+This chapter is going to help you develop a mental model of what a
+server's computational resources are, teach you about the command line
+tools to assess how much of your resources are being used, and provide
+recommendations on how to scale and size a server for data science.
+
+## The briefest intro to computational theory
+
 You're probably aware that everything you've ever seen on a computer --
 from this book to your work in R or Python, your favorite internet cat
 videos, and Minecraft -- it's just 1s and 0s.
@@ -60,21 +71,21 @@ which means between 2 billion and 5 billion operations per second when
 running at full speed.
 
 For decades, many of the innovations in computing were coming from
-increases in clock speed, but raw increases in speed have fallen off a
-lot in the last few decades. The clock speeds of consumer-grade chips
-increased by approximately 10x during the 90s, by 2-3x in the 2000s, and
-somewhere between not at all and 1.5x in the 2010s.
+increases in clock speed, but those have fallen off a lot in the last
+few decades. The clock speeds of consumer-grade chips increased by
+approximately 10x during the 90s, by 2-3x in the 2000s, and somewhere
+between not at all and 1.5x in the 2010s.
 
 But computers have continued getting a lot faster even as the increase
 in clock speeds has slowed. The increase has mostly come from increases
 in the number of cores, better software usage of parallelization, and
 innovative chip architectures for special-purpose usage.
 
-Unfortunately, your R and Python code only get to take advantage of some
-of these speed increases. By default, R and Python are single-threaded.
-This means that unless you're using special libraries for parallel
-processing, you'll end up red-lining a single CPU core while the others
-just look on in silence.
+Unfortunately, your R and Python code usually can only take advantage of
+some of these speed increases. By default, R and Python are
+single-threaded. This means that unless you're using special libraries
+for parallel processing, you'll end up red-lining a single CPU core
+while the others just look on in silence.
 
 Therefore for most R and Python work, single core clock speed matters
 more than the number of cores, and fewer, faster cores are usually
@@ -119,12 +130,12 @@ computer turns off, the RAM gets wiped.[^2-5-scale-2]
     usually won't notice this happening.
 
 ::: callout-note
-Memory and storage is measured in bytes with metric prefixes.
+Memory and storage is measured in *bytes* with metric prefixes.
 
-Common sizes for memory these days are in gigabytes (billion bytes) and
-terrabytes (trillion bytes). Some enterprise data stores run on the
-scales of thousands of terrabytes (pettabytes) or even thousands of
-pettabytes (yottabytes).
+Common sizes for memory these days are in *gigabytes* (billion bytes)
+and *terrabytes* (trillion bytes). Some enterprise data stores run on
+the scales of thousands of terrabytes (*pettabytes*) or even thousands
+of pettabytes (*yottabytes*).
 :::
 
 Modern consumer-grade laptops come with somewhere between 4 and 16 Gb of
@@ -134,15 +145,15 @@ In most cases, R and Python have to load all of your data into memory.
 Thus, the size of the data you can use is limited to the size of your
 machine's RAM.
 
+Most other limits of your machine will just result in things being
+slower than you'd really want, but trying to load too much data into
+memory will result in a session crash.
+
 ::: callout-note
 If you're running into this limitation go back and think about your
 project architecture as discussed in [Chapter @sec-proj-arch]. Maybe you
 can load less data into memory.
 :::
-
-Most other limits of your machine will just result in things being
-slower than you'd really want, but trying to load too much data into
-memory will result in a session crash.
 
 Because your computer needs memory for things other than R and Python
 and because you'll often be doing transformations that temporarily
@@ -166,13 +177,13 @@ save things you want to keep.
 
 Relative to the RAM that's right next to the factory floor, your
 computer's storage is like the warehouse in the next building over. It's
-much, much slower to get things from storage than RAM, but it's also
-permanent once its stored there.
+slower to get things from storage than RAM, but it's also permanent once
+its stored there.
 
 Up until a few years ago, storage was much slower than RAM. Those
-drives, called *HDD* drives, had a bunch of magnetic disks that spin
-very fast with magnetized read/write heads that move among the disks to
-save and read data.
+drives, called *HDD* drives, had a bunch of spinning magnetic disks with
+magnetized read/write heads that move among the disks to save and read
+data.
 
 While they spin very fast -- 5,400 and 7,200 RPM are common speeds --
 there were still physical moving parts, and reading and writing data was
@@ -180,13 +191,13 @@ very slow by computational standards.
 
 In the last few years, *solid-state drives (SSDs)* have become
 more-or-less standard in laptops. SSDs, which are collections of flash
-memory chips with no moving parts, are up to 15x faster than HDDs.
+memory chips with no moving parts are up to 15x faster than HDDs.
 
-As for storage -- get a lot -- but don't think about it too hard,
-because it's cheap. Storage is cheap enough these days that it is almost
-always more cost efficient to buy more storage rather than making a
-highly-paid professional spend their time trying to figure out how to
-move things around.
+As for configuring storage on your server -- get a lot -- but don't
+think about it too hard, because it's cheap and easy to upgrade. Storage
+is cheap enough these days that it is almost always more cost efficient
+to buy more storage rather than making a highly-paid professional spend
+their time trying to figure out how to move things around.
 
 If the IT/Admins at your organization don't see this or aren't
 incentivized to think in this way, it's a red flag for sure.
@@ -224,76 +235,19 @@ As you'll see in the lab, upgrading the amount of storage you have is a
 trivial operation, requiring at most a few minutes of downtime. Choose a
 size you guess will be adequate and add more if you need.
 
-### Examining at storage usage
-
-A common culprit for weird server behavior is running out of storage
-space. There are two handy commands for monitoring the amount of storage
-you've got -- `du` and `df`.
-
-These commands are almost always used with the `-h` flag to put file
-sizes in human-readable formats.
-
-`df`, for disk free, shows the capacity left on the device where the
-directory sits.
-
-For example, here's the result of running the `df` command on the
-chapters directory on my laptop that includes this chapter.
-
-``` {.bash filename="Terminal"}
-❯ df -h chapters\
-Filesystem Size Used Avail Capacity iused ifree %iused Mounted on
-/dev/disk3s5 926Gi 163Gi 750Gi 18% 1205880 7863468480 0%
-/System/Volumes/Data
-```
-
-So you can see that the chapters folder lives on a disk called
-`/dev/disk3s5` that's a little less than 1Tb and is 18% full -- no
-problem. On a server this can be really useful to know, because it's
-quite easy to switch a disk out for a bigger one in the same spot.
-
-If you've figured out that a disk is full, it's usually most cost
-effective to just buy a bigger disk. But sometimes something weird
-happens. Maybe there are a few exceptionally big files, or you think
-unnecessary copies are being made.
-
-If so, the `du` command, short for disk usage, gives you the size of
-individual files inside a directory. It's particularly useful in
-combination with the sort command.
-
-For example, here's the result of running `du` on the chapters directory
-where the text files for this book live.
-
-``` {.bash filename="Terminal"}
-❯ du -h chapters \| sort -h\
-44K chapters/sec2/images-servers 124K chapters/sec3/images-scaling 156K
-chapters/sec2/images 428K chapters/sec2/images-traffic 656K
-chapters/sec1/images-code-promotion 664K chapters/sec1/images-docker
-1.9M chapters/sec1/images-repro 3.4M chapters/sec1 3.9M
-chapters/sec3/images-auth 4.1M chapters/sec3 4.5M
-chapters/sec2/images-networking 5.3M chapters/sec2 13M chapters
-```
-
-So if I were thinking about cleaning up this directory, I could see that
-my images-networking directory in `sec2` is the biggest single
-bottom-level directory. If you find yourself needing to find big files
-on your Linux server, it's worth spending some time with the help pages
-for `du`. There are lots of really useful options.
-
 ## Recommendation 4: Get a GPU, maybe
 
-All computers have a CPU. It's also possible for CPUs to offload compute
-tasks to other chips with more specialized architectures. The most
-common special-purpose chip is the graphical processing unit (GPU). GPUs
-are specialized chips used for tasks like editing photo or videos,
-rendering video game graphics, some kinds of machine learning, and (yes)
-Bitcoin mining.
+All computers have a CPU. There are also specialized chips where the CPU
+can offload particular tasks, the most common of which is the graphical
+processing unit (GPU). GPUs are architected for tasks like editing photo
+or videos, rendering video game graphics, some kinds of machine
+learning, and (yes) Bitcoin mining.
 
 A GPU is an addition factory just like a CPU, but with different
-architecture. As discussed above, a CPU has a handful of fast cores. So
-it can't take on that many simultaneous problems, but it can dispatch
-each one quite quickly.
+architecture. CPUs are designed to have only a handful of cores, but
+those cores are fast. A GPU takes the opposite approach, with many
+(relatively) slow cores.
 
-A GPU takes the opposite approach, with many (relatively) slow cores.
 Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000
 cores, with each one running at only about 1% to 10% the single core
 clock speed speed of a CPU core.
@@ -304,10 +258,6 @@ on what you're doing and your budget.
 For the tasks GPUs are good at, the overwhelming parallelism ends up
 being more important than the speed of any individual core, and GPU
 computation can be dramatically faster.
-
-Many data science tasks can only be done in sequence, so you can't even
-use more than one CPU core. Others can be parallelized, but splitting it
-into a small number of CPU cores is perfectly adequate.
 
 The tasks that most benefit from GPU computing are training highly
 parallel machine learning models like deep learning or tree-based
@@ -327,6 +277,155 @@ It's also worth noting that using a GPU won't happen automatically. The
 tooling has gotten good enough that it's usually pretty easy to set up,
 but your computer won't train your XGBoost models on your GPU unless you
 tell it to do so.
+
+## Assessing RAM + CPU usage
+
+Once you've chosen your server size and gotten up and running, you'll
+want to be able to monitor RAM and CPU for problems.
+
+Any program that is running is called a *process*. For example, when you
+type `python` on the command line to open a REPL, that starts a single
+Python process. If you were to start a second terminal session and run
+`python` again, you'd have a second Python process.
+
+Complicated programs often involve multiple interlocking processes. For
+example, running the RStudio IDE involves (at minimum) one process for
+the IDE itself and one for the R session that it uses in the background.
+The relationships between these different processes is mostly hidden
+from you -- the end user.
+
+As an admin, you may want to inspect the processes running on your
+system at any given time. The `top` command is a good first stop. `top`
+shows the top CPU-consuming processes in real time along with a number
+of other facts about them.
+
+Here's the `top` output from my machine as I write this sentence.
+
+``` {.bash filename="Terminal"}
+PID    COMMAND      %CPU TIME     #TH    #WQ  #PORT MEM    PURG   CMPRS PGRP
+0      kernel_task  16.1 03:56:53 530/10 0    0     2272K  0B     0B    0
+16329  WindowServer 16.0 01:53:20 23     6    3717  941M-  16M+   124M  16329
+24484  iTerm2       11.3 00:38.20 5      2    266-  71M-   128K   18M-  24484
+29519  top          9.7  00:04.30 1/1    0    36    9729K  0B     0B    29519
+16795  Magnet       3.1  00:39.16 3      1    206   82M    0B     39M   16795
+16934  Arc          1.8  18:18.49 45     6    938   310M   144K   61M   16934
+16456  Messages     1.7  06:58.27 4      1    603   138M   2752K  63M   16456
+1      launchd      1.7  13:41.03 4/1    3/1  3394+ 29M    0B     6080K 1
+573    diagnosticd  1.4  04:31.97 3      2    49    2417K  0B     816K  573
+16459  zoom.us      1.3  66:38.37 30     3    2148  214M   384K   125M  16459
+16575  UniversalCon 1.3  01:15.89 2      1    131   12M    0B     2704K 16575
+```
+
+In most instances, the first three columns are the most useful. The
+first column is the unique process id (`pid`) for that process. You've
+got the name of the process (`COMMAND`) and how much CPU its using.
+You've also got the amount of memory used a few columns over. Right now,
+nothing is using very much CPU.
+
+The `top` command takes over your whole terminal. You can exit with
+`Ctrl + c`.
+
+::: callout-note
+## So much CPU?
+
+For `top` (and most other commands), CPU is expressed as a percent of
+*single core* availability. So, on a modern machine with multiple cores,
+it's very common to see CPU totals well over 100%. Seeing a single
+process using over 100% of CPU is rarer.
+:::
+
+Another useful command for finding runaway processes is `ps aux`. It
+lists a snapshot of all processes running on the system, along with how
+much CPU or RAM they're using. You can sort the output with the `--sort`
+flag and specify sorting by cpu with `--sort -%cpu` or by memory with
+`--sort -%mem`.
+
+Because `ps aux` returns *every* running process on the system, you'll
+probably want to pipe the output into `head`. In addition to CPU and
+Memory usage, `ps aux` gets you who launched the command and the PID.
+
+For example, here are the RStudio processes currently running on my
+system.
+
+``` {.bash filename="Terminal"}
+USER               PID  %CPU %MEM      VSZ    RSS   TT  STAT STARTED      TIME COMMAND
+alexkgold        23583   0.9  1.7 37513368 564880   ??  S    Sat09AM  17:15.27 /Applications/RStudio.app/Contents/MacOS/RStudio
+alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /Applications/RStudio.app/Contents/MacOS/rsession --config-file none --program-mode desktop 
+```
+
+One of the times you'll be most interested in the output of `top` or
+`ps aux` is when something is going rogue on your system and using more
+resources than you intended. If you have some sense of who started the
+runaway process or what it it, it can be useful to pipe the output of
+`ps aux` into `grep`.
+
+For example, the command to get the output above was `ps aux | RStudio`.
+
+If you've got a rogue process, the pattern is to try to find the process
+and make note of its `pid`. Then you can immediately end the process by
+`pid` with the `kill` command.
+
+If I were to find something concerning -- perhaps an R process that is
+using 500% of CPU -- I would want to take notice of its `pid` to kill it
+with `kill`.
+
+## Examining at storage usage
+
+A common culprit for weird server behavior is running out of storage
+space. There are two handy commands for monitoring the amount of storage
+you've got -- `du` and `df`.
+
+These commands are almost always used with the `-h` flag to put file
+sizes in human-readable formats.
+
+`df`, for disk free, shows the capacity left on the device where the
+directory sits.
+
+For example, here's the result of running the `df` command on the
+chapters directory on my laptop that includes this chapter.
+
+``` {.bash filename="Terminal"}
+> df -h chapters
+Filesystem     Size   Used  Avail Capacity iused      ifree %iused  Mounted on
+/dev/disk3s5  926Gi  227Gi  686Gi    25% 1496100 7188673280    0%   /System/Volumes/Data
+```
+
+So you can see that the chapters folder lives on a disk called
+`/dev/disk3s5` that's a little less than 1Tb and is 25% full -- no
+problem. On a server this can be really useful to know, because it's
+quite easy to switch a disk out for a bigger one in the same spot.
+
+If you've figured out that a disk is full, it's usually most cost
+effective to just buy a bigger disk. But sometimes something weird
+happens. Maybe there are a few exceptionally big files, or you think
+unnecessary copies are being made.
+
+If so, the `du` command, short for disk usage, gives you the size of
+individual files inside a directory. It's particularly useful in
+combination with the sort command.
+
+For example, here's the result of running `du` on the chapters directory
+where the text files for this book live.
+
+``` {.bash filename="Terminal"}
+> du -h chapters | sort
+12M	chapters
+1.7M	chapters/sec1/images
+1.8M	chapters/sec1
+236K	chapters/images
+488K	chapters/sec2/images-traffic
+5.3M	chapters/sec2/images-networking
+552K	chapters/sec2/images
+6.6M	chapters/sec2
+892K	chapters/append/images-append
+948K	chapters/append
+```
+
+So if I were thinking about cleaning up this directory, I could see that
+my `sec1/images` directory is my biggest single directory. If you find
+yourself needing to find big files on your Linux server, it's worth
+spending some time with the help pages for `du`. There are lots of
+really useful options.
 
 ## Running out of Resources
 
@@ -377,7 +476,7 @@ workloads.
 Here's a table of common instance types for data science purposes:
 
 | Instance Type | What it is                                                            |
-|----------------|-----------------------------------------|
+|----------------------|-------------------------------------------------|
 | `t3`          | The "standard" configuration. Relatively cheap. Sizes may be limited. |
 | `C`           | CPU-optimized instances, aka faster CPUs                              |
 | `R`           | Higher ratio of RAM to CPU                                            |
@@ -415,6 +514,16 @@ you're done lest you rack up a huge bill.
 
 3.  What are the architectural differences between a CPU and a GPU? Why
     does this make a GPU particularly good for Machine Learning?
+
+4.  How would you do the following:
+
+    1.  Find all running Jupyter processes that belong to the user
+        `alexkgold`.
+
+    2.  Find the different disks attached to your server and see how
+        full each one is.
+
+    3.  Find the biggest files in each user's home directory.
 
 ## Lab: Changing Instance Size
 
