@@ -7,9 +7,9 @@ take code to production.
 
 Docker has become so popular because it makes code portable. In most
 cases, the only system prerequisite to run most any Docker container is
-Docker itself.[^2-4-docker-1] Everything else comes in the container.
+Docker itself.[^1-6-docker-1] Everything else comes in the container.
 
-[^2-4-docker-1]: This was truer before the introduction of M-series
+[^1-6-docker-1]: This was truer before the introduction of M-series
     chips for Macs. Chip architecture differences fall below the level
     that a container captures, and many popular containers wouldn't run
     on new Macs. These issues are getting better over time and will
@@ -78,9 +78,9 @@ hosting of images in free and paid tiers. Docker Hub includes official
 images for operating systems and programming languages, as well as many,
 many community-contributed containers. Some organizations run their own
 private registries, usually using *registry as a service* offerings from
-cloud providers.[^2-4-docker-2]
+cloud providers.[^1-6-docker-2]
 
-[^2-4-docker-2]: The big three container registries are AWS Elastic
+[^1-6-docker-2]: The big three container registries are AWS Elastic
     Container Registry (ECR), Azure Container Registry, and Google
     Container Registry.
 
@@ -252,9 +252,9 @@ here are the handful that are enough to build most images.
 -   `COPY` -- copy a file from the host filesystem into the container.
 
 -   `CMD` - Specify what command to run on the container's shell when it
-    runs, usually the last line of the Dockerfile.[^2-4-docker-3]
+    runs, usually the last line of the Dockerfile.[^1-6-docker-3]
 
-[^2-4-docker-3]: You may also see `ENTRYPOINT`, which sets the command
+[^1-6-docker-3]: You may also see `ENTRYPOINT`, which sets the command
     `CMD` runs against. Usually the default `/bin/sh -c` to run `CMD` in
     the shell will be the right choice.
 
@@ -379,41 +379,3 @@ obviously bad if the container dies because something goes wrong.
 
 How might you make sure that the container's logs get written somewhere
 more permanent?
-
-## Cheatsheet: Docker {#cheat-docker}
-
-### Docker CLI Commands
-
-| Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
-|-------|-------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
-| Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
-| Move  | `docker pull <image>`               | Pull a container from a registry.                         | Rarely used because `run` pulls the container if needed.                                          |
-| Run   | `docker run <image>`                | Run a container.                                          | See flags in next table.                                                                          |
-| Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
-| Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
-| Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
-| Run   | `docker logs <container>`           | Views logs for a container.                               |                                                                                                   |
-
-### **Flags for `docker run`**
-
-| Flag               | Effect                                         | Notes                                                                    |
-|--------------------|------------------------------------------------|--------------------------------------------------------------------------|
-| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided.                         |
-| `--rm`             | Remove container when its stopped.             | Don't use in production. You probably want to inspect failed containers. |
-| `-d`               | Detach container (don't block the terminal).   | Almost always used in production.                                        |
-| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access an app or API running inside the container. |
-| `-v <dir>:<dir>`   | Mount volume into the container.               |                                                                          |
-
-: *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
-
-### Dockerfile Commands
-
-These are the commands that go in a Dockerfile when you're building it.
-
-| Command | Purpose                                               | Example                   |
-|---------|-------------------------------------------------------|---------------------------|
-| `FROM`  | Indicate base container.                              | `FROM rocker/r-ver:4.1.0` |
-| `RUN`   | Run a command when building.                          | `RUN apt-get update`      |
-| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`            |
-| `CMD`   | Specify the command to run when the container starts. | `CMD quarto render .`     |

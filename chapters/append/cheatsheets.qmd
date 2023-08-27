@@ -1,14 +1,52 @@
 # Cheatsheets {#sec-append-cheat}
 
+## Docker {#cheat-docker}
+
+### Docker CLI Commands
+
+| Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
+|-------|-------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
+| Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
+| Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
+| Move  | `docker pull <image>`               | Pull a container from a registry.                         | Rarely used because `run` pulls the container if needed.                                          |
+| Run   | `docker run <image>`                | Run a container.                                          | See flags in next table.                                                                          |
+| Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
+| Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
+| Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
+| Run   | `docker logs <container>`           | Views logs for a container.                               |                                                                                                   |
+
+### Flags for `docker run`
+
+| Flag               | Effect                                         | Notes                                                                    |
+|--------------------|------------------------------------------------|--------------------------------------------------------------------------|
+| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided.                         |
+| `--rm`             | Remove container when its stopped.             | Don't use in production. You probably want to inspect failed containers. |
+| `-d`               | Detach container (don't block the terminal).   | Almost always used in production.                                        |
+| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access an app or API running inside the container. |
+| `-v <dir>:<dir>`   | Mount volume into the container.               |                                                                          |
+
+: *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
+
+### Dockerfile Commands
+
+These are the commands that go in a Dockerfile when you're building it.
+
+| Command | Purpose                                               | Example                   |
+|---------|-------------------------------------------------------|---------------------------|
+| `FROM`  | Indicate base container.                              | `FROM rocker/r-ver:4.1.0` |
+| `RUN`   | Run a command when building.                          | `RUN apt-get update`      |
+| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`            |
+| `CMD`   | Specify the command to run when the container starts. | `CMD quarto render .`     |
+
 ## Cloud Services
 
-| Service                     | AWS                                                  | Azure                          | GCP                            |
-|-----------------------------|------------------------------------------------------|--------------------------------|--------------------------------|
-| Kubernetes cluster          | EKS (Elastic Kubernetes Service) or Fargate          | AKS (Azure Kubernetes Service) | GKE (Google Kubernetes Engine) |
-| Run a container/application | ECS (Elastic Container Service) or Elastic Beanstalk | Azure Container Apps           | Google App Engine              |
-| Run an API                  | Lambda                                               | Azure Functions                | Google Cloud Functions         |
-| Database                    | RDS or Redshift\[\^2-1-cloud-8\]                     | Azure Database                 | Google Cloud SQL               |
-| ML Platform                 | SageMaker                                            | Azure ML                       | Vertex AI                      |
+| Service                      | AWS                                                  | Azure                          | GCP                            |
+|------------------------------|------------------------------------------------------|--------------------------------|--------------------------------|
+| Kubernetes cluster           | EKS (Elastic Kubernetes Service) or Fargate          | AKS (Azure Kubernetes Service) | GKE (Google Kubernetes Engine) |
+| Run a container /application | ECS (Elastic Container Service) or Elastic Beanstalk | Azure Container Apps           | Google App Engine              |
+| Run an API                   | Lambda                                               | Azure Functions                | Google Cloud Functions         |
+| Database                     | RDS or Reds hift\[\^2-1-cloud-8\]                    | Azure Database                 | Google Cloud SQL               |
+| ML Platform                  | SageMaker                                            | Azure ML                       | Vertex AI                      |
 
 ## Command Line {#cheat-cli}
 
@@ -176,12 +214,12 @@
 
 ### Permissions
 
-| Command                        | What it does                                            | Helpful options + notes                                                                                          |
-|--------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `chm od <permissi ons> <file>` | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
-| `cho wn  <user/gr oup> <file>` | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
-| `su  <username>`               | Change active user to `username`.                       |                                                                                                                  |
-| `sud o <command>`              | Adopt super user permissions for the following command. |                                                                                                                  |
+| Command                         | What it does                                            | Helpful options + notes                                                                                          |
+|---------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `chm o d <permissi ons> <file>` | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
+| `cho w n  <user/gr oup> <file>` | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
+| `su  <username>`                | Change active user to `username`.                       |                                                                                                                  |
+| `sud o <command>`               | Adopt super user permissions for the following command. |                                                                                                                  |
 
 ## Cheatsheet: `ssh` {#cheat-ssh}
 
@@ -198,21 +236,21 @@ ssh <user>@<host>
 
 ### Users
 
-| Command                  | What it does                                          |
-|--------------------------|-------------------------------------------------------|
-| `su <username>`          | Change to be a different user.                        |
-| `whoami`                 | Get username of current user.                         |
-| `id`                     | Get full user + group info on current user.           |
-| `passwd`                 | Change password.                                      |
-| `useradd`                | Add a new user.                                       |
-| `use  r m od <username>` | Modify user `username`. `-aG <group>` adds to a group |
+| Command                   | What it does                                          |
+|---------------------------|-------------------------------------------------------|
+| `su <username>`           | Change to be a different user.                        |
+| `whoami`                  | Get username of current user.                         |
+| `id`                      | Get full user + group info on current user.           |
+| `passwd`                  | Change password.                                      |
+| `useradd`                 | Add a new user.                                       |
+| `use   r m od <username>` | Modify user `username`. `-aG <group>` adds to a group |
 
 ### Permissions
 
 | Command                              | What it does                                            | Helpful options + notes                                                                                          |
 |--------------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `ch m od  <per m i s s ions> <file>` | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
-| `c h ow n <us e r / g roup> <file>`  | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
+| `ch m od <per m i s s ions> <file>`  | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
+| `c h ow n  <us e r / g roup> <file>` | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
 | `s u <username>`                     | Change active user to `username`.                       |                                                                                                                  |
 | `s u do <command>`                   | Adopt super user permissions for the following command. |                                                                                                                  |
 
@@ -258,10 +296,16 @@ ssh <user>@<host>
 
 ### The path
 
-| Command                                                | What it does                                                                |
-|--------------------------------------------------------|-----------------------------------------------------------------------------|
-| `which <command>`                                      | Finds the location of the binary that runs when you run `command`.          |
-| `ln -s < lo cation to link> : < l ocation of symlink>` | Creates a symlink from file at `location to link` to `location of symlink`. |
++---------------------------------+-----------------------------------+
+| Command                         | What it does                      |
++=================================+===================================+
+| `which <command>`               | Finds the location of the binary  |
+|                                 | that runs when you run `command`. |
++---------------------------------+-----------------------------------+
+| \`ln -s \< lo cation to link\>  | Creates a symlink from file at    |
+|                                 | `location to link` to             |
+| :   \< l ocation of symlink\>\` | `location of symlink`.            |
++---------------------------------+-----------------------------------+
 
 ## Cheatsheet: IP Addresses and Ports {#cheat-ports}
 
@@ -450,8 +494,8 @@ alexkgold        23605   0.5  0.4 36134976 150828   ??  S    Sat09AM   1:58.16 /
 ### Make sure the right ports are open
 
 Networking is a complicated topic, which we'll approach with great
-detail in [Chapter @sec-basic-networks]. Most often, you'll want to
-check that the application you're running is actually accessible to the
+detail in [Chapter @sec-networking]. Most often, you'll want to check
+that the application you're running is actually accessible to the
 outside world, assuming you want it to be.
 
 The main command to help you see what ports are being used and by what
