@@ -1,149 +1,228 @@
 # Intro to Computer Networks {#sec-basic-networks}
 
-After the last two chapters, you understand how to get a server up and
-running from AWS and how to get applications you want running on that
-server. That's great...but you're still not at the point of providing a
-great experience. After all, if you want to share a Shiny app with your
-boss, you don't want to have to explain SSH tunneling.
+If you've got a server but no one can access it, is it really even
+there?
 
-For your server to be useful to the people who need it, it needs to be
-accessible to them in their web browser. They'll want to view the Shiny
-app at a normal URL, and they'll want to access RStudio Server and
-JupyterLab in their browser.
+If it's in the cloud, yes, you will still get charged for it running.
+But it won't be useful.
 
-All that means that you're going to have to care about computer
-*networking*, whether you like it or not.
+*Computer networking* -- the subject of how computers send information
+back and forth -- is the second big part of administering a server. Once
+you've got the server up and running with the applications you want, you
+need to make it accessible to the people who need it. That means what
+you mostly need to understand is how network traffic gets to the right
+place, and what might go wrong to cause that not to function.
 
-Computer networking is accomplished using the *Transmission Control
-Protocol/Internet Protocol (TCP/IP)* stack of protocols, which define
-how messages can be sent across the network. There's a lot of depth and
-complexity in TCP/IP, all the way down to how to defining how physical
-hardware works. Luckily, as the administrator of a cloud-based EC2
-instance, you don't have to be super concerned with all of TCP/IP.
+In this chapter, you'll learn about the basics of how computer networks
+work and how one computer successfully sends a message to another. In
+the lab, you'll get to finally make your data science workbench
+available on the actual internet.
 
-Instead, we're just going to discuss a few things that are helpful to
-understand as you administer a server. These things mostly concern
+Let's talk about the mail. The real kind that goes in an envelope and is
+delivered in trucks.
 
-1.  What type of traffic is going to be coming to my server?
-2.  How will the traffic get to the applications I have running?
-3.  How will the traffic know how to get to my server?
+When you want to send a letter, you need to use a valid envelope. You
+need to address the letter properly and apply a stamp in the right
+place.
 
-Luckily, there's a familiar piece of technology that combines the
-answers to all of these questions, the Uniform Resource Locator (URL).
-You use URLs like $google.com$ all the time as your browse the internet.
-So let's talk about how a URL answers the questions we need to know to
-get to our server from a browser.
+The same is true of digital traffic. While the envelope, stamp, and
+address are all digital, there are shared rules that define what makes
+an address or envelope valid. In networking terms, these rules are
+called *protocols*. These days, pretty much all computer networking is
+accomplished with a stack of protocols called *Transmission Control
+Protocol/Internet Protocol (TCP/IP)* stack of protocols.
 
-The first thing to understand is that $google.com$ is not actually a
-URL. Instead, it's just one of the four parts of a
-URL.[^3-1-networking-1] Your browser assumes defaults for the other
-parts, so you usually don't see them. If you wanted to provide the full
-URL to $google.com$, it would actually include four pieces of
-information and would look like this:
-$$\overbrace{\text{https://}}^\text{protocol}\overbrace{\text{google.com}}^\text{domain}\overbrace{\text{:443}}^\text{port}\overbrace{\text{/}}^\text{path}$$
+TCP/IP defines all kinds of things about network traffic, from the
+digital equivalent of what a valid envelope size is to how to load and
+unload the trucks carrying the mail. But since we're taking advantage of
+cloud servers, we really don't need to worry about all that.
 
-[^3-1-networking-1]: Different resources list different numbers of parts
-    for URLs. I believe this way of dividing a URL is most useful for
-    the purposes of this book.
+Instead, the big topic we need to think about is addresses. It's
+important to understand what constitutes a valid digital address, how a
+network knows where to route traffic, and what happens when it gets
+there.
 
-Let's dig into what each of these four parts are and how they allow you
-to access resources over the web.
+## Understanding digital addresses
 
-## Protocols define communication type
+To make things a little more concrete, let's think about the server
+we're setting up in the lab. We've got a server running four different
+services -- JupyterHub, RStudio Server, the penguin model API, and our
+Shiny app.
 
-The first part of a URL is the *application layer protocol*, or just
-protocol for short. The protocol is the top layer of the TCP/IP stack
-and defines how one application can communicate with another. A helpful
-analogy is to think about sending a letter to a penpal, in which case
-the application layer protocol is the language -- English or Spanish or
-some made up buddy language -- you've agreed to write in.
+A mental model I find helpful is to think of our server as like an
+apartment building. Each service lives in one apartment and is waiting
+for incoming mail. We, as the server admin, are responsible for properly
+configuring the incoming traffic to make sure it can get to where it's
+going.
 
-You've seen at least two protocols so far in this book. In [Chapter
-@sec-cmd-line] you learned about how to connect to the command line of
-another computer using SSH. And in the last chapter, we created an SSH
-tunnel so we could use HTTP to view a webpage using our browser.
+You already use digital addresses all the time in the form of the
+*Uniform Resource Locator (URL)*.[^2-6-networking-1] A URL fully
+specifies the network location of a resource and looks like this:
 
-::: callout-note
-You've probably also heard of HTTPS. We'll get more into the distinction
-in [Chapter @sec-ssl].
+[^2-6-networking-1]: URLs are a subset of a broader category called
+    *Uniform Resource Identifiers (URIs)*, which look like a URL and are
+    used to **identify** a resource by may not be a valid address. I
+    mention them only because you may run across them in certain
+    contexts, like configuring SSO.
+
+$$\overbrace{\text{https://}}^\text{protocol}\underbrace{\text{google.com}}_\text{domain}\overbrace{\text{:443}}^\text{port}\underbrace{\text{/}}_\text{path}$$
+
+You're probably used to just using the domain to access
+$\text{google.com}$ or maybe a domain with a path if you're going to
+$\text{google.com/maps}$. But the full URL always includes these four
+parts.[^2-6-networking-2] It's just that you're usually fine with the
+default protocol and port, so you almost never think about them.
+
+[^2-6-networking-2]: Different resources divide URLs into somewhere
+    between three and seven parts. I think these four are the most
+    useful for this chapter's purpose.
+
+But here's what each of those four parts are:
+
+-   The *application layer protocol* (often just called the protocol)
+    specifies what type of traffic this is. It's like agreeing that your
+    letter will be in English or Arabic or Dutch.
+
+-   The *domain* is a human-readable way of providing the digital street
+    address of the server. We'll get into the actual address later in
+    the chapter.
+
+-   The *port* specifies where on the server to direct the traffic. It's
+    the digital equivalent of the apartment number.
+
+-   The *path* is a human-friendly way of specifying who you intend the
+    message to go to. It's like the name of the entity you're addressing
+    on your letter.
+
+The reason that you never think about protocols or ports is that web
+traffic is HTTP or HTTPS and use the default ports for HTTP and
+HTTPS.[^2-6-networking-3]
+
+[^2-6-networking-3]: These days, it's actually HTTPS. We'll get into
+    that in [Chapter @sec-ssl].
+
+The main task of the server admin is to make sure that these defaults
+correctly -- and securely -- translate into the services people are
+actually trying to access.
+
+## How the traffic arrives
+
+A domain is the human-readable way of addressing a resource on the
+internet. But it's not actually the digital street address of any
+particular server (host).
+
+Instead, hosts are actually identified with an *IP Address*, which is
+mapped to the domain via the *Domain Name Service (DNS)*, which you'll
+learn about in [Chapter @sec-dns]. When that IP address is valid across
+the entire internet, it's a *public* IP address.
+
+When traffic is created, it's chopped up into parts called *packets*.
+Those packets are then routed to the correct IP address in a process
+called *packet switching*.[^2-6-networking-4]
+
+[^2-6-networking-4]: How packet switching works isn't super relevant,
+    but it is cool. Packets are addressed with their target IP address
+    when they're first created and are passed off to the router to which
+    the computer is connected. Routers are arranged in a tree-style
+    hierarchy. What's clever is that each router **only** keeps track of
+    downstream addresses and a single upstream *default address*. So the
+    packet gets passed upstream until it hits a router that knows about
+    the target IP address and then back downstream to the host.
+
+Once the traffic arrives at the server, it has to get to the right
+service. Services are mapped 1-1 to open ports. Every computer has just
+over 65,000 ports. Each port is uniquely identified by a number, and
+there's a 1-1 mapping between listening services and open ports. Since
+you're probably running no more than a handful of services, the
+overwhelming majority of the ports are closed at any given
+time.[^2-6-networking-5]
+
+[^2-6-networking-5]: Ports are also used for outbound communication.
+    Computers know how to automatically open ports for outbound
+    communication and specify that's where the response should come, so
+    we're not going to get into them here.
+
+By default, HTTP traffic goes to port $80$ and HTTPS traffic goes to
+port $443$.
+
+So if there's just one thing on the server, you would configure the
+application to put itself on port $80$ and/or $443$. Then, when people
+come to the root of the domain, they'd automatically get to the right
+service.
+
+But sometimes you've got multiple services on the server. In that case,
+each one will need to run on a unique port and you can map those ports
+to subpaths using a *proxy*. Common proxies you might hear about include
+the open source *Nginx* and *Apache* and the paid *F5*, who also develop
+NGINX. Depending on the configuration, the proxy can be on the same
+server or a different one.
+
+If you're using a proxy, you'd put each of the server's services on a
+different port and use the proxy to redirect incoming traffic to the
+right place based on the subpath.
+
+![](images/firewall-proxy.png){fig-alt="Traffic coming through firewall only on port 80. Proxy routes /jupyter to port 8000 on server and /rstudio to port 8787."
+width="600"}
+
+Now, if you were just to put something on port $80$ on your EC2 instance
+and try to access it from the web at the public IP address, it still
+wouldn't work. That's because an EC2 instance, comes with a built in
+*firewall*, which blocks traffic to all but certain ports. In AWS, it's
+called the *security group*.
+
+::: callout-tip
+If you think you've configured a service correctly and you just can't
+seem to access it, one of the first things to check is whether you've
+got the port open in the security group.
+
+One symptom that may indicate a security group issue is if you try to go
+to your service and it just hangs with no response before eventually
+timing out.
 :::
 
-The most common application layer protocol is HTTP(S), which is what web
-traffic uses. In [Chapter @sec-data-access], we talked a lot about how
-APIs can use HTTP to communicate with each other. Your browser works
-very similarly. When you got to a webpage, it makes HTTP `GET` calls to
-that webpage, requesting the contents of the page. Once all of the
-page's assets come in, the HTML and CSS and Javascript that define the
-page, your browser reassembles the webpage and shows it to you. As you
-interact with the webpage, traffic goes back and forth between your
-computer and the server, sending and receiving data.
+Once the traffic makes it to the right server, through the firewall and
+proxy, and to the right port, it has to communicate using the right
+application layer protocol. We've been talking exclusively about the
+HTTP and HTTPS application layer protocols, because web traffic arrives
+as a series of HTTP `GET` requests, but there are many other application
+layer protocols, each with its own default port.
+
+For example, you've already seen a lot about SSH in this book, which is
+an application layer protocol for allowing secure login and
+communication over an unsecured network. SSH defaults to port $22$.
 
 Other important protocols that you might see in this book or elsewhere
 are SFTP for file transfers, SMTP for emails, LDAP(S) for auth, and
 websockets, which are used by Shiny and Streamlit.
 
-## Domains map to network locations
+## Recognizing IP addresses
 
-The domain provides a human-readable the address for the site you're
-trying to visit. But a domain doesn't actually address a particular
-*host*, the networking term for a computer that's connected to a
-network. Instead, the true address of a host is an *IP address*, which
-is mapped to a domain using *Domain Name Service (DNS)*. [Chapter
-@sec-dns] is all about DNS. For now, let's stick with IP addresses.
-
-An IP addresses, which looks something like `65.77.154.233` or
-`3da4:66a::1`, is the proper addresses of a host on the internet. If you
-think of sending a message, like a request for a webpage, as like
-sending a letter to a friend, the digital analog of their street address
-would be the IP address.
-
-Now, you can have a host with a public IP address. For example, as we've
-been accessing our data science workbench, we've been SSH-ing in with
-the public IP address. But there are many devices that don't have a
-public IP address. Instead, they're connected only to a private network
-with a private IP address. For example, your computer, phone, TV, and
-smart appliances are all hosts on a network, but they don't have public
-IP addresses. Instead, they connect to the private network maintained by
-your home router, which does have a public IP address.
-
-In that case, your public IP address is less like a front door, and more
-like the front gate of a gated community. Your router is what does
-*network address* *translation* back and forth between public and
-private IP addresses. For the purposes of the labs in this book, we're
-just using one server with a public IP address. But in a lot of
-environments, you'll have a number of different servers inside a private
-network that don't have public IP addresses. That kind of more advanced
-network topology is beyond what we'll set up in this book, but it's
-discussed more in [Chapter @sec-ent-networks].
-
-There are two different kinds of IP addresses. So far we've been using
-the *IPv4* address of your server. IPv4 addresses are four blocks of
-8-bit fields (numbers between `0` and `255`) with dots in between, so
-they look something like `65.77.154.233`.
+If you've seen an IP address before, it probably was an *IPv4*
+*address*, which are four blocks of 8-bit fields (numbers between $0$
+and $255$) with dots in between, so they look like $64.56.223.5$.
 
 If you do the math, you'll realize there are "only" about 4 billion of
 these. There are so many things on the public internet that we are
-running out of IPv4 addresses, even though many devices only have only
-private IP addresses.
+running out of IPv4 addresses.
 
-The good news is that smart people started planning for this a while
-ago. In the last few years, adoption of the new *IPv6* standard has
-started. IPv6 addresses are eight blocks of hexadecimal (`0-9` + `a-f`)
-digits separated by colons, with certain rules that allow them to be
-shortened, so `4b01:0db8:85a3:0000:0000:8a2e:0370:7334` or `3da4:66a::1`
-are both examples of valid IPv6 addresses. IPv6 will coexist with IPv4
-for a few decades and we'll eventually switch entirely to IPv6. There's
-no worry about running out of IPv6 addresses any time soon, because the
-total quantity of IPv6 addresses is a number with 39 zeroes.
+The good news is that smart people started planning for this a while ago
+and the adoption of the new *IPv6* standard started a few years ago.
 
-### Reserved IP Addresses
+IPv6 addresses are eight blocks of hexadecimal ($\text{0-9}$ and
+$\text{a-f}$) digits separated by colons, with certain rules that allow
+them to be shortened, so
+$\text{4b01:0db8:85a3:0000:0000:8a2e:0370:7334}$ or $\text{3da4:66a::1}$
+are both examples of valid IPv6 addresses. There's no worry about
+running out of IPv6 addresses any time soon, because the total quantity
+of IPv6 addresses is a number with 39 zeroes.
 
-Most IPv4 addresses are freely available to be assigned, but there are a
-few that you'll see in particular contexts and it's useful to know what
-they are.
+IPv6 will coexist with IPv4 for a few decades and we'll eventually
+switch entirely to IPv6.
 
-The first IP address you'll see a lot is `127.0.0.1`, also known as
-`localhost` or loopback. This is the way a machine refers to itself.
+There are a few special IPv4 addresses it's worth knowing. You'll
+probably see $127.0.0.1$ a lot, which is also known as
+$\text{localhost}$ or loopback. This is the way a machine refers to
+itself.
 
 For example, if you open a Shiny app in RStudio Desktop, the app will
 pop up in a little window along with a notice that says
@@ -152,280 +231,134 @@ pop up in a little window along with a notice that says
 Listening on http://127.0.0.1:6311
 ```
 
-That means that the Shiny app is running on the same computer and
+That means that the Shiny app is running on the same computer and is
+available on port $6311$.
 
 There are also a few blocks of IPv4 addresses -- those that start with
-`192.168`, `172.16`, and `10` that are reserved for use on private
+$192.168$, $172.16$, and $10$ that are reserved for use on private
 networks, so they're never assigned in public.
 
-## Ports and paths provide access to services
-
-The IP address, whether public or private, can get traffic to the front
-door of your server, but that traffic still needs to get to the right
-*service.* Any program that is running on a server and that you intend
-to be accessible from the outside is called a service. For example, we
-set up RStudio, JupyterHub, a Shiny app, and a Plumber API as services
-in the lab in [Chapter @sec-app-admin].
-
-The service is accessible to the outside world via a *port*, which is a
-virtual location where network connections originate and terminate. If
-an IP address is like a street address, the port is like the apartment
-number within the building. Each service that is listening for inbound
-communication needs a dedicated port for it to listen
-on.[^3-1-networking-2]
-
-[^3-1-networking-2]: Ports are also used for outbound communication.
-    Computers know how to automatically open ports for outbound
-    communication and specify that's where the response should come, so
-    we're not going to get into them here.
-
-Each port has a unique number 1 to just over 65,000. At any given time,
-the overwhelming majority of the ports on a host are closed. Most
-services you might run have a default port they listen on. So one option
-to make those services available would be to publicly open those ports
-to the internet. For example, RStudio Server defaulted to port `8787`,
-so if you wanted to make it available you could just just open `8787` to
-the world and then people could access RStudio Server by putting `:8787`
-at the end of the URL for your server.
-
-But wait, you might be thinking, I access services of all different
-types over the internet all the time and I basically never type in a
-port. What gives?
-
-The answer is that it's rare to provide direct access to a service via a
-particular port. Instead, ports are usually used to listen for
-particular protocols.
-
-By default, HTTP runs on `80` and HTTPS on `443`. So if you've got just
-one service running on your server that uses HTTP or HTTPS, you can just
-bind that service to `80` or `443` and you're good to go.
-
-But that's often not the case. For example, on our workbench server,
-we've got four different services, all of which use HTTP(S) to
-communicate and also, as I mentioned, need a unique port.
-
-The solution here is to add another hop. That's why most server-based
-applications that use HTTP(S) bind to a reasonably random high-numbered
-port. This makes it unlikely that the service will conflict with another
-running on the server. This can also work when you've got a server
-dedicated to a particular task. For example, you might use HTTP to route
-traffic inside the private network to a computational node and just keep
-the traffic on the high port to avoid potential conflicts and
-accidentally opening it to the outside world.
-
-::: callout-note
-According to JJ Allaire, founder of Posit (formerly RStudio) there's no
-special reason RStudio Server runs on `8787`. It was chosen because it
-was easy to remember and not `8888`, which some other popular projects
-had taken.
-:::
-
-Then, HTTP(S) traffic will come in as usual over `80` or `443` and then
-will be redirected to the port where the service is actually running.
-The most common way to accomplish this is by using a *proxy*, which is a
-piece of software that exists for managing network traffic. There are
-many different kinds of proxies. There are two particularly popular open
-source proxies -- nginx and apache.
-
-TODO: diagram of proxy redirecting from 443 to 8787 via /rstudio
-
-Usually, the human-facing part of this is by specifying a path, like
-`/rstudio` or `/jupyter`, which is how the proxy knows which traffic to
-redirect where.
-
-::: callout-note
-## Container networking
-
-Now that you've got a pretty good understanding of public and private IP
-addresses, we can go back to a place where using Containers actually
-makes things harder -- networking. This is because, like with storage
-volumes, containers exist within their own private network. If you want
-to connect to something running in a container from the outside, you
-need to connect the container's port to an external one. It's not an
-insurmountable problem, but it does add another layer of private network
-that has to be configured for things to work properly.
-:::
-
-### Make sure the right ports are open
-
-Networking is a complicated topic, which we'll approach with great
-detail in [Chapter @sec-basic-networks]. Most often, you'll want to
-check that the application you're running is actually accessible to the
-outside world, assuming you want it to be.
-
-The main command to help you see what ports are being used and by what
-services is the `netstat` command. `netstat` returns the services that
-are running and their associated ports. `netstat` is generally most
-useful with the `-tlp` flags to show programs that are listening and the
-programs associated.
-
-Sometimes you *know* you've got a service running on your machine, but
-you just can't seem to get the networking working. It can be useful to
-access the service directly without having to deal with networking.
-
-SSH port forwarding allows you to take the output of a port on a remote
-server, route it through SSH, and display it as if it were on a local
-port. For example, let's say you've got RStudio Server running on my
-server but the web interface isn't working. If you've got SSH working
-properly, you can double check that the service is working and the issue
-really is networking.
-
-I find that the syntax for port forwarding completely defies my memory
-and I have to google it every time I use it. For the kind of port
-forwarding you'll use most often in debugging, you'll use the `-L` flag
-to get a remote port locally.
-
-`ssh -L <local port>:<remote ip>:<remote port> <ssh hostname>`
-
-The local would be your laptop and the remote your server, so if you had
-RStudio Server running on a server on port `3939`. Then you could run
-`ssh -L 3939:localhost:3939 my-user@my-ds-workbench.com`. To get
-whatever is at port `3939` on the server (hopefully RStudio Workbench!)
-by going to `localhost:3939` in the laptop's browser.
-
-Most often, you'll use the same port locally and on the remote and the
-remote ip will be `localhost`.
-
-## Firewalls, allow-lists, and other security settings
-
-Anything that has a public IP address can be found by the outside world,
-and any host with a public IP address, it is a target and needs to be
-hardened to avoid infiltration.
-
-You might think that your little data science workbench doesn't have
-anything valuable on it and isn't a target. Unfortunately, that's wrong.
-While no one might care about stealing your data, they do want to hijack
-your server itself. The internet is, unfortunately, crawling with bots
-trying to access spare computational resources to harness in distributed
-denial of service (DDOS) attacks or to take over for Bitcoin mining.
-
-Similarly, the only completely safe port is a closed port. One that's
-open can be a target for entry for unsavory actors. You should open as
-few ports as necessary into your machine, and they generally should be
-standard ones for the protocols you're using. Your server will
-automatically open ports when there's a service listening on that port.
-
-If you're in AWS, there's another default layer of security. In AWS, the
-basic level of protection for your server is called the *Security
-Group*. These security groups define which ports are available for hosts
-inside that security group. When you want to go add more services to
-your server, you'll have to open additional ports both on the server and
-in the security group.
-
-::: callout-note
-If you think you've configured a service correctly and you just can't
-seem to access it, one of the first things to ask is whether you've got
-the port open in the security group.
-:::
-
-In addition to keeping particular ports closed, you can also set your
-server to only allow incoming traffic from certain IP addresses. This
-can be very useful if you can guarantee everyone is coming from a
-particular IP address, but that often isn't the case and it's a pretty
-coarse security control. For example, you could configure your server to
-only accept incoming requests from your office's IP address, but what if
-someone needs to access the server from home or the office's IP address
-is reassigned? I generally don't recommend restricting inbound IP
-address ranges.
-
-One thing that is *not* a security setting is just using a port that's
-hard to guess. For example, you might think, "Well, if I were to put SSH
-on port 2943 instead of 22, that would be safer because it's harder to
-guess!" I guess so, but it's really just an illusion of security. There
-are ways to make your server safer. Choosing esoteric port numbers
-really isn't it.
-
-## SSH Tunneling
-
-In addition to the use of SSH to directly access the command line on a
-remote machine, SSH can also be used to create a *tunnel* to access any
-port on a remote machine. This can be useful to see an application when
-you've only got SSH access, perhaps because you haven't yet configured a
-stable URL for the server.
-
-If you're not quite sure about what a port is or how
-
-When you establish an SSH tunnel, it makes a port on the remote server
-available at a port on your laptop.
-
-An SSH tunnel to a remote can be established with
-`ssh -L <remote port>:localhost:<local port> <user>@<server>`.
-
-## Basic network troubleshooting
+## Basic network administration
 
 Networking can be difficult to manage because there are so many layers.
 It will frequently happen that you think a service is configured, but
-you just can't seem to access it. Once you've SSH-ed into the server and
-checked that the application is running as expected, it's time to dig
-into network debugging.
+you just can't seem to access it. Here are some basic tools for network
+debugging.
 
-The `ping` command can be useful for checking whether your server is
-reachable on the network. For example, here's what happens when I `ping`
-the domain where this book sits.
+### Browser devtools
 
-``` bash
-> ping -o do4ds.com                                                                        
-PING do4ds.com (185.199.110.153): 56 data bytes
-64 bytes from 185.199.110.153: icmp_seq=0 ttl=57 time=13.766 ms
+One of the most useful tools for debugging networking issues can be
+found right in your browser. Your browser has developer tools that allow
+you to inspect the network traffic going back and forth between your
+machine and a remote.
 
---- do4ds.com ping statistics ---
-1 packets transmitted, 1 packets received, 0.0% packet loss
-round-trip min/avg/max/stddev = 13.766/13.766/13.766/0.000 ms
+This can be really handy if things are going slowly or if you're not
+sure why the page isn't loading. By inspecting the status codes of
+different HTTP calls and the time they take, you can develop a pretty
+good idea of where things might be getting stuck.
+
+### SSH tunneling/port forwarding
+
+When you start a new EC2 instance in AWS, the default security group
+opens only port $22$ to allow SSH inbound.
+
+So far, you've seen SSH used to access the command line on that remote
+server, but SSH can actually be used to access any port in a process
+called *tunneling* or *port forwarding*.
+
+When you tunnel, you make a port on the remote host available at the
+same port on $\text{localhost}$ on your local machine. The most common
+usage is to use your browser to look send traffic to a specific port on
+a remote host without configuring the host to accept HTTP traffic on
+that port.
+
+You can create an SSH tunnel to a remote host with
+
+```{ssh -L <remote port>:localhost:<local port> <user>@<server>}
 ```
 
-This looks great -- it sent 1 packet to the server and got one back.
-That's exactly what I want.
+I find that the syntax for port forwarding completely defies my memory
+and I have to google it every time I use it.[^2-6-networking-6]
 
-::: callout-note
-Packets are the atomic unit of information being transmitted over a
-computer network. How traffic gets arranged in packets and how packets
-are routed in a process called packet switching are fascinating, but
-really not necessary to understand to administer a data science
-workbench server.
-:::
+[^2-6-networking-6]: As you might guess from this complicated syntax,
+    you can do a lot more than this with SSH tunneling, but this is most
+    often what I use it for.
+
+So, for example, if your server were running at $64.56.223.5$ and you
+has the SSH user `test-user`, you might forward JupyterHub on port
+$8000$ with `ssh -L 8000:localhost:8000 test-user@64.56.223.5`. Once the
+tunnel is established, you could access JupyerHub on
+$\text{localhost:8000}$.
+
+### Checking ports
+
+Sometimes you can just forget what ports are open on your machine and
+for what purposes. Or you want to double check that a configuration
+change took. In that case, you want to use the `netstat` command to get
+the services that are running and their associated ports.
+
+For this use, `netstat` is generally most useful with the `-tlp` flags
+to show programs that are listening and the programs associated.
+
+### Checking if a host is accessible
+
+The `ping` command can be useful for checking whether your server is
+reachable on the network. For example, the server where this book lives
+is at $185.199.110.153$. So I can ping that domain to check if it's
+accessible.
+
+``` bash
+> ping -o 185.199.110.153
+
+PING 185.199.110.153 (185.199.110.153): 56 data bytes
+64 bytes from 185.199.110.153: icmp_seq=0 ttl=58 time=23.322 ms
+
+--- 185.199.110.153 ping statistics ---
+1 packets transmitted, 1 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 23.322/23.322/23.322/nan ms
+```
+
+The `-o` flag tells `ping` to try just once as opposed to pinging
+continuously. The fact that I transmitted and received one packet means
+that everything is working properly.
 
 Seeing an unreachable host or packet loss would be an indication that my
 networking probably isn't configured correctly somewhere between me and
-the server. I generally like to use `ping` with the `-o` option for
-sending just one packet -- as opposed to continuously trying.
+the server.
 
 If `ping` fails, it means that the server isn't reachable and it's time
-to check DNS, that firewalls to have the right ports open (Security
-Groups in AWS), and that any proxied are properly configured.
+to check firewalls (security groups) and proxies. You can also use ping
+with a domain, so it can also be used to see if DNS is working properly.
 
-If `ping` succeeds but I still can't access the server, `curl` is good
-to check. `curl` actually attempts to fetch the website at a particular
-URL. It's often useful to use `curl` with the `-I` option so it just
-returns a simple status report, not the full contents of what it finds
-there.
+If `ping` succeeds but the particular resource is inaccessible, `curl`
+is can be a useful command. `curl` actually attempts to fetch the
+website at a particular URL. It's often useful to use `curl` with the
+`-I` option so it just returns a simple status report, not the full
+contents of what it finds there.
 
-For example, here's what I get when I `curl` CRAN from my machine.
+For example, here's what I get when I `curl` the website for this book.
 
 ``` bash
- > curl -I https://cran.r-project.org/                                                         
- 
-HTTP/1.1 200 OK
-Date: Sun, 15 Jan 2023 15:34:19 GMT
-Server: Apache
-Last-Modified: Mon, 14 Nov 2022 17:33:06 GMT
-ETag: "35a-5ed71a1e393e7"
-Accept-Ranges: bytes
-Content-Length: 858
-Vary: Accept-Encoding
-Content-Type: text/html
+> curl -I https://do4ds.com                                         
+
+HTTP/2 200
+server: GitHub.com
+content-type: text/html; charset=utf-8
+last-modified: Tue, 04 Jul 2023 16:23:38 GMT
+access-control-allow-origin: *
+etag: "64a4478a-79cb"
+...
 ```
 
 The important thing here is that first line. The server is returning a
 `200` HTTP status code, which means all is well. If you get something
-else, take a look back at the [http code cheatsheet](#cheat-http) in
-[Chapter @sec-data-access].
+else, take a look at the http code cheatsheet in [Appendix
+@sec-append-cheat].
 
-If `ping` succeeds, but `curl` does not, it means that the server is up
-at the expected IP address, but the service is not accessible.
-
-If you're running inside a container, you should check that you've
-properly configured the port inside container to be forwarded to the
-outside.
+If `ping` succeeds, but `curl` does not, it means that the server is up,
+but the path or port is incorrect. If you're running inside a container,
+you should check that you've properly configured the port inside
+container to be forwarded to the outside.
 
 ## Comprehension Questions
 
@@ -434,94 +367,60 @@ outside.
     addresses?
 3.  Draw a mind map of trying to access the following in your browser.
     Include the following terms: URL, domain, IP Address, port, path,
-    `80`, `443`, `8000`, proxy, server, HTTP, HTTPS, status code,
+    $80$, $443$, `8000`, proxy, server, HTTP, HTTPS, status code,
     protocol
     1.  A Shiny app on a server at $\text{http://my-shiny.com}$ where
-        Shiny Server is sitting on port `80`.
+        Shiny Server is sitting on port $80$.
     2.  JupyterHub on a server at $\text{https://example.com/jupyter}$
         where Jupyter is on port `8000`.
 
 ## Lab: Making it accessible in one place
 
-Right now, the only way to get to the various services on our server is
-only possible via an SSH tunnel. That's fine for you as you're working
-with it -- but doesn't work well if you want to share with other folks.
+In this lab, we're going to set up a proxy to be able to access all of
+our services over HTTP(S).
 
-Now, you could just open up the different ports each service is on and
-have people access them there -- RStudio on `8787`, JupyterHub on
-`8000`, and the API on `8080`. But that's not really ideal. That would
-mean your users would have to remember and use those ports.
+But first, you might want to try out accessing the various services
+where they are.
 
-::: callout-tip
-If you do want to try it to prove to yourself that this "works", go to
-your server's Security Group settings and add custom TCP rules allowing
-access to ports `8787`, `8000`, and `8080` from anywhere. If you visit
-`$SERVER_ADDRESS:8787` you should get RStudio, similarly with JupyterHub
-at `$SERVER_ADDRESS:8000`, and the API at `$SERVER_ADDRESS:8080`.
+You could either try SSH tunneling to them and seeing them on localhost
+or you could apply custom TCP rules to your security group to
+temporarily allow access directly to the services. If you want to try,
+here's a reminder of where everything is:
 
-Ok, now close those ports back up so we can do this the right way.
-:::
+| Service           | Port   |
+|-------------------|--------|
+| JupyterHub        | $8000$ |
+| RStudio           | $8787$ |
+| Penguin model API | $8080$ |
+| Shiny App         | $3838$ |
 
-So instead, we want all the traffic to come in one front door and for
-users to use convenient subpaths to reach the services. The tool to
-accomplish this kind of rerouting is called a *proxy*.
-
-In our case, we're just going to run a software proxy on our server that
-reroutes traffic to different ports on our server. We're going to use
-Nginx -- a very popular open source proxy.
-
-TODO: Image of proxy
-
-Proxies are an advanced networking topic. Most enterprise networks make
-extensive uses of proxies. For the data science workbench you're
-configuring, you may also need to use a proxy because some open source
-tooling doesn't support configuring SSL/HTTPS and don't permit
-authentication.
-
-Let's get it configured.
-
-### Step 8: Check it all out
-
-Just knowing that all of our services are running isn't nearly as fun as
-actually trying them out.
-
-We don't have a stable public URL for the server yet, so we can't just
-access it from our browser. This is a perfect use case for an SSH
-tunnel.
-
-If you recall, the command for an SSH tunnel from a remote server to
-`localhost` is to do
-`ssh -L <remote port>:localhost:<local port> <user>@<server>`.
-
-We've got three services running on our server, RStudio Server at
-`8787`, JupyterHub on `8000`, Shiny Server on `3838`, and our Plumber
-API on `8080`. You can try each of them out by subbing those in for the
-remote port and putting them at a local port.
-
-For example, by running
-`ssh -L 8787:localhost:8787 test-user@$SERVER_ADDRESS`, I can visit
-RStudio Server in my browser at `localhost:8787` and login with the
-username `test-user` and password I set on the server.
+If you're through playing and ready to get everything configured, let's
+go ahead.
 
 ### Step 1: Configure Nginx
 
-The first thing we're going to do is to configure Nginx on our server.
+Honestly, configuring proxies is a somewhat advanced networking topic,
+and in most cases you'd just put one service per server. But if you want
+to be able to save money and run everything on one server, you'll want a
+proxy.
+
 Configuring Nginx is pretty straightforward -- you install Nginx, put
 the configuration file into place, and restart the service to pick up
-the changes. The hard part is figuring out the right configuration. I've
-tested these steps, and they should work for you the first time. But if
-they don't, you're about to learn about the pain of proxy debugging.
+the changes. The hard part is figuring out the right configuration.
+Configuring proxies can be quite painful, as the configuration is very
+sensitive to seemingly meaningless syntax issues.
 
-Here are the steps to configure your proxy on your server:
+Here are the steps to configure your proxy on your server for JupyterHub
+and RStudio Server:
 
 1.  SSH into your server.
 2.  Install Nginx with `sudo apt install nginx`.
 3.  Save a backup of the default `nginx.conf`,
-    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^3-1-networking-3]
+    `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^2-6-networking-7]
 4.  Edit the Nginx configuration with `sudo vim /etc/nginx/nginx.conf`
     and replace it with:
 
-[^3-1-networking-3]: This is generally a good practice before you start
+[^2-6-networking-7]: This is generally a good practice before you start
     messing with config files. Bad configuration is usually preferable
     to a service that can't start at all because you've messed up the
     config so badly. It happens.
@@ -538,35 +437,39 @@ If you need to change anything, update the config and then restart with
 
 ### Step 2: Open port 80
 
-Now, if you try to go to your server, your browser will spin for a while
-and nothing will happen. That's because the AWS security group still
-only allows SSH access on port `22`. We need to add a rule that will
-allow HTTP access on port `80`.
+Now, if you try to go to your your server's public IP address or DNS,
+your browser will spin for a while and nothing will happen. That's
+because the AWS security group still only allows SSH access on port
+$22$. We need to add a rule that will allow HTTP access on port $80$.
 
 On the AWS console page for your instance, find the Security section and
 click into the security group for your instance. You want to add a new
-inbound HTTP rule that allows access on port `80` from anywhere. Make
-sure not to get rid of the rule that allows SSH access on `22`. You
+inbound HTTP rule that allows access on port $80$ from anywhere. Make
+sure not to get rid of the rule that allows SSH access on $22$. You
 still need that one too.
 
 Once you do this, you should be able to visit your server address and
 get the default Nginx landing page.
 
-### Step 3: Configure RStudio Server and JupyterHub to be on a subpath
+### Step 3: Configure your subpaths
 
-Complex web apps like RStudio and JupyterHub frequently reroute people
-back to themselves. In general, they assume that they're on the root
-path `/`. That's not true in this case, so we've got to let them know
-about the subpath where they're actually located.
+Complex web apps like RStudio and JupyterHub frequently proxy traffic
+back to themselves. For example, when you launch a Shiny app in RStudio,
+you're actually just opening a "headless" browser window that gets
+proxied back into your session.
+
+This works by default when those apps are on the root path $\text{/}$.
+That's not true in this case, so we've got to let the services know
+where they're actually located.
 
 Configuring RStudio Server is already done. The `X-RStudio-Root-Path`
 line in the Nginx configuration adds a header to each request coming
-through the proxy that tells RStudio Server that it's on the `/rstudio`
-path.
+through the proxy that tells RStudio Server that it's on the
+$\text{/rstudio}$ path.
 
-Jupyter needs an explicit update to its own configuration to let it know
-that it's on a subpath. Luckily it's a very simple change. You can edit
-the Jupyter configuration with
+JupyterHub needs a configuration update to let it know that it's on a
+subpath. Luckily it's a very simple change. You can edit the Jupyter
+configuration with
 
 ``` {.bash filename="Terminal"}
 sudo vim /etc/jupyterhub/jupyterhub_config.py
@@ -580,8 +483,8 @@ You can search in vim from normal mode with
 :::
 
 Delete the `#` to uncomment the line and add the subpath on the end. If
-you're using the `/jupyter` subpath and the default `8000` port, that
-line will read `c.JupyterHub.bind_url = 'http://:8000/jupyter'`.
+you're using the $\text{/jupyter}$ subpath and the default `8000` port,
+that line will read `c.JupyterHub.bind_url = 'http://:8000/jupyter'`.
 
 JupyterHub should pick up the new config when it's restarted with
 
@@ -592,26 +495,15 @@ sudo systemctl restart jupyterhub
 ### Step 4: Try it out!
 
 Now we should have each service configured on a subpath. RStudio Server
-at `/rstudio`, JupyterHub at `/jupyter`, and our machine learning API at
-`/penguins`. For example, with my server at
-`ec2-54-159-134-39.compute-1.amazonaws.com`, I can get to RStudio Server
-at `http://ec2-54-159-134-39.compute-1.amazonaws.com/rstudio`.
-
-::: callout-note
-As of this writing, the machine learning API serves itself off of
-`/__docs__/`, so you actually won't be able to access anything
-interesting at `/penguins`. Instead, you'll find the API at
-`/penguins/__docs__/`.
-
-This should be fixed before final publication of this book.
-:::
+at $\text{/rstudio}$, JupyterHub at $\text{/jupyter}$, and our machine
+learning API at $/text{/penguins}$. For example, with my server at
+$/text{64.56.223.5}$, I can get to RStudio Server at
+$/text{http://64.56.223.5/rstudio}$.
 
 Note that right now, this server is on HTTP, which is not a best
 practice. In fact, it's such a bad practice that your browser will
-probably autocorrect the url to start with `https` and it won't work.
-You'll have to manually correct it to `http`. Don't leave it like this
-for long -- make sure to make sure to configure `https` in [Chapter
-@sec-ssl] before doing anything real on this server.
+probably autocorrect the url to `https`. You'll have to manually correct
+it to `http`.
 
 ### Lab Extensions
 
@@ -620,59 +512,20 @@ that it's just the default Nginx landing page, which is not very
 attractive.
 
 You might want to create a landing page with links to the subpath by
-serving a static html page off of `/`. Or maybe you want one of the
-services at `/` and the others at a different subpath.
+serving a static html page off of $\text{/}$. Or maybe you want one of
+the services at $\text{/}$ and the others at a different subpath.
 
-If you want to change the subpaths, the `location` lines in the
-`nginx.conf` define the subpaths where the services will be available.
-By changing those locations, you can change the paths where the services
-live or you could add another that serves a static web page.
+Right now, neither the penguins model API or the Shiny app are available
+from the outside. You might want to add them to the proxy to make them
+accessible. I'll leave that as an exercise for you.
 
-You also could add a different service at a different path. Note that
-the `proxy_path` lines define the port where the service is running on
-the server. Depending on the service you're configuring, there may be
-other configuration you'll have to do, but that will vary on a
-service-by-service basis.
+::: callout-tip
+It's very common to put an API and/or a Shiny app behind a proxy.
+Googling "Shiny app behind nginx" or "FastAPI with nginx" will yield
+good results.
+:::
 
-## How packets are routed
-
-The way packets travel from one computer to another is called routing. A
-router is a hardware or software device that route packets.
-
-You can think of routers and public networks as existing in trees. Each
-router knows about the IP addresses downstream of it and also the single
-upstream *default address*.[^3-1-networking-4]
-
-[^3-1-networking-4]: There are actually a few different types of
-    addresses used to do this. IP addresses are used for identifying
-    network resources and the MAC address used for physical hardware.
-    Your router is also responsible for assigning IP addresses to
-    devices as they join the network via the dynamic host configuration
-    protocol (DHCP). I'm glossing over all these details as they're
-    immaterial to the understanding important for this chapter.
-
-TODO: diagram of routers in trees
-
-For example, the router in your house just keeps track of the actual
-devices that are attached to it. So if you were to print something from
-your laptop, the data would just go to your router and then to your
-printer.
-
-On the other hand, when you look at a picture on Instagram, that traffic
-has to go over the public network. The default address for your home's
-router is probably one owned by your internet service provider (ISP) for
-your neighborhood. And that router's default address is probably also
-owned by your ISP, but for a broader network.
-
-So your packet will get passed upstream to a sufficiently general
-network and then back downstream to the actual address you're trying to
-reach.
-
-Meanwhile, your computer just waits for a response. Once the server has
-a response to send, it comes back using the same technique. Obviously a
-huge difference between sending a letter to a penpal and using a
-computer network is the speed. Where sending a physical letter takes a
-minimum of days, sending and receiving packets over a network is so fast
-that the delay is imperceptible when you're playing a multiplayer video
-game or collaborating on a document online.
+One thing to consider is whether the model API should be publicly
+accessible at all. If the only thing calling it is the Shiny app, maybe
+it shouldn't be?
 
