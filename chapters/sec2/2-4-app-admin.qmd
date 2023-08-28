@@ -1,0 +1,606 @@
+# Application administration {#sec-app-admin}
+
+The last few chapters have been all about how to run a Linux server. But
+you don't really care about running a Linux server -- you care about
+doing data science. In order to do that, you'll need to run
+applications.
+
+In this chapter, you'll learn a little about how to install and
+administer applications on a Linux server, as well as specific pointers
+for data science tools like R, Python, and the system packages they use.
+
+## Linux app install + config
+
+You can install applications to Linux from a distro-specific repository,
+much like the app store for your phone or you can just download the
+application from the internet and install it locally.
+
+For Ubuntu, the `apt` command is used for interacting with repositories
+of `.deb` files. For CentOS and RedHat, the `yum` command is used for
+installing `.rpm` files.
+
+::: callout-note
+The examples below are all for Ubuntu, since that's what we use in the
+lab for this book. Conceptually, using `yum` is very similar, though the
+exact commands differ somewhat.
+:::
+
+In addition to actually installing packages, `apt` is also the utility
+for ensuring the lists of available packages you have are up to date
+with `update` and that all packages on your system are at their latest
+version with `upgrade`. When you find Ubuntu commands online, it's
+common to see them prefixed with `apt-get update && apt-get upgrade -y`.
+The `-y` flag bypasses a manual confirmation step.
+
+Packages are installed with `apt-get install <package>`. Depending on
+which user you are, you may need to prefix the command with `sudo`.
+
+Sometimes, you may want to install packages that aren't in the
+repository for your distro. Doing that will generally involve
+downloading a file directly from a URL -- usually with `wget` and then
+installing it from the file you've downloaded.
+
+### Application configuration
+
+Once you've installed an application, it will generally require some
+configuration like the default background color, the set of users
+allowed in, or the frequency something updates.
+
+On your personal computer, you'd probably find the setting in a series
+of dropdown menus at the top of the screen. On a server, no such menu
+exists.
+
+For applications running on your server, application behavior is usually
+configured through one or more *config files*. For applications hosted
+inside a Docker container, behavior is often configured with environment
+variables, sometimes in addition to config files.
+
+### Where to find application files
+
+Linux applications often use several files located in different
+locations on the filesystem. Here are some of the ones you'll use most
+frequently:
+
+-   `/bin`, `/opt`, `/usr/local`, `/usr/bin` - installation locations
+    for software.
+
+-   `/etc` - configuration files for applications.
+
+-   `/var` - variable data, most commonly log files in `/var/log` or
+    `/var/lib`.
+
+This means that on a Linux server, the files for a particular
+application probably don't all live in the same directory. Instead, you
+might run the application from the executable in `/opt`, configure it
+with files in `/etc`, and troubleshoot from logs in `/var`.
+
+### Command line configuration with vim and nano
+
+Obviously, if you're administering applications on a server, you'll need
+to spend a fair bit of time editing text files. But how? Unlike on your
+personal computer, where you click a text file to open and edit it,
+you'll need to work with a *command line text editor* when you're
+working on a server.
+
+There are two command line text editors you'll probably encounter:
+`nano` and `vi`/`vim`.[^2-4-app-admin-1] While they're both powerful
+text editing tools, they can also be intimidating if you've never used
+them before.
+
+[^2-4-app-admin-1]: `vi` is the original fullscreen text editor for
+    Linux. `vim` is its successor (`vim` stands for `vi` improved). I'm
+    not going to worry about the distinction.
+
+You can open a file in either by typing `nano <filename>` or
+`vi <filename>`.
+
+At this point many newbie command line users find themselves completely
+stuck, unable to do anything -- even just exit and try again. But don't
+worry, there's a way out of this labyrinth.
+
+If you opened nano, there will be some helpful-looking prompts at the
+bottom. You'll see that once you're ready to go, you can exit with `^x`.
+But the `^` isn't actually the caret character. On Windows, `^` is short
+for `Ctrl` and on Mac it's for Command (`⌘`), so `Ctrl + x` or `⌘ + x`
+will exit.
+
+Where nano gives you helpful -- if obscure -- hints, a first experience
+in vim is the stuff of command line nightmares. You'll type words and
+they won't appear onscreen. Instead, you'll experience dizzying jumps
+around the page and words and lines of text will disappear without a
+trace.
+
+This is because vim uses the letter keys not just to type, but also to
+navigate the page and interact with vim itself. You see, vim was created
+before keyboards uniformly had arrow keys.
+
+While they can be intimidating at first, vim keybindings are worth
+spending some time learning. Vim includes some powerful shortcuts for
+moving within and between lines and selecting and editing text. Most
+IDEs you might use, including RStudio, JupyterLab, and VSCode have vim
+modes.
+
+When you enter `vim`, you're in the (poorly named) *normal mode*, which
+is for navigation only. Pressing the `i` key activates *insert mode*,
+which will feel normal for those of us used to arrow keys. Once in
+insert mode, you can type and words will appear and you can navigate
+with the arrow keys.
+
+You can return to normal mode with the `escape` key.
+
+Once you've escaped, you may wish never to return to normal mode, but
+it's the only way to save files and exit `vim`. In order to do file
+operations, you type a colon, `:`, followed by the shortcut for what you
+want to do, and `enter`. The two most common commands you'll use are
+save (write) with `w` and quit with `q`. You can combine these together,
+so you can save and quit in one command using `:wq`.
+
+Sometimes you may want to exit without saving or you might've opened and
+changed a file you don't actually have permission to edit. If you've
+made changes and try to exit with `:q`, you'll find yourself in an
+endless loop of warnings that your changes won't be saved. You can tell
+`vim` you mean it with the exclamation mark, `!`, and exit using `:q!`.
+
+## Reading logs
+
+Once your applications are up and running, you may run into issues. Or
+even if you don't, you may want to take a look at how things are
+running.
+
+Most applications write their logs into somewhere inside the `/var`
+directory. Some things will get logged to the main log at
+`/var/log/syslog`. Other things may get logged to
+`/var/log/<application name>` or `/var/lib/<application name>`.
+
+It's important to get comfortable with the commands to read text files
+in order to be able to examine logs (and other files). The commands I
+use most commonly are:
+
+-   `cat` is the basic command to print a file, starting at the
+    beginning.
+
+-   `less` prints a file, starting at the beginning, but only a few
+    lines at a time.
+
+-   `head` prints only the first few lines and exits. It is especially
+    useful to peer at the beginning of a large file, like a `csv` file
+    -- so you can quickly preview the column heads and the first few
+    values.
+
+-   `tail` prints a file going up from the end. This is especially
+    useful for log files, as the newest logs are appended to the end of
+    a file. This is such a common practice that "tailing a log file" is
+    a common phrase.
+
+    -   Sometimes, you'll want to use the `-f` flag (for *follow*) to
+        tail a file with a live view as it updates.
+
+Sometimes you want to search around inside a text file. You're probably
+familiar with the power and hassle of *regular expressions (regex)* to
+search for specific character sequences in text strings. The Linux
+command `grep` is the main regex command.
+
+In addition to searching in text files, `grep` is often useful in
+combination with other commands. For example, it's often useful to put
+the output of `ls` into `grep` to search for a particular file in a big
+directory using the pipe.
+
+## Running the right commands
+
+Let's say you want to open Python on your command line. One option would
+be to type the complete path to a Python install every time. For
+example, I've got a version of Python in `/usr/bin`, so
+`/usr/bin/python3` works.
+
+But in most cases, it's nice to just type `python3` and have the right
+version open up.
+
+``` {.bash filename="Terminal"}
+> python3
+Python 3.9.6 (default, May  7 2023, 23:32:45) 
+[Clang 14.0.3 (clang-1403.0.22.14.1)] on darwin
+Type "help", "copyright", "credits" or "license" for more information.
+>>> 
+```
+
+In some cases, this isn't optional. Certain applications will rely on
+others being available, like RStudio Server needing to find R. Or
+Jupyter Notebook finding your Python kernels.
+
+So how does Linux know where to find those applications and files?
+
+If you ever want to check which actual executable is being used by a
+command, you can use the `which` command. For example, on my system this
+is the result of `which python3`.
+
+``` {.bash filename="Terminal"}
+> which python3                                                    
+/usr/bin/python3
+```
+
+The operating system knows how to find the actual runnable programs on
+your system via the *path*. The path is a set of directories that the
+system knows to search when it tries to run a program. The path is
+stored in an environment variable, conveniently named `PATH`.
+
+You can check your path at any time with `echo $PATH`. On my MacBook,
+this is what the path looks like.
+
+``` {.bash filename="Terminal"}
+> echo $PATH                                                      
+/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+```
+
+When you install a new piece of software you'll need to add it two the
+path. Say I was to install a new version of Python in `/opt/python`.
+That's not on my `PATH`, so my system wouldn't be able to find it.
+
+I can get it on the path in one of two ways -- the first option would be
+to add `/opt/python` to my `PATH` every time a terminal session starts
+usually via a file in `/etc` or the `.zshrc`.
+
+The other option is to create a *symlink* to the new application in a
+directory already on the `PATH`. A symlink does what it sounds like --
+creates a way to link to a file from a different directory without
+moving it. Symlinks are created with the `ln` command.
+
+## Running applications as services
+
+On your personal computer, you probably have programs that start every
+time your computer does. Maybe this happens for Slack, Microsoft Teams,
+or Spotify. Such applications that execute on startup and run in the
+background waiting for some sort of input are called a *daemon* or a
+*service*.
+
+On a server, most of the applications are configured to run as a service
+so they're ready for users who may not have the permissions to start
+them. For example, on a data science workbench, you'd want JupyterHub
+and/or RStudio Server to run as a service.
+
+In Linux, the tool to turn a regular application into a daemon is called
+`systemd`. Some applications automatically configure themselves with
+`systemd` when they're installed. If your application doesn't, or you
+want to alter the startup behavior, most applications have their
+`systemd` configuration in `/etc/systemd/system/<service name>.service`.
+
+Daemonized services are controlled using the `systemctl` command line
+tool.
+
+::: callout-note
+Basically all modern Linux distros have coalesced around using `systemd`
+and `systemctl`. Older systems may not have it installed by default and
+you may have to install it or use a different tool.
+:::
+
+The `systemctl` command has a set of sub-commands that are useful for
+working with applications. Providing those commands looks like
+`systemctl <subcommand> <application>`. Often `systemctl` has to be run
+as `sudo`, since you're working with an application for all users of the
+system.
+
+The most useful `systemctl` commands include `status` for checking
+whether a program is running or not, `start`, `stop`, and `restart` for
+a `stop` followed by a `start`. Many applications also support a
+`reload` command, which reloads configuration settings without having to
+actually restart the process. Exactly which settings require a `restart`
+vs a `reload` varies from one application to another.
+
+If you've changed a service's `systemd` configuration, you can load
+changes with `daemon-reload`. You also can turn a service on or off for
+the next time the server starts with `enable` and `disable`.
+
+### Running Docker containers as a service
+
+One of the benefits of running Docker Containers is that they run
+basically anywhere, so it's a popular way to quickly run an application
+on a server. To run them as a service, you'll need to make sure Docker
+itself is daemonized and then ensure the container you care about comes
+up whenever Docker does by setting a *restart policy* for the container.
+
+However, many Docker services involve coordinating more than one
+container. If that's the case, you'll want to use a system that's
+custom-built for managing multiple containers. The most popular are
+*Docker Compose* or *Kubernetes*.
+
+Docker Compose is a relatively lightweight system where you write a YAML
+file to describe the containers you need and the relationship between
+them. You can then use a single command to launch the entire set of
+Docker containers.
+
+Docker Compose is fantastic for prototyping systems of Docker containers
+and for running small-scale Docker-ized deployments on a single server.
+There are many great resources on Docker Compose online to learn more.
+
+Kubernetes is designed for a similar purpose, but instead of running a
+handful of containers on one server, Kubernetes is a heavy-duty
+production system designed to schedule hundreds or thousands of
+Docker-based workloads across a cluster of many individual servers.
+
+In general, I'd recommend sticking with Docker Compose for the work
+you're doing. If you're finding yourself needing the full might of
+Kubernetes to do what you want, you probably should be working closely
+with a professional IT/Admin
+
+## Managing R and Python
+
+As the admin of a data science server, Python and R are some of the most
+critical software you'll manage.
+
+In general, the easiest path to making many users happy is having a
+bunch of versions of R and Python installed side-by-side. That way you
+can allow users to upgrade their version of R or Python as it works for
+their project, not according to your upgrade schedule.
+
+I've seen this work best by installing R and Python into the
+`/opt/python` and `/opt/R` directory. Users can grab them from there to
+create project-specific virtual environments. You'll need to make sure
+permissions are correct on `/opt/python` for this to work.
+
+Now, this isn't what will happen if you just
+`sudo apt-get install python` or `sudo apt-get install R`, so you'll
+have to be a little more clever. My favorite route (though I'm obviously
+biased) is to install Python and R from the pre-built binaries provided
+by Posit.
+
+### Python-specific considerations
+
+Python is one of the world's most popular programming languages for
+general purpose computing. This actually makes configuring Python
+**harder**.
+
+Almost every system comes with a *system version* of Python. This is the
+version of Python that's used by the operating system for various tasks.
+It's almost always very old and you really don't want to mess with it.
+
+So in order to configure Python on your system, you have to install data
+science specific versions of Python, get them on the path, and get the
+system version of Python off the path. This is the source of much
+frustration trying to get Python up and running, both on servers and
+your personal computer.
+
+On your personal computer, Conda is a great solution for this problem.
+Conda allows you to install a standalone version of Python in
+*user-space*. That means that even if your organization doesn't let you
+have admin rights on your computer, you can install and manage versions
+of Python for development.
+
+For the same reason, Conda isn't a great choice for administering a data
+science server. You're not a user -- you're an admin. And giving
+everyone on the server access to Python versions is generally easier
+without Conda.
+
+This is why it's a good idea to install data science Python versions
+into `/opt/python`. It's easy to add that one directory to the path, and
+it's completely distinct from where the system Python lives.
+
+### R-specific considerations
+
+People pretty much only ever install R to do data science so it's
+generally not a huge deal where you install R and get it on the path. If
+you want just one version of R, using `apt-get install` is fine.
+
+If you want multiple versions, you'll need to manually install to
+`/opt/R` or use `rig`, which is an R-specific installation manager.
+Currently, `rig` only supports Windows, Mac, and Ubuntu.
+
+## Managing System Libraries
+
+As an admin, you'll also have to decide what to do about *system
+packages*, which are Linux libraries you install from a Linux repository
+or the internet.
+
+Many packages in Python and R don't do any work themselves. Instead,
+they're just language-specific interfaces to system packages. For
+example, any R or Python library that uses a JDBC database connector
+will need to make use of Java on your system. And many geospatial
+libraries make use of system packages like GDAL.
+
+As the administrator, you'll need to make sure you understand what
+system libraries are needed for the Python and R packages you're using,
+and you'll need to make sure they're available and on the path.
+
+For many of these libraries, it's not a huge pain. You'll just install
+the required library using `apt` or the system package manager for your
+distro. In some cases (especially Java), more configuration may be
+required to make sure that the package you need shows up on the path.
+
+## Comprehension Questions
+
+1.  What are two different ways to install Linux applications and what
+    are commands to do so?
+2.  What does it mean to daemonize a Linux application? What programs
+    and commands are used to do so?
+3.  How do you know if you've opened `nano` or `vim`? How would you exit
+    them if you didn't mean to?
+4.  What are 4 commands to read text files?
+5.  How would you create a file called `secrets.txt`, open it with vim,
+    write something in, close and save it, and make it so that only you
+    can read it?
+
+## Lab: Installing Applications
+
+As we've started to administer our server, we've mostly been doing very
+generic server administration tasks. Now let's set up the applications
+we need to run a data science workbench and get our API and Shiny app
+set up for using in our portfolio.
+
+### Step 1: Install Python
+
+Let's start by installing a data science version of Python so we're not
+using the system Python for data science purposes.
+
+If you want just one version of Python, you can `apt-get install` a
+specific version. As of this writing, Python 3.10 is a relatively new
+version of Python, so we'll install that one with
+
+``` {.bash filename="Terminal"}
+sudo apt-get install python3.10-venv
+```
+
+Once you've installed Python, you can check that you've got the right
+version by running
+
+``` {.bash filename="Terminal"}
+python3 --version
+```
+
+This method, using `apt-get`, is great when you just want one version of
+Python. But if you want multiple versions sitting side by side, you'll
+need to do something else. I recommend installing using the instructions
+on the Posit website, which will involve downloading and installing from
+`.deb` files.
+
+### Step 2: Install R
+
+Since we're using Ubuntu, we can use `rig`. There are good instructions
+on downloading `rig` and using it to install R on the [`rlib/rig` GitHub
+repo](https://github.com/r-lib/rig). Use those instructions to install
+the current R release on your server.
+
+Once you've installed R on your server, you can check that it's running
+by just typing `R` into the command line. If that works, you're good to
+move on to the next step. If not, you'll need to make sure R got onto
+the path.
+
+### Step 3: Install JupyerHub + JupyterLab
+
+JupyterHub and JupyterLab are Python programs, so we're going to run
+them from within a Python virtual environment. I'd recommend putting
+that virtual environment inside `/opt/jupyterhub`.
+
+Here are the commands to create and activate a `jupyterhub` virtual
+environment in `/opt/jupyterhub`:
+
+``` {.bash filename="Terminal"}
+sudo python3 -m venv /opt/jupyterhub
+source /opt/jupyterhub/bin/activate
+```
+
+Now we're going to actually get JupyterHub up and running inside the
+virtual environment we just created. JupyterHub produces [docs that you
+can use](https://jupyterhub.readthedocs.io/en/stable/quickstart.html) to
+get up and running very quickly. If you have to stop for any reason,
+make sure to come back, assume sudo, and start the JupyterHub virtual
+environment we created.
+
+Note that because we're working inside a virtual environment, you may
+have to use the `jupyterhub-singleuser` version of the binary.
+
+### Step 4: Daemonize JupyterHub
+
+Because JupyterHub is a Python process, not a system process, it won't
+automatically get daemonized, so we'll have to do it manually.
+
+We don't need it right now, but it'll be easier to manage JupyterHub
+later on from a config file that's in `/etc/jupyterhub`. In order to do
+so, activate the `jupyterhub` virtual environment, create a default
+JupyterHub config (Google for the command), and move it into
+`/etc/jupyterhub/jupyterhub_config.py`.
+
+Now let's move on to daemonizing JupyterHub. To start, kill the existing
+JupyterHub process (consult the cheatsheet in [Appendix
+@sec-append-cheat] if you need help). Since JupyterHub wasn't
+automatically daemonized, you'll have to manually create the systemd
+file.
+
+Here's the file I created in `/etc/systemd/system/jupyterhub.service`.
+
+``` {.yaml filename="/etc/systemd/system/jupyterhub.service"}
+[Unit]
+Description=Jupyterhub
+After=syslog.target network.target
+
+[Service]
+User=root
+Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"
+ExecStart=/opt/jupyterhub/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
+
+[Install]
+WantedBy=multi-user.target
+```
+
+There are two things here worth noticing. The first is the `Environment`
+line that adds `/opt/jupyterhub/bin` to the path -- that's where our
+virtual environment is.
+
+The second is `ExecStart` line, which provides is the startup command
+and specifies that JupyterHub should use the config we just created,
+specified by `-f /etc/jupyterhub/jupyterhub_config.py`.
+
+Now, you'll need to use `systemctl` to reload the daemon, start
+JupyterHub, and enable it.
+
+### Step 5: Install RStudio Server
+
+You can find the commands to install RStudio server on the [Posit
+website](https://posit.co/download/rstudio-server/). Make sure to pick
+the version that matches your operating system. Since you've already
+installed R, you can skip down to the "Install RStudio Server" step.
+
+Unlike JupyterHub, RStudio Server does daemonize itself right out of the
+box, so you can check and control the status with `systemctl` without
+any further work.
+
+### Step 6: Run the penguin API from Docker
+
+First, you'll have to make sure that Docker itself is available on the
+system. It can be installed from `apt` using
+`apt-get install docker.io`. You may need to adopt `sudo` privileges to
+do so.
+
+Once Docker is installed, getting the API running is almost trivially
+easy using the command we used back in [Chapter @sec-docker] to run our
+container.
+
+``` {.bash filename="Terminal"}
+sudo docker run --rm -d \
+  -p 8080:8080 \
+  --name penguin-model \
+  alexkgold/penguin-model
+```
+
+The one change you might note is that I've changed the port on the
+server to be `8080`, since JupyterHub runs on `8000` by default.
+
+Once it's up, you can check that it's running with `docker ps`.
+
+### Step 7: Put up the Shiny app
+
+We're going to use Shiny Server to host our Shiny app on the server.
+Start by moving the app code to the server. I put mine in
+`/home/test-user/do4ds-lab/app` by cloning the Git repo.
+
+After that, you'll need to:
+
+1.  Open R or Python and rebuild the package library with `{renv}` or
+    `{venv}`.
+2.  Install Shiny Server using the instructions from the [Admin
+    Guide](https://docs.posit.co/shiny-server/#getting-started).
+    -   Note that you can skip steps to install R and/or Python, as well
+        as the `{shiny}` package as we've already done that.
+3.  Edit Shiny Server's configuration file to run the right app.
+4.  Start and enable Shiny Server with `systemctl`.
+
+### Lab Extensions
+
+There are a few things you might want to consider before moving into the
+next chapter, where we'll start working on giving this server a stable
+public URL.
+
+First, we haven't daemonized the API. Feel free to try Docker Compose or
+setting a restart policy for the container.
+
+Second, neither the API nor the Shiny app will automatically update when
+we make changes to them. You might want to set up a GitHub Action to do
+so. For Shiny Server, you'll need to push the updates to the server and
+then restart Shiny Server. For the API, you'd need to configure a GitHub
+action to rebuild the container and push it to a registry. You'd then
+need to tell Docker on the server to re-pull and restart the container.
+
+Finally, there's no authentication in front of our API. Now, the API has
+pretty limited functionality, so that's not a huge worry. But if you had
+an API with more functionality that might be a problem. Additionally,
+someone could try to flood your API with requests to make it unusable.
+The most common way to solve this is to buy a product that hosts the API
+for you or to put an authenticating proxy in front of the API (Google
+for instructions for NGINX if you want to try it).

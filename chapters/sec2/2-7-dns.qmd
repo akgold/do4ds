@@ -1,0 +1,320 @@
+# DNS allows for human-readable addresses {#sec-dns}
+
+In [Chapter @sec-networking] you learned all about how IP Addresses are
+where a host actually lives on a computer network. But you've been using
+the internet for a long time and you've rarely -- if ever -- actually
+used an IP Address. What gives?
+
+IP Addresses are hard to remember. And worse, they can change when
+servers are replaced.
+
+To make the internet a little more human-friendly, the creators of the
+internet built the *domain name system* (DNS) that translates between
+human-readable *domains* and the IP Addresses where the resources
+actually live.
+
+In this chapter, you'll learn the basics about how DNS works and how it
+gets configured.[^2-7-dns-1] In the lab, you'll configure your workbench
+with an actual domain.
+
+[^2-7-dns-1]: This is really a very shallow intro to DNS. If you want to
+    go a little deeper, I highly recommend Julia Evans's zines on a
+    variety of technical topics, including DNS. You can find them at
+    wizardzines.com.
+
+## Basics of DNS and domains
+
+When you create or launch a website, you'll purchase (rent, really) a
+domain like $\text{do4ds.com}$ from a *domain name registrar*.
+Purchasing a domain gives you the right to attach that domain to an IP
+Address.
+
+When someone comes to visit your website, their computer *resolves* the
+IP Address via a *DNS lookup* against public DNS nameservers. So when
+you purchase a domain, you register the association between your domain
+and the IP Address with the DNS nameservers so users can look them up.
+
+A complete domain is called a *Fully-Qualified Domain Name (FQDN)* and
+consists of three parts:
+
+$$
+\overbrace{\text{blog}}^{\text{Subdomain}}.\overbrace{\underbrace{\text{example}}_{\text{Domain Name}}.\underbrace{\text{com}}_{\text{Top-Level Domain}}}^{\text{Root Domain}}
+$$
+
+When you get a domain from a registrar, the thing you'll actually rent
+is the root domain. You can choose any root domain you want, as long as
+it's not already taken. Domain names are unique only within top-level
+domains, so you might be able to get $\text{example.fun}$ even if
+someone else owns $\text{example.com}$.
+
+::: callout-note
+## Top-level domains
+
+When the web first launched, there were only a limited number of
+top-level domains like $\text{.com}$, $\text{.org}$, and $\text{.net}$.
+ICANN, the group that controls how domains are assigned, controlled them
+all.
+
+In 2013, ICANN decided to allow people and organizations to register
+their own top-level domains. That's why there's been an explosion in
+websites at top level domains like $\text{.io}$, $\text{.ai}$, and
+$\text{.fun}$ in the last decade or so.
+
+I think it'd be fun to have my own top-level domain, so it's unfortunate
+that owning a top-level domain is not something to do on a whim. In
+2012, the initial application fee was \$185,000.
+:::
+
+Subdomains are a way to specify a part of a domain, usually to signify
+to users that its for a distinct purpose. You can generally register as
+many subdomains as you want against a root domain.
+
+## How DNS is configured
+
+DNS is configured by giving the proper IP Address information to the
+domain name registrar where you bought your domain. There's often some
+minor configuration on the server side as well to let the server know
+where it lives.
+
+Most places you might serve a website from have instructions on how to
+do configure it you can google. The point of this section is just to
+make you comfortable with whatever instructions you find in your
+googling.
+
+There are a variety of different domain name registrars. Each of the big
+3 has their own and there are a number of others including Namecheap (my
+personal favorite as it is indeed, cheap), Cloudflare, and GoDaddy.
+
+Costs for domain names vary widely. Buying a meaningless domain in a
+less popular top-level domain can cost as little as a few dollars per
+year. For example, I was able to get the domain $\text{do4ds-lab.shop}$
+for \$1.98 for a year on Namecheap.
+
+On the other hand, buying a $\text{.com}$ domain that's a real word or
+phrase can be thousands of dollars. There are articles every few years
+about some major company accidentally allowing their domain name to
+lapse and ransoming it back for stupid amounts of money.
+
+Once you've purchased your domain, you need to configure the public DNS
+records of your domain to point to the IP Address you want.
+Configuration of DNS is done by way of *records*. Records map a *path*
+or *host* to a *target*.
+
+Depending on the type of mapping, records fall into a number of
+different categories, but there are only a few you're likely to see:
+
+-   *A records* (or their IPv6 cousin *AAAA records*) map a domain to an
+    actual IP Address.
+-   *CNAME records* alias subdomains to another record.
+-   *NS records* tells the DNS server to forward the request on to
+    another namespace server. This is usually only used by big
+    organizations that run their own domain name servers for their
+    subdomains.
+
+When you go to configure DNS with your domain name registrar, you'll
+configure the records in a record table. Here's an imaginary DNS record
+table for the domain $\text{example.com}$:
+
+| Path/Host     | Type    | Target                |
+|---------------|---------|-----------------------|
+| $\text{@}$    | `A`     | $\text{64.56.223.5}$  |
+| $\text{www}$  | `CNAME` | $\text{example.com}$  |
+| $\text{blog}$ | `A`     | $\text{114.13.56.77}$ |
+| $\text{*}$    | `A`     | $\text{64.56.223.5}$  |
+
+The first row provides an `A` record for the special $\text{@}$ symbol
+meaning exact match. So by this configuration, any traffic to
+$\text{example.com}$ will be passed straight through to the specified IP
+Address.
+
+The second row deals with traffic to the $\text{www}$ subdomain. Since
+this is a `CNAME` record, this record indicates that traffic to
+$\text{www.example.com}$ should be treated exactly like traffic to the
+bare $\text{example.com}$. Some domain providers do automatic
+redirection of $\text{www}$ traffic, and so this row may not be
+necessary in some configurations.
+
+The next record sends the $\text{blog}$ subdomain to a completely
+different IP Address. This is a common configuration when the subdomain
+might be owned by a completely different group than the main website or
+is served from a different server.
+
+The last record uses the wildcard symbol $\text{*}$ to send all
+subdomain traffic that's not already spoken for back to the main IP
+Address.
+
+Other than the $\text{www}$ subdomain, which stands for world wide web,
+and is generally routed to the same place as the bare root domain, using
+subdomains and choosing between subdomains and paths is entirely about
+organizing how users experience your website and what's easiest for your
+organization to maintain.
+
+::: callout-note
+## $\text{www}$ is just a subdomain
+
+When the internet was first started, it seemed like it might be
+important to differentiate the subdomain where the website would live
+from, for example, the email domain people at that organization would
+use.
+
+That turned out not really to be the case and these days $\text{www}$
+and the bare root domain are generally used interchangeably.
+:::
+
+Once you've configured your DNS records, you will need to wait an
+annoyingly long time to see if you did it correctly.
+
+When your computer does a DNS lookup, there are often at least three
+nameservers involved. First, your computer talks to a *resolver*, which
+is a server that keeps track of where the nameservers are. Then you're
+routed to the correct nameserver for the top-level domain, which routes
+you to the nameserver for your actual domain.
+
+And then there are various geographic repeats of this whole set of
+servers to make sure your query doesn't get slowed down by having to
+travel too far.
+
+That means that when you update a DNS record, it can take some time to
+propagate to all these servers. The other issue is that your computer,
+and each of these servers, tries to do as few lookups as possible,
+because they're slow.
+
+When you configure a DNS record, you configure something called the *TTL
+(time to live)*. Each level of DNS lookup, may cache the results of
+looking up a domain to avoid having to ask the next level. How long that
+cache lasts is configured by the TTL.
+
+This is great if you are *using* the internet and don't want to wait for
+DNS lookups, but when you're changing the domains on servers you
+control, there are many DNS servers that a request could get routed to,
+and many of them may have outdated cache entries. That's why DNS changes
+can take up to 24 hours to propagate.
+
+That means that if you make a change and it's not working, you have no
+idea whether you made a mistake or it just hasn't propagated yet. It's
+very annoying.
+
+## Comprehension Questions
+
+1.  What are the parts of a fully-qualified domain name? How does each
+    of them get created?
+2.  How does your computer find the IP Address for a domain? Why could
+    it sometimes be wrong?
+3.  What are the different kinds of DNS records you're likely to use?
+
+## Lab: Configuring DNS for your server
+
+In the last lab, we configured the server so that all of the services
+were served off of one single port that redirected to various subpaths.
+
+Now we want to get a real, memorable domain for the server so that you
+and your users don't have to remember some random `ec2-` domain or an IP
+Address. In this lab, we'll configure DNS records for our server so it's
+available at a real domain.
+
+### Step 1: Allocate an Elastic IP
+
+EC2 instances get assigned a public IP when they are started. The issue
+is that every time the server stops that IP is released and a new one is
+assigned when it comes back up. This means you'd have to change your DNS
+record every time you temporarily take your server offline -- no good.
+
+Luckily, AWS has a great solution here called *Elastic IP*. which gives
+you a stable public IP Address you can move from one instance to another
+as you wish.
+
+::: callout-tip
+## Paying for Elastic IPs
+
+Elastic IPs are free as long as they're attached to a running EC2
+instance. You pay when they're not in use to discourage hoarding them.
+
+If you do take your server down for a short time, it's no big deal. As
+of this writing, it's 12 cents per day for a single IP. But do make sure
+to release the Elastic IP if/when you take your server down permanently.
+:::
+
+To set up your Elastic IP, find it in the AWS console and allocate an
+address. Then you will associate your Elastic IP as the default public
+IP Address for your instance.
+
+Note that once you make this change, your server will no longer be
+available at its old IP Address, so you'll have to SSH in at the new
+one. If you have SSH terminals open when you make the change, they will
+break.
+
+::: callout-note
+Next time you stand up a server, you should start by giving it an
+Elastic IP so you are immediately using it's permanent IP Address. The
+labs in this book are ordered to promote learning, not the right order
+to configure things.
+:::
+
+### Step 2: Buy a domain
+
+You can buy a domain from any of the many domain purchasing services on
+the web. This won't be free, but many domains are very cheap.
+
+The easiest place to buy a domain is via AWS's *Route53* service, but
+you can feel free to use another provider. I usually use Namecheap just
+because all of the domains I own are there.
+
+### Step 3: Configure DNS
+
+Once you've got your domain, you have to configure your DNS. You'll have
+to create 2 A records -- one each for the $\text{@}$ host and the
+$\text{*}$ host pointing to your IP and one for the CNAME at the
+$\text{www}$ with the value being your bare domain.
+
+Exactly how you configure this will depend on the domain name provider
+you choose. In NameCheap, you configure this via a table under Advanced
+DNS, which looks like this.
+
+| Type           | Host         | Value                   | TTL       |
+|----------------|--------------|-------------------------|-----------|
+| `A` Record     | $\text{*}$   | $\text{64.56.223.5}$    | Automatic |
+| `CNAME` Record | $\text{www}$ | $\text{do4ds-lab.shop}$ | Automatic |
+| `A` Record     | $\text{@}$   | $\text{64.56.223.5}$    | Automatic |
+
+I would recommend sticking with the default for TTL.
+
+### Step 4: Wait an annoyingly long time
+
+Now you just have to be patient. Unfortunately DNS takes time to
+propagate. After a few minutes (or hours?), your server should be
+reachable at your domain.
+
+If it's not (yet) reachable, try seeing if an incognito browser works
+because that sidesteps the browser level of caching. If it doesn't, wait
+some more. When you run out of patience, try reconfiguring everything
+and check if it works now.
+
+::: callout-tip
+We still haven't configured HTTPS, so you'll need to manually input the
+URL as $\text{http://}$, because your browser will otherwise assume it's
+HTTPS.
+:::
+
+### Step 5: Add the Shiny app to your site
+
+Now that the Shiny app is at a stable URL, let's put it on our site so
+people can look at our penguin size prediction model. I put the app at
+the subpath $\text{/penguins}$, so it's now at
+$\text{http://do4ds-lab.shop/penguins}$.
+
+We're going to use something called an *iFrame*, which lets you embed
+one website inside another. An iFrame is a basic HTML construct and it's
+easy to put one in a Quarto site.
+
+::: callout-note
+Once you change your website to go over HTTPS in the next section,
+you'll have to adjust the iFrame URL as well.
+:::
+
+In Quarto, you can just add an `html` block to a any document and it
+will get loaded in automatically. I want the app on the landing page of
+my site, `index.qmd`. So I've added a block that looks like:
+
+``` {.html filename="index.qmd"}
+<iframe width="780" height="500" src="http://do4ds-lab.shop/penguins/" title="Penguin Model Explorer"></iframe>
+```
