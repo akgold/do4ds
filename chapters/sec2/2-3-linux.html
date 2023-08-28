@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 9&nbsp; Intro to Linux Administration</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec2/2-4-app-admin.html" rel="next">
+<link href="../../chapters/sec2/2-2-cmd-line.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-EQR1RYSHQK"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec2/2-0-sec-intro.html">IT/Admin for Data Science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec2/2-3-linux.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DevOps Lessons for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-env-as-code.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Environments as Code</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-proj-arch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Project Architecture Guidelines</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-access.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-deployments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Deployments and code promotion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-6-docker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Demystifying Docker</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">IT/Admin for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-cloud.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The Cloud</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-cmd-line.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-linux.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-app-admin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-5-scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Server Resources and Scaling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-6-networking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-7-dns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-8-ssl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Making it Enterprise-Grade</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-ent-networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-ent-servers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Lab Map</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/cheatsheets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Cheatsheets</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#a-brief-history-of-linux" id="toc-a-brief-history-of-linux" class="nav-link active" data-scroll-target="#a-brief-history-of-linux"><span class="header-section-number">9.1</span> A brief history of Linux</a></li>
+  <li><a href="#bash-basics" id="toc-bash-basics" class="nav-link" data-scroll-target="#bash-basics"><span class="header-section-number">9.2</span> Bash basics</a></li>
+  <li><a href="#commands-run-on-behalf-of-users" id="toc-commands-run-on-behalf-of-users" class="nav-link" data-scroll-target="#commands-run-on-behalf-of-users"><span class="header-section-number">9.3</span> Commands run on behalf of users</a></li>
+  <li><a href="#permissions-dictate-what-users-can-do" id="toc-permissions-dictate-what-users-can-do" class="nav-link" data-scroll-target="#permissions-dictate-what-users-can-do"><span class="header-section-number">9.4</span> Permissions dictate what users can do</a></li>
+  <li><a href="#the-linux-filesystem-is-a-tree" id="toc-the-linux-filesystem-is-a-tree" class="nav-link" data-scroll-target="#the-linux-filesystem-is-a-tree"><span class="header-section-number">9.5</span> The Linux Filesystem is a tree</a>
+  <ul class="collapse">
+  <li><a href="#working-with-file-paths" id="toc-working-with-file-paths" class="nav-link" data-scroll-target="#working-with-file-paths"><span class="header-section-number">9.5.1</span> Working with file paths</a></li>
+  </ul></li>
+  <li><a href="#moving-files-and-directories" id="toc-moving-files-and-directories" class="nav-link" data-scroll-target="#moving-files-and-directories"><span class="header-section-number">9.6</span> Moving files and directories</a>
+  <ul class="collapse">
+  <li><a href="#moving-things-to-and-from-the-server" id="toc-moving-things-to-and-from-the-server" class="nav-link" data-scroll-target="#moving-things-to-and-from-the-server"><span class="header-section-number">9.6.1</span> Moving things to and from the server</a></li>
+  </ul></li>
+  <li><a href="#pipes-and-redirection" id="toc-pipes-and-redirection" class="nav-link" data-scroll-target="#pipes-and-redirection"><span class="header-section-number">9.7</span> Pipes and redirection</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">9.8</span> Comprehension Questions</a></li>
+  <li><a href="#lab-set-up-a-user" id="toc-lab-set-up-a-user" class="nav-link" data-scroll-target="#lab-set-up-a-user"><span class="header-section-number">9.9</span> Lab: Set up a user</a>
+  <ul class="collapse">
+  <li><a href="#step-1-create-a-non-root-user" id="toc-step-1-create-a-non-root-user" class="nav-link" data-scroll-target="#step-1-create-a-non-root-user"><span class="header-section-number">9.9.1</span> Step 1: Create a non-root user</a></li>
+  <li><a href="#step-2-add-an-ssh-key-for-your-new-user" id="toc-step-2-add-an-ssh-key-for-your-new-user" class="nav-link" data-scroll-target="#step-2-add-an-ssh-key-for-your-new-user"><span class="header-section-number">9.9.2</span> Step 2: Add an SSH key for your new user</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-3-linux.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-linux" class="quarto-section-identifier"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>You’re used to interacting with a computer and a phone running MacOS or Windows or iOS or Android. But most servers don’t run any of those.</p>
+<p>Outside of personal computers and phones, <em>Linux</em> is the world’s predominant <em>operating system (OS)</em>. Almost all of the world’s embedded computers – in ATMs, cars and planes, TVs, smart thermostats, and most other gadgets and gizmos – Linux. Android actually is Linux, as is ChromeOS. Basically all of the world’s supercomputers run Linux.</p>
+<p>Most importantly for our purposes, a majority of the world’s servers also run on Linux.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>So in order to administer a server, you’re going to have to learn a little about Linux. In this chapter, you’ll learn about the history of Linux and about how to navigate and manipulate a server running Linux.</p>
+<section id="a-brief-history-of-linux" class="level2" data-number="9.1">
+<h2 data-number="9.1" class="anchored" data-anchor-id="a-brief-history-of-linux"><span class="header-section-number">9.1</span> A brief history of Linux</h2>
+<p>A computer’s OS defines how applications can interact with the underlying hardware. OSes dictate how files are stored and accessed, how applications are installed, how network connections work, and more.</p>
+<p>Your laptop probably runs MacOS or Windows. Neither of them is Linux. But Linux is dominant basically everywhere else. Because it’s an open source OS and in order to accommodate that huge variety of use cases and contexts, Linux comes in a wide variety of “flavors” that differ by technical attributes and licensing model. These flavors are called <em>distros</em>, short for distributions.</p>
+<p>Before the early 1970s, the market for computer hardware and software looked nothing like it does now. Computers of that era had extremely tight linkages between hardware and software. For example, there was no Microsoft Word you could use on a Dell machine or an HP machine or an Apple machine.</p>
+<p>Instead, every hardware company was also a software company. If Example Corp’s computer did text editing, it was because Example Corp had written (or commissioned) text editing software specifically for their machine. If Example Corp’s machine could run a game, Example Corp had written that game just for their computer.</p>
+<p>Then, in the early 1970s, researchers funded by AT&amp;T’s Bell Labs released <em>Unix</em> – the first operating system. Now, there was a piece of middleware that sat between the computer hardware and the end-user software.</p>
+<p>After the advent of the OS, the computer market started looking a lot more familiar to 2020s eyes. Hardware manufacturers could build machines that ran Unix and software companies could write applications that ran on Unix.</p>
+<p>The one issue (for everyone but Bell Labs) was that they were paying Bell Labs a lot of money for licenses to Unix. So in the 1980s, programmers started writing Unix-like OSes. These so-called <em>Unix clones</em> behaved just like Unix, but didn’t include any actual Unix code.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>In 1991, Linus Torvalds – then a 21 year-old Finnish grad student – released an open source Unix clone called Linux via a amusingly nonchalant newsgroup posting, saying, “I’m doing a (free) operating system (just a hobby, won’t be big and professional like gnu)…Any suggestions are welcome, but I won’t promise I’ll implement them&nbsp;:-).”<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>Obviously, the Linux project outgrew that modest newgroup post. At this point there are over 600 Linux distros, reflecting both the natural fragmentation of popular open source projects, as well as disparate requirements for an OS for your car’s infotainment system versus a smartphone versus the controller for your smart thermostat.</p>
+<p>Luckily, you don’t have to know hundreds of distros. For server use, most organizations standardize on one of a handful. The most common open source distros are Ubuntu or CentOS. Red Hat Enterprise Linux (RHEL) is the most common paid distro.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> Many organizations on AWS are using Amazon Linux, which is independently maintained by Amazon but was originally a RHEL derivative.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>Most individuals who have a choice in the matter prefer Ubuntu. It’s definitely my personal preference. It’s a little simpler and easier to configure than the others.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A note on Ubuntu Versioning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Ubuntu versions are numbered by the year and month they were released. Most people use the Long Term Support (LTS) releases, which are released in April of even years.</p>
+<p>Ubuntu versions have fun alliterative names, so you’ll hear people refer to releases by name or version. As of this writing, most Ubuntu machines are running Bionic (20.04, Bionic Beaver) or Jammy (22.04, Jammy Jellyfish).</p>
+</div>
+</div>
+</section>
+<section id="bash-basics" class="level2" data-number="9.2">
+<h2 data-number="9.2" class="anchored" data-anchor-id="bash-basics"><span class="header-section-number">9.2</span> Bash basics</h2>
+<p>Linux is administered from the command line using bash or a bash alternative like zsh. The philosophy behind bash and its derivatives says that you should be able to accomplish anything you want with small programs invoked via a <em>command</em>. Each command should do just one thing, and complicated things should be accomplished by <em>composing</em> commands – taking the output from one as the input to the next.</p>
+<p>Invoking a command is done by typing the command on the command line and hitting <code>enter</code>. If you ever find yourself stuck in a situation you can’t seem to exit, <code>ctrl + c</code> will quit in most cases.</p>
+<p>Helpfully, most bash commands are an abbreviation of the word for what the command does. Unhelpfully, the letters often seem somewhat random.</p>
+<p>For example, the command to <em>list</em> the contents of a directory is <code>ls</code>, which sorta makes sense. Over time, you’ll get very comfortable with the commands you use frequently.</p>
+<p>Bash commands can be modified to behave the way you need them to.</p>
+<p><em>Command arguments</em> provide details to the command. They come after the command with a space in between. For example, if I want to run <code>ls</code> on the directory <code>/home/alex</code>, I can run <code>ls /home/alex</code> on the command line.</p>
+<p>Some commands have default arguments. For example the default argument for the <code>ls</code> command is the current directory. So if I’m in <code>/home/alex</code>, I’d get the same thing from either <code>ls</code> or <code>ls /home/alex</code>.</p>
+<p><em>Options</em> or <em>flags</em> modify how the command operates and come between the command and arguments. Flags are denoted by having one or more dashes before them. For example, <code>ls</code> allows the <code>-l</code> flag, which displays the output as a list. So, <code>ls -l /home/alex</code> would get the files in <code>/home/alex</code> as a list.</p>
+<p>Some flags themselves have <em>flag arguments</em>. For example, the <code>-D</code> flag allows specifying a format for how the datetime is displayed from <code>ls -l</code>. So running <code>ls -l -D %Y-%m-%dT%H:%M:%S /home/alex</code> lists all the files in <code>/home/alex</code> with the date-time of the last update formatted in <em>ISO-8601</em> format, which is always the correct format for dates.</p>
+<p>Bash commands are always formatted as <code>&lt;command&gt; &lt;flags + flag args&gt; &lt;command args&gt;</code>.</p>
+<p>It’s nice that this structure is standard. It’s not nice that the main argument is all the way at the end, because it makes long bash commands hard to read. To make commands more readable, you can break the command over multiple lines and include one flag or argument per line. You can tell bash you want it to continue a command after a line break by ending the line with a space and a <code>\</code>.</p>
+<p>For example, here’s that long <code>ls</code> command more nicely formatted:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">&gt;</span> ls <span class="ex">-l</span> <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  <span class="at">-D</span> %Y-%m-%dT%H:%M:%S <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  /home/alex</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>All of the flags and arguments for commands can be found in the program’s <em>man page</em> (short for manual). You can access the man page for any command with <code>man &lt;command&gt;</code>. You can scroll the man page with arrow keys and exit with <code>q</code>.</p>
+<p>Bash is a real – if ugly – programming language, so you can assign variables with <code>&lt;var-name&gt;=&lt;value&gt;</code> (no spaces allowed) and access them <code>$&lt;var-name&gt;</code>. The bash version of <code>print</code> is <code>echo</code>.</p>
+<p>For example,</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">&gt;</span> MSG=<span class="st">"Hello World!"</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="op">&gt;</span> echo <span class="va">$MSG</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ex">Hello</span> World!</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For the most part, you’ll write commands directly on the command line. It’s also possible to write and run bash scripts that include conditionals, loops, and functions. Bash scripts usually end in <code>.sh</code> and are most often run with the <code>sh</code> command like <code>sh my-script.sh</code>.</p>
+<p>The advantage of writing bash scripts is that they can run basically anywhere. The disadvantage of writing bash scripts is that bash is a truly ugly programming language that is hard to debug.</p>
+</section>
+<section id="commands-run-on-behalf-of-users" class="level2" data-number="9.3">
+<h2 data-number="9.3" class="anchored" data-anchor-id="commands-run-on-behalf-of-users"><span class="header-section-number">9.3</span> Commands run on behalf of users</h2>
+<p>Whenever a program is running in Linux, it is running as a particular user who can be identified by their <em>username</em>.</p>
+<p>On any Unix-like system, the <code>whoami</code> command returns the username of the active user. So when I run <code>whoami</code> on my MacBook, I get:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">&gt;</span> whoami                                                       </span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">alexkgold</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Usernames have to be unique on the system – but they’re not the true identifier for a user. A user is uniquely identified by their <em>user id (<code>uid</code>)</em>, which maps to all the other user attributes like username, password, home directory, groups, and more. The <code>uid</code> for a user is assigned at the time the user is created and usually don’t need to be changed or specified manually.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>Each human who accesses a Linux server should have their own account. In addition, many applications create <em>service account</em> users for themselves and run as those users. For example, installing RStudio Server will create a user with username <code>rstudio-server</code>. Then, when RStudio Server goes to do something – start an <code>R</code> session for example – it will do so as <code>rstudio-server</code>.</p>
+<p>User <code>uid</code>s start at 10,000 with those below 10,000 reserved for system processes. There’s also one special user – called the admin, root, sudo, or super user who gets the special <code>uid</code> 0.</p>
+<p>Users belong to <em>groups</em>, which are collections of one or more users. Each user has exactly one <em>primary</em> <em>group</em> and can be a member of secondary groups.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> By default, each user’s primary group is the same as their username.</p>
+<p>Like a user has a <code>uid</code>, a group has a <code>gid</code>. User <code>gid</code>s start at 100.</p>
+<p>You can see a user’s username, <code>uid</code>, groups, and <code>gid</code> with the <code>id</code> command. On my MacBook, I’m a member of a number of different groups, with the primary group <code>staff</code>.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="op">&gt;</span> id                                                                </span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="va">uid</span><span class="op">=</span>501<span class="kw">(</span><span class="ex">alexkgold</span><span class="kw">)</span> <span class="va">gid</span><span class="op">=</span>20<span class="kw">(</span><span class="ex">staff</span><span class="kw">)</span> <span class="va">groups</span><span class="op">=</span>20<span class="kw">(</span><span class="ex">staff</span><span class="kw">)</span><span class="ex">,12</span><span class="er">(</span><span class="ex">everyone</span><span class="kw">)</span><span class="ex">,61</span><span class="er">(</span><span class="ex">localaccounts</span><span class="kw">)</span><span class="ex">,79</span><span class="er">(</span><span class="ex">_appserverusr</span><span class="kw">)</span><span class="ex">,80</span><span class="er">(</span><span class="ex">admin</span><span class="kw">)</span><span class="ex">,81</span><span class="er">(</span><span class="ex">_appserveradm</span><span class="kw">)</span><span class="ex">,98</span><span class="er">(</span><span class="ex">_lpadmin</span><span class="kw">)</span><span class="ex">,701</span><span class="er">(</span><span class="ex">com.apple.sharepoint.group.1</span><span class="kw">)</span><span class="ex">,33</span><span class="er">(</span><span class="ex">_appstore</span><span class="kw">)</span><span class="ex">,100</span><span class="er">(</span><span class="ex">_lpoperator</span><span class="kw">)</span><span class="ex">,204</span><span class="er">(</span><span class="ex">_developer</span><span class="kw">)</span><span class="ex">,250</span><span class="er">(</span><span class="ex">_analyticsusers</span><span class="kw">)</span><span class="ex">,395</span><span class="er">(</span><span class="ex">com.apple.access_ftp</span><span class="kw">)</span><span class="ex">,398</span><span class="er">(</span><span class="ex">com.apple.access_screensharing</span><span class="kw">)</span><span class="ex">,400</span><span class="er">(</span><span class="ex">com.apple.access_remote_ae</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If you ever need to add users to a server, the easiest way is with the <code>useradd</code> command. Once you have a user, you may need to change the password, which you can do at any time with the <code>passwd</code> command. Both <code>useradd</code> and <code>passwd</code> start interactive prompts, so you don’t need to do much more than run those commands.</p>
+<p>If you ever need to alter a user – the most common task being to add a user to a group, you would use the <code>usermod</code> command with the <code>-aG</code> flag.</p>
+</section>
+<section id="permissions-dictate-what-users-can-do" class="level2" data-number="9.4">
+<h2 data-number="9.4" class="anchored" data-anchor-id="permissions-dictate-what-users-can-do"><span class="header-section-number">9.4</span> Permissions dictate what users can do</h2>
+<p>In Linux, everything you can interact with is just a file. Every log – file. Every picture – file. Every application – file. Every configuration – file.</p>
+<p>So determining whether a user can take an action is really a question of whether they have the right permissions on a particular file.</p>
+<p>Basic Linux permissions (called <em>POSIX permissions</em>) consist of a 3x3 matrix of read, write, and execute for the owner, the owning group, and everyone else. Read means the user can see the contents of a file, write means the user can save a changed version of a file, and execute means they can run the file as a program.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There are more complex ways to manage Linux permissions. For example, you might hear about Access Control Lists (ACLs). They’re beyond the scope of this book.</p>
+<p>There is more information on different ways organizations manage users and what they’re allowed to do in <a href="../sec3/3-3-auth.html">Chapter&nbsp;<span>17</span></a>, which is all about auth.</p>
+</div>
+</div>
+<p>For example, here’s a set of permissions that you might have for a program if you wanted anyone to be able to run it, group members to inspect it, and only the owner to change it.</p>
+<p><img src="./images/perms-ex.png" class="img-fluid" alt="A 3x3 grid read, write, execute, on one side and owner, owning group, and everyone else at the top. Green checks in all of the execute, write for the owner, and read for owner and owning group. Red xs everywhere else." width="400"></p>
+<p>Directories also have permissions – read allows the user see what’s in the directory, write allows the user to alter what’s in the directory, and execute allows the user to enter the directory.</p>
+<p>File permissions and directory permissions don’t have to match. For example, a user could have read permissions on a directory, so they could see the names of the files, but not actually have read permissions on any of the files, so they can’t look at the contents.</p>
+<p>When you’re working on the command line, you don’t get a little grid of permissions. Instead they’re expressed in one of two ways. The first is the string representation, which is a 10-character string that looks something like <code>-rw-r–r--</code>.</p>
+<p>The first character indicates the type of file: most often <code>-</code> for normal (file) or <code>d</code> for a directory.</p>
+<p>The next nine characters are indicators for the three permissions for the user, the group, and everyone else. There will be an <code>r</code> for read, a <code>w</code> for write, and an <code>x</code> for execute or <code>-</code> to indicate that they don’t have the permission.</p>
+<p>So the permissions in the graphic would be <code>-rwxr-x--x</code> for a file and <code>drwxr-x--x</code> for a directory.</p>
+<p>The best way to get these permissions is to run the <code>ls -l</code> command.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="op">&gt;</span> ls <span class="ex">-l</span>                                                           </span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="ex">-rw-r--r--</span>  1 alexkgold  staff     28 Oct 30 11:05 config.py</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="ex">-rw-r--r--</span>  1 alexkgold  staff   2330 May  8  2017 credentials.json</span>
+<span id="cb5-4"><a href="#cb5-4"></a><span class="ex">-rw-r--r--</span>  1 alexkgold  staff   1083 May  8  2017 main.py</span>
+<span id="cb5-5"><a href="#cb5-5"></a><span class="ex">drwxr-xr-x</span> 33 alexkgold  staff   1056 May 24 13:08 tests</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Each line starts with the string representation of the permissions followed by the owner and group so you can easily understand who should be able to access that file or directory.</p>
+<p>All of the files in this directory are owned by <code>alexkgold</code>. Only the owner (<code>alexkgold</code>) has write permission, but everyone has read permission. In addition, there’s a <code>tests</code> directory, with read and execute for everyone and write only for <code>alexkgold</code>.</p>
+<p>In the course of administering a server, you will probably need to change a file’s permissions. You can do so using the <code>chmod</code> command.</p>
+<p>For <code>chmod</code>, permissions are indicated as a three digit number, like <code>600</code>, where the first digit is the permission for the user, the second for the group, and the third for everyone else. To get the right number, you sum the permissions as follows: 4 for read, 2 for write, and 1 for execute. You can check for yourself that any set of permissions is uniquely identified by a number between 1 and 7.<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a></p>
+<p>So to implement the permissions from the graphic, you’d want the permission set <code>751</code> to give the user full permissions (4 + 2 + 1), read and execute (4 + 1) to the group, and execute only (1) to everyone else.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you spend any time administering a Linux server, you almost certainly will at some point find yourself running into a problem and applying <code>chmod 777</code> out of frustration to rule out a permissions issue.</p>
+<p>I can’t tell you not to do this – we’ve all been there. But if it’s something important, be sure you change it back once you’re finished figuring out what’s going on.</p>
+</div>
+</div>
+<p>In some cases you might actually want to change the owner or group of a file. You can change users and groups with either names or ids. You can do so using the <code>chown</code> command. Changing users just uses the username and changing groups get prefixed with a colon.</p>
+<p>In some cases, you might not be the correct user to take a particular action. If you want to change the user you are, you can use the <code>su</code> (switch user) command. You’ll be prompted for a password to make sure you’re allowed.</p>
+<p>The admin or root user has full permissions on every file and there are some actions that only the root user can do. When you need to do root-only things, you usually don’t want to <code>su</code> to be the root user. It’s too powerful. Plus if you have user-level configuration, it all gets left behind.</p>
+<p>Instead, individual users can be granted the power to temporarily assume root privileges without changing to be the root user. This is accomplished by making them members of the admin group. If a user is a member of the admin group, they can prefix commands with <code>sudo</code> to run those commands with root privileges.</p>
+<p>The name of the admin group varies by distro. In Ubuntu, the group is called <code>sudo</code>.</p>
+</section>
+<section id="the-linux-filesystem-is-a-tree" class="level2" data-number="9.5">
+<h2 data-number="9.5" class="anchored" data-anchor-id="the-linux-filesystem-is-a-tree"><span class="header-section-number">9.5</span> The Linux Filesystem is a tree</h2>
+<p>Regardless of which Linux distro you’re running, understanding where to find things on your system is crucial.</p>
+<p>All of the information available to a computer is indexed by its <em>filesystem</em>, which is made up of <em>directories</em> or <em>folders</em>, which are containers for other directories and for files.</p>
+<p>On your laptop, you’re probably used to browsing the filesystem with your mouse. On your phone, the filesystem is completely obscured by apps, but it’s there.</p>
+<p>On a Linux server, the only way to traverse the filesystem is with written commands. Having a good mental model for what the filesystem looks like is, therefore, really important.</p>
+<p>On Linux, the entire filesystem is a tree (or perhaps an upside-down tree). Every directory is contained in by a <em>parent directory</em>, and may contain one or more <em>children</em> or <em>sub-directories</em>. The <em>root directory, <code>/</code></em> is the base of the tree and is its own parent. A <code>/</code> in between two directories means that it’s a sub-directory.</p>
+<p><img src="images/directories.png" class="img-fluid" alt="A tree of directories. / is the root, /home is a sub directory, /home/alex is a sub-sub-directory, and /etc is another sub-directory." width="600"></p>
+<p>Every directory is a sub-directory of <code>/</code> or a sub-directory of a sub-directory of <code>/</code> or…you get the picture. So the <code>/home/alex</code> <em>file path</em> defines a particular location, which is the <code>alex</code> sub-directory of <code>/home</code>, which is a sub-directory of the root directory, <code>/</code>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It’s never necessary, but sometimes the tree-like layout for a directory is helpful. The <code>tree</code> utility can show you one. It doesn’t always come pre-installed, so you might have to install it.</p>
+</div>
+</div>
+<p>Because the entire Linux filesystem is based at <code>/</code>, it doesn’t matter what physical or virtual disks you have attached to your system. They will fall somewhere under the main filesystem (often inside <code>/mnt</code>).</p>
+<p>This will be familiar to MacOS users, because MacOS is based on an operating system called BSD that, like Linux, is a Unix clone.</p>
+<p>If you’re familiar with Windows, the Linux filesystem may seem a little strange.</p>
+<p>In Linux, each computer has exactly one filesystem, which is based at the root, <code>/</code>. Network shares or other types of volumes can be mounted somewhere on the filesystem, often below <code>/mnt</code>, but the fact that they’re on separate drives is obscured from the user.</p>
+<p>In Windows, each physical or logical disk has its own filesystem with its own root. You’re probably familiar with <code>C:</code> as your main filesystem. Your machine may also have a <code>D:</code> drive. If you’ve got network share drives, they’re likely at <code>M:</code> or <code>N:</code> or <code>P:</code>.</p>
+<p>One other difference is that Windows uses <code>\</code> to separate file path elements rather than <code>/</code>. This used to be a big deal, but newer versions of Windows accept file paths using <code>/</code>.</p>
+<section id="working-with-file-paths" class="level3" data-number="9.5.1">
+<h3 data-number="9.5.1" class="anchored" data-anchor-id="working-with-file-paths"><span class="header-section-number">9.5.1</span> Working with file paths</h3>
+<p>Whenever a command runs, it runs at a particular path in the filesystem, called the <em>working directory</em>. You can get the absolute path to your working directory with the <code>pwd</code> command, which is an abbreviation for <em>print working directory</em>.</p>
+<p>When you want a command to run the same irrespective of where it’s run from, it’s best to use an <em>absolute path</em>, which is a path specified relative to the root. They operate the same irrespective of the current working directory. Absolute file paths are easy to recognize because they always start with <code>/</code>.</p>
+<p>Sometimes it’s convenient to use a <em>relative</em> file path, which starts at the working directory, denoted by <code>.</code>. So, for example, if I want to access the <code>data</code> subdirectory of the working directory, that would be available at <code>./data</code>.</p>
+<p>The working directory’s parent is at <code>..</code>. So, you could see everything in the parent directory of your current working directory with <code>ls ..</code> or its parent with <code>ls ../..</code>.</p>
+<p>All accounts that represent actual humans should have a <em>home directory</em>, which usually livelive inside <code>/home</code>.</p>
+<p>The home directory and all its contents are owned by the user to whom it belongs. The home directory is the user’s space to store the things they need, including user-specific configuration. When navigating the file system, the user can find their home directory is at <code>~</code>.</p>
+<p>Along with being able to inspect directories with <code>ls</code>, it’s useful to be able to change your working directory with the <code>cd</code> command, short for <em>change directory</em>. You can use either absolute or relative file paths with <code>cd</code>. So if you were in <code>/home/alex</code> and wanted to navigate to <code>/home</code>, either <code>cd ..</code> or <code>cd /home</code> would work.</p>
+<p>Some files or directories are <em>hidden</em> so they don’t appear in a normal <code>ls</code>. You know a file or directory is hidden because its name starts with <code>.</code>. Hidden files are usually configuration files that you aren’t manipulating in normal usage. These aren’t secret or protected in any way, they’re just skipped by <code>ls</code> for convenience. If you want to display all files in a directory, including hidden ones, you can use the <code>-a</code> flag (for all) with <code>ls</code>.</p>
+<p>You’ve already seen a couple of hidden files in this book – your GitHub Action was configured in the <code>.github</code> directory and your Prezto configuration was done in the <code>.zpreztorc</code> file. You might also be familiar with <code>.gitignore</code>, <code>.Rprofile</code>, and <code>.Renviron</code>.</p>
+</section>
+</section>
+<section id="moving-files-and-directories" class="level2" data-number="9.6">
+<h2 data-number="9.6" class="anchored" data-anchor-id="moving-files-and-directories"><span class="header-section-number">9.6</span> Moving files and directories</h2>
+<p>You will frequently need to change where files are on your system, including copying, deleting, moving, and more.</p>
+<p>You can copy a file or directory from one place to another using the <code>cp</code> command. <code>cp</code> leaves behind the old file or directory and adds the new one at the specified location. You can use the <code>-r</code> flag to recursively copy everything in a directory.</p>
+<p>You can move a file with the <code>mv</code> command, which does not leave the old file behind. If you want to remove a file entirely, you can use the <code>rm</code> command. The <code>-r</code> (recursive) flag can be used with <code>rm</code> to remove everything within a directory and the <code>-f</code> (force) flag can skip <code>rm</code> double checking you really want to do this.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Be very careful with the <code>rm</code> command, especially with <code>-rf</code>.</p>
+<p>There’s no recycle bin. Things that are deleted are instantly deleted forever.</p>
+</div>
+</div>
+<p>If you want to make a directory, <code>mkdir</code> makes a file path. It can be used with relative or absolute file paths, and can include multiple layers of paths to create. For example, if you’re in <code>/home/alex</code>, you could <code>mkdir project1/data</code> to make a <code>project1</code> directory and <code>data</code> sub-directory.</p>
+<p>The <code>mkdir</code> command throws an error if you try to create a path that includes some directories that already exist – for example if <code>project1</code> already existed in the example above. The <code>-p</code> flag can be handy to create only the parts of the path that don’t exist.</p>
+<p>Sometimes it’s useful to operate on every file inside a directory. You can get every file that matches a pattern with the wildcard, <code>*</code>. You can also do partial matching with the wildcard to get all the files that match part of a pattern.</p>
+<p>For example, let’s say I have a <code>/data</code> directory and I want to put a copy of only the <code>.csv</code> files inside into a new <code>data-copy</code> sub-directory. I could do the following:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="op">&gt;</span> mkdir <span class="ex">-p</span> /data/data-copy</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="op">&gt;</span> cp <span class="ex">/data/*.csv</span> /data/data-copy</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="moving-things-to-and-from-the-server" class="level3" data-number="9.6.1">
+<h3 data-number="9.6.1" class="anchored" data-anchor-id="moving-things-to-and-from-the-server"><span class="header-section-number">9.6.1</span> Moving things to and from the server</h3>
+<p>It’s very common to have a file on your server you want to move to your desktop or vice versa. There are a few different ways to move files and directories.</p>
+<p>If you’re moving multiple files, it’s easier to combine them into a single object and move that. The <code>tar</code> command turns a set of files or whole directory into a single archive file, usually with the file suffix <code>.tar.gz</code>. Creating an archive also does some compression. The amount depends on the content.</p>
+<p>In my opinion, <code>tar</code> is a rare failure of bash to provide standalone commands for anything you need to do. <code>tar</code> is used to both create and unpack (extract) archive files. Telling it which one requires the use of several flags. You’ll basically never use <code>tar</code> without a bunch of flags and the incantation is hard to remember. I google it every time I use it. The flags you’ll use most often are in the <a href="@sec-append-cheat">cheatsheet in the appendix</a>.</p>
+<p>You can move files to or from a server with the <code>scp</code> command. <code>scp</code> – short for secure copy – is basically <code>cp</code>, but with an SSH connection in the middle.<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a></p>
+<p>Since <code>scp</code> establishes an SSH connection, you need to make the request to somewhere that is accepting SSH connections. That means that whether you’re copying something to or from a server, you’ll run <code>scp</code> from a regular terminal on your laptop, not one that’s already SSH-ed into your server.</p>
+<p>Regular <code>ssh</code> options work with <code>scp</code>, like <code>-i</code> and <code>-v</code>.</p>
+</section>
+</section>
+<section id="pipes-and-redirection" class="level2" data-number="9.7">
+<h2 data-number="9.7" class="anchored" data-anchor-id="pipes-and-redirection"><span class="header-section-number">9.7</span> Pipes and redirection</h2>
+<p>You can always copy and paste command outputs or write them to a file, but it can also be helpful to just chain a few commands together. Linux provides a few handy <em>operators</em> you can use to make this easy.</p>
+<p>The simplest operator is the <em>pipe</em> <code>|</code>, which just takes the output of one command and makes it the input for the next command.</p>
+<p>For example, you might want to see how many files are in a directory. The <code>wc -l</code> (word count, lines) command counts lines, so you could do <code>ls | wc -l</code> since each file returned by <code>ls</code> is counted as a line.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Ceci n’est pas une pipe?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The pipe should feel extremely familiar to R users.</p>
+<p>The pipe from the <code>{magrittr}</code> package, <code>%&gt;%</code>, was introduced in 2013, and is a popular part of the <code>{tidyverse}</code>.<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> The <code>{magrittr}</code> pipe was inspired by both the Unix (Linux) pipe and the pipe operator in the <code>F#</code> programming language.</p>
+<p>Due to its popularity, the pipe <code>|&gt;</code> was formally added to the base R language in R 4.1 in 2021.</p>
+</div>
+</div>
+<p>There are a few operators that write the output of the left hand side into a file.</p>
+<p>The <code>&gt;</code> command takes the output of a command on the left and writes it as a new file. If the file you specify already exists, it will be overwritten.</p>
+<p>If you want to append the new text, rather than overwrite, <code>&gt;&gt;</code> appends to the end of the file. I generally default to <code>&gt;&gt;</code>, because it’ll create a new file if one doesn’t exist, and I usually don’t mean to overwrite what’s there.</p>
+<p>A common reason you might want to do this is to add something to the end of your <code>.gitignore</code>. For example, if you want to add your <code>.env</code> file to your <code>.gitignore</code>, you could do that with <code>echo .env &gt;&gt; .gitignore</code>.<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a> Another great usage is to add a new public key to your <code>.ssh/authorized_keys</code> file.</p>
+<p>There are times when you want to make files or directories with nothing in them. The <code>touch</code> command makes a blank file at the specified file path. If you <code>touch</code> a preexisting file, it updates the time the file was last updated without actually making any changes. This can be useful because some applications look at the timestamp on files to see if action is needed.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="9.8">
+<h2 data-number="9.8" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">9.8</span> Comprehension Questions</h2>
+<ol type="1">
+<li>What are the parts of a bash command?</li>
+<li>Where do commands run? How do you know where they’re going to run or specify a relative path?</li>
+<li>How can you copy, move, or delete a file? What about to or from a server?</li>
+<li>Create a mind map of the following terms: Operating System, Windows, MacOS, Unix, Linux, Distro, Ubuntu</li>
+<li>What are the 3x3 options for Linux file permissions? How are they indicated in an <code>ls -l</code> command?</li>
+</ol>
+</section>
+<section id="lab-set-up-a-user" class="level2" data-number="9.9">
+<h2 data-number="9.9" class="anchored" data-anchor-id="lab-set-up-a-user"><span class="header-section-number">9.9</span> Lab: Set up a user</h2>
+<p>When you use your server’s <code>.pem</code> key, you login as the root user, but that’s too much power to acquire on a regular basis. Additionally, since your server is probably for multiple people, you’re going to want to create users for them.</p>
+<p>In this lab, you’ll create a regular user for yourself and add an SSH key for them so you can directly log in from your personal computer.</p>
+<section id="step-1-create-a-non-root-user" class="level3" data-number="9.9.1">
+<h3 data-number="9.9.1" class="anchored" data-anchor-id="step-1-create-a-non-root-user"><span class="header-section-number">9.9.1</span> Step 1: Create a non-root user</h3>
+<p>Let’s create a user using the <code>adduser</code> command. This will walk us through a set of prompts to create a new user with a home directory and a password. Feel free to add any information you want – or to leave it blank – when prompted.</p>
+<p>I’m going to use the username <code>test-user</code>. If you want to be able to copy/paste commands, I’d advise doing the same. If you were creating users based on real humans, I’d advise using their names.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1"></a><span class="op">&gt;</span> adduser <span class="ex">test-user</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We want this new user to be able to adopt root privileges so let’s add them to the <code>sudo</code> group with</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="op">&gt;</span> usermod <span class="ex">-aG</span> sudo test-user</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="step-2-add-an-ssh-key-for-your-new-user" class="level3" data-number="9.9.2">
+<h3 data-number="9.9.2" class="anchored" data-anchor-id="step-2-add-an-ssh-key-for-your-new-user"><span class="header-section-number">9.9.2</span> Step 2: Add an SSH key for your new user</h3>
+<p>Let’s register an SSH key for the new user by adding the key from the last lab to the server user’s <code>authorized_users</code> file.</p>
+<p>First, you need to get your public key to the server using scp.</p>
+<p>For me, the command looks like this</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1"></a><span class="op">&gt;</span> scp <span class="ex">-i</span> ~/Documents/do4ds-lab/do4ds-lab-key.pem <span class="dt">\ </span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="ex">~/.ssh/id_ed25519.pub</span> <span class="dt">\</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>  ubuntu@<span class="va">$SERVER_ADDRESS</span>:/home/ubuntu</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Note that I’m copying the public key, but SSH access is still using the server’s <code>.pem</code> key because I don’t have another key registered yet.</p>
+<p>Now the public key is on the server, but it’s in the <code>ubuntu</code> user’s home directory. You’ll need to do the following:</p>
+<ol type="1">
+<li><p>Create <code>.ssh/authorized_keys</code> in <code>test-user</code>’s home directory.</p></li>
+<li><p>Copy the contents of the public key you uploaded into the <code>authorized_keys</code> file (recall <code>&gt;&gt;</code>).</p></li>
+<li><p>Make sure the <code>.ssh</code> directory and <code>authorized_keys</code> files are owned by <code>test-user</code> with <code>700</code> permissions on <code>.ssh</code> and <code>600</code> on <code>authorized_keys</code>.</p></li>
+</ol>
+<p>You could do this all as the admin user, but I’d recommend switching to being <code>test-user</code> at some point with the <code>su</code> command.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you run into trouble assuming <code>sudo</code> with your new user, try exiting SSH and coming back. Sometimes these changes aren’t picked up until you restart the shell.</p>
+</div>
+</div>
+<p>Once you’ve done all this, you should be able to log in from your personal computer with <code>ssh test-user@$SERVER_ADDRESS</code>.</p>
+<p>Now that we’re all set up, you should store the <code>.pem</code> key somewhere safe and never use it to log in again.</p>
+
+
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>The remainder are mostly Windows servers. There are a few other OSes you might encounter, like Oracle Solaris. There is a product called <em>Mac Server</em>, but it’s just a program for managing Mac desktops and iOS devices, not a server OS.</p>
+<p>There are also versions on Linux that run on desktop computers. Despite the best efforts of many hopeful nerds, desktop Linux is pretty much only used by professional computer people.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Or at least they weren’t supposed to. There’s an interesting history of lawsuits, especially around whether the BSD OS illegally included Unix code.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>More in the <a href="https://en.wikipedia.org/wiki/History_of_Linux">History of Linux Wikipedia article</a>.</p>
+<p>Pedants will scream that the original release of Linux was just the operating system <em>kernel</em>, not a full operating system like Unix. Duly noted, now go away.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>RHEL and CentOS are related operating systems, but that relationship has changed a lot in the last few years. The details are somewhat complicated, but most people expect less adoption of CentOS in enterprise settings going forward.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>As I’m writing this, Amazon Linux 2 is popular, but Amazon Linux 2023 (AL2023) was recently released. I’d expect AL2023 or it’s successor to be dominant by the time you read this.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>The one exception to this is when you’ve got the same user accessing resources across multiple machines. Then the <code>uid</code>s have to match. If you’re worrying about this kind of thing, it’s probably time to bring in a professional IT/Admin.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>Depending on your version of Linux, there may be a limit of 16 groups per user.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>Clever eyes may realize that this is just the base-10 representation of a three-digit binary number.<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>It’s worth noting that <code>scp</code> is now considered “insecure and outdated”. The ways it is insecure are rather obscure and not terribly relevant for most people. But if you’re moving a lot of data, you may want something faster. If so, I’d recommend more modern options like <code>sftp</code> and <code>rsync</code>. I probably wouldn’t bother if you’re only occasionally <code>scp</code>-ing small files to or from your server.<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>The title of this callout box is also the tagline for the <code>{magrittr}</code> package.<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>Note that <code>echo</code> is needed so that the <code>.env</code> gets repeated as a character string. Otherwise <code>.env</code> would be treated as a command.<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec2/2-2-cmd-line.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec2/2-4-app-admin.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

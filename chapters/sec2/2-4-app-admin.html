@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 10&nbsp; Application administration</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec2/2-5-scale.html" rel="next">
+<link href="../../chapters/sec2/2-3-linux.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-EQR1RYSHQK"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
+</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec2/2-0-sec-intro.html">IT/Admin for Data Science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec2/2-4-app-admin.html"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DevOps Lessons for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-env-as-code.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Environments as Code</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-proj-arch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Project Architecture Guidelines</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-access.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-deployments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Deployments and code promotion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-6-docker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Demystifying Docker</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">IT/Admin for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-cloud.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The Cloud</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-cmd-line.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-linux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-app-admin.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-5-scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Server Resources and Scaling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-6-networking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-7-dns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-8-ssl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Making it Enterprise-Grade</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-ent-networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-ent-servers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Lab Map</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/cheatsheets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Cheatsheets</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#linux-app-install-config" id="toc-linux-app-install-config" class="nav-link active" data-scroll-target="#linux-app-install-config"><span class="header-section-number">10.1</span> Linux app install + config</a>
+  <ul class="collapse">
+  <li><a href="#application-configuration" id="toc-application-configuration" class="nav-link" data-scroll-target="#application-configuration"><span class="header-section-number">10.1.1</span> Application configuration</a></li>
+  <li><a href="#where-to-find-application-files" id="toc-where-to-find-application-files" class="nav-link" data-scroll-target="#where-to-find-application-files"><span class="header-section-number">10.1.2</span> Where to find application files</a></li>
+  <li><a href="#command-line-configuration-with-vim-and-nano" id="toc-command-line-configuration-with-vim-and-nano" class="nav-link" data-scroll-target="#command-line-configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Command line configuration with vim and nano</a></li>
+  </ul></li>
+  <li><a href="#reading-logs" id="toc-reading-logs" class="nav-link" data-scroll-target="#reading-logs"><span class="header-section-number">10.2</span> Reading logs</a></li>
+  <li><a href="#running-the-right-commands" id="toc-running-the-right-commands" class="nav-link" data-scroll-target="#running-the-right-commands"><span class="header-section-number">10.3</span> Running the right commands</a></li>
+  <li><a href="#running-applications-as-services" id="toc-running-applications-as-services" class="nav-link" data-scroll-target="#running-applications-as-services"><span class="header-section-number">10.4</span> Running applications as services</a>
+  <ul class="collapse">
+  <li><a href="#running-docker-containers-as-a-service" id="toc-running-docker-containers-as-a-service" class="nav-link" data-scroll-target="#running-docker-containers-as-a-service"><span class="header-section-number">10.4.1</span> Running Docker containers as a service</a></li>
+  </ul></li>
+  <li><a href="#managing-r-and-python" id="toc-managing-r-and-python" class="nav-link" data-scroll-target="#managing-r-and-python"><span class="header-section-number">10.5</span> Managing R and Python</a>
+  <ul class="collapse">
+  <li><a href="#python-specific-considerations" id="toc-python-specific-considerations" class="nav-link" data-scroll-target="#python-specific-considerations"><span class="header-section-number">10.5.1</span> Python-specific considerations</a></li>
+  <li><a href="#r-specific-considerations" id="toc-r-specific-considerations" class="nav-link" data-scroll-target="#r-specific-considerations"><span class="header-section-number">10.5.2</span> R-specific considerations</a></li>
+  </ul></li>
+  <li><a href="#managing-system-libraries" id="toc-managing-system-libraries" class="nav-link" data-scroll-target="#managing-system-libraries"><span class="header-section-number">10.6</span> Managing System Libraries</a></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">10.7</span> Comprehension Questions</a></li>
+  <li><a href="#lab-installing-applications" id="toc-lab-installing-applications" class="nav-link" data-scroll-target="#lab-installing-applications"><span class="header-section-number">10.8</span> Lab: Installing Applications</a>
+  <ul class="collapse">
+  <li><a href="#step-1-install-python" id="toc-step-1-install-python" class="nav-link" data-scroll-target="#step-1-install-python"><span class="header-section-number">10.8.1</span> Step 1: Install Python</a></li>
+  <li><a href="#step-2-install-r" id="toc-step-2-install-r" class="nav-link" data-scroll-target="#step-2-install-r"><span class="header-section-number">10.8.2</span> Step 2: Install R</a></li>
+  <li><a href="#step-3-install-jupyerhub-jupyterlab" id="toc-step-3-install-jupyerhub-jupyterlab" class="nav-link" data-scroll-target="#step-3-install-jupyerhub-jupyterlab"><span class="header-section-number">10.8.3</span> Step 3: Install JupyerHub + JupyterLab</a></li>
+  <li><a href="#step-4-daemonize-jupyterhub" id="toc-step-4-daemonize-jupyterhub" class="nav-link" data-scroll-target="#step-4-daemonize-jupyterhub"><span class="header-section-number">10.8.4</span> Step 4: Daemonize JupyterHub</a></li>
+  <li><a href="#step-5-install-rstudio-server" id="toc-step-5-install-rstudio-server" class="nav-link" data-scroll-target="#step-5-install-rstudio-server"><span class="header-section-number">10.8.5</span> Step 5: Install RStudio Server</a></li>
+  <li><a href="#step-6-run-the-penguin-api-from-docker" id="toc-step-6-run-the-penguin-api-from-docker" class="nav-link" data-scroll-target="#step-6-run-the-penguin-api-from-docker"><span class="header-section-number">10.8.6</span> Step 6: Run the penguin API from Docker</a></li>
+  <li><a href="#step-7-put-up-the-shiny-app" id="toc-step-7-put-up-the-shiny-app" class="nav-link" data-scroll-target="#step-7-put-up-the-shiny-app"><span class="header-section-number">10.8.7</span> Step 7: Put up the Shiny app</a></li>
+  <li><a href="#lab-extensions" id="toc-lab-extensions" class="nav-link" data-scroll-target="#lab-extensions"><span class="header-section-number">10.8.8</span> Lab Extensions</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-4-app-admin.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-app-admin" class="quarto-section-identifier"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>The last few chapters have been all about how to run a Linux server. But you don’t really care about running a Linux server – you care about doing data science. In order to do that, you’ll need to run applications.</p>
+<p>In this chapter, you’ll learn a little about how to install and administer applications on a Linux server, as well as specific pointers for data science tools like R, Python, and the system packages they use.</p>
+<section id="linux-app-install-config" class="level2" data-number="10.1">
+<h2 data-number="10.1" class="anchored" data-anchor-id="linux-app-install-config"><span class="header-section-number">10.1</span> Linux app install + config</h2>
+<p>You can install applications to Linux from a distro-specific repository, much like the app store for your phone or you can just download the application from the internet and install it locally.</p>
+<p>For Ubuntu, the <code>apt</code> command is used for interacting with repositories of <code>.deb</code> files. For CentOS and RedHat, the <code>yum</code> command is used for installing <code>.rpm</code> files.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The examples below are all for Ubuntu, since that’s what we use in the lab for this book. Conceptually, using <code>yum</code> is very similar, though the exact commands differ somewhat.</p>
+</div>
+</div>
+<p>In addition to actually installing packages, <code>apt</code> is also the utility for ensuring the lists of available packages you have are up to date with <code>update</code> and that all packages on your system are at their latest version with <code>upgrade</code>. When you find Ubuntu commands online, it’s common to see them prefixed with <code>apt-get update &amp;&amp; apt-get upgrade -y</code>. The <code>-y</code> flag bypasses a manual confirmation step.</p>
+<p>Packages are installed with <code>apt-get install &lt;package&gt;</code>. Depending on which user you are, you may need to prefix the command with <code>sudo</code>.</p>
+<p>Sometimes, you may want to install packages that aren’t in the repository for your distro. Doing that will generally involve downloading a file directly from a URL – usually with <code>wget</code> and then installing it from the file you’ve downloaded.</p>
+<section id="application-configuration" class="level3" data-number="10.1.1">
+<h3 data-number="10.1.1" class="anchored" data-anchor-id="application-configuration"><span class="header-section-number">10.1.1</span> Application configuration</h3>
+<p>Once you’ve installed an application, it will generally require some configuration like the default background color, the set of users allowed in, or the frequency something updates.</p>
+<p>On your personal computer, you’d probably find the setting in a series of dropdown menus at the top of the screen. On a server, no such menu exists.</p>
+<p>For applications running on your server, application behavior is usually configured through one or more <em>config files</em>. For applications hosted inside a Docker container, behavior is often configured with environment variables, sometimes in addition to config files.</p>
+</section>
+<section id="where-to-find-application-files" class="level3" data-number="10.1.2">
+<h3 data-number="10.1.2" class="anchored" data-anchor-id="where-to-find-application-files"><span class="header-section-number">10.1.2</span> Where to find application files</h3>
+<p>Linux applications often use several files located in different locations on the filesystem. Here are some of the ones you’ll use most frequently:</p>
+<ul>
+<li><p><code>/bin</code>, <code>/opt</code>, <code>/usr/local</code>, <code>/usr/bin</code> - installation locations for software.</p></li>
+<li><p><code>/etc</code> - configuration files for applications.</p></li>
+<li><p><code>/var</code> - variable data, most commonly log files in <code>/var/log</code> or <code>/var/lib</code>.</p></li>
+</ul>
+<p>This means that on a Linux server, the files for a particular application probably don’t all live in the same directory. Instead, you might run the application from the executable in <code>/opt</code>, configure it with files in <code>/etc</code>, and troubleshoot from logs in <code>/var</code>.</p>
+</section>
+<section id="command-line-configuration-with-vim-and-nano" class="level3" data-number="10.1.3">
+<h3 data-number="10.1.3" class="anchored" data-anchor-id="command-line-configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Command line configuration with vim and nano</h3>
+<p>Obviously, if you’re administering applications on a server, you’ll need to spend a fair bit of time editing text files. But how? Unlike on your personal computer, where you click a text file to open and edit it, you’ll need to work with a <em>command line text editor</em> when you’re working on a server.</p>
+<p>There are two command line text editors you’ll probably encounter: <code>nano</code> and <code>vi</code>/<code>vim</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> While they’re both powerful text editing tools, they can also be intimidating if you’ve never used them before.</p>
+<p>You can open a file in either by typing <code>nano &lt;filename&gt;</code> or <code>vi &lt;filename&gt;</code>.</p>
+<p>At this point many newbie command line users find themselves completely stuck, unable to do anything – even just exit and try again. But don’t worry, there’s a way out of this labyrinth.</p>
+<p>If you opened nano, there will be some helpful-looking prompts at the bottom. You’ll see that once you’re ready to go, you can exit with <code>^x</code>. But the <code>^</code> isn’t actually the caret character. On Windows, <code>^</code> is short for <code>Ctrl</code> and on Mac it’s for Command (<code>⌘</code>), so <code>Ctrl + x</code> or <code>⌘ + x</code> will exit.</p>
+<p>Where nano gives you helpful – if obscure – hints, a first experience in vim is the stuff of command line nightmares. You’ll type words and they won’t appear onscreen. Instead, you’ll experience dizzying jumps around the page and words and lines of text will disappear without a trace.</p>
+<p>This is because vim uses the letter keys not just to type, but also to navigate the page and interact with vim itself. You see, vim was created before keyboards uniformly had arrow keys.</p>
+<p>While they can be intimidating at first, vim keybindings are worth spending some time learning. Vim includes some powerful shortcuts for moving within and between lines and selecting and editing text. Most IDEs you might use, including RStudio, JupyterLab, and VSCode have vim modes.</p>
+<p>When you enter <code>vim</code>, you’re in the (poorly named) <em>normal mode</em>, which is for navigation only. Pressing the <code>i</code> key activates <em>insert mode</em>, which will feel normal for those of us used to arrow keys. Once in insert mode, you can type and words will appear and you can navigate with the arrow keys.</p>
+<p>You can return to normal mode with the <code>escape</code> key.</p>
+<p>Once you’ve escaped, you may wish never to return to normal mode, but it’s the only way to save files and exit <code>vim</code>. In order to do file operations, you type a colon, <code>:</code>, followed by the shortcut for what you want to do, and <code>enter</code>. The two most common commands you’ll use are save (write) with <code>w</code> and quit with <code>q</code>. You can combine these together, so you can save and quit in one command using <code>:wq</code>.</p>
+<p>Sometimes you may want to exit without saving or you might’ve opened and changed a file you don’t actually have permission to edit. If you’ve made changes and try to exit with <code>:q</code>, you’ll find yourself in an endless loop of warnings that your changes won’t be saved. You can tell <code>vim</code> you mean it with the exclamation mark, <code>!</code>, and exit using <code>:q!</code>.</p>
+</section>
+</section>
+<section id="reading-logs" class="level2" data-number="10.2">
+<h2 data-number="10.2" class="anchored" data-anchor-id="reading-logs"><span class="header-section-number">10.2</span> Reading logs</h2>
+<p>Once your applications are up and running, you may run into issues. Or even if you don’t, you may want to take a look at how things are running.</p>
+<p>Most applications write their logs into somewhere inside the <code>/var</code> directory. Some things will get logged to the main log at <code>/var/log/syslog</code>. Other things may get logged to <code>/var/log/&lt;application name&gt;</code> or <code>/var/lib/&lt;application name&gt;</code>.</p>
+<p>It’s important to get comfortable with the commands to read text files in order to be able to examine logs (and other files). The commands I use most commonly are:</p>
+<ul>
+<li><p><code>cat</code> is the basic command to print a file, starting at the beginning.</p></li>
+<li><p><code>less</code> prints a file, starting at the beginning, but only a few lines at a time.</p></li>
+<li><p><code>head</code> prints only the first few lines and exits. It is especially useful to peer at the beginning of a large file, like a <code>csv</code> file – so you can quickly preview the column heads and the first few values.</p></li>
+<li><p><code>tail</code> prints a file going up from the end. This is especially useful for log files, as the newest logs are appended to the end of a file. This is such a common practice that “tailing a log file” is a common phrase.</p>
+<ul>
+<li>Sometimes, you’ll want to use the <code>-f</code> flag (for <em>follow</em>) to tail a file with a live view as it updates.</li>
+</ul></li>
+</ul>
+<p>Sometimes you want to search around inside a text file. You’re probably familiar with the power and hassle of <em>regular expressions (regex)</em> to search for specific character sequences in text strings. The Linux command <code>grep</code> is the main regex command.</p>
+<p>In addition to searching in text files, <code>grep</code> is often useful in combination with other commands. For example, it’s often useful to put the output of <code>ls</code> into <code>grep</code> to search for a particular file in a big directory using the pipe.</p>
+</section>
+<section id="running-the-right-commands" class="level2" data-number="10.3">
+<h2 data-number="10.3" class="anchored" data-anchor-id="running-the-right-commands"><span class="header-section-number">10.3</span> Running the right commands</h2>
+<p>Let’s say you want to open Python on your command line. One option would be to type the complete path to a Python install every time. For example, I’ve got a version of Python in <code>/usr/bin</code>, so <code>/usr/bin/python3</code> works.</p>
+<p>But in most cases, it’s nice to just type <code>python3</code> and have the right version open up.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">&gt;</span> python3</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ex">Python</span> 3.9.6 <span class="er">(</span><span class="ex">default,</span> May  7 2023, 23:32:45<span class="kw">)</span> </span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="ex">[Clang</span> 14.0.3 <span class="er">(</span><span class="ex">clang-1403.0.22.14.1</span><span class="kw">)</span><span class="ex">]</span> on darwin</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="ex">Type</span> <span class="st">"help"</span>, <span class="st">"copyright"</span>, <span class="st">"credits"</span> or <span class="st">"license"</span> for more information.</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="op">&gt;&gt;&gt;</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>In some cases, this isn’t optional. Certain applications will rely on others being available, like RStudio Server needing to find R. Or Jupyter Notebook finding your Python kernels.</p>
+<p>So how does Linux know where to find those applications and files?</p>
+<p>If you ever want to check which actual executable is being used by a command, you can use the <code>which</code> command. For example, on my system this is the result of <code>which python3</code>.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="op">&gt;</span> which <span class="ex">python3</span>                                                    </span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ex">/usr/bin/python3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The operating system knows how to find the actual runnable programs on your system via the <em>path</em>. The path is a set of directories that the system knows to search when it tries to run a program. The path is stored in an environment variable, conveniently named <code>PATH</code>.</p>
+<p>You can check your path at any time with <code>echo $PATH</code>. On my MacBook, this is what the path looks like.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a><span class="op">&gt;</span> echo <span class="va">$PATH</span>                                                      </span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When you install a new piece of software you’ll need to add it two the path. Say I was to install a new version of Python in <code>/opt/python</code>. That’s not on my <code>PATH</code>, so my system wouldn’t be able to find it.</p>
+<p>I can get it on the path in one of two ways – the first option would be to add <code>/opt/python</code> to my <code>PATH</code> every time a terminal session starts usually via a file in <code>/etc</code> or the <code>.zshrc</code>.</p>
+<p>The other option is to create a <em>symlink</em> to the new application in a directory already on the <code>PATH</code>. A symlink does what it sounds like – creates a way to link to a file from a different directory without moving it. Symlinks are created with the <code>ln</code> command.</p>
+</section>
+<section id="running-applications-as-services" class="level2" data-number="10.4">
+<h2 data-number="10.4" class="anchored" data-anchor-id="running-applications-as-services"><span class="header-section-number">10.4</span> Running applications as services</h2>
+<p>On your personal computer, you probably have programs that start every time your computer does. Maybe this happens for Slack, Microsoft Teams, or Spotify. Such applications that execute on startup and run in the background waiting for some sort of input are called a <em>daemon</em> or a <em>service</em>.</p>
+<p>On a server, most of the applications are configured to run as a service so they’re ready for users who may not have the permissions to start them. For example, on a data science workbench, you’d want JupyterHub and/or RStudio Server to run as a service.</p>
+<p>In Linux, the tool to turn a regular application into a daemon is called <code>systemd</code>. Some applications automatically configure themselves with <code>systemd</code> when they’re installed. If your application doesn’t, or you want to alter the startup behavior, most applications have their <code>systemd</code> configuration in <code>/etc/systemd/system/&lt;service name&gt;.service</code>.</p>
+<p>Daemonized services are controlled using the <code>systemctl</code> command line tool.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Basically all modern Linux distros have coalesced around using <code>systemd</code> and <code>systemctl</code>. Older systems may not have it installed by default and you may have to install it or use a different tool.</p>
+</div>
+</div>
+<p>The <code>systemctl</code> command has a set of sub-commands that are useful for working with applications. Providing those commands looks like <code>systemctl &lt;subcommand&gt; &lt;application&gt;</code>. Often <code>systemctl</code> has to be run as <code>sudo</code>, since you’re working with an application for all users of the system.</p>
+<p>The most useful <code>systemctl</code> commands include <code>status</code> for checking whether a program is running or not, <code>start</code>, <code>stop</code>, and <code>restart</code> for a <code>stop</code> followed by a <code>start</code>. Many applications also support a <code>reload</code> command, which reloads configuration settings without having to actually restart the process. Exactly which settings require a <code>restart</code> vs a <code>reload</code> varies from one application to another.</p>
+<p>If you’ve changed a service’s <code>systemd</code> configuration, you can load changes with <code>daemon-reload</code>. You also can turn a service on or off for the next time the server starts with <code>enable</code> and <code>disable</code>.</p>
+<section id="running-docker-containers-as-a-service" class="level3" data-number="10.4.1">
+<h3 data-number="10.4.1" class="anchored" data-anchor-id="running-docker-containers-as-a-service"><span class="header-section-number">10.4.1</span> Running Docker containers as a service</h3>
+<p>One of the benefits of running Docker Containers is that they run basically anywhere, so it’s a popular way to quickly run an application on a server. To run them as a service, you’ll need to make sure Docker itself is daemonized and then ensure the container you care about comes up whenever Docker does by setting a <em>restart policy</em> for the container.</p>
+<p>However, many Docker services involve coordinating more than one container. If that’s the case, you’ll want to use a system that’s custom-built for managing multiple containers. The most popular are <em>Docker Compose</em> or <em>Kubernetes</em>.</p>
+<p>Docker Compose is a relatively lightweight system where you write a YAML file to describe the containers you need and the relationship between them. You can then use a single command to launch the entire set of Docker containers.</p>
+<p>Docker Compose is fantastic for prototyping systems of Docker containers and for running small-scale Docker-ized deployments on a single server. There are many great resources on Docker Compose online to learn more.</p>
+<p>Kubernetes is designed for a similar purpose, but instead of running a handful of containers on one server, Kubernetes is a heavy-duty production system designed to schedule hundreds or thousands of Docker-based workloads across a cluster of many individual servers.</p>
+<p>In general, I’d recommend sticking with Docker Compose for the work you’re doing. If you’re finding yourself needing the full might of Kubernetes to do what you want, you probably should be working closely with a professional IT/Admin</p>
+</section>
+</section>
+<section id="managing-r-and-python" class="level2" data-number="10.5">
+<h2 data-number="10.5" class="anchored" data-anchor-id="managing-r-and-python"><span class="header-section-number">10.5</span> Managing R and Python</h2>
+<p>As the admin of a data science server, Python and R are some of the most critical software you’ll manage.</p>
+<p>In general, the easiest path to making many users happy is having a bunch of versions of R and Python installed side-by-side. That way you can allow users to upgrade their version of R or Python as it works for their project, not according to your upgrade schedule.</p>
+<p>I’ve seen this work best by installing R and Python into the <code>/opt/python</code> and <code>/opt/R</code> directory. Users can grab them from there to create project-specific virtual environments. You’ll need to make sure permissions are correct on <code>/opt/python</code> for this to work.</p>
+<p>Now, this isn’t what will happen if you just <code>sudo apt-get install python</code> or <code>sudo apt-get install R</code>, so you’ll have to be a little more clever. My favorite route (though I’m obviously biased) is to install Python and R from the pre-built binaries provided by Posit.</p>
+<section id="python-specific-considerations" class="level3" data-number="10.5.1">
+<h3 data-number="10.5.1" class="anchored" data-anchor-id="python-specific-considerations"><span class="header-section-number">10.5.1</span> Python-specific considerations</h3>
+<p>Python is one of the world’s most popular programming languages for general purpose computing. This actually makes configuring Python <strong>harder</strong>.</p>
+<p>Almost every system comes with a <em>system version</em> of Python. This is the version of Python that’s used by the operating system for various tasks. It’s almost always very old and you really don’t want to mess with it.</p>
+<p>So in order to configure Python on your system, you have to install data science specific versions of Python, get them on the path, and get the system version of Python off the path. This is the source of much frustration trying to get Python up and running, both on servers and your personal computer.</p>
+<p>On your personal computer, Conda is a great solution for this problem. Conda allows you to install a standalone version of Python in <em>user-space</em>. That means that even if your organization doesn’t let you have admin rights on your computer, you can install and manage versions of Python for development.</p>
+<p>For the same reason, Conda isn’t a great choice for administering a data science server. You’re not a user – you’re an admin. And giving everyone on the server access to Python versions is generally easier without Conda.</p>
+<p>This is why it’s a good idea to install data science Python versions into <code>/opt/python</code>. It’s easy to add that one directory to the path, and it’s completely distinct from where the system Python lives.</p>
+</section>
+<section id="r-specific-considerations" class="level3" data-number="10.5.2">
+<h3 data-number="10.5.2" class="anchored" data-anchor-id="r-specific-considerations"><span class="header-section-number">10.5.2</span> R-specific considerations</h3>
+<p>People pretty much only ever install R to do data science so it’s generally not a huge deal where you install R and get it on the path. If you want just one version of R, using <code>apt-get install</code> is fine.</p>
+<p>If you want multiple versions, you’ll need to manually install to <code>/opt/R</code> or use <code>rig</code>, which is an R-specific installation manager. Currently, <code>rig</code> only supports Windows, Mac, and Ubuntu.</p>
+</section>
+</section>
+<section id="managing-system-libraries" class="level2" data-number="10.6">
+<h2 data-number="10.6" class="anchored" data-anchor-id="managing-system-libraries"><span class="header-section-number">10.6</span> Managing System Libraries</h2>
+<p>As an admin, you’ll also have to decide what to do about <em>system packages</em>, which are Linux libraries you install from a Linux repository or the internet.</p>
+<p>Many packages in Python and R don’t do any work themselves. Instead, they’re just language-specific interfaces to system packages. For example, any R or Python library that uses a JDBC database connector will need to make use of Java on your system. And many geospatial libraries make use of system packages like GDAL.</p>
+<p>As the administrator, you’ll need to make sure you understand what system libraries are needed for the Python and R packages you’re using, and you’ll need to make sure they’re available and on the path.</p>
+<p>For many of these libraries, it’s not a huge pain. You’ll just install the required library using <code>apt</code> or the system package manager for your distro. In some cases (especially Java), more configuration may be required to make sure that the package you need shows up on the path.</p>
+</section>
+<section id="comprehension-questions" class="level2" data-number="10.7">
+<h2 data-number="10.7" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">10.7</span> Comprehension Questions</h2>
+<ol type="1">
+<li>What are two different ways to install Linux applications and what are commands to do so?</li>
+<li>What does it mean to daemonize a Linux application? What programs and commands are used to do so?</li>
+<li>How do you know if you’ve opened <code>nano</code> or <code>vim</code>? How would you exit them if you didn’t mean to?</li>
+<li>What are 4 commands to read text files?</li>
+<li>How would you create a file called <code>secrets.txt</code>, open it with vim, write something in, close and save it, and make it so that only you can read it?</li>
+</ol>
+</section>
+<section id="lab-installing-applications" class="level2" data-number="10.8">
+<h2 data-number="10.8" class="anchored" data-anchor-id="lab-installing-applications"><span class="header-section-number">10.8</span> Lab: Installing Applications</h2>
+<p>As we’ve started to administer our server, we’ve mostly been doing very generic server administration tasks. Now let’s set up the applications we need to run a data science workbench and get our API and Shiny app set up for using in our portfolio.</p>
+<section id="step-1-install-python" class="level3" data-number="10.8.1">
+<h3 data-number="10.8.1" class="anchored" data-anchor-id="step-1-install-python"><span class="header-section-number">10.8.1</span> Step 1: Install Python</h3>
+<p>Let’s start by installing a data science version of Python so we’re not using the system Python for data science purposes.</p>
+<p>If you want just one version of Python, you can <code>apt-get install</code> a specific version. As of this writing, Python 3.10 is a relatively new version of Python, so we’ll install that one with</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">sudo</span> apt-get install python3.10-venv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Once you’ve installed Python, you can check that you’ve got the right version by running</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1"></a><span class="ex">python3</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This method, using <code>apt-get</code>, is great when you just want one version of Python. But if you want multiple versions sitting side by side, you’ll need to do something else. I recommend installing using the instructions on the Posit website, which will involve downloading and installing from <code>.deb</code> files.</p>
+</section>
+<section id="step-2-install-r" class="level3" data-number="10.8.2">
+<h3 data-number="10.8.2" class="anchored" data-anchor-id="step-2-install-r"><span class="header-section-number">10.8.2</span> Step 2: Install R</h3>
+<p>Since we’re using Ubuntu, we can use <code>rig</code>. There are good instructions on downloading <code>rig</code> and using it to install R on the <a href="https://github.com/r-lib/rig"><code>rlib/rig</code> GitHub repo</a>. Use those instructions to install the current R release on your server.</p>
+<p>Once you’ve installed R on your server, you can check that it’s running by just typing <code>R</code> into the command line. If that works, you’re good to move on to the next step. If not, you’ll need to make sure R got onto the path.</p>
+</section>
+<section id="step-3-install-jupyerhub-jupyterlab" class="level3" data-number="10.8.3">
+<h3 data-number="10.8.3" class="anchored" data-anchor-id="step-3-install-jupyerhub-jupyterlab"><span class="header-section-number">10.8.3</span> Step 3: Install JupyerHub + JupyterLab</h3>
+<p>JupyterHub and JupyterLab are Python programs, so we’re going to run them from within a Python virtual environment. I’d recommend putting that virtual environment inside <code>/opt/jupyterhub</code>.</p>
+<p>Here are the commands to create and activate a <code>jupyterhub</code> virtual environment in <code>/opt/jupyterhub</code>:</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1"></a><span class="fu">sudo</span> python3 <span class="at">-m</span> venv /opt/jupyterhub</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="bu">source</span> /opt/jupyterhub/bin/activate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we’re going to actually get JupyterHub up and running inside the virtual environment we just created. JupyterHub produces <a href="https://jupyterhub.readthedocs.io/en/stable/quickstart.html">docs that you can use</a> to get up and running very quickly. If you have to stop for any reason, make sure to come back, assume sudo, and start the JupyterHub virtual environment we created.</p>
+<p>Note that because we’re working inside a virtual environment, you may have to use the <code>jupyterhub-singleuser</code> version of the binary.</p>
+</section>
+<section id="step-4-daemonize-jupyterhub" class="level3" data-number="10.8.4">
+<h3 data-number="10.8.4" class="anchored" data-anchor-id="step-4-daemonize-jupyterhub"><span class="header-section-number">10.8.4</span> Step 4: Daemonize JupyterHub</h3>
+<p>Because JupyterHub is a Python process, not a system process, it won’t automatically get daemonized, so we’ll have to do it manually.</p>
+<p>We don’t need it right now, but it’ll be easier to manage JupyterHub later on from a config file that’s in <code>/etc/jupyterhub</code>. In order to do so, activate the <code>jupyterhub</code> virtual environment, create a default JupyterHub config (Google for the command), and move it into <code>/etc/jupyterhub/jupyterhub_config.py</code>.</p>
+<p>Now let’s move on to daemonizing JupyterHub. To start, kill the existing JupyterHub process (consult the cheatsheet in <a href="../append/cheatsheets.html">Appendix&nbsp;<span>C</span></a> if you need help). Since JupyterHub wasn’t automatically daemonized, you’ll have to manually create the systemd file.</p>
+<p>Here’s the file I created in <code>/etc/systemd/system/jupyterhub.service</code>.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>/etc/systemd/system/jupyterhub.service</strong></pre>
+</div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode numberSource yaml number-lines code-with-copy"><code class="sourceCode yaml"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">[</span><span class="at">Unit</span><span class="kw">]</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="at">Description=Jupyterhub</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="at">After=syslog.target network.target</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="kw">[</span><span class="at">Service</span><span class="kw">]</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="at">User=root</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="at">Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="at">ExecStart=/opt/jupyterhub/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="kw">[</span><span class="at">Install</span><span class="kw">]</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="at">WantedBy=multi-user.target</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>There are two things here worth noticing. The first is the <code>Environment</code> line that adds <code>/opt/jupyterhub/bin</code> to the path – that’s where our virtual environment is.</p>
+<p>The second is <code>ExecStart</code> line, which provides is the startup command and specifies that JupyterHub should use the config we just created, specified by <code>-f /etc/jupyterhub/jupyterhub_config.py</code>.</p>
+<p>Now, you’ll need to use <code>systemctl</code> to reload the daemon, start JupyterHub, and enable it.</p>
+</section>
+<section id="step-5-install-rstudio-server" class="level3" data-number="10.8.5">
+<h3 data-number="10.8.5" class="anchored" data-anchor-id="step-5-install-rstudio-server"><span class="header-section-number">10.8.5</span> Step 5: Install RStudio Server</h3>
+<p>You can find the commands to install RStudio server on the <a href="https://posit.co/download/rstudio-server/">Posit website</a>. Make sure to pick the version that matches your operating system. Since you’ve already installed R, you can skip down to the “Install RStudio Server” step.</p>
+<p>Unlike JupyterHub, RStudio Server does daemonize itself right out of the box, so you can check and control the status with <code>systemctl</code> without any further work.</p>
+</section>
+<section id="step-6-run-the-penguin-api-from-docker" class="level3" data-number="10.8.6">
+<h3 data-number="10.8.6" class="anchored" data-anchor-id="step-6-run-the-penguin-api-from-docker"><span class="header-section-number">10.8.6</span> Step 6: Run the penguin API from Docker</h3>
+<p>First, you’ll have to make sure that Docker itself is available on the system. It can be installed from <code>apt</code> using <code>apt-get install docker.io</code>. You may need to adopt <code>sudo</code> privileges to do so.</p>
+<p>Once Docker is installed, getting the API running is almost trivially easy using the command we used back in <a href="../sec1/1-6-docker.html">Chapter&nbsp;<span>6</span></a> to run our container.</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1"></a><span class="fu">sudo</span> docker run <span class="at">--rm</span> <span class="at">-d</span> <span class="dt">\</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>  <span class="at">-p</span> 8080:8080 <span class="dt">\</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>  <span class="at">--name</span> penguin-model <span class="dt">\</span></span>
+<span id="cb8-4"><a href="#cb8-4"></a>  alexkgold/penguin-model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The one change you might note is that I’ve changed the port on the server to be <code>8080</code>, since JupyterHub runs on <code>8000</code> by default.</p>
+<p>Once it’s up, you can check that it’s running with <code>docker ps</code>.</p>
+</section>
+<section id="step-7-put-up-the-shiny-app" class="level3" data-number="10.8.7">
+<h3 data-number="10.8.7" class="anchored" data-anchor-id="step-7-put-up-the-shiny-app"><span class="header-section-number">10.8.7</span> Step 7: Put up the Shiny app</h3>
+<p>We’re going to use Shiny Server to host our Shiny app on the server. Start by moving the app code to the server. I put mine in <code>/home/test-user/do4ds-lab/app</code> by cloning the Git repo.</p>
+<p>After that, you’ll need to:</p>
+<ol type="1">
+<li>Open R or Python and rebuild the package library with <code>{renv}</code> or <code>{venv}</code>.</li>
+<li>Install Shiny Server using the instructions from the <a href="https://docs.posit.co/shiny-server/#getting-started">Admin Guide</a>.
+<ul>
+<li>Note that you can skip steps to install R and/or Python, as well as the <code>{shiny}</code> package as we’ve already done that.</li>
+</ul></li>
+<li>Edit Shiny Server’s configuration file to run the right app.</li>
+<li>Start and enable Shiny Server with <code>systemctl</code>.</li>
+</ol>
+</section>
+<section id="lab-extensions" class="level3" data-number="10.8.8">
+<h3 data-number="10.8.8" class="anchored" data-anchor-id="lab-extensions"><span class="header-section-number">10.8.8</span> Lab Extensions</h3>
+<p>There are a few things you might want to consider before moving into the next chapter, where we’ll start working on giving this server a stable public URL.</p>
+<p>First, we haven’t daemonized the API. Feel free to try Docker Compose or setting a restart policy for the container.</p>
+<p>Second, neither the API nor the Shiny app will automatically update when we make changes to them. You might want to set up a GitHub Action to do so. For Shiny Server, you’ll need to push the updates to the server and then restart Shiny Server. For the API, you’d need to configure a GitHub action to rebuild the container and push it to a registry. You’d then need to tell Docker on the server to re-pull and restart the container.</p>
+<p>Finally, there’s no authentication in front of our API. Now, the API has pretty limited functionality, so that’s not a huge worry. But if you had an API with more functionality that might be a problem. Additionally, someone could try to flood your API with requests to make it unusable. The most common way to solve this is to buy a product that hosts the API for you or to put an authenticating proxy in front of the API (Google for instructions for NGINX if you want to try it).</p>
+
+
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p><code>vi</code> is the original fullscreen text editor for Linux. <code>vim</code> is its successor (<code>vim</code> stands for <code>vi</code> improved). I’m not going to worry about the distinction.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec2/2-3-linux.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec2/2-5-scale.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Server Resources and Scaling</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link active" href="https://github.com/akgold/do4ds" aria-current="page">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

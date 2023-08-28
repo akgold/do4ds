@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>DevOps for Data Science - 8&nbsp; Customizing the command line</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../chapters/sec2/2-3-linux.html" rel="next">
+<link href="../../chapters/sec2/2-1-cloud.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-EQR1RYSHQK"></script>
+
+<script type="text/javascript">
+
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
+</script>
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec2/2-0-sec-intro.html">IT/Admin for Data Science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec2/2-2-cmd-line.html"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">DevOps for Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/akgold/do4ds" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+    <div class="dropdown">
+      <a href="" title="Share" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Share"><i class="bi bi-share"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://twitter.com/intent/tweet?url=|url|">
+              <i class="bi bi-bi-twitter pe-1"></i>
+            Twitter
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://www.facebook.com/sharer/sharer.php?u=|url|">
+              <i class="bi bi-bi-facebook pe-1"></i>
+            Facebook
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome!</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec1/1-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DevOps Lessons for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-1-env-as-code.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Environments as Code</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-2-proj-arch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Data Project Architecture Guidelines</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-3-data-access.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Using databases and data APIs</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-4-monitor-log.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Logging and Monitoring</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-5-deployments.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Deployments and code promotion</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec1/1-6-docker.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Demystifying Docker</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec2/2-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">IT/Admin for Data Science</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-1-cloud.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The Cloud</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-2-cmd-line.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-3-linux.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-4-app-admin.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Application administration</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-5-scale.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Server Resources and Scaling</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-6-networking.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Intro to Computer Networks</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-7-dns.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">DNS allows for human-readable addresses</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec2/2-8-ssl.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">You should use SSL/HTTPS</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Making it Enterprise-Grade</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-1-os-ds-in-ent.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Open Source Data Science in the Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-2-ent-networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Enterprise Networking</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-3-auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">17</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/sec3/3-4-ent-servers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">18</span>&nbsp; <span class="chapter-title">Enterprise Server Management</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/lab-map.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Lab Map</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../chapters/append/cheatsheets.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">C</span>&nbsp; <span class="chapter-title">Cheatsheets</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#getting-the-command-line-you-want" id="toc-getting-the-command-line-you-want" class="nav-link active" data-scroll-target="#getting-the-command-line-you-want"><span class="header-section-number">8.1</span> Getting the command line you want</a></li>
+  <li><a href="#the-terminal" id="toc-the-terminal" class="nav-link" data-scroll-target="#the-terminal"><span class="header-section-number">8.2</span> The terminal</a></li>
+  <li><a href="#the-shell" id="toc-the-shell" class="nav-link" data-scroll-target="#the-shell"><span class="header-section-number">8.3</span> The shell</a></li>
+  <li><a href="#configuration-management" id="toc-configuration-management" class="nav-link" data-scroll-target="#configuration-management"><span class="header-section-number">8.4</span> Configuration management</a></li>
+  <li><a href="#text-editors" id="toc-text-editors" class="nav-link" data-scroll-target="#text-editors"><span class="header-section-number">8.5</span> Text Editors</a></li>
+  <li><a href="#secure-server-connections-with-ssh" id="toc-secure-server-connections-with-ssh" class="nav-link" data-scroll-target="#secure-server-connections-with-ssh"><span class="header-section-number">8.6</span> Secure server connections with SSH</a>
+  <ul class="collapse">
+  <li><a href="#understanding-ssh-keys" id="toc-understanding-ssh-keys" class="nav-link" data-scroll-target="#understanding-ssh-keys"><span class="header-section-number">8.6.1</span> Understanding SSH keys</a></li>
+  </ul></li>
+  <li><a href="#practical-ssh-usage" id="toc-practical-ssh-usage" class="nav-link" data-scroll-target="#practical-ssh-usage"><span class="header-section-number">8.7</span> Practical SSH usage</a>
+  <ul class="collapse">
+  <li><a href="#step-1-create-keypair" id="toc-step-1-create-keypair" class="nav-link" data-scroll-target="#step-1-create-keypair"><span class="header-section-number">8.7.1</span> Step 1: Create Keypair</a></li>
+  <li><a href="#step-2-register-the-public-keys" id="toc-step-2-register-the-public-keys" class="nav-link" data-scroll-target="#step-2-register-the-public-keys"><span class="header-section-number">8.7.2</span> Step 2: Register the public keys</a></li>
+  <li><a href="#step-3-use-ssh" id="toc-step-3-use-ssh" class="nav-link" data-scroll-target="#step-3-use-ssh"><span class="header-section-number">8.7.3</span> Step 3: Use SSH</a></li>
+  </ul></li>
+  <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">8.8</span> Comprehension Questions</a></li>
+  <li><a href="#lab-login-to-the-server" id="toc-lab-login-to-the-server" class="nav-link" data-scroll-target="#lab-login-to-the-server"><span class="header-section-number">8.9</span> Lab: Login to the server</a>
+  <ul class="collapse">
+  <li><a href="#step-1-grab-the-server-address" id="toc-step-1-grab-the-server-address" class="nav-link" data-scroll-target="#step-1-grab-the-server-address"><span class="header-section-number">8.9.1</span> Step 1: Grab the server address</a></li>
+  <li><a href="#step-2-log-on-with-the-.pem-key" id="toc-step-2-log-on-with-the-.pem-key" class="nav-link" data-scroll-target="#step-2-log-on-with-the-.pem-key"><span class="header-section-number">8.9.2</span> Step 2: Log on with the <code>.pem</code> key</a></li>
+  <li><a href="#step-3-create-your-own-ssh-key" id="toc-step-3-create-your-own-ssh-key" class="nav-link" data-scroll-target="#step-3-create-your-own-ssh-key"><span class="header-section-number">8.9.3</span> Step 3: Create your own SSH key</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-2-cmd-line.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><span id="sec-cmd-line" class="quarto-section-identifier"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Customizing the command line</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>When you want to do something on your personal computer or phone, you just tap or click to make it happen. But servers generally have no <em>graphical user interface (GUI)</em> to be tapped or clicked. On a server, interaction is via the <em>command line</em> – an all-text interface where you type to indicate what you want to do.</p>
+<p>Even if you’re not administering a server, it’s worth learning your way around the command line as a number of tasks are quicker and easier from the command line. Most people who learn the command line end up using it a lot on their personal computers.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Server admin tasks are done via a graphical tool in some organizations, but this is a red flag.</p>
+<p>It means that the organization is either trying to find relatively low-skill (cheap) admins who haven’t bothered to learn to use the command line or are using an intermediary tool to limit what IT/Admins can do. Either way, it’s going to be harder to get things done.</p>
+</div>
+</div>
+<p>In this chapter, you’re going to learn to set up and customize the command line on your machine and to access a server via <em>secure socket shell (SSH)</em> – the administrative side door on a server.</p>
+<section id="getting-the-command-line-you-want" class="level2" data-number="8.1">
+<h2 data-number="8.1" class="anchored" data-anchor-id="getting-the-command-line-you-want"><span class="header-section-number">8.1</span> Getting the command line you want</h2>
+<p>As you get started on the command line, you’ll soon realize that some customization is in order. Maybe the colors aren’t quite right, or you want shortcuts for commands you type a lot, or you want more information in the default display.</p>
+<p>Some people might argue that customizing your command line isn’t the best use of your time and energy. Those people are no fun. Having a command line that behaves exactly as you like will speed up your work and make you feel like a hacker.</p>
+<p>But as you get started, you’ll soon find yourself neck deep in Stack Overflow posts on how to customize your <code>.bashrc</code>. Or wait, is it the <code>.zshrc</code>? Or…</p>
+<p>The reason customizing your command line is somewhat confusing is that the command line you interact with is actually two or three programs that sit on top of each other. You can mix-and-match options for each of them and configure them in a variety of ways.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Notes on operating systems
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I’ve been using the command line in MacOS for many years, so I have strong opinions to share in this chapter.</p>
+<p>I haven’t used a Windows machine in many years. I’ve collected some recommendations, but I can’t personally vouch for them the same way.</p>
+<p>I don’t include Linux recommendations because people who use Linux on their desktop have already gone deep down the customization rabbit hole and don’t need my help wasting their time.</p>
+</div>
+</div>
+</section>
+<section id="the-terminal" class="level2" data-number="8.2">
+<h2 data-number="8.2" class="anchored" data-anchor-id="the-terminal"><span class="header-section-number">8.2</span> The terminal</h2>
+<p>The terminal is the GUI where you’ll type in commands. The terminal program you use will dictate the colors and themes available for the window, how tabs and panes work, and the keyboard shortcuts you’ll use to manage them.</p>
+<p>Some programs you might use, like RStudio or VSCode have terminals built into them. If you do basically all your terminal work from one of these environments, you may not need another. But it can be nice to have a standalone terminal program you like.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" aria-current="page">MacOS</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false">Windows</a></li></ul>
+<div class="tab-content">
+<div id="tabset-1-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-1-1-tab">
+<p>I’d recommend against using the built-in terminal app (called <em>Terminal</em>). It’s fine, but there are better options.</p>
+<p>My personal favorite is the free <a href="https://iterm2.com/"><em>iTerm2</em></a>, which adds a bunch of niceties like better theming and multiple tabs.</p>
+</div>
+<div id="tabset-1-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-1-2-tab">
+<p>The built-in terminal is the favorite of many users. There are a variety of alternatives you can try, but feel free to stick with the default.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="the-shell" class="level2" data-number="8.3">
+<h2 data-number="8.3" class="anchored" data-anchor-id="the-shell"><span class="header-section-number">8.3</span> The shell</h2>
+<p>The shell is the program that takes the commands you’re typing and runs them. It’s what matches the words you type to actual commands or programs on your system. Depending on which shell you choose, you’ll get different options for plugins and themes.</p>
+<p>The shell runs anywhere you’ve got a running operating system. So your computer has one shell and your server would have a different one. Even a Docker Container has a shell available. That means that if you do a lot of work on a server, you may need to configure your shell twice – once locally and once on the server.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-2-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-1" role="tab" aria-controls="tabset-2-1" aria-selected="true">MacOS</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-2-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-2-2" role="tab" aria-controls="tabset-2-2" aria-selected="false">Windows</a></li></ul>
+<div class="tab-content">
+<div id="tabset-2-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-2-1-tab">
+<p>The default shell for MacOS (and Linux) is called <em>bash</em>. I’d advise you to switch it out for <em>zsh</em>, which is the most popular <em>bash alternative</em>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Bash alternatives are programs that extend bash with various bells and whistles.</p>
+<p>Relative to bash, zsh has a few advantages out of the box, like better auto-completion. It also has a huge ecosystem of themes to enhance visual appeal and functionality, and plugins that let your command line do everything from displaying your git status to controlling your Spotify playlist.</p>
+<p>I’d recommend looking up instructions for how to install zsh using <em>Homebrew</em>.</p>
+</div>
+<div id="tabset-2-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-2-2-tab">
+<p>Windows comes with two shells built in, the <em>Command Shell</em> (<code>cmd</code>) and the <em>PowerShell</em>.</p>
+<p>The Command Shell is older and has been superseded by PowerShell. If you’re just getting started, you should just work with PowerShell. If you’ve been using Command Shell on a Windows machine for a long time, most Command Shell commands work in PowerShell, so it may be worth switching over.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="configuration-management" class="level2" data-number="8.4">
+<h2 data-number="8.4" class="anchored" data-anchor-id="configuration-management"><span class="header-section-number">8.4</span> Configuration management</h2>
+<p>Now that you’ve got your shell and terminal installed, you’ll want to customize. It is possible to directly customize both zsh and PowerShell. But the best way to configure them is to use a configuration manager for your themes and plugins.</p>
+<div class="tabset-margin-container"></div><div class="panel-tabset">
+<ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-3-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-1" role="tab" aria-controls="tabset-3-1" aria-selected="true">MacOS</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-3-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-3-2" role="tab" aria-controls="tabset-3-2" aria-selected="false">Windows</a></li></ul>
+<div class="tab-content">
+<div id="tabset-3-1" class="tab-pane active" role="tabpanel" aria-labelledby="tabset-3-1-tab">
+<p><em>Prezto</em> is my favorite configuration and plugin manager for zsh. <em>OhMyZsh</em> is also popular and very good. Feel free to choose either, but you can only use one.</p>
+<p>Once you’ve installed Prezto, you’ve got (at least) three different places you could configure your command line – the iTerm2 preferences, <code>.zshrc</code>, and <code>.zpreztorc</code>. I’d recommend leaving <code>.zshrc</code> alone, customizing the look of the window and the tab behavior in the iTerm2 preferences, and customizing the text theme and plugins via Prezto in the <code>.zpreztorc</code> file.</p>
+<p>I tend to be a pretty light on customization, but I’d recommend looking into git plugins and some of the advanced auto-completion and command history search functionality.</p>
+</div>
+<div id="tabset-3-2" class="tab-pane" role="tabpanel" aria-labelledby="tabset-3-2-tab">
+<p>Many people like customizing PowerShell with <a href="https://ohmyposh.dev/"><em>Oh My Posh</em></a>.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="text-editors" class="level2" data-number="8.5">
+<h2 data-number="8.5" class="anchored" data-anchor-id="text-editors"><span class="header-section-number">8.5</span> Text Editors</h2>
+<p>If you’re working on your command line a lot, you’ll probably be working inside <em>text editors</em> a fair bit. There are many, many options for text editors and people have strong preferences.</p>
+<p>Mac OS’s default text editor is called TextEdit and it’s bad. Don’t use it. Windows users get Notepad, which is somewhat better than TextEdit, but still not the best option out there.</p>
+<p>If you like, you can just edit text files inside your IDE of choice like VS Code or RStudio. Others may prefer a standalone text editor. The most popular these days are probably <em>Sublime</em> or <em>Notepad++</em> (Windows Only).</p>
+<p>Unlike with the terminal, there’s no deep configuration here. Install one from the web, configure it as you like, and make sure it’s the default for opening <code>.txt</code> and other files you might want to edit in your system preferences.</p>
+</section>
+<section id="secure-server-connections-with-ssh" class="level2" data-number="8.6">
+<h2 data-number="8.6" class="anchored" data-anchor-id="secure-server-connections-with-ssh"><span class="header-section-number">8.6</span> Secure server connections with SSH</h2>
+<p>One common IT/Admin task is remotely accessing a server from the command line on your machine. <em>SSH</em> – short for <em>Secure (Socket) Shell</em> – is a tool for making a secure connection to another computer over an unsecured network. It’s most often used to interact with a server’s command line from the command line of your computer.</p>
+<p>Using SSH requires invoking the <code>ssh</code> command line interface from your computer (<em>local host</em>) with a username and the address of the <em>remote host</em> <u>(</u>server). For example, connecting to the server at <code>server.example.com</code> as the user <code>alex</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1"></a><span class="op">&gt;</span> ssh <span class="ex">alex@server.example.com</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Once you run this command, your terminal will open a session to the terminal of the server.</p>
+<section id="understanding-ssh-keys" class="level3" data-number="8.6.1">
+<h3 data-number="8.6.1" class="anchored" data-anchor-id="understanding-ssh-keys"><span class="header-section-number">8.6.1</span> Understanding SSH keys</h3>
+<p>Before any of this can work, you’ll have to configure your <em>SSH keys</em>, which come in a set called <em>keypair</em>. Each keypair consists of a <em>public</em> key and a <em>private</em> key. You’ll register your public key anywhere you’re trying to SSH to, like a server or git host, but your private key must be treated as a precious secret.</p>
+<p>When you use the <code>ssh</code> command, your local machine sends a request to open an SSH session to the remote and includes the private key with the request. The remote host verifies the private key with the public key and opens an encrypted connection.</p>
+<p><img src="images/ssh.png" class="img-fluid" alt="A diagram of SSH initialization. The local host sends the private key, the remote checks against the public key, and then opens the session." width="450"></p>
+<p>This seems weird – how can you verify your secret identity with something that you can just spread around publicly? The answer is <em>public key cryptography</em>, which makes it easy to check whether a proffered private key is valid, but nearly impossible to fabricate a private key from a public key.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I wish public and private keys were named differently. Calling the private key the <em>key</em> and the public key the <em>lock</em> makes the intent much clearer. But no one asked me.</p>
+</div>
+</div>
+<p>The key to public key cryptography is mathematical operations that are easy in one direction but really hard to reverse. As a simple example, think of the number <span class="math inline">\(91\)</span> and its prime factors. Do you know what the prime factors of <span class="math inline">\(91\)</span> are offhand? I do not.</p>
+<p>It’ll probably take you a few minutes to try a bunch, even if you use a calculator. But if I give you the numbers <span class="math inline">\(7\)</span> and <span class="math inline">\(13\)</span>, it’s easy to verify that <span class="math inline">\(7 * 13 = 91\)</span>.</p>
+<p>In this example, the number <span class="math inline">\(91\)</span> would be the public key and the prime numbers <span class="math inline">\(7\)</span> and <span class="math inline">\(13\)</span> together would be the private key. This wouldn’t actually make for very good public key cryptography because it doesn’t take more than a few moments to figure out that <span class="math inline">\(7\)</span> and <span class="math inline">\(13\)</span> are prime factors of <span class="math inline">\(91\)</span>.</p>
+<p>In real public key cryptography, the idea is similar, but the mathematical operations are more complex and the numbers much, much bigger. So much so that it’s basically impossible to break public SSH keys through guessing.</p>
+<p>But that doesn’t make SSH foolproof. While it’s basically impossible to fabricate a private key, it’s totally possible to steal one. Your private key <strong>must</strong> be kept secret. The best practice is to never move it from the computer where it was created and to never share them.</p>
+<p>In summary, do what you want with your public keys, but don’t share your private keys. Don’t share your private keys. Seriously, do not share your private keys.</p>
+</section>
+</section>
+<section id="practical-ssh-usage" class="level2" data-number="8.7">
+<h2 data-number="8.7" class="anchored" data-anchor-id="practical-ssh-usage"><span class="header-section-number">8.7</span> Practical SSH usage</h2>
+<p>Now that you’ve got an understanding of how SSH works, the steps should be easy to remember.</p>
+<ol type="1">
+<li>Create an SSH keypair on any machine you’ll be SSH-ing from (local host).</li>
+<li>Put the public key anywhere you’ll be SSH-ing to (remote host).</li>
+<li>Use the <code>ssh</code> command to connect.</li>
+</ol>
+<p>If you’re working on a server, you’ll probably create at least two keypairs. One on your personal computer to SSH to the server, and one on the server to access outside services that use SSH, like GitHub.</p>
+<section id="step-1-create-keypair" class="level3" data-number="8.7.1">
+<h3 data-number="8.7.1" class="anchored" data-anchor-id="step-1-create-keypair"><span class="header-section-number">8.7.1</span> Step 1: Create Keypair</h3>
+<p>You’ll create a keypair on any server you’re SSH-ing <strong>from</strong>.</p>
+<p>To create an SSH keypair, you should just follow a tutorial online. The keypair will have two parts. The one that ends in <code>.pub</code> is – you guessed it – the public key.</p>
+<p>In most cases, you’ll only create one private key on each machine. If you follow standard instructions for creating a key, it will use the default name, probably <code>id_ed25519</code>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Sticking with the default name is great because the <code>ssh</code> command will automatically use them. If you don’t use the default name, you’ll have to specify.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Remember, you should never move your private key. If you think the answer to a problem you’re having is to move your private key, think again.</p>
+<p>Instead of moving your private key, create a new private key on the machine where you need to use SSH and register a second public key on the remote.</p>
+</div>
+</div>
+<p>Some organizations require that you have a unique key for each service you’re using to make it easier to swap keys in the event of a breach. If so, you won’t be able to use the default key names.</p>
+</section>
+<section id="step-2-register-the-public-keys" class="level3" data-number="8.7.2">
+<h3 data-number="8.7.2" class="anchored" data-anchor-id="step-2-register-the-public-keys"><span class="header-section-number">8.7.2</span> Step 2: Register the public keys</h3>
+<p>To register a public key to SSH into a server, you’ll add the public key to the end of the user’s <code>.ssh/authorized_keys</code> file in their home directory. You’ll have to make sure the permissions on the <code>authorized_keys</code> file are correct. More on that in <a href="2-3-linux.html">Chapter&nbsp;<span>9</span></a>.</p>
+<p>If you’re registering with a service, like GitHub.com, there’s probably a text box in the GUI to add an SSH key. Google for instructions on how to do it.</p>
+</section>
+<section id="step-3-use-ssh" class="level3" data-number="8.7.3">
+<h3 data-number="8.7.3" class="anchored" data-anchor-id="step-3-use-ssh"><span class="header-section-number">8.7.3</span> Step 3: Use SSH</h3>
+<p>To use SSH, you type <code>ssh &lt;user&gt;@&lt;host&gt;</code>. There are also other commands that can use SSH under the hood, like <code>git</code> or <code>scp</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+For Windows users
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For a long time, Windows didn’t support SSH out of the box, so SSH-ing from Windows required a separate utility called <em>PuTTY</em>. More recent versions of Windows support using SSH directly in PowerShell or in Windows Subsystem for Linux (WSL). If SSH isn’t enabled on your machine, Google for instructions.</p>
+</div>
+</div>
+<p>If you have multiple SSH keys or didn’t use the default flag, you can specify a particular key with the <code>-i</code> flag.</p>
+<p>If you’re using SSH a lot, I’d recommend setting up an <em>SSH config file</em>. An SSH config file allows you to create aliases that are shortcuts to SSH commands including users, hosts, and other details. So if you had a long SSH command like <code>ssh -i my-ssh-key alex@server.example.com</code>, you could shorten it to <code>ssh alex-server</code> or whatever you want.</p>
+<p>One annoyance about SSH is that they block the terminal they’re using and will break when your computer goes to sleep. Many people also like using the <em>tmux</em> command line utility with SSH to help solve these issues.</p>
+<p>tmux is a <em>terminal multiplexer</em>, which allows you to manipulate terminal sessions from the command line, including putting sessions into the background and making sessions durable through sleeps and other operations. To be honest, I’m mentioning tmux because lots of people love it, but I’ve found the learning curve too steep for it to come into regular usage for me. Your mileage may vary.</p>
+<p>If you ever run into trouble using SSH, it has one of my favorite debugging modes. Just add a <code>-v</code> to your command for verbose mode. If that’s not enough information, add another <code>v</code> for more verbosity, and if <strong>that’s</strong> not enough, just add another <code>v</code> for super verbose mode.</p>
+</section>
+</section>
+<section id="comprehension-questions" class="level2" data-number="8.8">
+<h2 data-number="8.8" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">8.8</span> Comprehension Questions</h2>
+<ol type="1">
+<li>Draw a mental map that includes the following: terminal, shell, theme manager, operating system, my laptop</li>
+<li>Under what circumstances should you move or share your SSH private key?</li>
+<li>What is it about SSH public keys that makes them safe to share?</li>
+</ol>
+</section>
+<section id="lab-login-to-the-server" class="level2" data-number="8.9">
+<h2 data-number="8.9" class="anchored" data-anchor-id="lab-login-to-the-server"><span class="header-section-number">8.9</span> Lab: Login to the server</h2>
+<p>In the last chapter we got your server up and running. In this lab, we’ll use the provided <code>.pem</code> key to log in for the first time.</p>
+<section id="step-1-grab-the-server-address" class="level3" data-number="8.9.1">
+<h3 data-number="8.9.1" class="anchored" data-anchor-id="step-1-grab-the-server-address"><span class="header-section-number">8.9.1</span> Step 1: Grab the server address</h3>
+<p>From the EC2 page, you can click on the instance ID in blue to see all the details of about your server.</p>
+<p>Copy the Public IPv4 DNS address, which starts with <span class="math inline">\(\text{ec2-}\)</span> and ends with <span class="math inline">\(\text{amazonaws.com}\)</span>. That little icon on the left of the address copies it. You’ll need it throughout the labs. If you lose it, come back here to get it.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Set a Server Address Variable
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the rest of the labs in this book, I’m going to write the commands using the bash variable <code>SERVER_ADDRESS</code>. That means that if you create that variable, you’ll be able to just copy the commands out of the book.</p>
+<p>For example, as I write this, my server has the address <span class="math inline">\(\text{ec2-54-159-134-39.compute-1.amazonaws.com}\)</span>. So would set my server address variable on my command line with <code>SERVER_ADDRESS=ec2-54-159-134-39.compute-1.amazonaws.com</code>.</p>
+<p>If you’re used to R or Python, where it’s best practice to put spaces around <code>=</code>, notice that assigning variables in bash <strong>requires</strong> no spaces around <code>=</code>.</p>
+</div>
+</div>
+</section>
+<section id="step-2-log-on-with-the-.pem-key" class="level3" data-number="8.9.2">
+<h3 data-number="8.9.2" class="anchored" data-anchor-id="step-2-log-on-with-the-.pem-key"><span class="header-section-number">8.9.2</span> Step 2: Log on with the <code>.pem</code> key</h3>
+<p>The <code>.pem</code> key you downloaded when you set up the server is the private key for a pre-registered keypair that will let you SSH into your server as the admin user (named <code>ubuntu</code> on a Ubuntu system).</p>
+<p>The <code>.pem</code> key is just an SSH key, so you can SSH to your server with</p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1"></a><span class="fu">ssh</span> <span class="at">-i</span> do4ds-lab-key.pem <span class="dt">\</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>  ubuntu@SERVER_ADDRESS</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>When you first try this, you’re probably going to get an alert that looks something like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode numberSource bash number-lines code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="ex">\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="ex">\@</span> WARNING: UNPROTECTED PRIVATE KEY FILE! <span class="dt">\@</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="ex">\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@\@</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="ex">Permissions</span> 0644 for <span class="st">'do4ds-lab-key.pem'</span> are too open.</span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="ex">It</span> is required that your private key files are NOT accessible by others.</span>
+<span id="cb3-11"><a href="#cb3-11"></a></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="ex">This</span> private key will be ignored.</span>
+<span id="cb3-13"><a href="#cb3-13"></a></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="ex">Load</span> key <span class="st">"do4ds-lab-key.pem"</span>: bad permissions</span>
+<span id="cb3-15"><a href="#cb3-15"></a></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="ex">ubuntu@ec2-54-159-134-39.compute-1.amazonaws.com:</span> Permission denied <span class="er">(</span><span class="ex">publickey</span><span class="kw">)</span><span class="bu">.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Because the keypair is so powerful, AWS requires that you restrict the access pretty severely. Before you can use it to open the server, you’ll need to change the permissions. We’ll get into permissions in <a href="2-3-linux.html">Chapter&nbsp;<span>9</span></a>. Until then, you can just change the permissions by navigating to the right directory with the <code>cd</code> command and running <code>chmod 600 do4ds-lab-key.pem</code>.</p>
+<p>Once you’ve done that, you should be able to login to your machine as the root user. When you want to exit an SSH session and get back to your machine, you can just type <code>exit</code>.</p>
+</section>
+<section id="step-3-create-your-own-ssh-key" class="level3" data-number="8.9.3">
+<h3 data-number="8.9.3" class="anchored" data-anchor-id="step-3-create-your-own-ssh-key"><span class="header-section-number">8.9.3</span> Step 3: Create your own SSH key</h3>
+<p>You really shouldn’t use the AWS-provided <code>.pem</code> key to login to your server after the first time. It’s too powerful. Create a normal SSH key using the instructions earlier in this chapter. In the next lab, we’ll get that SSH key configured for your user on the server.</p>
+
+
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>zsh is pronounced by just speaking the letters aloud, <em>zee-ess-aitch</em>. Some people might disagree and say it’s <em>zeesh</em>, but they’re not writing this book, are they?<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The pattern is <code>id_&lt;encryption type&gt;</code>. <code>ed25519</code> is the standard SSH key encryption type as of this writing.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../chapters/sec2/2-1-cloud.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The Cloud</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../../chapters/sec2/2-3-linux.html" class="pagination-link">
+        <span class="nav-page-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Intro to Linux Administration</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/akgold/do4ds">
+      <i class="bi bi-github" role="img">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/alexkgold">
+      <i class="bi bi-twitter" role="img">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
