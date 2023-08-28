@@ -1,8 +1,7 @@
 # Server Resources and Scaling {#sec-scale}
 
 If your server is for more than just playing, you're going to want to
-make sure you've got sufficient resources on the server to do the work
-you need.
+make sure you've got sufficient resources to do the work you need.
 
 This chapter is going to help you develop a mental model of what a
 server's computational resources are, teach you about the command line
@@ -23,9 +22,9 @@ integers.[^2-5-scale-1]
 
 [^2-5-scale-1]: This was proved in Alan Turing's 1936 paper on
     computability. If you're interested in learning more, I recommend
-    [**The Annotated Turing: A Guided Tour Through Alan Turing's
-    Historic Paper on Computability and the Turing
-    Machine**](https://www.goodreads.com/en/book/show/2333956.The_Annotated_Turing)
+    [The Annotated Turing: A Guided Tour Through Alan Turing's Historic
+    Paper on Computability and the Turing
+    Machine](https://www.goodreads.com/en/book/show/2333956.The_Annotated_Turing)
     by Charles Petzold for a surprisingly readable walkthrough.
 
 Once they've been added, they're reinterpreted back into something
@@ -33,59 +32,56 @@ meaningful. But the bottom line is that every bit of input your computer
 gets is turned into an addition problem, processed, and the results are
 reverted back into something we interpret as meaningful.
 
-In my mental model, a computer is just a factory that does addition
-problems. So as you're thinking about how to size and scale a server,
-you're really thinking about how to optimally design your factory.
+So, a computer is really just a factory that does addition problems. So
+as you're thinking about how to size and scale a server, you're really
+thinking about how to optimally design your factory.
 
 There are three essential resources a server has -- compute, memory, and
 storage. In this chapter, I'm going to share some mental models I find
 helpful about how to think of each and some recommendations for getting
 a data science server.
 
-## Recommendation 1: Fewer, faster CPU cores
+## How computers compute
 
 The addition assembly line itself -- where the work actually gets done
 -- is referred to as *compute*. It's where 2+2 gets turned into 4, and
 where 345619912 + 182347910 gets turned into 527967822.
 
-There are multiple kinds of compute possible, but the main compute that
-all computers have is the central processing unit (CPU). Individual
-addition problems are done in a *core*.
+The main compute that all computers have is the central processing unit
+(CPU), which completes addition problems in a *core*.
 
 The first attribute that determines the speed of compute is the number
-of cores, which you can think of as like the number of conveyor belts in
-the factory.
+of cores, which is like the number of conveyor belts in the factory.
 
 These days, most consumer-grade laptops have between 4 and 16 physical
 cores. Many have software capabilities that effectively double that
-number. That means most laptop CPUs can do between 4 and 32 simultaneous
-addition problems.
+number, so they can do between 4 and 32 simultaneous addition problems.
 
-The second attribute is how quickly a single addition problem gets
-completed by a single core. This is called the *single core clock
-speed*. You can think of this as how fast the conveyor belt moves.
+The second speed-determining attribute is how quickly a single addition
+problem gets completed by a single core. This is called the *single core
+clock speed*. You can think of this as how fast the conveyor belt moves.
 
 Clock speeds are measured in operations per second or *hertz (hz)*. The
-cores in your laptop probably run between two and five gigahertz (GHz),
-which means between 2 billion and 5 billion operations per second when
-running at full speed.
+cores in your laptop probably max out between two and five gigahertz
+(GHz), which means between 2 billion and 5 billion operations per
+second.
 
 For decades, many of the innovations in computing were coming from
-increases in clock speed, but those have fallen off a lot in the last
-few decades. The clock speeds of consumer-grade chips increased by
-approximately 10x during the 90s, by 2-3x in the 2000s, and somewhere
+increases in single core clock speed, but those have fallen off a lot in
+the last few decades. The clock speeds of consumer-grade chips increased
+by approximately 10x during the 90s, by 2-3x in the 2000s, and somewhere
 between not at all and 1.5x in the 2010s.
 
 But computers have continued getting a lot faster even as the increase
 in clock speeds has slowed. The increase has mostly come from increases
 in the number of cores, better software usage of parallelization, and
-innovative chip architectures for special-purpose usage.
+faster loading and unloading of the CPU (called the *bus*).
 
-Unfortunately, your R and Python code usually can only take advantage of
-some of these speed increases. By default, R and Python are
-single-threaded. This means that unless you're using special libraries
-for parallel processing, you'll end up red-lining a single CPU core
-while the others just look on in silence.
+## Recommendation 1: Fewer, faster CPU cores
+
+R and Python are single-threaded. This means that unless you're using
+special libraries for parallel processing, you'll end up red-lining a
+single CPU core while the others just look on in silence.
 
 Therefore for most R and Python work, single core clock speed matters
 more than the number of cores, and fewer, faster cores are usually
@@ -97,10 +93,10 @@ and you should just buy the one that fits your budget.
 
 If you're standing up a server, you often do have an explicit choice
 between more slower cores and fewer faster ones, determined by the
-instance type.
+instance family.
 
-If you're running a multi-user server, the number of cores you need is
-really hard to estimate. If you're doing non-ML tasks like counts and
+If you're running a multi-user server, the number of cores you need can
+be hard to estimate. If you're doing non-ML tasks like counts and
 dashboarding or relatively light-duty machine learning I might advise
 the following:
 
@@ -113,7 +109,7 @@ data science usage. On the other hand, if you're doing heavy-duty
 machine learning or parallelizing jobs across the CPU, you may need more
 cores than this rule of thumb.
 
-## Recommendation 2: Get as much RAM as feasible
+## How memory works
 
 Your computer's random access memory (RAM) is its short term storage.
 You can think of RAM like the stock that's sitting out on the factory
@@ -130,7 +126,7 @@ computer turns off, the RAM gets wiped.[^2-5-scale-2]
     usually won't notice this happening.
 
 ::: callout-note
-Memory and storage is measured in *bytes* with metric prefixes.
+Memory and storage are measured in *bytes* with metric prefixes.
 
 Common sizes for memory these days are in *gigabytes* (billion bytes)
 and *terrabytes* (trillion bytes). Some enterprise data stores run on
@@ -141,6 +137,8 @@ of pettabytes (*yottabytes*).
 Modern consumer-grade laptops come with somewhere between 4 and 16 Gb of
 memory.
 
+## Recommendation 2: Get as much RAM as feasible
+
 In most cases, R and Python have to load all of your data into memory.
 Thus, the size of the data you can use is limited to the size of your
 machine's RAM.
@@ -150,7 +148,7 @@ slower than you'd really want, but trying to load too much data into
 memory will result in a session crash.
 
 ::: callout-note
-If you're running into this limitation go back and think about your
+If you're running into this limitation, go back and think about your
 project architecture as discussed in [Chapter @sec-proj-arch]. Maybe you
 can load less data into memory.
 :::
@@ -169,7 +167,7 @@ If you're thinking about running a multi-user server, you'll need to
 take a step back to think about how many concurrent users you expect and
 how much data you expect each one to load.
 
-## Recommendation 3: Get lots of storage, it's cheap
+## Understanding storage
 
 *Storage*, or *hard disk/drive*, is your computer's place to put things
 for the long-term. It's where applications are installed, and where you
@@ -193,14 +191,20 @@ In the last few years, *solid-state drives (SSDs)* have become
 more-or-less standard in laptops. SSDs, which are collections of flash
 memory chips with no moving parts are up to 15x faster than HDDs.
 
+## Recommendation 3: Get lots of storage, it's cheap
+
 As for configuring storage on your server -- get a lot -- but don't
 think about it too hard, because it's cheap and easy to upgrade. Storage
 is cheap enough these days that it is almost always more cost efficient
 to buy more storage rather than making a highly-paid professional spend
 their time trying to figure out how to move things around.
 
-If the IT/Admins at your organization don't see this or aren't
-incentivized to think in this way, it's a red flag for sure.
+::: callout-note
+If the IT/Admins at your organization want you to spend a lot of time
+deleting things from storage that's usually a red flag that they aren't
+thinking much about how to make the overall organization work more
+smoothly.
+:::
 
 If you're running a multi-user server, the amount of storage you need
 depends a lot on your data and your workflows.
@@ -210,7 +214,7 @@ won't be saved into the server's storage (generally a good thing), a
 reasonable rule of thumb is to choose
 
 $$
-\text{Amount of Storage} = 1Gb * \text{n users}
+\text{Amount of Storage} = \text{1Gb} * \text{n users}
 $$
 
 If you're not saving large data files, the amount of space each person
@@ -221,9 +225,9 @@ and Python packages take up more than a few dozen Mb per data scientist.
 If you're working with a professional IT admin, they may be concerned
 about the storage implications of having package copies for each person
 on their team if you're following best practices for running
-[environments as code](@sec-env-as-code). I've heard this concern a lot
-from IT/Admins thinking about running their server and almost never of a
-case where it's actually been a problem.
+environments as code from [Chapter @sec-env-as-code]. I've heard this
+concern a lot from IT/Admins thinking ahead about running their server
+and almost never of a case where it's actually been a problem.
 :::
 
 If, on the other hand, you will be saving a lot of data, you've got to
@@ -235,7 +239,7 @@ As you'll see in the lab, upgrading the amount of storage you have is a
 trivial operation, requiring at most a few minutes of downtime. Choose a
 size you guess will be adequate and add more if you need.
 
-## Recommendation 4: Get a GPU, maybe
+## GPUs are special-purpose compute
 
 All computers have a CPU. There are also specialized chips where the CPU
 can offload particular tasks, the most common of which is the graphical
@@ -243,10 +247,10 @@ processing unit (GPU). GPUs are architected for tasks like editing photo
 or videos, rendering video game graphics, some kinds of machine
 learning, and (yes) Bitcoin mining.
 
-A GPU is an addition factory just like a CPU, but with different
-architecture. CPUs are designed to have only a handful of cores, but
-those cores are fast. A GPU takes the opposite approach, with many
-(relatively) slow cores.
+A GPU is an addition factory just like a CPU, but with the opposite
+architecture. CPUs have only a handful of cores, but those cores are
+fast. A GPU takes the opposite approach, with many (relatively) slow
+cores.
 
 Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000
 cores, with each one running at only about 1% to 10% the single core
@@ -259,6 +263,8 @@ For the tasks GPUs are good at, the overwhelming parallelism ends up
 being more important than the speed of any individual core, and GPU
 computation can be dramatically faster.
 
+## Recommendation 4: Get a GPU, maybe
+
 The tasks that most benefit from GPU computing are training highly
 parallel machine learning models like deep learning or tree-based
 models. If you do have one of these use cases, GPU computing can
@@ -270,8 +276,8 @@ GPU-backed instances are quite pricey, and you'll want to be careful
 about only putting those machines up when you're using them.
 
 Because GPUs are expensive, I generally wouldn't bother with GPU-backed
-computing unless you've already tried without a GPU and find that it
-takes too long to be feasible.
+computing unless you've already tried without and find that it takes too
+long to be feasible.
 
 It's also worth noting that using a GPU won't happen automatically. The
 tooling has gotten good enough that it's usually pretty easy to set up,
@@ -309,11 +315,6 @@ PID    COMMAND      %CPU TIME     #TH    #WQ  #PORT MEM    PURG   CMPRS PGRP
 29519  top          9.7  00:04.30 1/1    0    36    9729K  0B     0B    29519
 16795  Magnet       3.1  00:39.16 3      1    206   82M    0B     39M   16795
 16934  Arc          1.8  18:18.49 45     6    938   310M   144K   61M   16934
-16456  Messages     1.7  06:58.27 4      1    603   138M   2752K  63M   16456
-1      launchd      1.7  13:41.03 4/1    3/1  3394+ 29M    0B     6080K 1
-573    diagnosticd  1.4  04:31.97 3      2    49    2417K  0B     816K  573
-16459  zoom.us      1.3  66:38.37 30     3    2148  214M   384K   125M  16459
-16575  UniversalCon 1.3  01:15.89 2      1    131   12M    0B     2704K 16575
 ```
 
 In most instances, the first three columns are the most useful. The
@@ -409,16 +410,16 @@ where the text files for this book live.
 
 ``` {.bash filename="Terminal"}
 > du -h chapters | sort
-12M	chapters
-1.7M	chapters/sec1/images
-1.8M	chapters/sec1
-236K	chapters/images
-488K	chapters/sec2/images-traffic
-5.3M	chapters/sec2/images-networking
-552K	chapters/sec2/images
-6.6M	chapters/sec2
-892K	chapters/append/images-append
-948K	chapters/append
+12M chapters
+1.7M    chapters/sec1/images
+1.8M    chapters/sec1
+236K    chapters/images
+488K    chapters/sec2/images-traffic
+5.3M    chapters/sec2/images-networking
+552K    chapters/sec2/images
+6.6M    chapters/sec2
+892K    chapters/append/images-append
+948K    chapters/append
 ```
 
 So if I were thinking about cleaning up this directory, I could see that
@@ -443,10 +444,9 @@ the size of the workloads.
 
 Either way, there are two basic options for how to scale your data
 science workbench. The first is *vertical scaling*, which is just a
-fancy way of saying get a bigger server.
-
-The second is *horizontal scaling*, which means running a whole fleet of
-servers in parallel and spreading the workload across them.
+fancy way of saying get a bigger server. The second option is
+*horizontal scaling*, which means running a whole fleet of servers in
+parallel and spreading the workload across them.
 
 As a data scientist, you shouldn't be shy about vertically scaling if
 your budget allows it. The complexity of managing a `t3.nano` with 2
@@ -456,10 +456,9 @@ easier to manage, since you won't have to worry about running low on
 resources.
 
 There are limits to the capacity of vertical scaling. As of this
-writing, AWS's general-use instance types max out at 96-128 cores.
-That's probably sufficient for many workloads, but if you've got a data
-science workbench with 50 concurrent users doing reasonably heavy
-compute loads, that can quickly get eaten up.
+writing, AWS's general-use instance types max out at 96-128 cores. That
+can quickly get eaten up by 50 data scientists with reasonably heavy
+computational demands.
 
 Once you're thinking about horizontal scaling, you've got a distributed
 service problem on your hand, which is inherently difficult. You should
@@ -470,13 +469,13 @@ almost certainly get an IT/Admin professional involved. See [Chapter
 
 AWS offers a variety of different EC2 instance types split up by
 *family* and *size*. The family is the category of EC2 instance.
-Different types of instances are optimized for different kinds of
+Different families of instances are optimized for different kinds of
 workloads.
 
 Here's a table of common instance types for data science purposes:
 
 | Instance Type | What it is                                                            |
-|----------------------|-------------------------------------------------|
+|-----------------------|-------------------------------------------------|
 | `t3`          | The "standard" configuration. Relatively cheap. Sizes may be limited. |
 | `C`           | CPU-optimized instances, aka faster CPUs                              |
 | `R`           | Higher ratio of RAM to CPU                                            |
@@ -527,10 +526,8 @@ you're done lest you rack up a huge bill.
 
 ## Lab: Changing Instance Size
 
-Ok, now we're going to experience the real magic of the cloud --
-*flexibility.*
-
-We're going to upgrade the size of our server in just a minute or two.
+In this lab, we're going to upgrade the size of our server. And the best
+part is that because we're in the cloud, it'll take only a few minutes.
 
 ### Step 1: Confirm current server size
 
@@ -549,8 +546,6 @@ quite limited.
 Once the instance has stopped, you can change the instance type under
 Actions \> Instance Settings. Then start the instance. It'll take a few
 seconds to start the instance.
-
-*And that's it*.
 
 ### Step 3: Confirm new server size
 
@@ -573,22 +568,21 @@ Swap:             0B          0B          0B
 I got twice as much RAM!
 
 There are some rules around being able to change from one instance type
-to another...but this is an amazing superpower if you've got variable
-workloads or a team that's growing. The ability to scale a machine so
-easily is a game-changer. Once you're done with your larger server, it's
+to another, but this is a superpower if you've got variable workloads or
+a team that's growing. Once you're done with your larger server, it's
 just as easy to scale it back down.
+
+### Step 4: Upgrade storage (maybe)
 
 If you want more storage, it's similarly easy to resize the EBS volume
 attached to your server.
 
-There are two caveats worth knowing for EBS:
+I wouldn't recommend doing it for this lab, because you can only
+automatically adjust volume sizes up, so you'd have to manually transfer
+all of your data if you ever wanted to scale back down.
 
-1.  You can only automatically adjust volume sizes *up*, so you'd have
-    to manually transfer all of your data if you ever wanted to scale
-    back down.
-2.  If you resize the volume, you'll also have to adjust the Linux
-    filesystem so it knows about the new space available. AWS has a
-    great walk through called [Extend a Linux filesystem after resizing
-    the
-    volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
-    that I recommend you follow.
+If you do resize the volume, you'll have to let Linux know so it can
+resize the filesystem with the new space available. AWS has a great walk
+through called [Extend a Linux filesystem after resizing the
+volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html)
+that I recommend you follow.

@@ -4,12 +4,12 @@ When you want to do something on your personal computer or phone, you
 just tap or click to make it happen. But servers generally have no
 *graphical user interface (GUI)* to be tapped or clicked. On a server,
 interaction is via the *command line* -- an all-text interface where you
-type commands.
+type to indicate what you want to do.
 
-Even if you're just a data scientist, it's worth learning your way
-around the command line. There are a variety of tasks that are quicker
-and easier that way. Most people who learn the command line end up using
-it a lot on their personal computers.
+Even if you're not administering a server, it's worth learning your way
+around the command line as a number of tasks are quicker and easier from
+the command line. Most people who learn the command line end up using it
+a lot on their personal computers.
 
 ::: callout-note
 Server admin tasks are done via a graphical tool in some organizations,
@@ -17,27 +17,25 @@ but this is a red flag.
 
 It means that the organization is either trying to find relatively
 low-skill (cheap) admins who haven't bothered to learn to use the
-command line or are using an intermediary tool to limit what admins can
-do. Either way, it's going to be harder to get things done.
+command line or are using an intermediary tool to limit what IT/Admins
+can do. Either way, it's going to be harder to get things done.
 :::
 
 In this chapter, you're going to learn to set up and customize the
 command line on your machine and to access a server via *secure socket
-shell (SSH)*, the side door you'll use to do administrative tasks on
-your server.
+shell (SSH)* -- the administrative side door on a server.
 
 ## Getting the command line you want
 
-Pretty soon after getting started on the command line, you'll realize
-that some customization is in order. Maybe the colors aren't quite
-right, or you want shortcuts for commands you type a lot, or you want
-more information in the default display.
+As you get started on the command line, you'll soon realize that some
+customization is in order. Maybe the colors aren't quite right, or you
+want shortcuts for commands you type a lot, or you want more information
+in the default display.
 
 Some people might argue that customizing your command line isn't the
-best use of your time and energy. Those people are no fun.
-
-Having a command line that behaves exactly as you like will speed up
-your work and make you feel like a hacker.
+best use of your time and energy. Those people are no fun. Having a
+command line that behaves exactly as you like will speed up your work
+and make you feel like a hacker.
 
 But as you get started, you'll soon find yourself neck deep in Stack
 Overflow posts on how to customize your `.bashrc`. Or wait, is it the
@@ -107,7 +105,8 @@ once locally and once on the server.
 
 The default shell for MacOS (and Linux) is called *bash*. I'd advise you
 to switch it out for *zsh*, which is the most popular *bash
-alternative*.[^2-2-cmd-line-1]
+alternative*.[^2-2-cmd-line-1] Bash alternatives are programs that
+extend bash with various bells and whistles.
 
 Relative to bash, zsh has a few advantages out of the box, like better
 auto-completion. It also has a huge ecosystem of themes to enhance
@@ -115,13 +114,8 @@ visual appeal and functionality, and plugins that let your command line
 do everything from displaying your git status to controlling your
 Spotify playlist.
 
-All so-called bash alternatives are just bash with some extra bells and
-whistles, so they're very similar. So if you log into a server that's
-running bash rather than zsh, you might be annoyed that some of your
-shortcuts don't work, but you won't be lost.
-
 I'd recommend looking up instructions for how to install zsh using
-*Homebrew*, which you should also install if you haven't already.
+*Homebrew*.
 
 ### Windows
 
@@ -141,10 +135,10 @@ switching over.
 
 ## Configuration management
 
-Now that you've got your shell and terminal installed, let's get it
-customized just for you. It is possible to directly customize both zsh
-and PowerShell. In most cases, you'll want to use a configuration
-manager to manage your themes and plugins.
+Now that you've got your shell and terminal installed, you'll want to
+customize. It is possible to directly customize both zsh and PowerShell.
+But the best way to configure them is to use a configuration manager for
+your themes and plugins.
 
 ::: panel-tabset
 ### MacOS
@@ -192,64 +186,59 @@ your system preferences.
 ## Secure server connections with SSH
 
 One common IT/Admin task is remotely accessing a server from the command
-line on your machine. *SSH* -- short for *Secure (Socket) Shell* -- is
-the program that allows direct interactions with a server's command line
-from the command line of your computer.[^2-2-cmd-line-2]
+line on your machine. *SSH* -- short for *Secure (Socket) Shell* -- is a
+tool for making a secure connection to another computer over an
+unsecured network. It's most often used to interact with a server's
+command line from the command line of your computer.
 
-[^2-2-cmd-line-2]: SSH actually can be used between **any** two
-    machines, provided at least one is accepting SSH connections. For
-    data scientists, it's almost always used to connect from a local
-    machine to a server.
-
-Using SSH requires invoking the `ssh` command line interface with a
-username and the address of the *remote host* [(]{.underline}server).
-For example, connecting to the server at `server.example.com` as the
-user `alex` from your computer (*local host*) would look like
+Using SSH requires invoking the `ssh` command line interface from your
+computer (*local host*) with a username and the address of the *remote
+host* [(]{.underline}server). For example, connecting to the server at
+`server.example.com` as the user `alex`
 
 ``` {.bash filename="Terminal"}
 > ssh alex@server.example.com
 ```
 
 Once you run this command, your terminal will open a session to the
-terminal of the server. This session is authenticated and secured via
-the exchange of *SSH keys*.
+terminal of the server.
 
-In order to make this all work, you'll have to configure your *SSH
-keys*, which come in a set called *keypair*. Each keypair consists of a
-*public* key and a *private* key. You'll register your private key
+### Understanding SSH keys
+
+Before any of this can work, you'll have to configure your *SSH keys*,
+which come in a set called *keypair*. Each keypair consists of a
+*public* key and a *private* key. You'll register your public key
 anywhere you're trying to SSH to, like a server or git host, but your
 private key must be treated as a precious secret.
 
-Once you've registered your public key and youuse the `ssh` command,
-your local machine sends a request to open an SSH session to the remote
-and includes the private key with the request.
-
-The remote host verifies the private key with the public key and open an
-encrypted connection.
+When you use the `ssh` command, your local machine sends a request to
+open an SSH session to the remote and includes the private key with the
+request. The remote host verifies the private key with the public key
+and opens an encrypted connection.
 
 ![](images/ssh.png){fig-alt="A diagram of SSH initialization. The local host sends the private key, the remote checks against the public key, and then opens the session."
 width="450"}
 
-The reason this all works is that, it's easy to check whether a private
-key is the right one for the public key you've got. But if you only have
-a public key, it's nearly impossible to fabricate the private key that
-goes with it.
+This seems weird -- how can you verify your secret identity with
+something that you can just spread around publicly? The answer is
+*public key cryptography*, which makes it easy to check whether a
+proffered private key is valid, but nearly impossible to fabricate a
+private key from a public key.
 
-Honestly, I wish public and private keys were named differently. Calling
-the private key the *key* and the public key the *lock* makes the intent
+::: callout-note
+I wish public and private keys were named differently. Calling the
+private key the *key* and the public key the *lock* makes the intent
 much clearer. But no one asked me.
+:::
 
-This asymmetry between the public and private keys is possible through
-the magic of *public key cryptography*, which uses mathematical
-operations that are easy in one direction but really hard to reverse.
+The key to public key cryptography is mathematical operations that are
+easy in one direction but really hard to reverse. As a simple example,
+think of the number $91$ and its prime factors. Do you know what the
+prime factors of $91$ are offhand? I do not.
 
-As a simple example, think of the number $91$ and its prime factors. Do
-you know what the prime factors of $91$ are offhand? I do not. It'll
-probably take you a few minutes to try a bunch, even if you use a
-calculator.
-
-But if I give you the numbers $7$ and $13$, it's easy to verify that
-$7 * 13 = 91$.
+It'll probably take you a few minutes to try a bunch, even if you use a
+calculator. But if I give you the numbers $7$ and $13$, it's easy to
+verify that $7 * 13 = 91$.
 
 In this example, the number $91$ would be the public key and the prime
 numbers $7$ and $13$ together would be the private key. This wouldn't
@@ -282,25 +271,24 @@ be easy to remember.
 3.  Use the `ssh` command to connect.
 
 If you're working on a server, you'll probably create at least two
-keypairs. One on your personal computer to SSH to the server, and once
-on the server to access outside services that use SSH, like GitHub.
+keypairs. One on your personal computer to SSH to the server, and one on
+the server to access outside services that use SSH, like GitHub.
 
 ### Step 1: Create Keypair
 
 You'll create a keypair on any server you're SSH-ing **from**.
 
-To create an SSH keypair, you should just follow a tutorial online.
-There are many. The keypair will have two parts. The one that ends in
-`.pub` is -- you guessed it -- the public key.
+To create an SSH keypair, you should just follow a tutorial online. The
+keypair will have two parts. The one that ends in `.pub` is -- you
+guessed it -- the public key.
 
 In most cases, you'll only create one private key on each machine. If
 you follow standard instructions for creating a key, it will use the
-default name, probably `id_ed25519`.[^2-2-cmd-line-3] If you're only
-creating one key on each machine, I'd recommend sticking with the
-default name because the `ssh` command will automatically uses keys with
-the default name.
+default name, probably `id_ed25519`.[^2-2-cmd-line-2] Sticking with the
+default name is great because the `ssh` command will automatically use
+them. If you don't use the default name, you'll have to specify.
 
-[^2-2-cmd-line-3]: The pattern is `id_<encryption type>`. `ed25519` is
+[^2-2-cmd-line-2]: The pattern is `id_<encryption type>`. `ed25519` is
     the standard SSH key encryption type as of this writing.
 
 ::: callout-note
@@ -308,7 +296,7 @@ Remember, you should never move your private key. If you think the
 answer to a problem you're having is to move your private key, think
 again.
 
-Instead of moving your private key, create a new private key from the
+Instead of moving your private key, create a new private key on the
 machine where you need to use SSH and register a second public key on
 the remote.
 :::
@@ -319,14 +307,15 @@ so, you won't be able to use the default key names.
 
 ### Step 2: Register the public keys
 
-To register a public key on a server you control, you'll add the public
-key to the end of the user's `.ssh/authorized_keys` file in their home
+To register a public key to SSH into a server, you'll add the public key
+to the end of the user's `.ssh/authorized_keys` file in their home
 directory. You'll have to make sure the permissions on the
 `authorized_keys` file are correct. More on that in [Chapter
 @sec-linux].
 
-If you're registering with a service, like GitHub.com, find a guide to
-registering SSH keys and it will show you how to do so.
+If you're registering with a service, like GitHub.com, there's probably
+a text box in the GUI to add an SSH key. Google for instructions on how
+to do it.
 
 ### Step 3: Use SSH
 
@@ -353,22 +342,22 @@ if you had a long SSH command like
 `ssh -i my-ssh-key alex@server.example.com`, you could shorten it to
 `ssh alex-server` or whatever you want.
 
-Many people also like using the *tmux* command line utility with SSH.
-SSH sessions block the terminal session they're using and will break
-when your computer goes to sleep.
+One annoyance about SSH is that they block the terminal they're using
+and will break when your computer goes to sleep. Many people also like
+using the *tmux* command line utility with SSH to help solve these
+issues.
 
-tmux is a terminal multiplexer, which allows you to manipulate terminal
-sessions from the command line, including making sessions durable
-through sleeps and other operations. To be honest, I'm mentioning tmux
-because lots of people love it, but I've tried using it and found the
-learning curve too steep for it to come into regular usage for me. Your
-mileage may vary.
+tmux is a *terminal multiplexer*, which allows you to manipulate
+terminal sessions from the command line, including putting sessions into
+the background and making sessions durable through sleeps and other
+operations. To be honest, I'm mentioning tmux because lots of people
+love it, but I've found the learning curve too steep for it to come into
+regular usage for me. Your mileage may vary.
 
-Lastly, if you ever run into trouble using SSH, it has one of my
-favorite debugging modes. Just add a `-v` to your command for verbose
-mode. If that's not enough information, add another `v` for more
-verbosity, and if **that's** not enough, just add another `v` for super
-verbose mode.
+If you ever run into trouble using SSH, it has one of my favorite
+debugging modes. Just add a `-v` to your command for verbose mode. If
+that's not enough information, add another `v` for more verbosity, and
+if **that's** not enough, just add another `v` for super verbose mode.
 
 ## Comprehension Questions
 
@@ -406,8 +395,8 @@ server address variable on my command line with
 `SERVER_ADDRESS=ec2-54-159-134-39.compute-1.amazonaws.com`.
 
 If you're used to R or Python, where it's best practice to put spaces
-around `=`, notice that assigning variables in bash *requires* no spaces
-around `=`.
+around `=`, notice that assigning variables in bash **requires** no
+spaces around `=`.
 :::
 
 ### Step 2: Log on with the `.pem` key
