@@ -122,6 +122,51 @@ recommend ODBC. JDBC requires an extra hop through Java and the
     probably should be using database-specific data loading tools, not
     just writing from R or Python.
 
+## Auth on behalf of data projects
+
+Let's imagine you've created a data science project that pulls data from
+a database. When you're actively working on the project, it's easy for
+you to provide credentials as needed to the database. But what happens
+when you deploy that project to production and you're not sitting there
+to provide credentials as that access happens?
+
+In many organizations, you'll be allowed to use your own data access
+permissions for the project and then to share the project with others in
+the company at your discretion. This situation is sometimes called
+*discretionary access control (DAC)*.
+
+In some more restrictive environments, you won't have this luxury. The
+IT/Admin team may maintain control of permissions themselves or require
+that data access be more tightly governed.
+
+In some cases, it will be acceptable to create or use a *service
+account*, which is a non-human account that exists to hold permissions
+for a project. You might want this to limit the project's permissions to
+exactly what it needs and no more or to be able to manage the app
+permissions independently of the humans involved.
+
+In the most restrictive case, you'll actually have to use the
+credentials of the person who's viewing the content and pass those
+along. This last option is hard.
+
+![](images/whose-creds.jpeg){fig-alt="A diagram showing that using project creator credentials is simplest, service account is still easy, and viewer is hard."}
+
+If you have to use the viewer's credentials for data access, you can
+write code to collect them from the viewer and pass them along. I don't
+recommend this configuration as you have to take on a lot of
+responsibility for collecting those credentials and storing and using
+them responsibly.
+
+In other cases, the project may be able to run as the viewer when it is
+accessing the database. The patterns for doing this are complicated and
+you should talk to your IT/Admin about how this might be able to get
+done.[^1-3-data-access-2]
+
+[^1-3-data-access-2]: The most common option is for the app to run as
+    the viewer on the underlying server and use a Kerberos ticket or
+    OAuth token waiting there. For a variety of reasons, this is
+    difficult and you should avoid it if possible.
+
 ## Connecting to APIs
 
 Some data sources come in the form of an API (application programming
@@ -167,6 +212,8 @@ likely to encounter as a data scientist.
 
 `http` operates on a request-response model. So when you use an API, you
 send a request to the API and it sends a response back.
+
+![](images/req_resp.jpeg)
 
 The best way to learn about a new API is to read the documentation,
 which will include a lot of details about how to use it. Let's go
@@ -217,14 +264,14 @@ your browser that looks like `?first_name=alex&last_name=gold`, those
 are query parameters.
 
 For `POST`, `PUT`, and `PATCH` requests, arguments are provided in a
-*body*, which is usually formatted as *JSON*.[^1-3-data-access-2] Both
+*body*, which is usually formatted as *JSON*.[^1-3-data-access-3] Both
 `{httr2}` and `{requests}` have built-in functionality for converting
 standard Python and R data types to their JSON equivalents, but it can
 sometimes take some experimentation to figure out exactly how to match
 the argument format. Experimenting with conversions using `{json}` in
 Python and `{jsonlite}` in R can be very useful.
 
-[^1-3-data-access-2]: In a lot of cases, people use `POST` for things
+[^1-3-data-access-3]: In a lot of cases, people use `POST` for things
     that look like `GET`s to my eyes. The reason is request bodies.
     `GET` endpoints only recently started allowing bodies -- and it's
     still discouraged. In the `{vetiver}` API example, I think of
@@ -298,7 +345,7 @@ with:
     -- for example a `GET` and a `POST` at the same endpoint for getting
     and setting the data that endpoint stores.
 
-## Environment variables to secure data connections  {#env-vars}
+## Environment variables to secure data connections {#env-vars}
 
 When you take an app to production, authenticating to your data source
 while keeping your secrets secure is crucial.
@@ -311,6 +358,13 @@ The simplest way to provide credentials without the values appearing in
 your code is with an *environment variable*. Environment variables are
 set before your code starts -- sometimes from completely outside Python
 or R.
+
+::: callout-note
+This section assumes you can use a username and password to connect to
+your database. That may not be true, depending on your organization. See
+[Chapter @sec-auth] for how to handle data connections if you can't
+directly connect with a username and password.
+:::
 
 ### Getting environment variables
 
@@ -587,7 +641,7 @@ As you work more with `http` traffic, you'll learn some of the common
 codes. Here's a cheatsheet for some of the most frequent you'll see.
 
 | Code            | Meaning                                                                                                                                                    |
-|----------------|--------------------------------------------------------|
+|--------------------|----------------------------------------------------|
 | `200`           | Everyone's favorite, a successful response.                                                                                                                |
 | `3xx`           | Your query was redirected somewhere else, usually ok.                                                                                                      |
 | `4xx`           | Errors with the request                                                                                                                                    |

@@ -1,5 +1,8 @@
 # Auth Technologies {#sec-append-auth}
 
+Note on how OAuth can directly to authz + SAML can just send along
+attributes.
+
 [Chapter @sec-auth] was all about a conceptual understanding of how auth
 works and what SSO is. In that chapter, we briefly mentioned a few
 technologies used to do auth, including LDAP/AD, SAML, and
@@ -15,6 +18,54 @@ In terms of auth technologies, the biggest distinction is between
 "token-based" systems that can do SSO and others that that cannot. There
 is also a distinction between systems that are considered modern and
 those that are more legacy systems.
+
+But there are still a lot of problems.
+
+First, authorization is still done by the service. LDAP/AD responds to
+queries about identities, but it doesn't know anything about the
+services. Each guard still needs to maintain their own list of who's
+allowed into their room. Changing those access lists still requires
+running around to each room, which is time-consuming and error-prone.
+
+Second, just how much do you trust those guards? The guards are radioing
+in the credentials. There's nothing to stop them from writing them down
+for themselves.
+
+Third, it's kinda a pain for the user. They have to radio in their
+credentials every time they go to access a new door. If you're using a
+lot of different systems, you're going to have to authenticate dozens of
+times a day.[^auth-1]
+
+[^auth-1]: There are also a few technical limitations that fall outside
+    our analogy, but that are relevant to IT/Admins. These include the
+    fact that LDAP/AD was really designed to work with systems all
+    inside one firewall, not with SaaS services that do auth across the
+    open internet, and that that it's difficult to configure how often
+    LDAP/AD credentials have to be re-checked.
+
+SSO solves basically all of the problems that remain using LDAP/AD. The
+user just logs in once, authorization is managed centrally, and
+credentials are never seen by the service -- just the building access
+pass.
+
+The most common technology for achieving SSO for services inside a
+company's firewall is *Security Assertion Markup Language (SAML)*, which
+uses XML-based tokens to do authentication.[^auth-2] The current
+standard, SAML 2.0 was finalized in 2005.
+
+[^auth-2]: XML is a markup language, much like HTML. The good thing
+    about XML is that it's very flexible. The bad thing is that it's
+    relatively hard for a human to easily read.
+
+The other option is *Open Identity Connect (OIDC)/OAuth2.0*, which does
+auth with JSON-based tokens called *JSON Web Tokens (JWT, pronounced
+like jawt)*.[^auth-3] It's slightly newer than SAML, originally created
+by engineers at Google and Twitter in 2007. OAuth2.0 -- the current
+standard -- was released in 2012.
+
+[^auth-3]: Technically, OIDC is an authentication standard and OAuth is
+    an authorization standard. You'll usually just hear it all referred
+    to as OAuth.
 
 **Auth Technologies by Type**
 
@@ -198,13 +249,13 @@ inside the network, it doesn't work well for providing access to
 services outside the network, like SaaS software. For that reason,
 Kerberos is considered a legacy tool.
 
-## Modern systems: OAuth + SAML  {#oauth-saml}
+## Modern systems: OAuth + SAML {#oauth-saml}
 
 These days, most organizations are quickly moving towards implementing a
 modern token-based authentication system through SAML and/or
-OAuth.[^auth-1]
+OAuth.[^auth-4]
 
-[^auth-1]: Modern OAuth is actually OAuth2.0. Whenver I refer to OAuth,
+[^auth-4]: Modern OAuth is actually OAuth2.0. Whenver I refer to OAuth,
     I mean OAuth 2.0.
 
 The way both systems work is that you go to login to a service and are
@@ -262,9 +313,9 @@ the front door of your data science server with SAML or OAuth and then
 access to data sources like databases, APIs, and cloud storage is
 handled automatically on the back end -- no need for users to
 (insecurely) input credentials inside the data science
-environment.[^auth-2]
+environment.[^auth-5]
 
-[^auth-2]: While OAuth is an authorization technology, there is an
+[^auth-5]: While OAuth is an authorization technology, there is an
     authentication technology, Open ID Connect (OIDC) built on top of
     OAuth. In practice, people use the term OAuth to refer to both OAuth
     proper and OIDC.
@@ -333,3 +384,4 @@ R or Python.
 This is why OAuth is used for service-to-service communication.
 
 ![](images-append/auth-oauth.png)
+

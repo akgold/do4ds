@@ -1,0 +1,239 @@
+# Package Management in the Enterprise {#sec-ent-pm}
+
+The most obvious day-to-day difference for a data scientist at an
+enterprise versus a smaller organization is how they manage open source
+Python and R packages.
+
+Many small organizations have a lassiez-faire attitude towards packages.
+You install what you need when you need from wherever you need. You have
+free reign to install packages from PyPI, Conda Forge, CRAN,
+BioConductor, GitHub, and wherever else you might want.
+
+As a data scientist, you understand in your bones how badly you need
+access to numerous open source libraries and packages to get anything
+done. But the IT/Admins at your organization probably don't have that
+same understanding, and an enterprise may have organizational rules that
+govern how software comes into secure environments.
+
+This chapter will help you understand the concerns IT/Admins have around
+packages to help you better collaborate with them.
+
+## Controlling package flows
+
+Regardless of exactly what the rules are, IT/Admins in enterprise need a
+way to actually restrict the packages that are available inside their
+environment.
+
+If you've giving someone access to Python or R, it's usually not
+possible to stop them from installing packages using `pip install` or
+`install.packages`. That's one reason why many enterprise environments
+are airgapped -- it's the only way to ensure data scientists can't
+install packages from outside the environment.
+
+Most IT/Admins understand that airgapping is the best way to stop
+unauthorized package installs. The next bit -- that they need to provide
+you some way to install packges -- is the part that may require some
+convincing.
+
+In order to manage the flow of packages into their environment, many
+organizations run *package repository software* inside their firewall.
+Common package repositories include Jfrog Artifactory, Sonatype Nexus,
+Anaconda Business, and Posit Package Manager.
+
+Artifactory and Nexus are generalized library and package management
+solutions for all sorts of software, while Anaconda and Posit Package
+Manager are more narrowly tailored for data science use cases. If
+possible, I'd advise working with your IT/Admins to get a data science
+focused repository software. Often these repositories can run alongside
+general-purpose repository tools if you already have them.
+
+![](images/pm-solution.png){fig-alt="A data science environment getting packages from a package repository, while all other connections bounce back inside the firewall."
+width="600"}
+
+The way this tends to work best is when the IT/Admin is the one who
+controls which packages are allowed into the repository and when. Then
+you, as the data scientist, has freedom to install allowed packages into
+any individual project and manage them there using environment as code
+tooling, as discussed in [Chapter @sec-env-as-code].
+
+## Ensuring packages are safe
+
+In some cases, IT/Admins want to only allow packages in that have met
+certain security standards. In order to get packages into your
+environment, you'll have to convince the IT/Admin that your packages
+meet those security requirements.
+
+::: callout-note
+### Are these concerns relevant for data science?
+
+One thing that can ameliorate security concerns is that most data
+science projects are run entirely inside a private environment. For
+example, there are many security concerns with running Javascript on
+public websites that are sharply reduced when the only people who can
+access your application are already staff at your organization.
+
+Some IT/Admin organizations are more open to thinking about security in
+this kind of nuanced way. Others are much more rigid and
+checklist-oriented.
+:::
+
+A basic, but effective, form of package security is to limit allowed
+packages to popular packages, packages from known organizations/authors,
+or packages that outside groups have validated to be safe.
+
+Increasingly, there are industry groups that are validating that certain
+packages have met quality and security standards and that anyone in the
+industry should feel comfortable using them. For example, the [R
+Validation Hub](https://www.pharmar.org/) is a pharmaceutical industry
+group that is working to create lists of packages that are broadly
+agreed to meet certain quality standards. There are also private
+organizations that may serve this validation function.
+
+A somewhat more sophisticated security posture is to check that incoming
+packages don't contain known security vulnerabilities.
+
+Every day, security vulnerabilities in software are identified and
+publicized. These publicized vulnerabilities are maintained in the *CVE*
+(*Common Vulnerabilities and Exposures*) system. Each CVE is assigned an
+identifier and a severity score that ranges from None to Critical.
+
+Very often, companies have policies that disallow the usage of software
+with too many vulnerabilities. These policies often completely disallow
+software with Critical CVEs and temporarily allow software with a few
+High CVEs.
+
+Many package repositories will allow an admin to pull in CVE lists to
+track CVE exposure, disallow packages with too many CVEs, and figure out
+how to remove packages if new CVEs are discovered.
+
+A final way some organizations ensure the security of incoming packages
+is to run them through a *code scanner*. This is a piece of software
+that scans all incoming code and detects potential security risks --
+like usage of insecure encryption libraries, calls to external web
+services, or places where it accesses a database.
+
+These are almost always paid tools. It is my personal opinion that the
+creators of these tools often overstate the potential benefits and that
+a lot of code scanning is security theater. Unfortunately, that doesn't
+change the reality that getting open source packages into your
+environment may require them going through a code scanner.
+
+The sophistication of these tools is roughly in proportion to how
+popular the language is. So Javascript, which is both extremely popular
+and also makes up most public websites, has reasonably well-developed
+software scanning. Python, which is very popular, but is only rarely on
+the front end of websites has fewer scanners, and R, which is far less
+popular and is never in a website front end has none as far as I'm
+aware.
+
+## Open source licensing issues
+
+In addition to security issues, some organizations are concerned about
+the legal implications of using free and open source software (FOSS) in
+their environment. These organizations, most often organizations that
+themselves write software, want to limit the use of certain types of
+licenses inside their environment.
+
+When someone releases software, they can choose a *license* to apply to
+that software. A license is a legal document explaining what consumers
+are allowed to do with that software.
+
+::: callout-note
+I am not a lawyer and this is not legal advice, but hopefully this is
+helpful context on the legal issues around FOSS software.
+:::
+
+The type of license you're probably most familiar with is a copyright. A
+copyright gives the owner exclusivity to distribute the software and
+charge for it. For example, if you buy a copy of Microsoft Word, you
+have a limited license to use the software, but you're not allowed to
+inspect the source code of Microsoft Word and you're not allowed to
+share the software.
+
+In 1985, the Free Software Foundation (FSF) was created to support the
+creation of free software. They wanted to facilitate using, reusing, and
+sharing software. In particular, the FSF supported four freedoms for
+software:[^3-4-ent-pm-1]
+
+[^3-4-ent-pm-1]: They're numbered 1-4 here for clarity in writing, but
+    like many computer science topics, the numbering actually starts at
+    0.
+
+1.  Run the program however you wish for any purpose.
+2.  Study the source code of the program and change it as you wish.
+3.  Redistribute the software as you wish to others.
+4.  Distribute copies of the software once you've made changes so
+    everyone can benefit.
+
+Now, you could just do this without applying a license to your software.
+But from a lawyer's perspective, that's dangerous, and creating and
+applying FOSS licenses was designed to make sure that the four freedoms
+would be upheld and that everyone was clear on their limits.
+
+::: callout-note
+## What does "free" mean?
+
+It's expensive to create and maintain FOSS. For that reason, the *free*
+in FOSS is about *freedom*, not about zero cost. As a common saying goes
+-- it means free as in free speech, not free as in free beer.
+
+There are many different flavors of open-source licenses. All of them
+I'm aware of, even the
+[anti-capitalist](https://anticapitalist.software/) one, allows you to
+charge for software.
+
+Organizations have attempted to support FOSS with a variety of different
+models and varying degrees of success. These models include donations,
+paid features or products, advertising or integrations, and paid
+support, services, or hosting.
+:::
+
+There are dozens of different FOSS licenses with different parameters.
+There are two main categories.
+
+*Permissive* licenses allow you to do basically whatever you want with
+the software. For example, the common MIT license allows you to, "use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell"
+MIT-licensed software without attribution. Most organizations have
+basically no concerns about using software with a permissive open source
+license.
+
+The bigger concern is using software that has a *copyleft* or *viral*
+license. Software licensed under a copyleft regime requires that any
+derivative works are themselves released under a similar license. The
+idea is that open source software should beget more open source software
+and not silently be used by big companies to make megabucks.
+
+The concern enterprises have with copyleft licenses is that they might
+propagate into the private work you are doing inside your company. This
+concern is especially keen at organizations that themselves sell
+proprietary software. For example, what if a court were to rule that
+Apple or Google had to suddenly open source all their software because
+of the use of copyleft licenses by developers there?
+
+The reality is that there have been basically no legal cases on this
+topic and nobody knows how it would shake out if it did get to court, so
+some organizations err on the side of caution.
+
+These concerns are somewhat less for Python than for R. Python itself is
+released under a permissive Python Software Foundation (PSF) license and
+Jupyter Notebook under a permissive modified BSD. R is released under
+the copyleft GPL license and RStudio under RStudio under a copyleft
+AGPL.
+
+However, every single package author can choose a license for
+themselves. In an enterprise context, these discussions tend to focus on
+knowing -- and potentially blocking -- the use of packages under
+copyleft licenses inside the enterprise. Some package repository
+software surfaces the license type of individual packages to help
+organizations make their own decisions.
+
+## Comprehension Questions
+
+1.  What are the concerns IT/Admins have about packages in an enterprise
+    context?
+2.  What are three tools IT/Admins might use to ensure packages are
+    safe?
+3.  What is the difference between permissive and copyleft open source
+    licenses? Why are some organizations concerned about using code that
+    includes copyleft licenses?
