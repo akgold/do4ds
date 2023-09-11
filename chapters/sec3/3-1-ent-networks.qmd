@@ -11,10 +11,7 @@ all of the servers the IT/Admin group maintains.
 
 In this chapter, you'll learn about how an enterprise IT/Admin thinks
 about configuring networking and some of the issues that come up trying
-to do data science inside an enterprise networking environment. While
-this might seem somewhat esoteric, many issues that arise in enterprise
-data science environments can be solved by asking better questions of
-the people who control networking for the environment.
+to do data science inside an enterprise networking environment.
 
 ## Enterprise networks are private
 
@@ -22,10 +19,10 @@ An enterprise network houses dozens or hundreds of servers, each with
 its own connection requirements. Some are accessible to the outside,
 while others are only accessible to other servers inside the network.
 
-For that reason, the servers an enterprise controls all live inside a
-*private network*. Every node in a private network has a *private IP
-Address*, which is valid only inside the private network. Those IP
-Addresses are handed out by the private router that governs the private
+For that reason, the servers an enterprise controls all live inside one
+or more *private networks*. Every host in a private network has a
+*private IP Address*, which is valid only inside the private network.
+Those IP Addresses are handed out by the private router that governs the
 network. And like a public IP Address is aliased to a domain for ease of
 remembering, many private networks make use of *hostnames* to have
 human-friendly ways to talk about servers.
@@ -39,23 +36,23 @@ throughout Section 2, we basically just ignored the VPC and assigned the
 instance a public IP address, which is why this is the first time you're
 hearing about it.
 
-In an enterprise context, this kind of configuration would be a big
-no-no.
+In an enterprise context, this kind of configuration would be a no-go.
 :::
 
-When there are this many services running inside a network, the
+When there are this many services running inside a network, networking
 requirements can get somewhat byzantine. For example, you probably want
-to set up a data science workbench that should be reachable from user's
-laptops and that needs to reach one or more databases. It also needs
-access to some sort of package repository, public or private. Then there
-are the servers that house the databases. Those need to be accessible
-from the workbench and wherever the data is being loaded from, but
-probably shouldn't be directly accessible from anyone's laptop. And in
-order to comply with the principle of least privilege, you don't want
-any of these servers to be more available than needed.
+to set up a data science workbench and a data science hosting
+environment that should be reachable from user's laptops and that needs
+to reach one or more databases. They also may need to access a public
+package repository.
 
-![](images/private_network.jpeg){fig-alt="A picture of traffic coming into a private network from laptops going to a workbench. There's a connection from the workbench to a database and package repository, but only to there."
-width="600"}
+But the servers that house the databases should be accessible from the
+workbench and wherever the data is being loaded from, but probably
+shouldn't be directly accessible from anyone's laptop. And in order to
+comply with the principle of least privilege, you don't want any of
+these servers to be more available than needed.
+
+![](images/private_network.png){fig-alt="A picture of traffic coming into a private network from laptops going to a workbench. There's a connection from the workbench to a database and package repository, but only to there."}
 
 And that's just the servers for actually doing work. Enterprise networks
 also host a variety of devices that are purely for controlling the flow
@@ -67,22 +64,34 @@ to get into, out of, or across the private network.
 ## The shape of an enterprise network
 
 When you access something important inside a private network, the IP
-Address your computer uses is almost never a server that actually does
-work. Instead, it's usually the address of a *proxy server* or *proxy*,
-which is an entire server that exists just to run proxy software that
-routes traffic around the network.
+Address is almost never a server that actually does work. Instead, it's
+usually the address of a *proxy server* or *proxy*, which is an entire
+server that exists just to run proxy software that routes traffic around
+the network.
 
 Routing all traffic through the proxy ensures that the important servers
 only ever get traffic from other servers the organization controls. This
-increases security and flexibility since it decreases the number of
-attack vectors to the important servers. Proxy servers may also do other
-tasks like terminate SSL or do authentication.
+decreases the number of attack vectors to the important servers. Proxy
+servers may also do other tasks like terminate SSL or authentication.
 
-An enterprise network is subdivided into *subnets*, which are logically
-separate partitions of the private network.[^3-1-ent-networks-1] In most
-cases, the private network is divided between the *public subnet* or
-*demilitarized zone (DMZ)* where the proxies live, and the *private
-subnet* where all the important servers live.[^3-1-ent-networks-2]
+::: callout-note
+## VPN vs VPC?
+
+You may have to log into a *VPN (Virtual Private Network)* for work or
+school from your personal computer. Where a VPC is a private network
+inside a cloud environment, a VPN is a private network for remote access
+to a shared network. You generally don't directly log into an enterprise
+VPC (or on-prem private network), but you might login to an adjacent VPN
+ensuring that anyone who accesses the network is coming from an
+authenticated machine.
+:::
+
+Enterprise networks are almost always subdivided into *subnets*, which
+are logically separate partitions of the private
+network.[^3-1-ent-networks-1] In most cases, the private network is
+divided between the *public subnet* or *demilitarized zone (DMZ)* where
+the proxies live and the *private subnet* where all the important
+servers live.[^3-1-ent-networks-2]
 
 [^3-1-ent-networks-1]: Subnets are defined as a range of IP addresses by
     something called a *CIDR (Classless Inter-Domain Routing) block*.
@@ -99,57 +108,50 @@ subnet* where all the important servers live.[^3-1-ent-networks-2]
     Don't try to remember this. There are online CIDR block calculators
     if you ever need to create them.
 
-[^3-1-ent-networks-2]: It's also very common to actually have 4 subnets
-    and duplicate the public/private subnet configuration across two
-    availability zones to be resilient to failures in one availability
-    zone.
+[^3-1-ent-networks-2]: The public subnet usually hosts at least two
+    proxies -- one to handle regular HTTP(S) traffic and one just to
+    route SSH traffic to hosts in the private network. The SSH proxy is
+    often called a *bastion host* or *jump box*.
+
+    There are also network infrastructure devices to translate public
+    and private IP addresses back and forth that go alongside the
+    proxies. Private subnets have a device that only allows outbound
+    traffic called a *NAT (Network Address Translation) Gateway* by AWS.
+    Public subnets have a two-way device called an *Internet Gateway* by
+    AWS.
+
+    It's also very common to actually have 4 subnets and duplicate the
+    public/private subnet configuration across two availability zones to
+    be resilient to failures in one availability zone.
 
 ![](images/subnets.png){fig-alt="A private network where people come to public subnet with HTTP proxy and Bastion Host. Access to Work Nodes in Private Subnet is only from Public Subnet."
-width="400"}
+width="453"}
 
-Putting the important servers in the private subnet is also more
-convenient because the IT/Admin can just make up hostnames and IP
-Addresses without worrying about uniqueness outside of the private
-subnet. For example, they could use the hostname $\text{google.com}$
-because the hostname only needs to be valid inside the private network.
-But that's also bound to be confusing and I wouldn't recommend it.
+Aside from the security benefits, putting the important servers in the
+private subnet is also more convenient because the IT/Admin use
+hostnames and IP Addresses without worrying about uniqueness outside of
+the private subnet. For example, they could use the hostname
+$\text{google.com}$ for a server because it only needs to be valid
+inside the private network. But that's also bound to be confusing and I
+wouldn't recommend it.
 
-::: callout-note
-The public subnet usually hosts at least two proxies -- one to handle
-regular HTTP(S) traffic and one just to route SSH traffic to administer
-hosts in the private network. This is often called a *bastion host* or
-*jump box*.
+## Networking pain follows proxies
 
-There are also network infrastructure devices to translate public and
-private IP addresses back and forth that go alongside the proxies. For
-your private subnet, you'll have a device that only allows outbound
-traffic called a *NAT (Network Address Translation) Gateway* by AWS.
-Public subnets have a two-way device called an *Internet Gateway* by
-AWS.
-:::
-
-## Networking difficulties follow proxies
-
-The simplest networking difficulty is that a connection simply doesn't
-exist where one is needed. This is usually pretty obvious using tools
-like `ping` and `curl`, and is straightforward to solve by working with
-your IT/Admin team.
+The simplest networking issue is that a connection simply doesn't exist
+where one is needed. This is usually pretty obvious using tools like
+`ping` and `curl` and is straightforward to solve by working with your
+IT/Admin team.
 
 Difficulties tend to be more subtle when there are proxies involved, and
-enterprise networks feature proxies all over the place. In an enterprise
-network, proxies are kinda like the watertight bulkheads you see all
-over the place in any movie featuring naval warfare. Any two distinct
-parts of the network may have a proxy in between, and that proxy can
-cause trouble.
+enterprise networks can feature proxies all over the place. Much like
+the watertight bulkheads between every room on a naval ship, they show
+up between any two parts of the network you might want to be able to
+seal off at some point. And where a proxy exists, it can cause you
+trouble.
 
-In fact, there are actually two proxies that might fall on the boundary
-of a private network.[^3-1-ent-networks-3] The network could have a
-proxy that intercepts *inbound* traffic coming into the network and
-could also have a proxy that intercepts *outbound* traffic generated
-inside the private network headed elsewhere.
-
-[^3-1-ent-networks-3]: Proxies really can go anywhere in the network,
-    but I'm describing them as falling on the boundary for simplicity.
+In fact, there are actually two proxies that might be messing with
+traffic you care about. There could be a proxy that intercepts *inbound*
+traffic and also a a proxy that intercepts *outbound* traffic.
 
 ::: callout-note
 I've made up the terms inbound and outbound.
@@ -158,8 +160,8 @@ Traditionally, proxies are classified as *forward* or *reverse*. They're
 classified as if you're a host inside the private network, so inbound
 proxies are reverse and outbound ones are forward. I find it nearly
 impossible to remember which is which. I started using inbound and
-outbound to keep myself clear, and I've never had to clarify what I
-mean. I recommend you do the same.
+outbound to keep myself clear, and I've always been understood on the
+first try. I recommend you do the same.
 :::
 
 ![](images/proxy-dir.png){fig-alt="Inbound/Reverse proxies handle traffic into the private network. Outbound/Forward proxies handle traffic going out."
@@ -193,8 +195,8 @@ in the proxy.
 
 Database traffic often runs using non-HTTP traffic to special ports. For
 example, Postgres runs on port $5432$. However, your database traffic
-should probably all occur inside the private network and this hopefully
-won't be an issue.
+should probably all occur inside the private network and this won't be
+an issue.
 
 Almost other traffic, including package downloads, is standard HTTP(S)
 traffic, so it can happily run over $80$ or $443$.
@@ -204,20 +206,20 @@ Inbound redirection issues can be quite hairy to debug. Very often,
 these issues arise because the application you're using expects to be
 able to redirect you back to itself. If the proxy isn't configured quite
 correctly, everything can break in really funky
-ways.[^3-1-ent-networks-4] This is particularly likely to show up when
+ways.[^3-1-ent-networks-3] This is particularly likely to show up when
 starting new sessions or launching something from inside the platform.
 Usually, your application will have an admin guide that includes
 directions on how to host it behind a proxy. You should confirm with
-your admin those steps have been followed.[^3-1-ent-networks-5]
+your admin those steps have been followed.
 
-[^3-1-ent-networks-4]: For example, remember those headers we had to add
+[^3-1-ent-networks-3]: For example, remember those headers we had to add
     to traffic to RStudio Server in Chapters [@sec-networks] and
     [@sec-ssl] so it knew it was on a subpath and on HTTPS.
 
-[^3-1-ent-networks-5]: This can be particularly gnarly if your proxy
-    also does authentication. If your proxy expects that ever request
-    has credentials attached, but your application doesn't realize it
-    has to go through the proxy, weird behavior can ensue.
+    This can be particularly gnarly if your proxy also does
+    authentication. If your proxy expects that ever request has
+    credentials attached, but your application doesn't realize it has to
+    go through the proxy, weird behavior can ensue.
 
 Proxies also often impose file size limits and/or session duration
 timeouts. If weird things are happening during file uploads or downloads
@@ -234,10 +236,10 @@ workaround if you can't get websockets enabled on your proxy.
 
 Unlike inbound proxies, which occur on virtually every enterprise
 private network, outbound proxies generally only occur when the IT/Admin
-team needs to restrict the ability of people inside the network to go
-outside. This can be necessary to avoid data exfiltration or to ensure
-that users only acquire resources that have been explicitly allowed into
-the environment.
+team needs to restrict the ability of people to go outside. This can be
+necessary to avoid data exfiltration or to ensure that users only
+acquire resources that have been explicitly allowed into the
+environment.
 
 Environments with limited outbound access are called *offline* or
 *airgapped*. The term airgap originates with machines that are
@@ -255,11 +257,11 @@ in an airgapped environment in [Chapter @sec-ent-pm].
 Additionally, your IT/Admin will have to figure out how they're going to
 manage operating system updates, system library installations, and
 licensing any paid software that's inside the
-environment.[^3-1-ent-networks-6] They likely already have solutions
+environment.[^3-1-ent-networks-4] They likely already have solutions
 that might include some sort of transfer system, internal repositories,
 and/or temporarily opening the firewall.
 
-[^3-1-ent-networks-6]: Licenses are often applied by reaching out to a
+[^3-1-ent-networks-4]: Licenses are often applied by reaching out to a
     license server owned by the software vendor.
 
 ## Comprehension Questions
