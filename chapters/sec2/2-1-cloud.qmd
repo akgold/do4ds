@@ -184,6 +184,14 @@ chapter is in [Appendix @sec-append-cheat].
 *Infrastructure as a service* (*IaaS*, pronounced eye-ahzz) is the basic
 rent a server premise from the earliest days of the cloud.
 
+::: callout-note
+When you rent a server from a cloud provider, you usually not renting a
+whole server. Instead, you're renting a *virtualized* server or a
+*virtual machine (vm)*. What you see as your server is probably just a
+part of a much larger physical server that you're sharing with other
+customers of the cloud provider.
+:::
+
 From a data science perspective, a IaaS offering might look like what
 we're doing in the lab in this book -- acquiring a server, networking,
 and storage from the cloud provider and assembling it into a data
@@ -241,9 +249,10 @@ You're also likely to make use of cloud-based database, data lake, and
 data warehouse offerings. There are numerous different offerings, and
 the ones that you use will depend a lot on your use case and your
 organization. The ones I've seen used most frequently are *RDS* or
-*Redshift* from AWS, *Azure Database*, and *Google BigQuery.* This
-category also includes a number of offerings from outside the big three,
-most notably *Snowflake* and *Databricks*.
+*Redshift* from AWS, *Azure Database* or *Azure Datalake*, and *Google
+Cloud Database* and *Google BigQuery.* This category also includes a
+number of offerings from outside the big three, most notably *Snowflake*
+and *Databricks*.
 
 Depending on your organization, you may also use services that run APIs
 or applications from containers or machine images like AWS's *ECS
@@ -252,11 +261,10 @@ or applications from containers or machine images like AWS's *ECS
 Functions*.
 
 Increasingly, organizations are turning to *Kubernetes* as a way to host
-services. (More on that in [Chapter @sec-ent-servers].) Most
-organizations who do so use a cloud provider's Kubernetes cluster as a
-service: AWS's *EKS (Elastic Kubernetes Service)* or *Fargate*, Azure's
-*AKS (Azure Kubernetes Service)*, or GCP's *GKE (Google Kubernetes
-Engine)*.
+services. (More on that in [Chapter @sec-ent-scale].) Most organizations
+who do so use a cloud provider's Kubernetes cluster as a service: AWS's
+*EKS (Elastic Kubernetes Service)* or *Fargate*, Azure's *AKS (Azure
+Kubernetes Service)*, or GCP's *GKE (Google Kubernetes Engine)*.
 
 Many organizations are moving to PaaS solutions for hosting applications
 for internal use. It takes away the hassle of managing and updating
@@ -284,6 +292,26 @@ up integrations, most often authentication and/or data sources.
 
 The tradeoff for this ease is that they're generally more expensive and
 you're at the mercy of the provider for configuration and upgrades.
+
+### Notes on Data Storage
+
+In most cases, you'll have data storage handed to you by an IT/Admin.
+Here are my thoughts on different kinds of data stores.
+
+Redshift, Azure Datalake, BigQuery, Databricks, and Snowflake are
+full-fledged data warehouses that catalog and store data from all across
+your organization. As a data scientist, you might use one of these, but
+you probably won't (and shouldn't) set one up.
+
+However, it's likely that you'll own one or more databases within the
+data warehouse, and you may have to choose what kind of database to use.
+
+In my experience, *Postgres* is good enough for most things involving
+rectangular data of moderate size. And if you're storing non-rectangular
+data, you can't go wrong with bucket storage. There are more advanced
+options, but unless you've tried the combo of a Postgres database and
+bucket storage and found it lacking, I probably wouldn't do anything
+more complicated.
 
 ### Common Services
 

@@ -1,0 +1,16 @@
+# Load Balancers {#sec-append-lb}
+
+So for a data science workbench, you probably need a filesystem that can attach to all of the nodes at the same time and maybe also a database. That filesystem is usually a network attached storage (NAS, pronounced naahz), which is just a filesystem that lives on its own server. Different NASs may run different software including NFS (Network File System) for Linux or SMB (Server Message Block) or the outdated CIFS (Common Internet File System) to mount Windows filesystems to a Linux host.
+
+As a data scientist, you really shouldn't be configuring load-balancers. But the IT/Admin you're working with may need to do so and it might be helpful to understand how they're configuring it.
+
+Load-balancers are a special kind of proxy server that routes sessions among the nodes in the cluster.
+
+At a minimum, your load-balancer has to know what nodes are accepting traffic. This is accomplished by configuring a health check/heartbeat for the application on the node. A health check is a feature of the application that responds to periodic pings from the load-balancer. If no response comes back, the load-balancer treats that node as unhealthy and doesn't send traffic there.
+
+The simplest form of load-balancing is to just rotate traffic to each node that is healthy in a round-robin configuration. Depending on the capabilities of the load-balancer and what metrics are emitted by the application, it may also be possible or desirable to do more complicated load-balancing that pays attention to how loaded different nodes are.
+
+One other feature that may come up is sticky sessions or sticky cookies. For stateful applications – like Shiny apps – you want to get back to the same node in the cluster so you can resume a previous session. In most load-balancers, this is a simple option you can just turn on.
+
+Usually, load balancers are configured to send traffic to all the nodes in the cluster in an active/active configuration. It is also possible to configure the load-balancer to send traffic to only some of the nodes, with the rest remaining inert until they are switched on, usually in the event of a failure in the active ones. This is sometimes called a blue/green or red/black configuration.
+

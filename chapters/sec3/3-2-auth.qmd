@@ -1,0 +1,315 @@
+# Auth in Enterprise {#sec-auth}
+
+Imagine you're suddenly responsible for managing access to the services
+and data in an enterprise. You've got dozens of people joining, leaving,
+or changing roles each week, and there are dozens or hundreds of
+different systems they might need to access. And complying with the
+principle of least privilege means you don't want to just give everyone
+access to everything. Managing who's allowed to do what could be a major
+headache.
+
+One thing you almost certainly don't want is individual people who
+aren't admins deciding how to secure individual systems. Instead, you
+want to centralize the process of letting people log in to the services
+they need, called *auth*, inside the IT/Admin group.
+
+If you work in an enterprise, you'll almost certainly have to work with
+the organization's corporate auth to login to your data science
+workbench and make use of data sources. Additionally, if you're
+advocating for a data science environment at your organization, you'll
+probably be given IT/Admin requirements related to auth. This chapter is
+designed to help you understand how IT/Admins think about auth and the
+technologies they have at their disposal to make it work.
+
+::: callout-note
+This chapter is designed to help you understand the basic terminology
+around auth. If you're curious, there's more detail on the technical
+operation of each of these technologies in [Appendix @sec-append-auth].
+:::
+
+## A gentle introduction to auth
+
+Imagining yourself as an enterprise IT/Admin, you've got dozens or
+hundreds of different services that require auth -- email, databases,
+servers, social media accounts, HR systems, and more. Let's imagine each
+of those services as a room in a building.
+
+Your job is to give everyone access to the rooms they need and **only**
+the rooms they need.
+
+First, you need a way to ascertain and validate the identity of anyone
+who's trying to enter a room in the building. And for that, you'll need
+to issue and verify *credentials*. The most common computer credential
+is a username and password, but there are other kinds of credentials
+including biometrics like fingerprints and facial identification,
+multi-factor codes, push notifications on your phone, and ID cards. The
+process of verifying credentials is called *authentication (authn)*.
+
+But in an enterprise context, just knowing that someone has valid
+credentials is insufficient. Remember, not every person in an enterprise
+gets to access every system or every feature of every system. So you'll
+also need a way to check their *permissions*, which is the binary choice
+of whether they're allowed to access the service. The permissions
+checking process is called *authorization (authz)*. The combination of
+authn and authz comprise auth.
+
+![](images/auth.png){fig-alt="Authentication -- someone proving who they are with an ID card. Authorization -- someone asking if they can come in and a list being consulted."
+width="600"}
+
+Many organizations start out simply with auth. They just add services
+one at a time and allow each service to use it's own built-in
+functionality to issue service-specific usernames and passwords to
+users. This would be similar to posting a guard at the door to each room
+who works out a unique passphrase with each user.
+
+![](images/simple_auth.png){fig-alt="A user logging into 3 different services with 3 different usernames and passwords."
+width="600"}
+
+This quickly becomes a mess for everyone. It's bad for users because
+they need to either keep many credentials straight or reuse them over
+and over, which is insecure. And as an IT/Admin, adding, removing, or
+changing permissions is a pain, because the permissions are managed
+individually with each system.
+
+## Centralizing user management with LDAP/AD
+
+In the mid-1990s, an open protocol called *LDAP (Lightweight Directory
+Access Protocol, pronounced ell-dapp)* became popular. LDAP allows
+services to collect usernames and passwords from users and use them to
+query the central LDAP database. The LDAP server sends back information
+on their user, including their username and groups, which the service
+can use to authorize the user.Microsoft implemented LDAP as a piece of
+software called *Active Directory* *(AD)* that became so synonymous with
+LDAP that the technology is often just called LDAP/AD.
+
+Switching to LDAP/AD is like changing the process in our building so the
+guard will radio in the credentials from the user and you'll radio back
+if those credentials are valid. This is a big improvement. Having only
+one set of credentials makes life easier for users. We know now that all
+the rooms are using a similar level of security and if credential are
+compromised, it's easy to swap them out.
+
+![](images/ldap-ad.png){fig-alt="A user logging into different services with the same username and password with an LDAP/AD server in the back."
+width="600"}
+
+LDAP/AD provides a straightforward way to create Linux users with a home
+directory, so it's often used in data science workbench contexts that
+have that requirement.[^3-2-auth-1]
+
+[^3-2-auth-1]: Your IT/Admin may call this *joining the domain* using
+    the Linux technologies *PAM (Pluggable Authentication Modules)* and
+    *SSSD (System Security Services Daemon)*.
+
+LDAP/AD predates the rise of the cloud and SaaS services, and is
+considered a legacy technology. In particular, LDAP/AD can't be used to
+centrally manage authorization. With LDAP/AD who can do what still has
+to be managed with each service.
+
+Additionally, LDAP/AD requires the service request and pass along the
+user credentials which is a potential security risk and usually means
+that it's not possible to incorporate now-common requirements like
+*multi-factor authentication (MFA)*. These days, many organizations are
+getting rid of their LDAP/AD implementations and are adopting a smoother
+user and admin experience with cloud-friendly technologies.
+
+::: callout-note
+It's worth noting that LDAP/AD actually isn't an auth technology at all.
+It's a type of database that happens to be particularly well-suited to
+managing users in an organization. So even as many organizations are
+switching to more modern systems, they may just be wrappers around user
+data stored in an existing LDAP/AD system.
+:::
+
+## The rise of Single Sign On (SSO)
+
+*Single Sign On (SSO)* is when you login once at the start of your
+workday to a standalone *identity provider* and then are granted access
+to every service you need when you go there. These days, SSO is almost
+always done through a standalone identity provider like Okta, Onelogin,
+Ping, or Microsoft Entra ID.[^3-2-auth-2]
+
+[^3-2-auth-2]: Until recently, Microsoft Entra ID was called Azure
+    Active Directory, which confusingly was for SSO, not Active
+    Directory. That's probably why they changed the name.
+
+Advantages of SSO includes central management of authorization at the
+identity provider and making it easier to implement more sophisticated
+forms of credentialling like MFA, because they only need to be
+implemented by the identity provider. For many organizations, especially
+enterprise ones, SSO is a requirement for any new service.
+
+::: callout-note
+The term SSO is somewhat ill-defined. It usually means the experience
+described here, but sometimes it just means the centralized user and
+credential management in an LDAP/AD system. It's important to follow up
+when an IT/Admin says SSO is a requirement.
+:::
+
+SSO is analogous to having users exchange their credentials for a
+building access pass at the central security office. Each room has a
+machine to send a request to the central security office, where the room
+can be remotely unlocked if it's ok.
+
+![](images/sso.png){fig-alt="A user getting an SSO token, which they use to login to each service."
+width="600"}
+
+SSO is a description of a user and admin experience, usually accomplised
+by one of two technologies -- *SAML (Security Assertion Markup
+Language)* or *OAuth (Open Identity Connect/OAuth2.0)*.[^3-2-auth-3]
+From the user perspective, using SAML and OAuth are very similar. Your
+organization's IT/Admins are likely to use OAuth to work with external
+SaaS services and may have a slight preference for SAML for services
+inside your organization's firewall.
+
+[^3-2-auth-3]: There is a technology called *Kerberos* that some
+    organizations use to accomplish SSO with LDAP/AD. This is rare.
+
+As I write this in 2023, there's a major shift underway from legacy
+systems like LDAP/AD to cloud-friendly SSO systems and enhanced security
+they enable. In particular, the use of non-password credentials like
+biometrics and passphrases and the use of OAuth to do sophisticated
+authorization management inside enterprises are relatively uncommon now,
+but are likely to be standard practices within a few years.
+
+## Managing permissions
+
+Irrespective of the technology used, your organization is going to have
+policies about how they manage permissions that you'll need to
+incorporate or adopt.
+
+::: callout-note
+There are meaningful differences in how LDAP, SAML, and OAuth
+communicate to services about permissions. That's a level of detail
+beyond this chapter. More in [Appendix @sec-append-auth] if you're
+interested.
+:::
+
+If your organization has a policy you're going to need to be able to
+enforce inside the data science environment, it's most likely a *Role
+Based Access Control (RBAC)* policy. In RBAC, permissions are assigned
+to an abstraction called a role. Users and groups are then given roles
+depending on their needs.
+
+For example, there might be a `manager` role that should have access to
+certain permissions in the HR software. This role would be applied to
+anyone in the `data-science-manager` group as well as the
+`data-engineering-manager` group.
+
+There are a few issues with RBAC. Most importantly, if there are lots of
+idiosyncratic permissions, it's often easier to create tons and tons of
+special roles rather than figure out how to harmonize them into a
+system.
+
+Many organizations haven't reached the complexity of adopting RBAC. They
+often use simple *Access Control Lists (ACLs)* of who's allowed to
+access each service.[^3-2-auth-4] ACLs have the advantage of being
+conceptually simple, but with a lot of services or a lot of users, it
+can be a pain to maintain individual lists for each service.
+
+[^3-2-auth-4]: Standard Linux permissions (POSIX permissons) that were
+    discussed in [Chapter @sec-linux] are basically a special case of
+    ACLs. ACLs allow setting individual-level permissions for any number
+    of users and groups, as opposed to the one owner, one group, and
+    everyone else permissions set for POSIX.
+
+    Linux distros now have support for ACLs on top of the standard POSIX
+    permissions.
+
+Some organizations are going more granular techniques than RBAC or ACLs
+and are adopting *Attribute Based Access Control (ABAC)*. In ABAC,
+permissions are granted based on an interaction of different attributes
+and a rules engine.
+
+For example, you can imagine three distinct attributes a user could
+have: `data-science`, `data-engineer`, and `manager`. You could create a
+rules engine that provides access to different resources based on the
+combinations of these attributes.
+
+Relative to RBAC, ABAC is a more powerful system that allows for more
+granular permissions, but it's a much bigger lift to initially
+configure. You've already encountered an ABAC system in the AWS IAM
+system. If you tried to configure anything in IAM, you were probably
+completely befuddled. You can thank the power and complexity of ABAC.
+
+## Connecting to data sources
+
+Whether you're working directly on a data science workbench or deploying
+a project to a hosting platform, you're almost certainly connecting to a
+database, storage bucket, or data API along the way.
+
+It used to be the case that most data sources had simple username and
+password auth, so you could authenticate by just passing those
+credentials along to the data source, preferably via environment
+variables (see [Chapter @sec-data-access]). This is still the easiest
+way to connect to data sources.
+
+But that doesn't work if your data source is expecting a secure SSO
+token rather than a username and password.
+
+The good news is that connecting data sources to SSO makes them more
+secure than directly passing a username and password to a database. The
+bad news is that it's still early in the adoption of these technologies,
+and your ability to acquire and use an SSO token may be limited.
+
+In some cases, you can manually acquire an SSO token. In that case, you
+can simply do it at the outset of your script and use the token. This is
+a relatively rare case.
+
+But most times, the IT/Admin wants you to have the experience of logging
+in and automatically having access to your data systems. This situation
+is sometimes termed *passthrough auth*. This is a great user experience
+and is highly secure, because there are never any credentials in the
+data science environment, just the exchange of one cryptographically
+secure token for another.
+
+![](images/passthrough_auth.png){fig-alt="The user logs into the data science platform with an SSO token and then can automatically access the data source with the proper token."
+width="600"}
+
+The downside is that this isn't easy to accomplish. Data science
+platforms have to implement this kind of token exchange on a
+service-by-service basis for every type of data source you might want to
+access.
+
+::: callout-note
+One thing you definitely can't do, though it seems like a great idea at
+first, is just use the SAML or OAuth token that got you into the data
+science environment to authenticate to the data source.
+
+For most types of SSO, the token that gets you access to an individual
+service isn't your overall building access pass and the service doesn't
+get access to the building access pass for security reasons. That means
+"passthrough" is a complete misnomer for how this works and it's
+actually a much more complicated token exchange.
+:::
+
+One technology people use for this purpose is an old, but very secure,
+technology called *Kerberos*. There are a variety of different ways to
+configure Kerberos, but the upshot is that you get *Kerberos Ticket*
+available to you to attach to database calls.
+
+However, there are a few issues with this setup. First, Kerberos
+exclusively works inside a private network, so you can't use it to
+authenticate to a cloud database. Second, it basically is only used to
+connect to databases and only some types of databases support Kerberos
+authentication. Third, using Kerberos generally requires you to actually
+login to the underlying server. This generally isn't a problem in the
+Workbench environment, but can be a pain if you're trying to use
+Kerberos with deployed content.
+
+OAuth is quickly becoming an industry standard on this front, but it's
+not fully implemented in a number of places. I expect this will be a
+solved problem within the next few years, but for right now you'll need
+to talk to your IT/Admin team about whether you can use a username and
+password to connect to the data source or whether you'll have to cross
+your fingers that there's an integration that exists so you can
+seamlessly use your SSO token to access a data source.
+
+## Comprehension Questions
+
+1.  What is the difference between authentication and authorization?
+2.  What are some different ways to manage permissions? What are the
+    advantages and drawbacks of each?
+3.  What is some advantages of token-based auth? Why are most
+    organizations adopting it? Are there any drawbacks?
+4.  For each of the following, is it a username + password method or a
+    token method? PAM, LDAP, Kerberos, SAML, ODIC/OAuth

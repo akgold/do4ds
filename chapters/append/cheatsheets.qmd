@@ -1,29 +1,99 @@
 # Cheatsheets {#sec-append-cheat}
 
+## Environments as Code
+
+### Checking library + repository status
+
+| Step                                         | R Command         | Python Command |
+|----------------------------------------------|-------------------|----------------|
+| Check whether library in sync with lockfile. | `re nv::status()` | None           |
+
+### Creating and Using a Standalone Project Library
+
+Make sure you're in a standalone project library.
+
++----------------------+----------------------+----------------------+
+| Step                 | R Command            | Python Command       |
++======================+======================+======================+
+| Make sure you've got | `in s t a l l        | Included w/ Python   |
+| `{r  env}/{venv}`.   |  . packages("renv")` | 3.5+                 |
++----------------------+----------------------+----------------------+
+| Create a standalone  | `renv::init()`       | `p y t               |
+| library.             |                      |  h on -m venv <dir>` |
+|                      |                      |                      |
+|                      |                      | Convention:          |
+|                      |                      | `u s                 |
+|                      |                      |  e  .venv for <dir>` |
++----------------------+----------------------+----------------------+
+| Activate project     | `renv::activate()`   | `sou r c e < d       |
+| library.             |                      |  i r> /bin/activate` |
+|                      | Happens              |                      |
+|                      | automatically if     |                      |
+|                      | using projects.      |                      |
++----------------------+----------------------+----------------------+
+| Install packages as  | `ins t a l l .       | `pyth o n - m        |
+| normal.              |  p ackages("<pkg>")` |  p ip install <pkg>` |
++----------------------+----------------------+----------------------+
+| Snapshot package     | `renv::snapshot()`   | `p ip fr e e z e     |
+| state.               |                      |  > requirements.txt` |
++----------------------+----------------------+----------------------+
+| Exit project         | Leave R project.     | `deactivate`         |
+| environment.         |                      |                      |
++----------------------+----------------------+----------------------+
+
+### Collaborating on someone else's project
+
+Start by downloading the project into a directory on your machine.
+
++----------------------+----------------------+----------------------+
+| Step                 | R Command            | Python Command       |
++======================+======================+======================+
+| Move into project    | `set wd              | `cd <project-dir>`   |
+| directory.           |  ( "<project-dir>")` |                      |
+|                      |                      |                      |
+|                      | Or just open R       |                      |
+|                      | project in RStudio.  |                      |
++----------------------+----------------------+----------------------+
+| Create project       | `renv::init()`       | `py t                |
+| environment.         |                      |  h on -m venv <dir>` |
+|                      |                      |                      |
+|                      |                      | Recommend:           |
+|                      |                      | `u s                 |
+|                      |                      |  e  .venv for <dir>` |
++----------------------+----------------------+----------------------+
+| Enter project        | Happens              | `source < d          |
+| environment.         | automatically or     |  i r> /bin/activate` |
+|                      | `renv::activate()`   |                      |
++----------------------+----------------------+----------------------+
+| Restore packages.    | Happens              | `pip install         |
+|                      | automatically or     | -r requirements.txt` |
+|                      | `renv::restore()`    |                      |
++----------------------+----------------------+----------------------+
+
 ## Docker {#cheat-docker}
 
 ### Docker CLI Commands
 
-| Stage | Command                             | What it does                                              | Notes and helpful options                                                                         |
-|-------|-------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| Build | `docker build <directory>`          | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.         |
-| Move  | `docker push <image>`               | Push a container to a registry.                           |                                                                                                   |
-| Move  | `docker pull <image>`               | Pull a container from a registry.                         | Rarely used because `run` pulls the container if needed.                                          |
-| Run   | `docker run <image>`                | Run a container.                                          | See flags in next table.                                                                          |
-| Run   | `docker stop <container>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                        |
-| Run   | `docker ps`                         | List containers.                                          | Useful to get running container id to do things to it.                                            |
-| Run   | `docker exec <container> <command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec -it <container> /bin/bash` |
-| Run   | `docker logs <container>`           | Views logs for a container.                               |                                                                                                   |
+| Stage | Command                                 | What it does                                              | Notes and helpful options                                                                           |
+|-------|-----------------------------------------|-----------------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| Build | `dock er build <d i rectory>`           | Builds a directory containing a Dockerfile into an image. | `-t <name:tag>` provide a name to the container. `tag` is optional, defaults to `latest`.           |
+| Move  | `do cker pus h  <image>`                | Push a container to a registry.                           |                                                                                                     |
+| Move  | `do cker pul l  <image>`                | Pull a container from a registry.                         | Rarely used because `run` pulls the container if needed.                                            |
+| Run   | `d ocker ru n  <image>`                 | Run a container.                                          | See flags in next table.                                                                            |
+| Run   | `dock er  stop <c o ntainer>`           | Stop a running container.                                 | `docker kill` can be used if `stop` fails.                                                          |
+| Run   | `d ocker ps`                            | List containers.                                          | Useful to get running container id to do things to it.                                              |
+| Run   | `doc ker exec <c on tainer> < command>` | Run a command inside a running container.                 | Basically always used to open a shell in a container with `docker exec  -it  <container> /bin/bash` |
+| Run   | `dock er  logs <c o ntainer>`           | Views logs for a container.                               |                                                                                                     |
 
 ### Flags for `docker run`
 
-| Flag               | Effect                                         | Notes                                                                    |
-|--------------------|------------------------------------------------|--------------------------------------------------------------------------|
-| `--name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided.                         |
-| `--rm`             | Remove container when its stopped.             | Don't use in production. You probably want to inspect failed containers. |
-| `-d`               | Detach container (don't block the terminal).   | Almost always used in production.                                        |
-| `-p <port>:<port>` | Publish port from inside container to outside. | Needed if you want to access an app or API running inside the container. |
-| `-v <dir>:<dir>`   | Mount volume into the container.               |                                                                          |
+| Flag                 | Effect                                         | Notes                                                                    |
+|----------------------|------------------------------------------------|--------------------------------------------------------------------------|
+| `--  name <name>`    | Give a name to the running container.          | Optional. Will be auto-assigned if not provided.                         |
+| `--rm`               | Remove container when its stopped.             | Don't use in production. You probably want to inspect failed containers. |
+| `-d`                 | Detach container (don't block the terminal).   | Almost always used in production.                                        |
+| `-p <p  ort>:<port>` | Publish port from inside container to outside. | Needed if you want to access an app or API running inside the container. |
+| `-v  <dir>:<dir>`    | Mount volume into the container.               |                                                                          |
 
 : *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
 
@@ -31,22 +101,25 @@
 
 These are the commands that go in a Dockerfile when you're building it.
 
-| Command | Purpose                                               | Example                   |
-|---------|-------------------------------------------------------|---------------------------|
-| `FROM`  | Indicate base container.                              | `FROM rocker/r-ver:4.1.0` |
-| `RUN`   | Run a command when building.                          | `RUN apt-get update`      |
-| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`            |
-| `CMD`   | Specify the command to run when the container starts. | `CMD quarto render .`     |
+| Command | Purpose                                               | Example                     |
+|---------|-------------------------------------------------------|-----------------------------|
+| `FROM`  | Indicate base container.                              | `FROM rocke r /r-ver:4.1.0` |
+| `RUN`   | Run a command when building.                          | `RUN a p t-get update`      |
+| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`              |
+| `CMD`   | Specify the command to run when the container starts. | `CMD qu a rto render .`     |
 
 ## Cloud Services
 
-| Service                      | AWS                                                  | Azure                          | GCP                            |
-|------------------------------|------------------------------------------------------|--------------------------------|--------------------------------|
-| Kubernetes cluster           | EKS (Elastic Kubernetes Service) or Fargate          | AKS (Azure Kubernetes Service) | GKE (Google Kubernetes Engine) |
-| Run a container /application | ECS (Elastic Container Service) or Elastic Beanstalk | Azure Container Apps           | Google App Engine              |
-| Run an API                   | Lambda                                               | Azure Functions                | Google Cloud Functions         |
-| Database                     | RDS or Reds hift\[\^2-1-cloud-8\]                    | Azure Database                 | Google Cloud SQL               |
-| ML Platform                  | SageMaker                                            | Azure ML                       | Vertex AI                      |
+TODO: finish
+
+| Service                      | AWS                                                                                    | Azure                          | GCP                            |
+|------------------------------|----------------------------------------------------------------------------------------|--------------------------------|--------------------------------|
+| NAS                          | EFS (Elastic File System) or FSx                                                       | Azure File                     | Filestore                      |
+| Kubernetes cluster           | EKS (Elastic Kubernetes Service) or Fargate                                            | AKS (Azure Kubernetes Service) | GKE (Google Kubernetes Engine) |
+| Run a container /application | ECS (Elastic Container Service) or Elastic Beanstalk                                   | Azure Container Apps           | Google App Engine              |
+| Run an API                   | Lambda                                                                                 | Azure Functions                | Google Cloud Functions         |
+| Database                     | RDS or \| Azure \| Google Cloud Redshif \| Database \| SQL t\[\^2-1-cloud-8\] \| \| \| |                                |                                |
+| ML Platform                  | SageMaker                                                                              | Azure ML                       | Vertex AI                      |
 
 ## Command Line {#cheat-cli}
 
@@ -118,8 +191,8 @@ These are the commands that go in a Dockerfile when you're building it.
 |                      |                      | useful to follow for |
 |                      |                      | a live view.         |
 +----------------------+----------------------+----------------------+
-| `g r                 | Search a file using  | Writing regex can be |
-|    e p <expression>` | regex.               | a pain. I suggest    |
+| `g                   | Search a file using  | Writing regex can be |
+| r  e p <expression>` | regex.               | a pain. I suggest    |
 |                      |                      | testing expressions  |
 |                      |                      | on regex101.com.     |
 |                      |                      |                      |
@@ -132,30 +205,30 @@ These are the commands that go in a Dockerfile when you're building it.
 
 ### Manipulating Files
 
-+--------------------+-----------------------+-----------------------+
-| Command            | What it does/is       | Notes + Helpful       |
-|                    |                       | Options               |
-+====================+=======================+=======================+
-| `rm <path>`        | Remove                | `-r` - recursively    |
-|                    |                       | remove everything     |
-|                    |                       | below a file path     |
-|                    |                       |                       |
-|                    |                       | `-f` - force - don't  |
-|                    |                       | ask for each file     |
-|                    |                       |                       |
-|                    |                       | **Be very careful,    |
-|                    |                       | it's permanent**      |
-+--------------------+-----------------------+-----------------------+
-| `c  p <from> <to>` | Copy                  |                       |
-+--------------------+-----------------------+-----------------------+
-| `m  v <from> <to>` | Move                  |                       |
-+--------------------+-----------------------+-----------------------+
-| `*`                | Wildcard              |                       |
-+--------------------+-----------------------+-----------------------+
-| `mkdir`/`rmdir`    | Make/remove directory | `-p` - create any     |
-|                    |                       | parts of path that    |
-|                    |                       | don't exist           |
-+--------------------+-----------------------+-----------------------+
++---------------------+----------------------+----------------------+
+| Command             | What it does/is      | Notes + Helpful      |
+|                     |                      | Options              |
++=====================+======================+======================+
+| `rm <path>`         | Remove               | `-r` - recursively   |
+|                     |                      | remove everything    |
+|                     |                      | below a file path    |
+|                     |                      |                      |
+|                     |                      | `-f` - force - don't |
+|                     |                      | ask for each file    |
+|                     |                      |                      |
+|                     |                      | **Be very careful,   |
+|                     |                      | it's permanent**     |
++---------------------+----------------------+----------------------+
+| `c   p <from> <to>` | Copy                 |                      |
++---------------------+----------------------+----------------------+
+| `m   v <from> <to>` | Move                 |                      |
++---------------------+----------------------+----------------------+
+| `*`                 | Wildcard             |                      |
++---------------------+----------------------+----------------------+
+| `mkdir`/`rmdir`     | Make/remove          | `-p` - create any    |
+|                     | directory            | parts of path that   |
+|                     |                      | don't exist          |
++---------------------+----------------------+----------------------+
 
 ### Move things to/from server
 
@@ -203,23 +276,23 @@ These are the commands that go in a Dockerfile when you're building it.
 
 ### Users
 
-| Command               | What it does                                          |
-|-----------------------|-------------------------------------------------------|
-| `su <username>`       | Change to be a different user.                        |
-| `whoami`              | Get username of current user.                         |
-| `id`                  | Get full user + group info on current user.           |
-| `passwd`              | Change password.                                      |
-| `useradd`             | Add a new user.                                       |
-| `u sermod <username>` | Modify user `username`. `-aG <group>` adds to a group |
+| Command                | What it does                                          |
+|------------------------|-------------------------------------------------------|
+| `su <username>`        | Change to be a different user.                        |
+| `whoami`               | Get username of current user.                         |
+| `id`                   | Get full user + group info on current user.           |
+| `passwd`               | Change password.                                      |
+| `useradd`              | Add a new user.                                       |
+| `u s ermod <username>` | Modify user `username`. `-aG <group>` adds to a group |
 
 ### Permissions
 
-| Command                         | What it does                                            | Helpful options + notes                                                                                          |
-|---------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
-| `chm o d <permissi ons> <file>` | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
-| `cho w n  <user/gr oup> <file>` | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
-| `su  <username>`                | Change active user to `username`.                       |                                                                                                                  |
-| `sud o <command>`               | Adopt super user permissions for the following command. |                                                                                                                  |
+| Command                          | What it does                                            | Helpful options + notes                                                                                          |
+|----------------------------------|---------------------------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| `chm o d <permissi  ons> <file>` | Modifies permissions on a file.                         | Number indicates permissions for user, group, others: add 4 for read, 2 for write, 1 for execute, 0 for nothing. |
+| `cho w n  <user/gr  oup> <file>` | Change the owner of a file.                             | Can be used for user or group, e.g. `:my-group`.                                                                 |
+| `su   <username>`                | Change active user to `username`.                       |                                                                                                                  |
+| `sud  o <command>`               | Adopt super user permissions for the following command. |                                                                                                                  |
 
 ## Cheatsheet: `ssh` {#cheat-ssh}
 
@@ -236,14 +309,14 @@ ssh <user>@<host>
 
 ### Users
 
-| Command                   | What it does                                          |
-|---------------------------|-------------------------------------------------------|
-| `su <username>`           | Change to be a different user.                        |
-| `whoami`                  | Get username of current user.                         |
-| `id`                      | Get full user + group info on current user.           |
-| `passwd`                  | Change password.                                      |
-| `useradd`                 | Add a new user.                                       |
-| `use   r m od <username>` | Modify user `username`. `-aG <group>` adds to a group |
+| Command                  | What it does                                          |
+|--------------------------|-------------------------------------------------------|
+| `su <username>`          | Change to be a different user.                        |
+| `whoami`                 | Get username of current user.                         |
+| `id`                     | Get full user + group info on current user.           |
+| `passwd`                 | Change password.                                      |
+| `useradd`                | Add a new user.                                       |
+| `use  r m od <username>` | Modify user `username`. `-aG <group>` adds to a group |
 
 ### Permissions
 
@@ -256,13 +329,13 @@ ssh <user>@<host>
 
 ### Install applications (Ubuntu)
 
-|                                             |                                               |
-|---------------------------------------------|-----------------------------------------------|
-| **Command**                                 | **What it does**                              |
-| `apt-get u p d a t e && apt-get upgrade -y` | Fetch and install upgrades to system packages |
-| `a p t-get install <package>`               | Install a system package.                     |
-| `wget`                                      | Download a file from a URL.                   |
-| `gdebi`                                     | Install local `.deb` file.                    |
+|                                              |                                               |
+|----------------------------------------------|-----------------------------------------------|
+| **Command**                                  | **What it does**                              |
+| `apt-get u p  d a t e && apt-get upgrade -y` | Fetch and install upgrades to system packages |
+| `a p t-get install <package>`                | Install a system package.                     |
+| `wget`                                       | Download a file from a URL.                   |
+| `gdebi`                                      | Install local `.deb` file.                    |
 
 ### Storage
 
@@ -273,7 +346,8 @@ ssh <user>@<host>
 |         | device.                    | file sizes.                |
 +---------+----------------------------+----------------------------+
 | `du`    | Check size of files.       | Most likely to be used as  |
-|         |                            | `d  u - h <dir> | sort -h` |
+|         |                            | `                          |
+|         |                            | d  u  - h <dir> | sort -h` |
 |         |                            |                            |
 |         |                            | Also useful to combine     |
 |         |                            | with `head`.               |
@@ -296,16 +370,17 @@ ssh <user>@<host>
 
 ### The path
 
-+---------------------------------+-----------------------------------+
-| Command                         | What it does                      |
-+=================================+===================================+
-| `which <command>`               | Finds the location of the binary  |
-|                                 | that runs when you run `command`. |
-+---------------------------------+-----------------------------------+
-| \`ln -s \< lo cation to link\>  | Creates a symlink from file at    |
-|                                 | `location to link` to             |
-| :   \< l ocation of symlink\>\` | `location of symlink`.            |
-+---------------------------------+-----------------------------------+
++--------------------------------+------------------------------------+
+| Command                        | What it does                       |
++================================+====================================+
+| `which <command>`              | Finds the location of the binary   |
+|                                | that runs when you run `command`.  |
++--------------------------------+------------------------------------+
+| \                              | Creates a symlink from file at     |
+| \`ln -s \< lo cation to link\> | `location to link` to              |
+|                                | `location of symlink`.             |
+| : \< l ocation of symlink\>\`  |                                    |
++--------------------------------+------------------------------------+
 
 ## Cheatsheet: IP Addresses and Ports {#cheat-ports}
 
