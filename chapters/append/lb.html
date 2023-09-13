@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>DevOps for Data Science - Appendix B — Load Balancers</title>
+<title>DevOps for Data Science - Appendix B — Technical Detail: Load balancers</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -82,7 +82,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/append/auth.html">Appendices</a></li><li class="breadcrumb-item"><a href="../../chapters/append/lb.html"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Load Balancers</span></a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/append/auth.html">Appendices</a></li><li class="breadcrumb-item"><a href="../../chapters/append/lb.html"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Technical Detail: Load balancers</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -298,7 +298,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/lb.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Load Balancers</span></span></a>
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Technical Detail: Load balancers</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -321,14 +321,23 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#load-balancer-settings" id="toc-load-balancer-settings" class="nav-link active" data-scroll-target="#load-balancer-settings"><span class="header-section-number">B.1</span> Load balancer settings</a></li>
+  <li><a href="#ways-to-configure-load-balancing" id="toc-ways-to-configure-load-balancing" class="nav-link" data-scroll-target="#ways-to-configure-load-balancing"><span class="header-section-number">B.2</span> Ways to configure load balancing</a></li>
+  <li><a href="#shared-state" id="toc-shared-state" class="nav-link" data-scroll-target="#shared-state"><span class="header-section-number">B.3</span> Shared state</a></li>
+  <li><a href="#upgrades-in-ha" id="toc-upgrades-in-ha" class="nav-link" data-scroll-target="#upgrades-in-ha"><span class="header-section-number">B.4</span> Upgrades in HA</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/append/lb.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span id="sec-append-lb" class="quarto-section-identifier">Appendix B — Load Balancers</span></h1>
+<h1 class="title"><span id="sec-append-lb" class="quarto-section-identifier">Appendix B — Technical Detail: Load balancers</span></h1>
 </div>
 
 
@@ -343,15 +352,35 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>So for a data science workbench, you probably need a filesystem that can attach to all of the nodes at the same time and maybe also a database. That filesystem is usually a network attached storage (NAS, pronounced naahz), which is just a filesystem that lives on its own server. Different NASs may run different software including NFS (Network File System) for Linux or SMB (Server Message Block) or the outdated CIFS (Common Internet File System) to mount Windows filesystems to a Linux host.</p>
-<p>As a data scientist, you really shouldn’t be configuring load-balancers. But the IT/Admin you’re working with may need to do so and it might be helpful to understand how they’re configuring it.</p>
-<p>Load-balancers are a special kind of proxy server that routes sessions among the nodes in the cluster.</p>
-<p>At a minimum, your load-balancer has to know what nodes are accepting traffic. This is accomplished by configuring a health check/heartbeat for the application on the node. A health check is a feature of the application that responds to periodic pings from the load-balancer. If no response comes back, the load-balancer treats that node as unhealthy and doesn’t send traffic there.</p>
-<p>The simplest form of load-balancing is to just rotate traffic to each node that is healthy in a round-robin configuration. Depending on the capabilities of the load-balancer and what metrics are emitted by the application, it may also be possible or desirable to do more complicated load-balancing that pays attention to how loaded different nodes are.</p>
-<p>One other feature that may come up is sticky sessions or sticky cookies. For stateful applications – like Shiny apps – you want to get back to the same node in the cluster so you can resume a previous session. In most load-balancers, this is a simple option you can just turn on.</p>
-<p>Usually, load balancers are configured to send traffic to all the nodes in the cluster in an active/active configuration. It is also possible to configure the load-balancer to send traffic to only some of the nodes, with the rest remaining inert until they are switched on, usually in the event of a failure in the active ones. This is sometimes called a blue/green or red/black configuration.</p>
+<p><a href="../sec3/3-3-ent-scale.html">Chapter&nbsp;<span>17</span></a> introduced you to the idea of a load balancer as a kind of proxy server to serve as the “front door” to a computational cluster. This appendix chapter will explain a few of the different configuration options for load balancers that your organization’s IT/Admins may consider.</p>
+<p>Depending on your organization, they may run their own load balancing servers using software like <em>F5</em>, <em>HA Proxy</em>, or <em>Hostwinds</em>. If your organization is in the cloud, it’s very likely they use a cloud load balancer like AWS <em>ELB</em> <em>(Elastic Load Balancer)</em>, Azure <em>App Proxy</em>, or GCP <em>Cloud Load Balancing</em>. If they’re running in Kubernetes, they are likely to use the open source <em>Traefik</em>.</p>
+<section id="load-balancer-settings" class="level2" data-number="B.1">
+<h2 data-number="B.1" class="anchored" data-anchor-id="load-balancer-settings"><span class="header-section-number">B.1</span> Load balancer settings</h2>
+<p>Regardless of which load balancer you’re using, a basic requirement is that it knows what nodes are accepting traffic. This is accomplished by configuring a <em>health check/heartbeat</em> for the application on the node. A health check is a feature of the application that responds to periodic pings from the load balancer. If no response comes back, the load balancer treats that node as unhealthy and doesn’t send traffic there.</p>
+<p>One other feature that may come up is <em>sticky sessions</em> or <em>sticky cookies</em>. For stateful applications, like Shiny apps, you want to get back to the same node in the cluster so you can resume a previous session. In most load balancers, this is just an option you can activate.</p>
+</section>
+<section id="ways-to-configure-load-balancing" class="level2" data-number="B.2">
+<h2 data-number="B.2" class="anchored" data-anchor-id="ways-to-configure-load-balancing"><span class="header-section-number">B.2</span> Ways to configure load balancing</h2>
+<p>The simplest form of load balancing is to just rotate traffic to each node that is healthy in a <em>round-robin</em> configuration. Depending on the capabilities of the load balancer and what metrics are emitted by the application, it may also be possible or desirable to do more complicated load balancing that pays attention to how loaded different nodes are.</p>
+<p>Usually, load balancers are configured to send traffic to all the nodes in the cluster in an <em>active/active</em> configuration. It is also possible to configure the load balancer in an <em>active/passive</em> configuration to send traffic to only some of the nodes, with the rest remaining inert until they are switched on, usually in the event of a failure in the active ones. This is sometimes called a <em>blue/green</em> or <em>red/black</em> configuration when it’s used to diminish downtime in upgrades and migrations.</p>
+</section>
+<section id="shared-state" class="level2" data-number="B.3">
+<h2 data-number="B.3" class="anchored" data-anchor-id="shared-state"><span class="header-section-number">B.3</span> Shared state</h2>
+<p>Aside from the load balancer, the nodes need to be able to share state with each other so users can have the same experience on each node. The requirements for that shared state depend on the software.</p>
+<p>Often the shared state takes the form of a database (often Postgres) and/or <em>Network Attached Storage (NAS, pronounced naahz)</em> for things that get stored in a filesystem.</p>
+<p>If your NAS is exclusively for Linux, you it would use <em>NFS (Network File System)</em>. If Windows is involved, you’d use <em>SMB (Server Message Block)</em> or <em>Samba</em> to connect SMB to a Linux server. There’s also an outdated Windows NAS called <em>CIFS (Common Internet File System)</em> that you might see in older systems.</p>
+<p>Each of the cloud providers has a NAS offering. AWS has <em>EFS (Elastic File System)</em> and <em>FSx</em>. Azure has <em>Azure File</em>, and GCP has <em>Filestore</em>.</p>
+</section>
+<section id="upgrades-in-ha" class="level2" data-number="B.4">
+<h2 data-number="B.4" class="anchored" data-anchor-id="upgrades-in-ha"><span class="header-section-number">B.4</span> Upgrades in HA</h2>
+<p>Sometimes IT/Admins want to run an HA cluster with software that supports <em>zero downtime upgrades</em>. In order to do a zero-downtime upgrade, you need to take some nodes offline, upgrade them, put them back online, and then upgrade the rest of the nodes.</p>
+<p>There are a two features the application you’re upgrading needs to support to accomplish this feat. If it doesn’t support both, you’ll need to endure some downtime to do an upgrade.</p>
+<p>The first is <em>node draining</em>. If you just naively removed a node, you might kill someone’s active session. Instead, you’d want to configure the node so that it doesn’t kill any existing sessions but also doesn’t accept any new ones. As the current sessions end, the node empties and you can safely take it offline when all the sessions are gone.</p>
+<p>The second is <em>rolling upgrade</em>. Some software supports being in a load balanced cluster with different versions of the software and other does not. If your software doesn’t support a cluster with mixed versions, a rolling upgrade won’t be possible. Supporting a rolling upgrade is relatively rare. It requires that the cluster understand how to maintain metadata across different versions simultaneously, which is a tricky bit of application programming.</p>
+<p>If your application doesn’t support zero downtime upgrades, some organizations like to get close by building a second copy of the environment, getting it almost live, and then taking downtime just to switch the networking over. That’s generally much faster than building the whole thing during downtime.</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -605,7 +634,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">Copyright 2022, Alex K Gold</div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/append/lb.qmd" class="toc-action">Edit this page</a></p></div></div></div>
+    </div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
     <li class="nav-item compact">

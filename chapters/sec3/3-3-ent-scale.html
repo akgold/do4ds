@@ -300,7 +300,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/lb.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Load Balancers</span></span></a>
+ <span class="menu-text"><span class="chapter-number">B</span>&nbsp; <span class="chapter-title">Technical Detail: Load balancers</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -422,12 +422,11 @@ Measuring Uptime
 <section id="computing-in-clusters" class="level2" data-number="17.3">
 <h2 data-number="17.3" class="anchored" data-anchor-id="computing-in-clusters"><span class="header-section-number">17.3</span> Computing in clusters</h2>
 <p>Whether it’s for horizontal scaling or high availability reasons, most enterprises run their data science environments in a <em>cluster</em>, which is a set of servers (<em>nodes</em>) that operate together as one unit. Ideally, working in a cluster feels the same as working in a single-server environment, but there are multiple servers to add computational power or provide resilience if one server were to fail.</p>
-<p>In order to have a cluster operate as a single environment, you need to solve two problems. First, you want to provide a single front door that routes users to a node in the cluster, preferably without them being aware of it happening. This is accomplished with a <em>load-balancer</em>, which is a kind of proxy server.</p>
+<p>In order to have a cluster operate as a single environment, you need to solve two problems. First, you want to provide a single front door that routes users to a node in the cluster, preferably without them being aware of it happening. This is accomplished with a <em>load balancer</em>, which is a kind of proxy server.</p>
 <p>Second, you need to make sure that the user is able to persist things (<em>state</em>) on the server even if they end up on a different node later. This is accomplished by setting up storage so that persistent data doesn’t actually live on any of the nodes. Instead, it lives in separate storage that is symmetrically accessible to all the nodes in the cluster.</p>
-<p>This separate storage often takes the form of a database and/or <em>Network Attached Storage (NAS)</em> for things that get stored in a filesystem.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p><img src="images/lb-cluster.png" class="img-fluid" alt="Users come to the load balancer, which sends them to the nodes, which connect to the state."></p>
-<p>If you are a solo data scientist reading this, please do not try to run your own load-balanced data science cluster. When you undertake load-balancing, you’ve taken on a distributed systems problem and those are <strong>inherently difficult</strong>.</p>
-<p>High-availability is often phrased as “no single point of failure”. It’s worth noting that just load-balancing doesn’t eliminate single points of failure. In fact, it’s totally possible to make your system <strong>less stable</strong> by carelessly load-balancing a bunch of nodes. For example, what if your load-balancer were to fail? Or the place where the state is stored? What if your NAS has low performance relative to a non-networked drive? Sophisticated IT/Admin organizations have answers to these questions and standard ways they implement high availability.</p>
+<p>If you are a solo data scientist reading this, please do not try to run your own load balanced data science cluster. When you undertake load balancing, you’ve taken on a distributed systems problem and those are <strong>inherently difficult</strong>.</p>
+<p>High-availability is often phrased as “no single point of failure”. It’s worth noting that just load balancing doesn’t eliminate single points of failure. In fact, it’s totally possible to make your system <strong>less stable</strong> by carelessly load balancing a bunch of nodes. For example, what if your load balancer were to fail? Or the place where the state is stored? What if your NAS has low performance relative to a non-networked drive? Sophisticated IT/Admin organizations have answers to these questions and standard ways they implement high availability.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -438,13 +437,13 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>For technical information on how load-balancers work and different types of configuration, see <a href="../append/lb.html">Appendix&nbsp;<span>B</span></a>.</p>
+<p>For technical information on how load balancers work and different types of configuration, see <a href="../append/lb.html">Appendix&nbsp;<span>B</span></a>.</p>
 </div>
 </div>
 </section>
 <section id="docker-in-enterprise-kubernetes" class="level2" data-number="17.4">
 <h2 data-number="17.4" class="anchored" data-anchor-id="docker-in-enterprise-kubernetes"><span class="header-section-number">17.4</span> Docker in enterprise = Kubernetes</h2>
-<p>Originally created at Google and released in 2014, the open source <em>Kubernetes (K8S, pronounced koo-ber-net-ees or kates for the abbreviation)</em> is the way to run production services out of Docker containers.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> Many organizations are moving towards running much or all of their production work in Kubernetes.</p>
+<p>Originally created at Google and released in 2014, the open source <em>Kubernetes (K8S, pronounced koo-ber-net-ees or kates for the abbreviation)</em> is the way to run production services out of Docker containers.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Many organizations are moving towards running much or all of their production work in Kubernetes.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -458,11 +457,11 @@ Note
 <p>Apparently Kubernetes is an ancient Greek word for “helmsman”.</p>
 </div>
 </div>
-<p>Relative to managing individual nodes in a load-balanced cluster, Kubernetes makes things easy because it completely separates provisioning and configuration. In Kubernetes, you create a cluster of worker nodes. Then, you separately tell the cluster’s <em>control plane</em> that you want it to run a certain set of Docker containers with a certain amount of computational power allocated to each one. These Docker Containers running in Kubernetes are called <em>pods</em>.</p>
+<p>Relative to managing individual nodes in a load balanced cluster, Kubernetes makes things easy because it completely separates provisioning and configuration. In Kubernetes, you create a cluster of worker nodes. Then, you separately tell the cluster’s <em>control plane</em> that you want it to run a certain set of Docker containers with a certain amount of computational power allocated to each one. These Docker Containers running in Kubernetes are called <em>pods</em>.</p>
 <p>The elegance of Kubernetes is that you don’t have to think at all about where each pod goes. The control plane <em>schedules</em> the pods on the nodes without you having to think about where the nodes actually are or how networking will work.</p>
 <p><img src="images/k8s.png" class="img-fluid" alt="Image of a Kubernetes cluster with 3 nodes and 6 pods of various sizes arranged across the nodes." width="600"></p>
 <p>From the perspective of the IT/Admin, this is wonderful because you just make sure you’ve got enough horsepower in the cluster and then all the app requirements go in the container, which makes node configuration trivial.</p>
-<p>In fact, almost everyone running Kubernetes can just add nodes with a few button clicks because they’re using a cloud provider’s managed service: AWS’s <em>EKS (Elastic Kubernetes Service</em>, Azure’s <em>AKS (Azure Kubernetes Service)</em>, or GCP’s <em>GKE (Google Kubernetes Engine)</em>.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>In fact, almost everyone running Kubernetes can just add nodes with a few button clicks because they’re using a cloud provider’s managed service: AWS’s <em>EKS (Elastic Kubernetes Service</em>, Azure’s <em>AKS (Azure Kubernetes Service)</em>, or GCP’s <em>GKE (Google Kubernetes Engine)</em>.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <p>For production purposes, pod deployments are usually managed with <em>Helm charts</em>, which are the standard IaC way to declare what pods you want, how many of each you need, and what their relationship is.</p>
 <p>Kubernetes is an extremely powerful tool and there are many reasons to like it. But like most powerful tools, it’s also complicated and becoming a proficient Kubernetes admin is a skill unto itself. These days, many IT/Admins are trying to add Kubernetes to their list of skills. If you have a competent Kubernetes admin, you should be in good shape, but you should be careful that setting up your data science environment doesn’t become someone else’s chance to learn Kubernetes.</p>
 </section>
@@ -486,7 +485,7 @@ Note
 <li><p>Your company doubles the size of the team that will be working in your data science workbench. Each person will be working with reasonably small data, but there’s going to be a lot more of them.</p></li>
 <li><p>You have a big modeling project that’s too large for your existing machine. The modeling you’re doing is highly parallelizable.</p></li>
 </ol></li>
-<li>What is the role of the load-balancer in horizontal scaling? When do you really need a load-balancer and when can you go without?</li>
+<li>What is the role of the load balancer in horizontal scaling? When do you really need a load balancer and when can you go without?</li>
 <li>What are the biggest strengths of Kubernetes as a scaling tool? What are some drawbacks? What are some alternatives?</li>
 </ol>
 
@@ -497,10 +496,8 @@ Note
 <ol>
 <li id="fn1"><p>You’ll have to fight out who gets to claim the title Dev/Test/Prod for their environments with the IT/Admins at your organization. Be nice, they probably had the idea long before you did.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>Assuming a (probably too low), fully-loaded cost of $100,000 and 2,000 working hours per year.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>If your NAS is exclusively for Linux, you it would use <em>NFS (Network File System)</em>. If Windows is involved, you’d use <em>SMB (Server Message Block)</em> or Samba to connect SMB to a Linux server.</p>
-<p>There’s also an outdated Windows NAS called <em>CIFS (Common Internet File System)</em> that you might see in older systems.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>If you are pedantic, there are other tools for deploying Docker containers like Docker Swarm and Kubernetes is not limited to Docker containers. But for all practical purposes, <span class="math inline">\(\text{production Docker = Kubernetes}\)</span>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>It’s rare, but some organizations do run an on-prem Kubernetes cluster with Oracle’s OpenShift.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>If you are pedantic, there are other tools for deploying Docker containers like Docker Swarm and Kubernetes is not limited to Docker containers. But for all practical purposes, <span class="math inline">\(\text{production Docker = Kubernetes}\)</span>.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>It’s rare, but some organizations do run an on-prem Kubernetes cluster with Oracle’s OpenShift.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
