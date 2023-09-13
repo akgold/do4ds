@@ -147,118 +147,78 @@ codes. Here's a cheatsheet for some of the most frequent you'll see.
 
 ### Docker CLI Commands
 
-+---+-------------------+-------------------+--------------------------+
-| S | Command           | **What it does**  | **Notes and helpful      |
-| t |                   |                   | options**                |
-| a |                   |                   |                          |
-| g |                   |                   |                          |
-| e |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| B | `docker b         | Builds a          | `-t <name:tag>` provides |
-| u | uild <directory>` | directory into an | a name to the container. |
-| i |                   | image.            |                          |
-| l |                   |                   | `tag` is optional,       |
-| d |                   |                   | defaults to `latest`.    |
-+---+-------------------+-------------------+--------------------------+
-| M | `doc              | Push a container  |                          |
-| o | ker push <image>` | to a registry.    |                          |
-| v |                   |                   |                          |
-| e |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| M | `doc              | Pull a container  | Rarely needed because    |
-| o | ker pull <image>` | from a registry.  | `run` pulls the          |
-| v |                   |                   | container if needed.     |
-| e |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| R | `do               | Run a container.  | See flags in next table. |
-| u | cker run <image>` |                   |                          |
-| n |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| R | `docker           | Stop a running    | `docker kill` can be     |
-| u | stop <container>` | container.        | used if `stop` fails.    |
-| n |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| R | `docker ps`       | List running      | Useful to get container  |
-| u |                   | containers.       | `id` to do things to it. |
-| n |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
-| R | `                 | Run a command     | Basically always used to |
-| u | docker exec <cont | inside a running  | open a shell with        |
-| n | ainer> <command>` | container.        | `docker exec -i          |
-|   |                   |                   | t <container> /bin/bash` |
-+---+-------------------+-------------------+--------------------------+
-| R | `docker           | Views logs for a  |                          |
-| u | logs <container>` | container.        |                          |
-| n |                   |                   |                          |
-+---+-------------------+-------------------+--------------------------+
++----+-------------------+-------------------+-------------------------+
+| S  | Command           | **What it does**  | **Notes and helpful     |
+| ta |                   |                   | options**               |
+| ge |                   |                   |                         |
++----+-------------------+-------------------+-------------------------+
+| B  | `docker b         | Builds a          | `-t <name:tag>`         |
+| ui | uild <directory>` | directory into an | provides a name to the  |
+| ld |                   | image.            | container.              |
+|    |                   |                   |                         |
+|    |                   |                   | `tag` is optional,      |
+|    |                   |                   | defaults to `latest`.   |
++----+-------------------+-------------------+-------------------------+
+| Mo | `doc              | Push a container  |                         |
+| ve | ker push <image>` | to a registry.    |                         |
++----+-------------------+-------------------+-------------------------+
+| Mo | `doc              | Pull a container  | Rarely needed because   |
+| ve | ker pull <image>` | from a registry.  | `run` pulls the         |
+|    |                   |                   | container if needed.    |
++----+-------------------+-------------------+-------------------------+
+| R  | `do               | Run a container.  | See flags in next       |
+| un | cker run <image>` |                   | table.                  |
++----+-------------------+-------------------+-------------------------+
+| R  | `docker           | Stop a running    | `docker kill` can be    |
+| un | stop <container>` | container.        | used if `stop` fails.   |
++----+-------------------+-------------------+-------------------------+
+| R  | `docker ps`       | List running      | Useful to get container |
+| un |                   | containers.       | `id` to do things to    |
+|    |                   |                   | it.                     |
++----+-------------------+-------------------+-------------------------+
+| R  | `                 | Run a command     | Basically always used   |
+| un | docker exec <cont | inside a running  | to open a shell with    |
+|    | ainer> <command>` | container.        | `docker exec -it        |
+|    |                   |                   |  <container> /bin/bash` |
++----+-------------------+-------------------+-------------------------+
+| R  | `docker           | Views logs for a  |                         |
+| un | logs <container>` | container.        |                         |
++----+-------------------+-------------------+-------------------------+
 
 ### Flags for `docker run`
 
-+-------------+-------------+------------------------+-------------+
-| Flag \|     |             |                        |             |
-| Effect \|   |             |                        |             |
-| Notes \|    |             |                        |             |
-| =           |             |                        |             |
-| =========== |             |                        |             |
-| ===+======= |             |                        |             |
-| =========== |             |                        |             |
-| +========== |             |                        |             |
-| =========== |             |                        |             |
-| ==========+ |             |                        |             |
-| `--n        |             |                        |             |
-| ame <name>` |             |                        |             |
-| \| Give a   |             |                        |             |
-| name to \|  |             |                        |             |
-| Optional.   |             |                        |             |
-| Will be \|  |             |                        |             |
-| the running |             |                        |             |
-| \|          |             |                        |             |
-| au          |             |                        |             |
-| to-assigned |             |                        |             |
-| if not \|   |             |                        |             |
-| container.  |             |                        |             |
-| \|          |             |                        |             |
-| provided.   |             |                        |             |
-| \|          |             |                        |             |
-+-------------+-------------+------------------------+-------------+
-| `--rm`      | Remove      | Don't use in           |             |
-|             | container   | production. You        |             |
-|             | when its    | probably want to       |             |
-|             | stopped.    | inspect failed         |             |
-|             |             | containers.            |             |
-+-------------+-------------+------------------------+-------------+
-| `-d`        | Detach      | Almost always used in  |             |
-|             | container   | production.            |             |
-|             | (don't      |                        |             |
-|             | block the   |                        |             |
-|             | terminal).  |                        |             |
-+-------------+-------------+------------------------+-------------+
-| `-p <po     |             |                        |             |
-| rt>:<port>` |             |                        |             |
-| \| Publish  |             |                        |             |
-| port \|     |             |                        |             |
-| Needed if   |             |                        |             |
-| you want to |             |                        |             |
-| access \|   |             |                        |             |
-| from inside |             |                        |             |
-| \| an app   |             |                        |             |
-| or API      |             |                        |             |
-| running     |             |                        |             |
-| inside \|   |             |                        |             |
-| container   |             |                        |             |
-| to \| the   |             |                        |             |
-| container.  |             |                        |             |
-| \| outside. |             |                        |             |
-| \|          |             |                        |             |
-+-------------+-------------+------------------------+-------------+
-| `-v<        |             |                        |             |
-| dir>:<dir>` |             |                        |             |
-| \| Mount    |             |                        |             |
-| volume \|   |             |                        |             |
-| into the \| |             |                        |             |
-| container.  |             |                        |             |
-| \|          |             |                        |             |
-+-------------+-------------+------------------------+-------------+
++-------------+-------------+------------------------+
+| Flag        | Effect      | Notes                  |
++-------------+-------------+------------------------+
+|             | Give a name | Optional.              |
+| `--n        | to          | Auto-assigned if not   |
+| ame <name>` | container.  | provided               |
++-------------+-------------+------------------------+
+| `--rm`      | Remove      | Don't use in           |
+|             | container   | production. You        |
+|             | when its    | probably want to       |
+|             | stopped.    | inspect failed         |
+|             |             | containers.            |
++-------------+-------------+------------------------+
+| `-d`        | Detach      | Almost always used in  |
+|             | container   | production.            |
+|             | (don't      |                        |
+|             | block the   |                        |
+|             | terminal).  |                        |
++-------------+-------------+------------------------+
+| `-p <po     | Publish     | Needed if you want to  |
+| rt>:<port>` | port from   | access an app or API   |
+|             | inside      | inside the container.  |
+|             | running     |                        |
+|             | inside      |                        |
+|             | container   |                        |
+|             | to outside. |                        |
++-------------+-------------+------------------------+
+| `-v<        | Mount       |                        |
+| dir>:<dir>` | volume into |                        |
+|             | the         |                        |
+|             | container.  |                        |
++-------------+-------------+------------------------+
 
 *Reminder: Order for `-p` and `-v` is `<host>:<container>`*
 
@@ -267,68 +227,50 @@ codes. Here's a cheatsheet for some of the most frequent you'll see.
 These are the commands that go in a Dockerfile when you're building it.
 
 +---------------+------------------------+----------------------------+
-| # Command     | # Purpose              | Example \|                 |
-|               |                        | ===============+           |
-| `FROM`        | Indicate base          | `FROM rocker/r-ver:4.1.0`  |
-|               | container.             | \|                         |
+| Command       | Purpose                | Example                    |
 +---------------+------------------------+----------------------------+
-| `RUN`         | Run a command when     | `RUN apt-get update` \|    |
+| `FROM`        | Indicate base          | `FROM rocker/r-ver:4.1.0`  |
+|               | container.             |                            |
++---------------+------------------------+----------------------------+
+| `RUN`         | Run a command when     | `RUN apt-get update`       |
 |               | building.              |                            |
 +---------------+------------------------+----------------------------+
-| `COPY`        | Copy from build        | `COPY . /app/` \|          |
+| `COPY`        | Copy from build        | `COPY . /app/`             |
 |               | directory into the     |                            |
 |               | container.             |                            |
 +---------------+------------------------+----------------------------+
-| `CMD`         | Specify the command to | `CMD quarto render .` \|   |
+| `CMD`         | Specify the command to | `CMD quarto render .`      |
 |               | run when the container |                            |
 |               | starts.                |                            |
 +---------------+------------------------+----------------------------+
 
 ## Cloud Services
 
-+------------+---------------+------------+------------+------------+
-| # Service  | # AWS         | # Azure    | # GCP      |            |
-|            |               |            |            |            |
-| Kubernetes | EKS (Elastic  | AKS (Azure | GKE        |            |
-| cluster    | Kubernetes    | Kubernetes | (Google    |            |
-|            | Service) or   | Service)   | Kubernetes |            |
-|            | Fargate       |            | Engine)    |            |
-+------------+---------------+------------+------------+------------+
-|            |               |            |            |            |
-+------------+---------------+------------+------------+------------+
-| Run a      | ECS (Elastic  | Azure      | Google App |            |
-| container  | Container     | Container  | Engine     |            |
-| /a         | Service) or   | Apps       |            |            |
-| pplication | Elastic       |            |            |            |
-|            | Beanstalk     |            |            |            |
-+------------+---------------+------------+------------+------------+
-| Run an API | Lambda        | Azure      | Google     |            |
-|            |               | Functions  | Cloud      |            |
-|            |               |            | Functions  |            |
-+------------+---------------+------------+------------+------------+
-| Database   | RDS \| Azure  |            |            |            |
-|            | SQL \| Google |            |            |            |
-|            | Cloud         |            |            |            |
-|            | Database \|   |            |            |            |
-|            | \| \|         |            |            |            |
-+------------+---------------+------------+------------+------------+
-| Data       |               |            |            |            |
-| Warehouse  |               |            |            |            |
-| \|         |               |            |            |            |
-| Redshift   |               |            |            |            |
-| \|         |               |            |            |            |
-| DataLake   |               |            |            |            |
-| \|         |               |            |            |            |
-| BigQuery   |               |            |            |            |
-| \|         |               |            |            |            |
-+------------+---------------+------------+------------+------------+
-| ML         | SageMaker     | Azure ML   | Vertex AI  |            |
-| Platform   |               |            |            |            |
-+------------+---------------+------------+------------+------------+
-| NAS        | EFS (Elastic  | Azure File | Filestore  |            |
-|            | File System)  |            |            |            |
-|            | or FSx        |            |            |            |
-+------------+---------------+------------+------------+------------+
++---------------+---------------+------------+------------+
+| **Service**   | **AWS**       | **Azure**  | **GCP**    |
++---------------+---------------+------------+------------+
+| Kubernetes    | EKS or        | AKS        | GKE        |
+| cluster       | Fargate       |            |            |
++---------------+---------------+------------+------------+
+| Run a         | ECS or        | Azure      | Google App |
+| container or  | Elastic       | Container  | Engine     |
+| application   | Beanstalk     | Apps       |            |
++---------------+---------------+------------+------------+
+| Run an API    | Lambda        | Azure      | Google     |
+|               |               | Functions  | Cloud      |
+|               |               |            | Functions  |
++---------------+---------------+------------+------------+
+| Database      | RDS           | Azure SQL  | Google     |
+|               |               |            | Cloud      |
+|               |               |            | Database   |
++---------------+---------------+------------+------------+
+| Data          | Redshift      | DataLake   | BigQuery   |
+| Warehouse     |               |            |            |
++---------------+---------------+------------+------------+
+| ML Platform   | SageMaker     | Azure ML   | Vertex AI  |
++---------------+---------------+------------+------------+
+| NAS           | EFS or FSx    | Azure File | Filestore  |
++---------------+---------------+------------+------------+
 
 ## Command Line {#cheat-cli}
 
