@@ -168,7 +168,7 @@ or provide resilience if one server were to fail.
 In order to have a cluster operate as a single environment, you need to
 solve two problems. First, you want to provide a single front door that
 routes users to a node in the cluster, preferably without them being
-aware of it happening. This is accomplished with a *load-balancer*,
+aware of it happening. This is accomplished with a *load balancer*,
 which is a kind of proxy server.
 
 Second, you need to make sure that the user is able to persist things
@@ -178,36 +178,24 @@ doesn't actually live on any of the nodes. Instead, it lives in separate
 storage that is symmetrically accessible to all the nodes in the
 cluster.
 
-This separate storage often takes the form of a database and/or *Network
-Attached Storage (NAS)* for things that get stored in a
-filesystem.[^3-3-ent-scale-3]
-
-[^3-3-ent-scale-3]: If your NAS is exclusively for Linux, you it would
-    use *NFS (Network File System)*. If Windows is involved, you'd use
-    *SMB (Server Message Block)* or Samba to connect SMB to a Linux
-    server.
-
-    There's also an outdated Windows NAS called *CIFS (Common Internet
-    File System)* that you might see in older systems.
-
 ![](images/lb-cluster.png){fig-alt="Users come to the load balancer, which sends them to the nodes, which connect to the state."}
 
 If you are a solo data scientist reading this, please do not try to run
-your own load-balanced data science cluster. When you undertake
-load-balancing, you've taken on a distributed systems problem and those
-are **inherently difficult**.
+your own load balanced data science cluster. When you undertake load
+balancing, you've taken on a distributed systems problem and those are
+**inherently difficult**.
 
 High-availability is often phrased as "no single point of failure". It's
-worth noting that just load-balancing doesn't eliminate single points of
+worth noting that just load balancing doesn't eliminate single points of
 failure. In fact, it's totally possible to make your system **less
-stable** by carelessly load-balancing a bunch of nodes. For example,
-what if your load-balancer were to fail? Or the place where the state is
+stable** by carelessly load balancing a bunch of nodes. For example,
+what if your load balancer were to fail? Or the place where the state is
 stored? What if your NAS has low performance relative to a non-networked
 drive? Sophisticated IT/Admin organizations have answers to these
 questions and standard ways they implement high availability.
 
 ::: callout-note
-For technical information on how load-balancers work and different types
+For technical information on how load balancers work and different types
 of configuration, see [Appendix @sec-append-lb].
 :::
 
@@ -216,10 +204,10 @@ of configuration, see [Appendix @sec-append-lb].
 Originally created at Google and released in 2014, the open source
 *Kubernetes (K8S, pronounced koo-ber-net-ees or kates for the
 abbreviation)* is the way to run production services out of Docker
-containers.[^3-3-ent-scale-4] Many organizations are moving towards
+containers.[^3-3-ent-scale-3] Many organizations are moving towards
 running much or all of their production work in Kubernetes.
 
-[^3-3-ent-scale-4]: If you are pedantic, there are other tools for
+[^3-3-ent-scale-3]: If you are pedantic, there are other tools for
     deploying Docker containers like Docker Swarm and Kubernetes is not
     limited to Docker containers. But for all practical purposes,
     $\text{production Docker = Kubernetes}$.
@@ -228,7 +216,7 @@ running much or all of their production work in Kubernetes.
 Apparently Kubernetes is an ancient Greek word for "helmsman".
 :::
 
-Relative to managing individual nodes in a load-balanced cluster,
+Relative to managing individual nodes in a load balanced cluster,
 Kubernetes makes things easy because it completely separates
 provisioning and configuration. In Kubernetes, you create a cluster of
 worker nodes. Then, you separately tell the cluster's *control plane*
@@ -253,9 +241,9 @@ In fact, almost everyone running Kubernetes can just add nodes with a
 few button clicks because they're using a cloud provider's managed
 service: AWS's *EKS (Elastic Kubernetes Service*, Azure's *AKS (Azure
 Kubernetes Service)*, or GCP's *GKE (Google Kubernetes
-Engine)*.[^3-3-ent-scale-5]
+Engine)*.[^3-3-ent-scale-4]
 
-[^3-3-ent-scale-5]: It's rare, but some organizations do run an on-prem
+[^3-3-ent-scale-4]: It's rare, but some organizations do run an on-prem
     Kubernetes cluster with Oracle's OpenShift.
 
 For production purposes, pod deployments are usually managed with *Helm
@@ -341,7 +329,7 @@ may actually be a better solution in a data science context.
     c.  You have a big modeling project that's too large for your
         existing machine. The modeling you're doing is highly
         parallelizable.
-2.  What is the role of the load-balancer in horizontal scaling? When do
-    you really need a load-balancer and when can you go without?
+2.  What is the role of the load balancer in horizontal scaling? When do
+    you really need a load balancer and when can you go without?
 3.  What are the biggest strengths of Kubernetes as a scaling tool? What
     are some drawbacks? What are some alternatives?
