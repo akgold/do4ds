@@ -1,158 +1,96 @@
 # Auth Technologies {#sec-append-auth}
 
-Note on how OAuth can directly to authz + SAML can just send along
-attributes.
-
 [Chapter @sec-auth] was all about a conceptual understanding of how auth
 works and what SSO is. In that chapter, we briefly mentioned a few
 technologies used to do auth, including LDAP/AD, SAML, and
 OIDC/OAuth2.0.
 
-In this chapter we'll get a little deeper into the actual technologies
-that underlies different auth. Having a basic understanding of these
-technologies can be helpful when you're talking to IT/Admins. That said,
-it's definitely beyond the scope of most people's need to understand,
-which is why this is an appendix.
+In this appendix chapter we'll get a little deeper into these
+technologies. Having a basic understanding of these technologies can be
+helpful when you're talking to IT/Admins. That said, it's definitely
+beyond the scope of most people's need to understand, which is why this
+is an appendix.
 
-In terms of auth technologies, the biggest distinction is between
-"token-based" systems that can do SSO and others that that cannot. There
-is also a distinction between systems that are considered modern and
-those that are more legacy systems.
+In terms of auth technologies, there are two big distinctions. The first
+is between "token-based" systems that can do SSO and others that that
+cannot. There is also a distinction between modern systems that are
+designed to work with cloud services and legacy systems that were
+designed during the on-prem era.
 
-But there are still a lot of problems.
+| Auth Technology | Token-Based? | "Modern"? |
+|-----------------|--------------|-----------|
+| Service-based   | ❌           | ❌        |
+| Linux Accounts  | ❌[^auth-1]  | ❌        |
+| LDAP/AD         | ❌           | ❌        |
+| Kerberos        | ✅           | ❌        |
+| SAML            | ✅           | ✅        |
+| OAuth           | ✅           | ✅        |
 
-First, authorization is still done by the service. LDAP/AD responds to
-queries about identities, but it doesn't know anything about the
-services. Each guard still needs to maintain their own list of who's
-allowed into their room. Changing those access lists still requires
-running around to each room, which is time-consuming and error-prone.
+[^auth-1]: To be precise, possible if integrated with Kerberos, but
+    unlikely.
 
-Second, just how much do you trust those guards? The guards are radioing
-in the credentials. There's nothing to stop them from writing them down
-for themselves.
+These days, token-based systems are very much preferred for security
+reasons. Users only ever provide credentials to a centralized identity
+provider and the rest of the process is just trading one secure token
+for another.
 
-Third, it's kinda a pain for the user. They have to radio in their
-credentials every time they go to access a new door. If you're using a
-lot of different systems, you're going to have to authenticate dozens of
-times a day.[^auth-1]
-
-[^auth-1]: There are also a few technical limitations that fall outside
-    our analogy, but that are relevant to IT/Admins. These include the
-    fact that LDAP/AD was really designed to work with systems all
-    inside one firewall, not with SaaS services that do auth across the
-    open internet, and that that it's difficult to configure how often
-    LDAP/AD credentials have to be re-checked.
-
-SSO solves basically all of the problems that remain using LDAP/AD. The
-user just logs in once, authorization is managed centrally, and
-credentials are never seen by the service -- just the building access
-pass.
-
-The most common technology for achieving SSO for services inside a
-company's firewall is *Security Assertion Markup Language (SAML)*, which
-uses XML-based tokens to do authentication.[^auth-2] The current
-standard, SAML 2.0 was finalized in 2005.
-
-[^auth-2]: XML is a markup language, much like HTML. The good thing
-    about XML is that it's very flexible. The bad thing is that it's
-    relatively hard for a human to easily read.
-
-The other option is *Open Identity Connect (OIDC)/OAuth2.0*, which does
-auth with JSON-based tokens called *JSON Web Tokens (JWT, pronounced
-like jawt)*.[^auth-3] It's slightly newer than SAML, originally created
-by engineers at Google and Twitter in 2007. OAuth2.0 -- the current
-standard -- was released in 2012.
-
-[^auth-3]: Technically, OIDC is an authentication standard and OAuth is
-    an authorization standard. You'll usually just hear it all referred
-    to as OAuth.
-
-**Auth Technologies by Type**
-
-| Auth Technology | Credential-Based | Token-Based | "Modern" |
-|-----------------|------------------|-------------|----------|
-| User Database   | ✅               | ❌          | ❌       |
-| Linux Accounts  | ✅               | ✅          | ❌       |
-| LDAP/AD         | ✅               | ❌          | ❌       |
-| Kerberos        | ❌               | ✅          | ❌       |
-| SAML            | ❌               | ✅          | ✅       |
-| OIDC/OAuth2.0   | ❌               | ✅          | ✅       |
-
-As we went over in [Chapter @sec-auth], the basic distinction is that in
-credential-based systems, users provide their credentials to every
-system to login. The system passes the credentials along to a central
-store where they're verified and authentication is returned.
-Authorization has to be done at the service level.
-
-That's different than a token-based system. In a token based system,
-users get a token directly from a central authority. They then take that
-ticket to each system when they try to access it. The system checks the
-validity of the ticket and responds accordingly.
-
-This sounds like a subtle difference, but it's extremely powerful. In a
-credential-based system, users have to provide their credentials to each
-service. This means the service has to be secure enough for those
-credentials. If you've just got a token or ticket, you don't have to
-trust the service nearly as much because it never sees your credentials.
-
-The other huge distinction is about session expiration. In most systems,
+The other benefit of token auth is session expiration. In most systems,
 you don't have to re-authenticate every single time you access it. In a
 credential-based system, that means that you usually trade your
-credentials for a cookie issued by the service. Again, you've got to
-trust the service to properly issue and expire that cookie. And even if
-you trust the service, you've got to separately set the timeout for each
-service. And if you want to revoke it, no can do.
+credentials for a *browser cookie* issued by the service, which the
+service then looks for and lets you skip logging in again. Generally,
+the cookie won't be reissued until it expires and you have to log in
+again. So these cookies generally have pretty long lifetimes. That means
+that if someone unauthorized were to get a cookie, they could have
+access for a long time. And if someone gets removed from the system,
+that won't actually take effect until the cookie expires.
 
-That's very different from token-based systems, where the tokens issued
-by the central authority regularly expire and have to be re-created.
-This generally means that it's much easier to expire and revoke
-token-based systems compared to credential-based ones.
+In contrast, tokens expiration is centrally-managed. Every time a token
+expires, the identity provider is consulted to see if the user should be
+allowed to get a new one. This can happen without the user needing to
+login again, allowing token lifetimes to be very short. That drastically
+limits the potential of someone unauthorized getting a token. While it's
+bad for someone to ever get unauthorized access, having it for only an
+hour is way less bad than having it for days or weeks. Additionally, if
+you need to remove someone from the system, you know that they'll be
+completely locked out as soon as their token expires.
 
-## User Database
+## Service-based auth
 
 Many pieces of software come with integrated authentication. When you
-use those systems, the product stores encrypted username and password
-pairs in a database.
+use those systems, the service stores encrypted username and password
+pairs in a database it owns. These setups are often really easy from an
+admin perspective -- you just set up individual users on the service.
 
-These setups are often really easy from an admin perspective -- you just
-set up individual users on the server.
+On the other hand, everything has to be managed service-by-service and
+you're only as secure as what the service has implemented. Almost any
+organization with an IT/Admin group will prefer not to use service-based
+auth.
 
-However, the flip side is that users have one more username and password
-to remember, which is annoying for them. Moreover, if you have more than
-a few users, or the system is one of more than a few, it's hard to
-manage users on a lot of different systems. It can be a real pain to
-create accounts on a ton of different systems when a new person joins
-the organization, or to remove their permissions one-by-one when they
-leave.
-
-For this reason, most IT/Admin organizations strongly prefer using some
-sort of centralized identity store.
-
-## Linux Accounts
+## System (Linux) Accounts
 
 Many pieces of software -- especially data science workbenches -- are
-able to look at the server they're sitting on and use the accounts on
-the server themselves.
+able to look at the server they're sitting on and use the user accounts
+and groups from the server themselves.
 
-Pluggable Authentication Modules (PAM) is the system that allows
-Linux-based authentication. As of this writing, PAM is the default
-authentication method for both RStudio Server and JupyterHub.
+On a Linux server, *Pluggable Authentication Modules (PAM)* is the
+system that allows a service to make use of the Linux host's users and
+groups. As of this writing, PAM is the default authentication method for
+both RStudio Server and JupyterHub.
 
-![](images-append/auth-pam.png){width="539"}
+As the name might suggest, PAM includes a number of different modules
+that allow it to authenticate against different systems. The most common
+is to authenticate against the underlying Linux server, but it can also
+use LDAP/AD or Kerberos tickets (uncommon).
 
-Conceptually PAM is pretty straightforward. You install a service on a
-Linux machine and configure it to use PAM authentication from the
-underlying host.
+![](images/auth-pam.png){width="539"}
 
-By default, PAM just authenticates against the users configured on the
-Linux server, but it can also be configured to use other *modules* to
-authenticate against other systems -- most commonly LDAP/AD or Kerberos.
 PAM can also be used to do things when users login -- the most common
-being initializing tokens or tickets to other systems, like a database.
+being initializing Kerberos tickets to connect with databases.
 
-PAM is often paired with System Security Services Daemon **(**SSSD) to
-automatically create Linux users on a server based on the identities
-stored in an LDAP/AD instance.
+When PAM is used in concert with LDAP/AD, the Linux users are usually
+created automatically on the system using a system called *SSSD (System
+Security Services Daemon)*. This process is called *joining the domain*.
 
 Though conceptually simple, reading, writing, and managing PAM modules
 is quite painful. Additionally, as more services move to the cloud,
@@ -163,24 +101,43 @@ and PAM is generally considered a legacy technology.
 
 For many years, Microsoft's Lightweight Directory Access Protocol (LDAP)
 implementation called Active Directory (AD) was basically the standard
-in enterprise authentication. As a credential-based system, it is
-increasingly being retired in favor of token-based systems like SAML and
-OAuth2.0.
+in enterprise authentication. It is increasingly being retired in favor
+of token-based systems like SAML and OAuth2.0.
 
-When you login to a service with LDAP, it uses the `ldapsearch` command
-to to look you up. LDAP is a protocol, like HTTP. In addition to the
-query, LDAP sends a set of *bind credentials* to validate that it's
+Depending on the service, it may use LDAP/AD indirectly via PAM, or it
+may be directly configured to talk to LDAP/AD.
+
+::: callout-note
+LDAP is an application-layer protocol, like HTTP. And like HTTP, there
+is an SSL-secured version called LDAPS. Because LDAP is almost always
+used only inside a private network, adoption of LDAPS is uneven. The
+default port for LDAP is $389$ and for LDAPS it's $636$.
+:::
+
+LDAP/AD actually isn't a type of authentication. It's a hierarchical
+tree database that is good for storing organizational entities. Doing
+authentication with LDAP/AD consists of sending a search for the
+provided username/password combination to the LDAP/AD database using the
+`ldapsearch` command.
+
+When you configure LDAP/AD in an application, you'll configure a *search
+base*, which is the subtree to look for users inside. Additionally, you
+may configure LDAP/AD with *bind credentials* to validate that it's
 allowed to be looking things up in the server.
 
-LDAP can be configured in *single-bind* mode, where it uses the user's
-credentials as the bind credentials. More often, LDAP is configured in
-*double-bind* mode, where there is a dedicated service account for
-binding.
+![](images/auth-ldap.png){fig-alt="A diagram of the LDAP flow. 1-User provides username and password to service. 2-service sends bind credentials w/ ldapsearch to LDAP server. 3-LDAP server checks credentials. 4-LDAP server returns results to service."
+width="600"}
 
-![](images-append/LDAP.png)
+::: callout-note
+Depending on your application and LDAP/AD configuration, it may be
+possible to skip the bind credentials and use the user's credentials to
+look them up in *single-bind* mode (as opposed to *double-bind* when
+there are bind credentials). Single-bind is generally inferior and
+shouldn't be used unless you can't get bind credentials.
+:::
 
-To give a little more color, let's look at the results from an
-`ldapsearch` against an LDAP server.
+When you run an `ldapsearch`, you get back the *distinguished name (DN)*
+of the entity that you are looking for (assuming it's found).
 
 Here's what my entry in a corporate LDAP directory might look like this:
 
@@ -193,187 +150,144 @@ mobile: 555-555-5555
 objectClass: Person
 ```
 
-You'll note that LDAP sends back a lot of information! This is how
-authorization is done with LDAP -- the service is configured to inspect
-the items that come back from the `ldapsearch` and do authorization
-accordingly. This makes it possible to do authorization, but it's not
-nearly as tidy as with a token-based system.
+This is helpful information, but you'll note that there's no direct
+information about authorization. Instead, you configure the service
+authorize certain users or groups. This is a pain, as each service needs
+to be configured separately.
 
-One of the things LDAP excels at relative to token-based systems is the
-ability to do lookups ahead of time. Because LDAP is a database, you can
-do a search for users -- for example to make accounts for them -- before
-they show up. In contrast, token-based systems don't know anything about
-you until you show up for the first time with a valid token.
-
-An example where this matters is if you have a service that itself
-controls authorization. For example, in Posit Connect, you can assign
-authorization to see certain apps and reports inside Connect. If you're
-using LDAP, you can run a search against the server and add them before
-they ever log in. If you're using a token-based system, you've gotta
-wait for them to show up. There are ways around this, but they generally
-don't come out-of-the-box.
+One of the big issues with LDAP/AD is that credentials are provided to
+the service, which passes them along to the LDAP/AD server. This is one
+reason why LDAP/AD is inferior to token-based technologies, where the
+credentials are only ever provided to the identity provider.
 
 ## Kerberos Tickets {#sec-kerberos}
 
-Kerberos is a relatively old token-based auth technology for use among
-different enterprise servers. In Kerberos, encrypted tokens called
-*Kerberos Tickets* are passed between the servers in the system.
+Kerberos is a relatively old, but very secure, token-based auth
+technology for use inside a private network. In Kerberos, encrypted
+tokens called *Kerberos tickets* are passed between the servers in the
+system. A system that is designed to authenticate against a Kerberos
+ticket is called *kerberized*.[^auth-2]
+
+[^auth-2]: Yuck, what a gross word.
 
 Though Kerberos is freely available, it was widely adopted along with
 Active Directory, and it's used almost exclusively in places that are
 running a lot of Microsoft products. The most frequent use of Kerberos
-tickets is to establish connections to Microsoft databases.
+tickets these days is to establish connections to Microsoft databases.
 
-Kerberos works by sending information to and from the central *Kerberos
-Domain Controller* (KDC)*.*
+Kerberos is tightly linked to the underlying servers, one of the reasons
+why it is so secure. In a Kerberos-based system, users often store their
+credentials in a secure file called a *keytab*. They can manually
+initialize a ticket using the `kinit` command, though PAM sessions are
+often used to automatically fetch a ticket upon user login.
 
-When a Kerberos session is initialized, the service sends the users
-credentials off to the KDC and requests something called the Ticket
-Granting Ticket (TGT) from the KDC. TGTs have a set expiration period.
-When they expire, the client has to request an updated TGT.
+When a Kerberos session is initialized, the service sends the users'
+credentials off to the central *Kerberos Domain Controller (KDC)* and
+requests something called the *Ticket Granting Ticket (TGT)* from the
+KDC. Like most token authentication, TGTs have a set expiration period
+and must be reacquired when they expire.
 
-This is one reason why Kerberos is considered quite secure - even if
-someone managed to steal a TGT, they'd only be able to use it for a
-little while before it went stale and could be revoked.
+When the user wants to access a service, they send the TGT back to the
+KDC again along with the service they're trying to access and get a
+*session key* (sometimes referred to as a *service ticket*) that allows
+access to a particular service.
 
-When the user want to access a service, they send the TGT back to the
-KDC again and get a *session key* (sometimes referred to as a *service
-ticket*) that allows access, usually with a specified expiration period.
+![](images/auth-kerberos.png){fig-alt="The kerberos flow. 1 - User on server requests TGT from KDC. 2 - TGT granted. 3 - user requests service ticket with TGT from KDC. 4 - Service ticket granted. 5 - user uses service ticket to access service."
+width="553"}
 
-![](images-append/auth-kerberos.png){width="553"}
-
-It's worth reiterating that Kerberos is used exclusively inside a
-corporate network. This is one reason it's still considered secure, even
-though it's old. On the other hand, because everything has to live
-inside the network, it doesn't work well for providing access to
-services outside the network, like SaaS software. For that reason,
-Kerberos is considered a legacy tool.
+Kerberos is basically only used inside a corporate network. This is one
+reason it's still considered secure. On the other hand, because
+everything has to live inside the network, it doesn't work well for
+providing access to services outside the network, like SaaS software.
+For that reason, Kerberos is considered a legacy tool.
 
 ## Modern systems: OAuth + SAML {#oauth-saml}
 
 These days, most organizations are quickly moving towards implementing a
-modern token-based authentication system through SAML and/or
-OAuth.[^auth-4]
+modern token-based authentication system through SAML and/or OAuth2.0.
 
-[^auth-4]: Modern OAuth is actually OAuth2.0. Whenver I refer to OAuth,
-    I mean OAuth 2.0.
+When you go to login to a service that uses SAML or OAuth, you are
+redirected to the SAML/OAuth identity provider to seek a token that will
+let you in. Assuming all goes well, you're granted a token and go back
+to the service to go do your work.
 
-The way both systems work is that you go to login to a service and are
-redirected to the SAML/OAuth system to seek a token that will let you
-in. Assuming all goes well, you're granted a token and go back to the
-service to go do your work.
+Both OAuth and SAML rely on plain HTTP traffic, making them easier to
+configure than LDAP/AD or Kerberos from a networking standpoint.
 
-There are a few meaningful differences between SAML and OAuth that may
-help in conversations about these systems with Enterprise IT folks.
+### SAML
 
-Most of these differences stem from the origin of the technology. The
-current SAML 2.0 standard was finalized in 2005 -- roughly coinciding
-with the beginning of the modern era of the web. Facebook was started
-just the prior year.
+The current SAML 2.0 standard was finalized in 2005 -- roughly
+coinciding with the beginning of the modern era of the web. Facebook was
+started just the prior year.
 
-OAuth is the next generation. It was started in 2006 and the current 2.0
-standard was finalized in 2013.
+SAML was invented to be a modern successor to enterprise auth methods
+like LDAP/AD and Kerberos. SAML uses encrypted and
+cryptographically-signed XML-based tokens that are generated through a
+browser redirect flow.
 
-Where SAML was designed to replace older enterprise auth technologies
-like LDAP/AD and Kerberos, OAuth was designed with the web in mind.
-People were trying to solve the problem of how to avoid having usernames
-and passwords for each individual site you might access without giving
-those sites the usernames and passwords of *more sensitive* sites.
-
-You might've used SAML today if you logged into a SSO service for work.
-In contrast, you've almost certainly used OAuth today. Any time you've
-used a *Login with Google/Facebook/Twitter/GitHub* flow -- that's OAuth.
-
-While OAuth is the default on the web, it's still somewhat newer in an
-enterprise context. Increasingly, cloud services are adopting OAuth
-based auth patterns and many popular database providers are adding the
-ability to use OAuth.
-
-SAML is XML-based while OAuth uses JSON Web Tokens (JWT). In both cases,
-the tokens are usually cryptographically signed. SAML tokens may be
-encrypted, while JWTs are usually unencrypted and signed. This makes
-OAuth somewhat easier to debug as JSON is easier to read than XML.
-
-SAML is a user-centric authentication tool, while OAuth is an
-application-centric authorization tool. The difference is subtle, but
-meaningful. For example, let's say you're trying to access your
-organization's data science workbench. If I was using SAML, I would
-acquire a token that says "the bearer of this token is Alex Gold", and
-it would be up to the workbench to know what to do with that. In
-contrast, an OAuth token would say, "the bearer of this token should get
-these specific permissions to Alex Gold's stuff in this application".
-That means that OAuth can be used for authorization at a much more
-granular level.
-
-Implementing SSO to the "front door" of a data science service, like
-your data science workbench or hosting platform is pretty standard these
-days. Right now, the industry is strongly heading in the direction of
-"second hop" auth. The idea is that when this works right, you log into
-the front door of your data science server with SAML or OAuth and then
-access to data sources like databases, APIs, and cloud storage is
-handled automatically on the back end -- no need for users to
-(insecurely) input credentials inside the data science
-environment.[^auth-5]
-
-[^auth-5]: While OAuth is an authorization technology, there is an
-    authentication technology, Open ID Connect (OIDC) built on top of
-    OAuth. In practice, people use the term OAuth to refer to both OAuth
-    proper and OIDC.
-
-TODO: image of passthrough auth
-
-Very often, IT/Admins describe this experience as "passthrough" auth.
-The issue is that SAML and OAuth tokens can't be passed through to
-another service. SAML tokens are specific to the service provider who
-asked for them and OAuth tokens describe particular authorizations for
-the bearer to a particular service.
-
-In contrast, a JWT can be issued to any entity and every single request
-made is accompanied by the OAuth JWT. For example, if you've accessed
-Google Sheets or another Google service from R or Python, you've gone
-through the JWT acquisition dance and then attached that JWT to every
-request to prove it's authorized. Similarly, cloud IAM experiences are
-based on passing JWTs around.
-
-This means that there's always a need to go back to trade in an existing
-token for a different one for the service you actually want to access.
-This is almost always an OAuth JWT. Increasingly, data science services
-are implementing these flows themselves so it does happen automatically,
-but in some cases you'll have to figure out how to do the token exchange
-manually.
-
-These days, many organizations are caught in the middle of this work -
-they are probably using SAML to access many systems and may have
-mandates to move towards credential-free communication to data sources,
-but very few have fully implemented such a system.
-
-Here are quick overviews on how both SAML and OAuth work.
-
-In SAML, the service you're accessing (token consumer) is called the
-*service provider* (SP) and the entity issuing the token is called the
-SAML *identity provider* (IdP). Most SAML tooling allows you start at
-either the IdP or the SP.
+In SAML, the service you're accessing is called the *service provider*
+(SP) and the entity issuing the token is called the SAML *identity
+provider* (IdP). Most SAML tooling allows you start at either the IdP or
+the SP.
 
 If you start at the SP, you'll get redirected to the IdP. The IdP will
 verify your credentials. If all is good, it will put a SAML token in
-your browser. The SAML token contains *claims* -- information provided
-by the SAML IdP.
+your browser, which the SP will use to authenticate you.[^auth-3]
 
-![](images-append/auth-saml.png){width="551"}
+[^auth-3]: The diagram below assumes you don't already have a token in
+    your browser. What's listed as *step 6* below actually occurs as
+    soon as the user goes to the SP. If the user has a token already,
+    they skip the rest of the flow.
 
-The OAuth flow is a little more parsimonious. In OAuth, the service
-you're trying to visit is called the *resource server* and the token
-issuer is the *authorization server*. When you try to access a service,
-the service knows to look for a JWT that includes specific *claims*
-against a set of *scopes* defined ahead of time.
+![](images/auth-saml.png){width="600"}
 
-For example, you may claim *read* access against the scope of *events on
-Alex's calendar*.
+A SAML token contains a number of *claims*, which usually include a
+username and may include groups or other attributes. Whoever controls
+the IdP can configure what claims appear on the token at the IdP. The
+SAML standard itself doesn't do authorization, but it's very common for
+an application to have required or optional claims that it can interpret
+to do authorization.
+
+### OAuth
+
+OAuth was started in 2006 and the current 2.0 standard was finalized in
+2013. OAuth 2.1 is under development as of 2023.
+
+From the very beginning, OAuth was designed to be used with different
+services across the web. Any time you've used a *Login with
+Google/Facebook/Twitter/GitHub* flow -- that's OAuth.
+
+OAuth relies on passing around cryptographically-signed JSON Web Tokens
+(JWT). This makes OAuth much easier to debug compared to SAML because
+the JWT is just plain-text JSON with a signature that proves it's valid.
+
+Unlike a SAML token that always lives in a browser cache, JWTs can go
+basically anywhere. They can live in the browser, but they also can pass
+from one server to another to do authorization or can be saved in a
+user's home directory. For example, if you've accessed Google Sheets or
+another Google service from R or Python, you may have manually handled
+the resulting OAuth token in your home directory.
+
+OAuth is actually an authorization scheme, so the contents of a JWT
+explicitly are about the permissions of the bearer of the token. There
+is a related standard called *OpenID Connect (OIDC)* that does
+authentication with OAuth tokens. Over the next few years, I fully
+expect basically all data access to move towards using OAuth tokens.
+
+In OAuth, the service you're trying to visit is called the *resource
+server* and the token issuer is the *authorization server*. When you try
+to access a service, the service knows to look for a JWT that includes
+specific *claims* against a set of *scopes* defined ahead of time.
+
+For example, if you want to read my Google Calendar, you would need to
+have a JWT that includes a claim granting *read* access against the
+scope of *events on Alex's calendar*.
 
 If you don't have that token, you'll need to go to the authorization
 server to get it. Unlike in SAML where action is all occurring via HTTP
-redirects and the SAML token must live in the person's browser, OAuth
-makes no assumptions about how this flow happens.
+redirects, OAuth makes no assumptions about how this flow happens.
+
+![](images/auth-oauth.png){width="600"}
 
 The authorization server knows how to accept requests for a token and
 the resource server knows how to accept them. The process of requesting
@@ -381,7 +295,18 @@ and getting a token can happen in a number of different ways that might
 include browser redirects and caches, but also could be done entirely in
 R or Python.
 
-This is why OAuth is used for service-to-service communication.
+## User Provisioning
 
-![](images-append/auth-oauth.png)
+When you're using a service, users often need to be created
+(*provisioned*) in that system. In some cases, the users will be
+provisioned the first time they log in. In other cases, you may want the
+ability to provision them ahead of time.
 
+LDAP/AD is very good for user provisioning. You can often configure your
+application to provision everyone who comes back from a particular
+`ldapsearch`. In contrast, token-based systems don't know anything about
+you until you show up for the first time with a valid token.
+
+There is a SAML-based provisioning system called *SCIM (System for
+Cross-Domain Identity Management)* that is slowly being adopted by many
+IdPs and SPs.

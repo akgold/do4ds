@@ -1,16 +1,97 @@
-# Load Balancers {#sec-append-lb}
+# Technical Detail: Load balancers {#sec-append-lb}
 
-So for a data science workbench, you probably need a filesystem that can attach to all of the nodes at the same time and maybe also a database. That filesystem is usually a network attached storage (NAS, pronounced naahz), which is just a filesystem that lives on its own server. Different NASs may run different software including NFS (Network File System) for Linux or SMB (Server Message Block) or the outdated CIFS (Common Internet File System) to mount Windows filesystems to a Linux host.
+[Chapter @sec-ent-scale] introduced you to the idea of a load balancer
+as a kind of proxy server to serve as the "front door" to a
+computational cluster. This appendix chapter will explain a few of the
+different configuration options for load balancers that your
+organization's IT/Admins may consider.
 
-As a data scientist, you really shouldn't be configuring load-balancers. But the IT/Admin you're working with may need to do so and it might be helpful to understand how they're configuring it.
+Depending on your organization, they may run their own load balancing
+servers using software like *F5*, *HA Proxy*, or *Hostwinds*. If your
+organization is in the cloud, it's very likely they use a cloud load
+balancer like AWS *ELB* *(Elastic Load Balancer)*, Azure *App Proxy*, or
+GCP *Cloud Load Balancing*. If they're running in Kubernetes, they are
+likely to use the open source *Traefik*.
 
-Load-balancers are a special kind of proxy server that routes sessions among the nodes in the cluster.
+## Load balancer settings
 
-At a minimum, your load-balancer has to know what nodes are accepting traffic. This is accomplished by configuring a health check/heartbeat for the application on the node. A health check is a feature of the application that responds to periodic pings from the load-balancer. If no response comes back, the load-balancer treats that node as unhealthy and doesn't send traffic there.
+Regardless of which load balancer you're using, a basic requirement is
+that it knows what nodes are accepting traffic. This is accomplished by
+configuring a *health check/heartbeat* for the application on the node.
+A health check is a feature of the application that responds to periodic
+pings from the load balancer. If no response comes back, the load
+balancer treats that node as unhealthy and doesn't send traffic there.
 
-The simplest form of load-balancing is to just rotate traffic to each node that is healthy in a round-robin configuration. Depending on the capabilities of the load-balancer and what metrics are emitted by the application, it may also be possible or desirable to do more complicated load-balancing that pays attention to how loaded different nodes are.
+One other feature that may come up is *sticky sessions* or *sticky
+cookies*. For stateful applications, like Shiny apps, you want to get
+back to the same node in the cluster so you can resume a previous
+session. In most load balancers, this is just an option you can
+activate.
 
-One other feature that may come up is sticky sessions or sticky cookies. For stateful applications – like Shiny apps – you want to get back to the same node in the cluster so you can resume a previous session. In most load-balancers, this is a simple option you can just turn on.
+## Ways to configure load balancing
 
-Usually, load balancers are configured to send traffic to all the nodes in the cluster in an active/active configuration. It is also possible to configure the load-balancer to send traffic to only some of the nodes, with the rest remaining inert until they are switched on, usually in the event of a failure in the active ones. This is sometimes called a blue/green or red/black configuration.
+The simplest form of load balancing is to just rotate traffic to each
+node that is healthy in a *round-robin* configuration. Depending on the
+capabilities of the load balancer and what metrics are emitted by the
+application, it may also be possible or desirable to do more complicated
+load balancing that pays attention to how loaded different nodes are.
 
+Usually, load balancers are configured to send traffic to all the nodes
+in the cluster in an *active/active* configuration. It is also possible
+to configure the load balancer in an *active/passive* configuration to
+send traffic to only some of the nodes, with the rest remaining inert
+until they are switched on, usually in the event of a failure in the
+active ones. This is sometimes called a *blue/green* or *red/black*
+configuration when it's used to diminish downtime in upgrades and
+migrations.
+
+## Shared state
+
+Aside from the load balancer, the nodes need to be able to share state
+with each other so users can have the same experience on each node. The
+requirements for that shared state depend on the software.
+
+Often the shared state takes the form of a database (often Postgres)
+and/or *Network Attached Storage (NAS, pronounced naahz)* for things
+that get stored in a filesystem.
+
+If your NAS is exclusively for Linux, you it would use *NFS (Network
+File System)*. If Windows is involved, you'd use *SMB (Server Message
+Block)* or *Samba* to connect SMB to a Linux server. There's also an
+outdated Windows NAS called *CIFS (Common Internet File System)* that
+you might see in older systems.
+
+Each of the cloud providers has a NAS offering. AWS has *EFS (Elastic
+File System)* and *FSx*. Azure has *Azure File*, and GCP has
+*Filestore*.
+
+## Upgrades in HA
+
+Sometimes IT/Admins want to run an HA cluster with software that
+supports *zero downtime upgrades*. In order to do a zero-downtime
+upgrade, you need to take some nodes offline, upgrade them, put them
+back online, and then upgrade the rest of the nodes.
+
+There are a two features the application you're upgrading needs to
+support to accomplish this feat. If it doesn't support both, you'll need
+to endure some downtime to do an upgrade.
+
+The first is *node draining*. If you just naively removed a node, you
+might kill someone's active session. Instead, you'd want to configure
+the node so that it doesn't kill any existing sessions but also doesn't
+accept any new ones. As the current sessions end, the node empties and
+you can safely take it offline when all the sessions are gone.
+
+The second is *rolling upgrade*. Some software supports being in a load
+balanced cluster with different versions of the software and other does
+not. If your software doesn't support a cluster with mixed versions, a
+rolling upgrade won't be possible. Supporting a rolling upgrade is
+relatively rare. It requires that the cluster understand how to maintain
+metadata across different versions simultaneously, which is a tricky bit
+of application programming.
+
+If your application doesn't support zero downtime upgrades, some
+organizations like to get close by building a second copy of the
+environment, getting it almost live, and then taking downtime just to
+switch the networking over. That's generally much faster than building
+the whole thing during downtime.
