@@ -360,12 +360,15 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
    
   <ul>
   <li><a href="#environments-have-layers" id="toc-environments-have-layers" class="nav-link active" data-scroll-target="#environments-have-layers"><span class="header-section-number">1.1</span> Environments have layers</a></li>
-  <li><a href="#what-is-a-package-environment" id="toc-what-is-a-package-environment" class="nav-link" data-scroll-target="#what-is-a-package-environment"><span class="header-section-number">1.2</span> What is a package environment</a></li>
-  <li><a href="#using-a-virtual-environment" id="toc-using-a-virtual-environment" class="nav-link" data-scroll-target="#using-a-virtual-environment"><span class="header-section-number">1.3</span> Using a virtual environment</a></li>
+  <li><a href="#the-package-layer" id="toc-the-package-layer" class="nav-link" data-scroll-target="#the-package-layer"><span class="header-section-number">1.2</span> The package layer</a></li>
+  <li><a href="#using-a-virtual-environment" id="toc-using-a-virtual-environment" class="nav-link" data-scroll-target="#using-a-virtual-environment"><span class="header-section-number">1.3</span> Using a virtual environment</a>
+  <ul class="collapse">
+  <li><a href="#step-4-use-a-virtual-environment" id="toc-step-4-use-a-virtual-environment" class="nav-link" data-scroll-target="#step-4-use-a-virtual-environment"><span class="header-section-number">1.3.1</span> Step 4: Use a virtual environment</a></li>
+  </ul></li>
   <li><a href="#whats-happening-under-the-hood" id="toc-whats-happening-under-the-hood" class="nav-link" data-scroll-target="#whats-happening-under-the-hood"><span class="header-section-number">1.4</span> What’s happening under the hood</a></li>
-  <li><a href="#reproducing-the-rest-of-the-stack" id="toc-reproducing-the-rest-of-the-stack" class="nav-link" data-scroll-target="#reproducing-the-rest-of-the-stack"><span class="header-section-number">1.5</span> Reproducing the rest of the stack</a></li>
+  <li><a href="#a-note-on-conda-1" id="toc-a-note-on-conda-1" class="nav-link" data-scroll-target="#a-note-on-conda-1"><span class="header-section-number">1.5</span> A note on Conda</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">1.6</span> Comprehension Questions</a></li>
-  <li><a href="#lab1" id="toc-lab1" class="nav-link" data-scroll-target="#lab1"><span class="header-section-number">1.7</span> Lab 1: Create a website with virtual environments</a>
+  <li><a href="#lab1" id="toc-lab1" class="nav-link" data-scroll-target="#lab1"><span class="header-section-number">1.7</span> Lab 1: Create and use a virtual environment</a>
   <ul class="collapse">
   <li><a href="#eda-in-r" id="toc-eda-in-r" class="nav-link" data-scroll-target="#eda-in-r"><span class="header-section-number">1.7.1</span> EDA in R</a></li>
   <li><a href="#modeling-in-python" id="toc-modeling-in-python" class="nav-link" data-scroll-target="#modeling-in-python"><span class="header-section-number">1.7.2</span> Modeling in Python</a></li>
@@ -393,33 +396,27 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>Creating a data science project is like cooking a delicious meal.</p>
-<p>In this analogy, your data are the raw ingredients and your code is the recipe for your meal.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>I’m not here to talk much about your ingredients or your recipes.</p>
-<p>Instead, I’m here to talk about your pantry and your kitchen.</p>
-<p>A novice cook thinks prep is done once they’ve gathered their ingredients and recipes. They might chop/smush a tomato with whatever dull butter knife happens to be at hand.</p>
-<p>But that’s not how the pros think. A pro probably has a knife just for tomatoes and they frequently – perhaps every time they use it – hone it to razor sharpness.</p>
-<p>Regardless of your proficiency in the kitchen, you’re a pro (or aiming to be one) at data science. In this chapter, we’re going to talk about the data science equivalent of prepping your knives in your kitchen – actively managing your data science environments using code.</p>
-<p>Kitchen metaphors aside, your data science environment is the stack of software and hardware below the level of your code, from the R and Python packages you’re using right down to the physical hardware your code runs on.</p>
-<p><img src="images/environment.png" class="img-fluid" alt="Code and data going into an environment with hardware, R and Python, and packages." width="413"></p>
-<p>Novice data scientists are like novice cooks and think little – or not at all – about the readiness of their environment and the sharpness of their tools. One of the primary results of this is the oft-spoken, and dreaded phrase, “well, it works on my machine” after attempting to share code with a colleague or deploy an app into a different environment.</p>
-<p>Some people who read this will just throw up their hands and say, “well, it’s impossible to make things completely reproducible, so I’m not going to bother”. And they’re kinda right.</p>
-<p>Trying to craft an environment that’s completely reproducible is somewhat of a fool’s errand. There’s always a tradeoff. Making things more reproducible generally takes more work – in a way that’s frustratingly asymptotic.</p>
+<p>I want to turn you a professional chef.</p>
+<p>Not a real chef mind you, but the data science equivalent. Creating a great data science project is like cooking a delicious meal. You have to take raw ingredients and a recipe – your data and code – and turn them into something great.</p>
+<p>And while I don’t really care about your prowess in a literal kitchen, I want you to feel like a pro in your data science environment. Professionals in cooking or data science need to always be concerned with the literal or figurative sharpness of their tools and cleanliness of their kitchen.</p>
+<p>In data science, that means actively managing your data science environments using code. Kitchen metaphors aside, your data science environment is the stack of software and hardware below your code, from the R and Python packages you’re using right down to the physical hardware your code runs on.</p>
+<p><img src="images/environment.png" class="img-fluid" alt="Code and data going into an environment with hardware, R and Python, and packages." width="600"></p>
+<p>Ignoring the readiness of the data science environment results in the dreaded <em>it works on my machine</em> phenomenon with a failed attempt to share code with a colleague or deploy an app to production.</p>
+<p>In some cases, you might have no choice. Some industries are highly regulated and analysts need to be able to guarantee that they can reproduce an analysis exactly – even a decade later – down to the layer of machine instructions. In this world, IT/Admins take a physical piece of hardware that they know runs the analysis, make a backup or two, and just keep that physical piece of hardware running for many years.</p>
+<p>If you don’t work in such an industry, you don’t have to go all the way there. Trying to craft an environment that’s <strong>completely</strong> reproducible is somewhat of a fool’s errand. There’s always a tradeoff. Making things more reproducible generally takes more work – in a way that’s frustratingly asymptotic.</p>
 <p><img src="images/repro-spectrum.png" class="img-fluid" alt="Spectrum of reproducibility from not at all to &quot;fully&quot; indicating that as reproducibility rises, so does that amount of work."></p>
-<p>Some industries are highly regulated and need to be able to guarantee that they can reproduce an analysis exactly – down to the layer of machine instructions – a decade later. In this world, IT/Admins take physical piece of hardware that they know runs the analysis, make a backup or two, and just keep that physical piece of hardware running for many years.</p>
-<p>If you don’t work in such an industry, you don’t have to go all the way there. Making things 100% reproducible is really, really hard. But taking your first steps to make things more reproducible is well-worth your time.</p>
-<p>The first step towards making environments more reproducible is to create and use <em>Environments as Code</em>.</p>
-<p>The DevOps term for this is that environments are <em>stateless</em>. That means that there’s no secret state embedded in the environment so that functionally identical copies can be created and destroyed at whim from code.</p>
-<p>This is often expressed in the phrase that environments should be “cattle, not pets”.</p>
-<p>In this chapter, we’ll get into the why and how of capturing data science environments in code, saving them for later, and easily moving them around from place to place.</p>
+<p>But the first steps towards a more reproducible environment is simple enough to fit in a single book chapter (this one!) – to create and use <em>environments as code</em>.</p>
+<p>The DevOps term for this is that environments are <em>stateless</em> or in the phrase that environments should be “cattle, not pets”. That means that you can use standardized tooling to create and destroy functionally identical copies of the environment without secret state being left behind.</p>
+<p>In this chapter, we’ll get into the why and how of capturing data science environments in code, saving them for later, and then easily moving them around from place to place.</p>
 <section id="environments-have-layers" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="environments-have-layers"><span class="header-section-number">1.1</span> Environments have layers</h2>
-<p>Data science environments have three distinct layers that build on each other. Once you understand the layers of an environment, you can think more clearly about what your actual reproducibility needs are, and which environmental layers you need to target putting into code.</p>
-<p><strong>Layers of a Data Science Environments</strong></p>
+<p>Data science environments have three distinct layers. Reasoning clearly about these layers can reveal your actual reproducibility needs, and which environmental layers you need to target putting into code.</p>
+<p>At the bottom of the environment is the <em>hardware layer.</em> This is the physical and virtual hardware where the code runs. For example, this might be your laptop or a virtual server from a cloud provider. Above that is the <em>system</em> <em>layer</em>, which includes the operating system, important system libraries, and Python and/or R. And above that is the <em>package layer</em>, where your Python and R packages live.</p>
+<p><strong>Layers of data science environments</strong></p>
 <table class="table">
 <colgroup>
-<col style="width: 19%">
-<col style="width: 37%">
+<col style="width: 31%">
+<col style="width: 66%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -430,11 +427,11 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <tbody>
 <tr class="odd">
 <td>Packages</td>
-<td>R + Python Packages</td>
+<td>Python + R Packages</td>
 </tr>
 <tr class="even">
 <td>System</td>
-<td><p>R + Python Language Versions</p>
+<td><p>Python + R Language Versions</p>
 <p>Other System Libraries</p>
 <p>Operating System</p></td>
 </tr>
@@ -445,52 +442,46 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 </tr>
 </tbody>
 </table>
-<p>Fundamentally, the hardware and software layers should be the responsibility of an IT/Admin. It may be the case that you’re responsible for them as well, but then you’re just fulfilling that role.</p>
-<p>But as a data scientist, you can and should be responsible for the package layer, and getting this layer right is where the biggest reproducibility bang for your buck lies.</p>
+<p>In an ideal world, the <em>hardware</em> and <em>system</em> layers should be the responsibility of an IT/Admin. It may be the case that you’re responsible for them as well, but then you’re just fulfilling that role.</p>
+<p>As a data scientist, you can and should be responsible for the package layer, and getting this layer right is where the biggest reproducibility bang for your buck lies. If you do find yourself managing the system or hardware layer, chapters <a href="../sec2/2-1-cloud.html"><span>Chapter&nbsp;7</span></a> through <a href="../sec2/2-8-ssl.html"><span>Chapter&nbsp;14</span></a> will teach you all about how to manage those layers.</p>
 </section>
-<section id="what-is-a-package-environment" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="what-is-a-package-environment"><span class="header-section-number">1.2</span> What is a package environment</h2>
-<p>It’s helpful to start by building a mental model of what a package environment is before we get into how to use them well.</p>
-<p>Let’s start with an intro to the different states packages can be in.</p>
+<section id="the-package-layer" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="the-package-layer"><span class="header-section-number">1.2</span> The package layer</h2>
+<p>There are three different places packages can live.</p>
 <ol type="1">
-<li><strong>In a repository.</strong> You’re probably used to installing packages from a packages-specific repository like PyPI, Conda, CRAN, or BioConductor. These repositories are like the grocery store – the food is packaged up and ready to go, but inert. There’s also lots of variety – repositories hold current and archival versions of tons of different packages.</li>
-<li><strong>In a library.</strong> Once you install the packages you need with <code>install.packages()</code> or <code>pip install</code> or <code>conda install</code>, they’re in your library – the data science equivalent of a pantry. That library is specific to a certain environment. Importantly, libraries can hold – at most – one version of any given package. Libraries can be specific to the project, user, or shared across the system.</li>
+<li><strong>In a repository.</strong> You’re used to installing packages from a repositories like PyPI, Conda, CRAN, or BioConductor. These repositories are like the grocery store. The food is packaged up and ready to go, but inert. There are also many varieties there. Repositories hold both current and archival versions of each package.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></li>
+<li><strong>In a library.</strong> Once you install the packages you need with <code>install.packages()</code> or <code>pip install</code> or <code>conda install</code>, they’re in your library, which is the data science equivalent of a pantry. Libraries can hold – at most – one version of any given package. Libraries can be specific to the project, user, or shared across the system.</li>
 <li><strong>Loaded.</strong> Loading a package with a <code>library</code> or <code>import</code> command is like taking the food out of the pantry and putting it on the counter so you can actually cook with it.</li>
 </ol>
-<p>In general, the library is the package environment that’s the most relevant because it’s the part you, as a data scientist, have control over.</p>
-<p>Let’s say you work on one project for a while, installing packages from the repository into your library. Now let’s say you come back after a year of working on other projects or try to share your project with someone else.</p>
-<p>It’s probable that future you or your colleague you won’t have the right versions and your code will break.</p>
-<p>What would’ve been better is if you’d had an environments as code strategy that created a portable environment for each <strong>project</strong> on your system.</p>
-<p>A successful package Environment as Code setup has two key attributes:</p>
+<p>As a data scientist, the atomic unit of package reproducibility is in the middle – the library.</p>
+<p>Let’s say you work on one project for a while, installing packages from the repository into your library. You go away for a year of working on other projects or try to share your project with someone else. When you come back, it’s likely that future you or your colleague you won’t have the right versions and your code will break.</p>
+<p>What would’ve been better is if you’d had an environment as code strategy that created a portable environment for each <strong>project</strong> on your system.</p>
+<p>A successful package environment as code setup has two key attributes:</p>
 <ol type="1">
 <li>Your package environment is isolated and cannot be disrupted by other activities on the same machine.</li>
 <li>Your package environment can easily be captured and transported elsewhere.</li>
 </ol>
-<p>Both R and Python have great environments as code utilities that make it easy to do both these things.</p>
+<p>In Python, there are many different options for virtual environment tooling. In the context of production data science, I recommend <code>{virtualenv}</code>/<code>{venv}</code> and related tools.</p>
+<p>In R, there’s really only one game in town; the <code>{renv}</code> package.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-R vs Python
+A note on Conda
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>On a high level, the workflows for these tasks are similar between R and Python. However, it’s worth noting that Python is used all the time by your system, where R is basically only ever installed for data science purposes.</p>
-<p>That means that most tutorials on using Python start with installing a standalone data science version of Python using a virtual environment or Conda, so you may already be used to using a virtual environment.</p>
-<p>Hopefully this chapter will help fill out your mental model of what’s going on.</p>
+<p>Conda allows you to create a virtual environment in user space on your laptop without having admin access. It’s especially useful when your machine is locked down by IT.</p>
+<p>That’s not a great fit for a production environment. Conda smashes together the language version, the package management, and, sometimes, the system library management. This is conceptually simple and easy-to-use, but it often goes awry in production environments. In a production environment (or a shared workbench server) I recommend people manage Python packages with a virtual environment tool like <code>{venv}</code> and manage system libraries and versions of Python with tools built for those purposes.</p>
 </div>
 </div>
-<p>In R, <code>{renv}</code> is the standard on this front. In Python, there are many different options. In the context of production data science, I recommend <code>{virtualenv}/{venv}</code> and related tools.</p>
 </section>
 <section id="using-a-virtual-environment" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="using-a-virtual-environment"><span class="header-section-number">1.3</span> Using a virtual environment</h2>
-<p>Using a virtual environment tool to create an environment as code is a three-step process. This section will teach you about the process of creating and using a virtual environment.</p>
-<p>See the cheatsheet in <a href="../append/cheatsheets.html">Appendix&nbsp;<span>D</span></a> for the commands for both R and Python at the end of the chapter.</p>
-<p><strong>Step 1: Create standalone package libraries</strong></p>
-<p>Each project should have it’s own <code>{renv}</code>/<code>{venv}</code> library. When you start your project, it should be in a standalone directory that includes everything the project needs – including a virtual environment.</p>
-<p>This is called a project-oriented workflow. You can do it in either R or Python. The <em>What They Forgot to Teach You About R</em> course (materials available online at <a href="https://rstats.wtf/">rstats.wtf</a>) is a great intro to a project-oriented workflow whether you work in R or Python. The tooling will be somewhat different in Python, but the idea is the same.</p>
+<p>Using a virtual environment tool is a three-step process.</p>
+<p>At a high level, you’ll create and use standalone package libraries, use tooling to capture the state of that package environment, and restore that state wherever else you might need the environment.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -501,64 +492,64 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Some projects include multiple content items – like a project that like an app project backed up by an API and an ETL script. My recommendation is to create one virtual environment for each piece of content.</p>
+<p>See the cheatsheet in <a href="../append/cheatsheets.html">Appendix&nbsp;<span>D</span></a> for the exact commands for both R and Python.</p>
 </div>
 </div>
-<p>Then, every time you work on the project, you activate the virtual environment and install/activate packages in there.</p>
-<p>One worry that can arise is that it could take up a lot of space to reinstall these packages over and over again for every project on your system. Don’t worry – <code>{renv}</code> and <code>{venv}</code> are a little cleverer than this. If you’re using the same package multiple times, it does some work behind the scenes using <em>symbolic links</em> to make sure that the package is actually only installed once.</p>
+<p><strong>Step 1: Create standalone package libraries</strong></p>
+<p>Each project should have it’s own <code>{renv}</code>/<code>{venv}</code> library. When you start your project, it should be in a standalone directory that includes everything the project needs – including a virtual environment.</p>
+<p>This is called a <em>project-oriented workflow</em>. You can do it in either R or Python. The <em>What They Forgot to Teach You About R</em> course (materials available online at <a href="https://rstats.wtf/">rstats.wtf</a>) is a great intro to a project-oriented workflow whether you work in R or Python. The tooling will be somewhat different in Python, but the idea is the same.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If your project includes multiple content items (say an app, API, and ETL script), I recommend using one git repo for the whole project with each content item in its own directory with its own virtual environment.</p>
+</div>
+</div>
+<p>When you work on the project, you activate the virtual environment and install and use packages in there.</p>
 <p><strong>Step 2: Document environment state</strong></p>
-<p>As you work inside your virtual environment, you’ll want to document the state of the package library. Both <code>{renv}</code> and <code>{venv}</code> have standard file formats for documenting the packages that are installed in the environment as well as the versions.</p>
+<p>The way to make the environment portable is to document what’s in the package library. Both <code>{renv}</code> and <code>{venv}</code> have standard file formats for documenting the packages, as well as the versions, that are installed in the environment.</p>
 <p>In <code>{renv}</code>, the file is called a <code>lockfile</code> and it’s a <code>requirements.txt</code> in <code>{venv}</code>.</p>
-<p>Since all this work is occurring in a standalone package environment, you don’t have to worry about what’ll happen if you come back after a break. You’ll still have those same packages to use.</p>
+<p>Since all this work is occurring in a standalone package environment, you don’t have to worry about what will happen if you come back after a break. You’ll still have those same packages to use.</p>
 <p><strong>Step 3: Collaborate or deploy</strong></p>
-<p>When you go to share your project, you don’t want to share your actual package libraries. The actual package libraries can be large, so putting just a short lockfile or requirements file into git is definitely preferred. Additionally, package installs are specific to the operating system and the language version you’re using.</p>
-<p>So if you’re working on a Mac with a particular set of R and/or Python versions and you collaborate or deploy to a Windows or Linux machine, you can’t share the actual package files. Those machines will need to install the required set of packages for themselves.</p>
-<p>So you just share your <code>lockfile</code> or <code>requirements.txt</code> and your collaborator or deployment process consults that file and installs all the required packages from there.</p>
+<p>When you go to share your project, you don’t want to share your actual package libraries. Package installs are specific to the operating system and the language version you’re using, so you want your target system to install the package specifically for that system.</p>
+<p>For example, if you’re working on a Mac and you collaborate or deploy to a Windows or Linux machine, you can’t share the actual package files. Those machines will need to install the required set of packages for themselves.</p>
+<p>Additionally, package files can be large. Just sharing a file of requirements makes downloads and uploads much more manageable, especially if you’re using git. So the process is to check your <code>lockfile</code> or <code>requirements.txt</code> into git with your project.</p>
+<section id="step-4-use-a-virtual-environment" class="level3" data-number="1.3.1">
+<h3 data-number="1.3.1" class="anchored" data-anchor-id="step-4-use-a-virtual-environment"><span class="header-section-number">1.3.1</span> Step 4: Use a virtual environment</h3>
+<p>Then, when your deployment target, collaborator, or future you downloads your project, it will restore the documented environment, again using tools from <code>{renv}</code>/<code>{venv}</code>.</p>
+</section>
 </section>
 <section id="whats-happening-under-the-hood" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="whats-happening-under-the-hood"><span class="header-section-number">1.4</span> What’s happening under the hood</h2>
-<p>Now that you understand the basic process of using a virtual environment tool, it might be helpful to understand what’s actually going on.</p>
-<p>When you install a package, it installs into a <em>package cache</em>. This is just a directory full of installed packages. When you install a package, it’s installed into that directory. When you activate a library with <code>library</code> or <code>import</code>, it searches that directory and loads the library into the active session.</p>
-<p>In R, the package cache(s) to be consulted are contained in <code>.libPaths()</code>. In Python it’s <code>sys.path</code>.</p>
-<p>The key to virtual environments is that they monkey around with the package cache list, so both installation and loading happens from a cache that’s specific to the virtual environment.</p>
-<p>Here’s an example. If I run <code>.libPaths()</code> before and after activating an <code>{renv}</code> environment, the first entry from the <code>.libPaths()</code> call changes from a user-level library <code>/Users/alexkgold</code> to a project-level library <code>/Users/alexkgold/Documents/do4ds/</code>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sc">&gt;</span> <span class="fu">.libPaths</span>()</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="st">"/Users/alexkgold/Library/R/x86_64/4.2/library"</span>                 </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>] <span class="st">"/Library/Frameworks/R.framework/Versions/4.2/Resources/library"</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">activate</span>()</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="sc">*</span> Project <span class="st">'~/Documents/do4ds/docker/docker/plumber'</span> loaded. [renv <span class="dv">0</span>.<span class="fl">15.5</span>]</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">.libPaths</span>()</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>] <span class="st">"/Users/alexkgold/Documents/do4ds/docker/docker/plumber/renv/library/R-4.2/x86_64-apple-darwin17.0"</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>[<span class="dv">2</span>] <span class="st">"/Library/Frameworks/R.framework/Versions/4.2/Resources/library"</span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>Similarly, in Python it looks like this. Note that the “after” version replaces the last line of the <code>sys.path</code> with a project-level library:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> python3 <span class="ex">-m</span> site                                       </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">sys.path</span> = [</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Users/alexkgold/Documents/python-examples/dash-app'</span><span class="ex">,</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip'</span><span class="ex">,</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8'</span><span class="ex">,</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/lib-dynload'</span><span class="ex">,</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/site-packages'</span><span class="ex">,</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="ex">]</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="ex">USER_BASE:</span> <span class="st">'/Users/alexkgold/Library/Python/3.8'</span> <span class="er">(</span><span class="ex">doesn</span><span class="st">'t exist)</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">USER_SITE: '</span><span class="ex">/Users/alexkgold/Library/Python/3.8/lib/python/site-packages</span><span class="st">' (doesn'</span><span class="ex">t</span> exist<span class="kw">)</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="ex">ENABLE_USER_SITE:</span> True</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> source <span class="ex">.venv/bin/activate</span>                       </span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">.venv</span><span class="kw">)</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> python3 <span class="ex">-m</span> site</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="ex">sys.path</span> = [</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Users/alexkgold/Documents/python-examples/dash-app'</span><span class="ex">,</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python38.zip'</span><span class="ex">,</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8'</span><span class="ex">,</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/lib-dynload'</span><span class="ex">,</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">'/Users/alexkgold/Documents/python-examples/dash-app/.venv/lib/python3.8/site-packages'</span><span class="ex">,</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="ex">]</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="ex">USER_BASE:</span> <span class="st">'/Users/alexkgold/Library/Python/3.8'</span> <span class="er">(</span><span class="ex">doesn</span><span class="st">'t exist)</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="st">USER_SITE: '</span><span class="ex">/Users/alexkgold/Library/Python/3.8/lib/python/site-packages</span><span class="st">' (doesn'</span><span class="ex">t</span> exist<span class="kw">)</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="ex">ENABLE_USER_SITE:</span> False</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">.venv</span><span class="kw">)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p>If you’re on a shared server, you may want to share a package cache across users. This generally isn’t necessary, but can save some space on the server. Both <code>{renv}</code> and <code>venv</code> include settings to allow you to relocate the package cache to a shared location on the server. You’ll need to make sure that all the relevant users have read and write privileges to this location.</p>
+<p>Installed packages are stored in libraries, which are just directories on your system. Your Python or R session keeps track of the set of libraries it should use with <code>sys.path</code> in Python and <code>.libPaths()</code> in R.</p>
+<p>So when you install a package, it installs into the first library allowed. And when you load a package with <code>import</code> or <code>library</code>, it searches the directories from <code>sys.path</code> or <code>.libPaths()</code> and returns the package when it finds it.</p>
+<p><img src="images/pkg-libs.png" class="img-fluid" alt="A diagram of package libraries. An import or library statement triggers a call to sys.path or .libPaths(), which returns directories to search. That returns a package to the session." width="600"></p>
+<p>Each library can contain, at most, one version of any package. So order matters for the directories in <code>sys.path</code> or <code>.libPaths()</code>. Whatever version is found first during the search will be returned.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This works the same for Python modules as for packages. I’m just using the term packages since most modules that aren’t purpose built for a project are in packages.</p>
+</div>
+</div>
+<p>If you’re not in a virtual environment, the top libraries are user-level libraries by default. Activating a virtual environment puts project-level libraries at the top of the lists in <code>sys.path</code> or <code>.libPaths()</code> so package installs and loads happen from there.</p>
+<p>In order to economize on space and install time, both <code>{renv}</code> and <code>{venv}</code> do something a little clever. The packages in your project-level library aren’t actually there. Instead, <code>{renv}</code> and <code>{venv}</code> keep user-level <em>package caches</em> of the actual packages and use <em>symlinks</em> so there’s actually only ever one copy of the package installed.</p>
+<p>Sometimes, IT/Admins want to further save space by sharing package caches across users. This is usually a mistake. Sharing package caches leads to headaches over user file permissions to write to the package cache versus read. Storage space is cheap, way cheaper than your time. If you have to do it, both <code>{renv}</code> and <code>venv</code> include settings to allow you to relocate the package cache to a shared location on the server.</p>
+</section>
+<section id="a-note-on-conda-1" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="a-note-on-conda-1"><span class="header-section-number">1.5</span> A note on Conda</h2>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -570,92 +561,88 @@ Why I’m not talking about Conda
 </div>
 <div class="callout-body-container callout-body">
 <p>Many data scientists love Conda for managing their Python environments.</p>
-<p>Conda is allows you to create a data science environment on your local laptop. It’s especially useful when your machine is locked down and you don’t have root access because it does all of its installation in user space.</p>
-<p>That’s super useful for working on your laptop, but it’s not a great fit for a production environment. Conda smashes together the language version, the package management, and (sometimes) the system library management. This has the benefit of being conceptually simple and easy-to-use. But I’ve often seen it go awry in production environments, and I generally recommend people use a tool that’s just for package management, like <code>{venv}</code>, as opposed to an all-in-one tool like Conda.</p>
+<p>Conda allows you to create a virtual environment in user space on your laptop without having admin access. It’s especially useful when your machine is locked down by IT.</p>
+<p>That’s super useful for working on your laptop, but it’s not a great fit for a production environment. Conda smashes together the language version, the package management, and, sometimes, the system library management. This has the benefit of being conceptually simple and easy-to-use. But I’ve often seen it go awry in production environments. In a production environment (or a shared workbench server) I recommend people use a tool that’s just for package management, like <code>{venv}</code>, as opposed to an all-in-one tool like Conda.</p>
 </div>
 </div>
-</section>
-<section id="reproducing-the-rest-of-the-stack" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="reproducing-the-rest-of-the-stack"><span class="header-section-number">1.5</span> Reproducing the rest of the stack</h2>
-<p>As a data scientist, your responsibility in a production environment ends at responsibly creating and using virtual environments for your packages. That said, there may not be an IT/Admin to take care of the rest for your team.</p>
-<p>Let’s talk a little about how to reproduce the rest of the stack.</p>
-<p>Managing R and Python versions has gotten easier over the years. There are great tools like <code>{rig}</code> in R and <code>{pyenv}</code> in Python that makes it easy to manage the versions of R and Python that are available on a system.</p>
-<p>Many R and Python libraries are wrappers for system libraries, often written in C++ for speed. For example, many popular packages for geospatial analysis are just thin language wrappers that call out to the system libraries. In this case, it might be important to be able to maintain a particular version of the underlying system library to ensure that your code runs at all in the future.</p>
-<p>There are many tools you can use to record and reproduce the R and Python versions you’re using, the system libraries, and the operating system itself.</p>
-<p>These days, the clear leader of the pack on this front is Docker. Since its introduction in 2013, it has become an increasingly popular way to create, maintain, and use standalone environments – and for good reason!</p>
-<div class="quarto-figure quarto-figure-left">
-<figure class="figure">
-<p><img src="images/docker-usage.png" class="img-fluid figure-img" width="408"></p>
-</figure>
-</div>
-<p>In most cases, the only requirement to run any Docker container is having Docker installed. If you put your project in a Docker container and it runs today, you can be reasonably confident that the container itself can run almost anywhere else, irrespective of what else is running on that machine.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>In <a href="1-6-docker.html">Chapter&nbsp;<span>6</span></a>, you’ll learn the basics of how to use Docker as a tool for reproducing a data science project and moving it around.</p>
 </section>
 <section id="comprehension-questions" class="level2" data-number="1.6">
 <h2 data-number="1.6" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">1.6</span> Comprehension Questions</h2>
 <ol type="1">
 <li>Why does difficulty increase as the level of required reproducibility increase for a data science project. In your day-to-day work, what’s the hardest reproducibility challenge?</li>
-<li>Draw a mental map of the relationships between the 7 levels of the reproducibility stack. Pay particular attention to <strong>why</strong> the higher layers depend on the lower ones.</li>
+<li>Draw a mental map of the relationships between the seven levels of the reproducibility stack. Pay particular attention to <strong>why</strong> the higher layers depend on the lower ones.</li>
 <li>What are the two key attributes of environments as code? Why do you need both of them? Are there cases where you might only care about one?</li>
 <li>Draw a mental map of the relationships between the following: package repository, package library, package, project-level-library, <code>.libPaths()</code> (R) or <code>sys.path</code>(python), lockfile</li>
 <li>Why is it a bad idea to share package libraries? What’s the best way to collaborate with a colleague using an environment as code? What are the commands you’ll run in R or Python to save a package environment and restore it later?</li>
 </ol>
 </section>
 <section id="lab1" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="lab1"><span class="header-section-number">1.7</span> Lab 1: Create a website with virtual environments</h2>
+<h2 data-number="1.7" class="anchored" data-anchor-id="lab1"><span class="header-section-number">1.7</span> Lab 1: Create and use a virtual environment</h2>
 <p>In this lab, we’re going to start working on our penguin explorer website. We’re going to create a simple website using <a href="https://quarto.org">Quarto</a>, which is an open source scientific and technical publishing system that makes it easy to render R and Python code into beautiful documents, websites, reports, and presentations.</p>
-<p>In this lab, we’re going to create pages for a simple exploratory data analysis and model building from the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins</a> dataset. In order to get to practice with both R and Python, I’m going to do the EDA page in R and the modeling in Python.</p>
-<p>You can follow the instructions on the Quarto site to start a new Quarto project in your editor of choice. You can check it out locally with <code>quarto preview</code>.</p>
-<p>As we add each of the pages below, don’t forget to add them to your <code>_quarto.yml</code> so quarto knows to render them.</p>
+<p>We’re going to create pages for a simple exploratory data analysis and model building from the <a href="https://allisonhorst.github.io/palmerpenguins/">Palmer Penguins</a> dataset. In order to get to practice with both R and Python, I’m going to do the EDA page in R and the modeling in Python. By the end of this lab, we’ll have both pages created using standalone Python and R virtual environments.</p>
+<p>If you’re just getting started, check out the Quarto website to start using Quarto in the editor of your choice.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Tip
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Make sure you add each page below to your <code>_quarto.yml</code> so Quarto knows to render them.</p>
+</div>
+</div>
 <section id="eda-in-r" class="level3" data-number="1.7.1">
 <h3 data-number="1.7.1" class="anchored" data-anchor-id="eda-in-r"><span class="header-section-number">1.7.1</span> EDA in R</h3>
-<p>Let’s add a simple R-language EDA of the Palmer Penguins data set to our website by adding a file called <code>eda.qmd</code> in the root directory of your project.</p>
+<p>Let’s add a simple R-language EDA of the Palmer Penguins data set to our website by adding a file called <code>eda.qmd</code> in the root directory of the project.</p>
 <p>Before you start adding code, create and activate an <code>{renv}</code> environment with <code>renv::init()</code>.</p>
 <p>Now, go ahead and do your analysis. Here’s the contents of my <code>eda.qmd</code>.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>eda.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Penguins EDA"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Penguin Size and Mass by Sex and Species</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(species, sex) <span class="sc">%&gt;%</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">where</span>(is.numeric), </span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>      \(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>      )</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Penguin Size vs Mass by Species</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> body_mass_g, <span class="at">color =</span> species)) <span class="sc">+</span></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Penguins EDA"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">## Penguin Size and Mass by Sex and Species</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> palmerpenguins<span class="sc">::</span>penguins</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(species, sex) <span class="sc">%&gt;%</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">where</span>(is.numeric), </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>      \(x) <span class="fu">mean</span>(x, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      )</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">%&gt;%</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Penguin Size vs Mass by Species</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>df <span class="sc">%&gt;%</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> bill_length_mm, <span class="at">y =</span> body_mass_g, <span class="at">color =</span> species)) <span class="sc">+</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Feel free to copy this Quarto doc right into your website or to write your own.</p>
-<p>Once you’ve finished writing your EDA script and checked that it renders nicely into the website, save the doc, and create your lockfile with <code>renv::snapshot()</code>.</p>
+<p>Once you’ve finished writing your EDA script and checked that it previews nicely into the website, save the doc, and create your lockfile with <code>renv::snapshot()</code>.</p>
 </section>
 <section id="modeling-in-python" class="level3" data-number="1.7.2">
 <h3 data-number="1.7.2" class="anchored" data-anchor-id="modeling-in-python"><span class="header-section-number">1.7.2</span> Modeling in Python</h3>
@@ -666,46 +653,46 @@ Why I’m not talking about Conda
 <div class="code-with-filename-file">
 <pre><strong>model.qmd</strong></pre>
 </div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Model"</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">format</span><span class="kw">:</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">html</span><span class="kw">:</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">code-fold</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="at">from palmerpenguins import penguins</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">from pandas import get_dummies</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="at">import numpy as np</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">from sklearn.linear_model import LinearRegression</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">from sklearn import preprocessing</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co">## Get Data</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">df = penguins.load_penguins().dropna()</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">df.head(3)</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">## Define Model and Fit</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">X = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">y = df['body_mass_g']</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">model = LinearRegression().fit(X, y)</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co">## Get some information</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"R^2 {model.score(X,y)}")</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Intercept {model.intercept_}")</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Columns {X.columns}")</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Coefficients {model.coef_}")</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">title</span><span class="kw">:</span><span class="at"> </span><span class="st">"Model"</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">format</span><span class="kw">:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">html</span><span class="kw">:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">code-fold</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">from palmerpenguins import penguins</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="at">from pandas import get_dummies</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="at">import numpy as np</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="at">from sklearn.linear_model import LinearRegression</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="at">from sklearn import preprocessing</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">## Get Data</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="at">df = penguins.load_penguins().dropna()</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="at">df.head(3)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">## Define Model and Fit</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="at">X = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="at">y = df['body_mass_g']</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="at">model = LinearRegression().fit(X, y)</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">## Get some information</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="at">```{python}</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"R^2 {model.score(X,y)}")</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Intercept {model.intercept_}")</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Columns {X.columns}")</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="at">print(f"Coefficients {model.coef_}")</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="at">```</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Once you’re happy with how the page is working, capture your dependencies in a <code>requirements.txt</code> using <code>pip freeze &gt; requirements.txt</code> on the command line.</p>
 
@@ -715,8 +702,7 @@ Why I’m not talking about Conda
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>Credit for this analogy goes to my former colleague Sean Lopp – a fount of excellent analogies and overall wonderful co-worker.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Usually. Users of Apple’s M1 and M2 chips have run into many issues running containers due to differences in hardware architecture.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>They don’t always include archival versions, but they usually do.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
