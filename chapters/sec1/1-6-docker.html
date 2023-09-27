@@ -397,13 +397,13 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>Docker is an open source tool for building, sharing, and running software. These days, Docker is the dominant way software developers capture a development environment and is an increasingly popular tool to take code to production.</p>
-<p>Docker has become so popular because it makes code portable. In most cases, the only system prerequisite to run most any Docker container is Docker itself.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Everything else comes in the container.</p>
-<p>Unlike language-specific environment as code tools like <code>{renv}</code> or <code>{venv}</code>, Docker captures the entire reproducibility stack all the way down to the operating system. If you’ve ever tried to have someone else run code you’ve written, the appeal is obvious.</p>
+<p>Docker is an open source tool for building, sharing, and running software. Docker currently is the dominant way software developers capture a development environment and is an increasingly popular tool to take code to production.</p>
+<p>Docker has become so popular because it makes code portable. In most cases, the only system prerequisite to run almost any Docker container is Docker itself.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Everything else comes in the container.</p>
+<p>Unlike language-specific environment as code tools like <code>{renv}</code> or <code>{venv}</code>, Docker captures the entire reproducibility stack all the way down to the operating system. If you’ve ever tried to have someone else run code which you’ve written, the appeal is obvious.</p>
 <p>Docker has so many strengths that it’s easy to believe it will solve all reproducibility problems. It’s worth keeping a little perspective.</p>
-<p>While Docker usually ensures that the code inside will <strong>run</strong>, it doesn’t fully solve reproducibility or IT/Admin concerns. Some highly-regulated contexts consider a container insufficiently rigorous for reproducibility purposes.</p>
-<p>Running a container also makes it easy to stand things up, but integrations to other services, like data sources and authentication, still have to be configured externally.</p>
-<p>Lastly, running a container adds one more service between you and the code you’re trying to run. Without a very good mental model of how the various services interact, trying to get Docker to work can be a frustrating mess.</p>
+<p>While Docker usually ensures that the code inside will <strong>run</strong>, it doesn’t fully solve reproducibility or IT/Admin concerns. Some highly regulated contexts consider a container insufficiently rigorous for reproducibility purposes.</p>
+<p>Running a container also makes it easy to stand things up, but integrations to other services, like data sources and authentication, still must be configured externally.</p>
+<p>Lastly, running a container adds one more services between you and the code you’re trying to run. Without a very good mental model of how the various services interact, trying to get Docker to work can be a frustrating mess.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -417,10 +417,10 @@ Note
 <p>This chapter is solely on the local use of Docker for building and running containers. For more on running containers in a production context, including using Kubernetes, see <a href="../sec3/3-3-ent-scale.html">Chapter&nbsp;<span>17</span></a>.</p>
 </div>
 </div>
-<p>Really learning to use Docker is the subject of many books and online tutorials. In this chapter, I’m just aiming to give you a little familiarity with basic terminology and concepts for how to run other people’s Docker containers and how to create your own. In the lab at the end of the chapter, we’ll practice hosting an API inside a container.</p>
+<p>Really learning to use Docker is the subject of many books and online tutorials. In this chapter, my aim is to provide a little familiarity with the basic terminology and concepts for how to run other people’s Docker containers and how to create your own. In the lab at the end of the chapter, we’ll practice hosting an API inside a container.</p>
 <section id="container-lifecycle" class="level2" data-number="6.1">
 <h2 data-number="6.1" class="anchored" data-anchor-id="container-lifecycle"><span class="header-section-number">6.1</span> Container lifecycle</h2>
-<p>Docker is primarily concerned with the creation, movement, and running of <em>containers</em>. A container is a software entity that packages code and its dependencies down to the operating system. Containers make it possible to have completely different environments coexisting side by side on one physical machine.</p>
+<p>Docker is primarily concerned with the creation, movement, and running of <em>containers</em>. A container is a software entity that packages code and its dependencies down to the operating system. Containers are one way to have completely different environments coexisting side by side on one physical machine.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -431,17 +431,30 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Containers aren’t the only way to run multiple virtual environments side-by-side – they’re just the most popular.</p>
-<p>Docker Containers also aren’t the only type of container, though they’re often treated that way. You may run across other kinds, like Apptainer (formerly Singularity), which is often used in high performance computing contexts.</p>
+<p>Containers aren’t the only way to run multiple virtual environments on one host. They’re just the most talked about right now.</p>
+<p>And Docker Containers aren’t the only type of container. You may run across other kinds, like Apptainer (formerly Singularity) which is often used in high performance computing contexts.</p>
 </div>
 </div>
-<p>A <em>Docker Image</em> is an immutable snapshot of a container. When you want to run a container, you <em>pull</em> the image and run it as an <em>instance</em>, which is what you’ll actually interact with.</p>
-<p>Images are most often stored in <em>registries</em>, which are similar to git repositories. The most common registry is <a href="https://hub.docker.com/">Docker Hub</a>, which allows public hosting and private hosting of images in free and paid tiers. Docker Hub includes official images for operating systems and programming languages, as well as many, many community-contributed containers. Some organizations run their own private registries, usually using <em>registry as a service</em> offerings from cloud providers.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p>Images are built from <em>Dockerfiles</em> – the code that defines the image. Dockerfiles are usually stored in a git repository. It’s common to build images in a CI/CD pipeline so changes to the Dockerfile are immediately built and pushed to the registry.</p>
-<p>All instances run on an underlying machine, called a <em>host</em>. A primary feature – also a liability – of using containers is that they are completely ephemeral. Unless configured otherwise, anything inside an instance when it shuts down vanishes without a trace.</p>
+<p>A <em>Docker Image</em> is an immutable snapshot of a container. When you want to run a container, you <em>pull</em> the image and run it as an <em>instance</em> or <em>container</em>, which is what you’ll actually interact with.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Confusingly, the term container is used both to refer to a running instance (“Here’s my running container”) as well as which image (“I used the newest Ubuntu container”).</p>
+<p>I prefer the term instance for the running container to eliminate this confusion.</p>
+</div>
+</div>
+<p>Images are most often stored in <em>registries</em>, which are similar to Git repositories. The most common registry for public containers is Docker Hub which allows public and private hosting of images in free and paid tiers. Docker Hub includes official images for operating systems and programming languages, as well as many, many community-contributed containers. Some organizations run their own private registries, usually using <em>registry as a service</em> offerings from cloud providers.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>Images are built from <em>Dockerfiles</em> – the code that defines the image. Dockerfiles are usually stored in a git repository. It’s common to build and push images in a CI/CD pipeline so changes to the Dockerfile are immediately reflected in the registry.</p>
 <p>You can control Docker Containers from the Docker Desktop app. If you’re going to be using Docker on a server, you’ll mostly be interacting via the command line interface (CLI). All Docker CLI commands are formatted as <code>docker &lt;command&gt;</code>.</p>
 <p>The graphic below shows the different states for a container and the CLI commands to move from one to another.</p>
-<p><img src="images/docker-lifecycle.png" class="img-fluid" alt="A diagram. A dockerfile turns into a Docker Image with docker build. The image can push or pull to or from an image registry. The image can run as a container instance." width="450"></p>
+<p><img src="images/docker-lifecycle.png" class="img-fluid" alt="A diagram. A dockerfile turns into a Docker Image with docker build. The image can push or pull to or from an image registry. The image can run as a container instance." width="600"></p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -455,6 +468,7 @@ Note
 <p>I’ve included <code>docker pull</code> on the graphic for completeness, but you’ll almost never run it. <code>docker run</code> auto-pulls the container(s) it needs.</p>
 </div>
 </div>
+<p>Instances run on an underlying machine, called a <em>host</em>. A primary feature – also a liability – of using containers is that they are completely ephemeral. Unless configured otherwise, anything inside an instance when it shuts down vanishes without a trace.</p>
 <p>See <a href="../append/cheatsheets.html">Appendix&nbsp;<span>D</span></a> for a cheatsheet with a list of common Docker commands.</p>
 <section id="image-names" class="level3" data-number="6.1.1">
 <h3 data-number="6.1.1" class="anchored" data-anchor-id="image-names"><span class="header-section-number">6.1.1</span> Image Names</h3>
@@ -473,7 +487,7 @@ Note
 <p>Other registries may enforce similar conventions for ids, or they may allow ids in any format they want.</p>
 </div>
 </div>
-<p>Tags are used to specify versions of variants of containers and come after the <code>id</code> and <code>:</code>. For example, the official Python docker image has versions for each version of Python like <code>python:3</code> as well as variants for different operating systems and a <code>slim</code> version that saves space by excluding recommended packages.</p>
+<p>Tags are used to specify versions and variants of containers and come after the <code>id</code> and <code>:</code>. For example, the official Python Docker image has tags for each version of Python like <code>python:3</code> as well as variants for different operating systems and a <code>slim</code> version that saves space by excluding recommended packages.</p>
 <p>Some tags, usually used for versions, are immutable. For example, the <code>rocker/r-ver</code> container is a container that is built on Ubuntu and has a version of R built in. There’s a <code>rocker/r-ver:4.3.1</code>, which is a container with R 4.3.1.</p>
 <p>Other tags are relative to the point in time. If you don’t see a tag on a container name, it’s using the default <code>latest</code>. Other common relative tags refer to the current development state of the software inside like <code>devel</code>, <code>release</code>, or <code>stable</code>.</p>
 </section>
@@ -481,16 +495,21 @@ Note
 <section id="running-containers" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="running-containers"><span class="header-section-number">6.2</span> Running Containers</h2>
 <p>The <code>docker run</code> command runs container images as an instance. You can run <code>docker run &lt;image name&gt;</code> to get a running container. However, most things you want to do with your instance require several command line flags.</p>
-<p>There are a few flags that are useful to manage how your containers run and get cleaned up.</p>
-<p>The <code>-name &lt;name&gt;</code> flag names an instance. It’s not required, but can be useful to give the instance a name you can remember or use in code. If you don’t provide a name, each instance gets a random alphanumeric id on start.</p>
-<p>The <code>-rm</code> flag automatically removes the container after its done. If you don’t use the <code>-rm</code> flag, the container will stick around until you clean it up manually with <code>docker rm</code>. The <code>-rm</code> flag can be useful when you’re iterating quickly – especially because you can’t re-use names until you remove the container.</p>
+<p>There are a few flags that are useful for managing how your containers run and get cleaned up.</p>
+<p>The <code>-name &lt;name&gt;</code> flag names an instance. If you don’t provide a name, each instance gets a random alphanumeric id on start. Names are useful because they persist across individual instances of a container, so they can be easily remembered or used in code.</p>
+<p>The <code>-rm</code> flag automatically removes the container after it’s done. If you don’t use the <code>-rm</code> flag, the container will stick around until you clean it up manually with <code>docker rm</code>. The <code>-rm</code> flag can be useful when you’re iterating quickly – especially because you can’t re-use names until you remove the container.</p>
 <p>The <code>-d</code> flag will run your container in detached mode. This is useful when you want your container to run in the background and not block your terminal session. It’s useful when running containers in production, but you probably don’t want to use it when you’re trying things out and want to see logs streaming out as the container runs.</p>
 <section id="getting-information-in-and-out" class="level3" data-number="6.2.1">
 <h3 data-number="6.2.1" class="anchored" data-anchor-id="getting-information-in-and-out"><span class="header-section-number">6.2.1</span> Getting information in and out</h3>
-<p>When a container runs, it is isolated from the host. This is a great feature – it means programs running inside the container can address the container’s filesystem and networking without worrying about the host outside. But it also means that using resources on the host requires explicit declarations as part of the <code>docker run</code> command.</p>
+<p>When a container runs, it is isolated from the host. This is a great feature. It means programs running inside the container can address the container’s filesystem and networking without worrying about the host outside. But it also means that using resources on the host requires explicit declarations as part of the <code>docker run</code> command.</p>
 <p>In order to get data in or out of a container, you need to mount a shared <em>volume</em> (directory) between the container and host with the <code>-v</code> flag. You specify a host directory and a container directory separated by <code>:</code>. Anything in the volume will be available to both the host and the container at the file paths specified.</p>
 <p>For example, maybe you’ve got a container that runs a job against data it expects in the <code>/data</code> directory. On your host machine, this data lives at <code>/home/alex/data</code>. You could make this happen with</p>
-<p><code>{bash filename=Terminal} docker run -v /home/alex/data:/data</code></p>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-v</span> /home/alex/data:/data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>Here’s a diagram of how this works.</p>
 <p><img src="images/docker-on-host.png" class="img-fluid" alt="A diagram showing how the flag -v /home/data:/data mounts the /home/data directory of the host to /data in the container." width="450"></p>
 <p>Similarly, if you have a service running in a container on a particular port, you’ll need to map the container port to a host port with the <code>-p</code> flag.</p>
@@ -501,27 +520,26 @@ Note
 <p>To stop a running container <code>docker stop</code> does so nicely and <code>docker kill</code> terminates a container immediately.</p>
 <p>You can view the logs from a container with <code>docker logs</code>.</p>
 <p>Lastly, if you need to run a command inside a running instance, you can use <code>docker exec</code>. This is most commonly used to access the command line inside the container as if SSH-ing to a server with <code>docker exec -it &lt;container&gt; /bin/bash</code>.</p>
-<p>While it’s normal to SSH into a server to poke around, it’s somewhat of an anti-pattern to do the same in a container. In general you should prefer to review logs and adjust Dockerfiles and <code>run</code> commands rather than <code>exec</code> in.</p>
+<p>While it’s normal to SSH into a server to poke around, it’s somewhat of an anti-pattern to do the same in a container. Generally, you should prefer to review logs and adjust Dockerfiles and <code>run</code> commands rather than <code>exec</code> in.</p>
 </section>
 </section>
 <section id="building-images-from-dockerfiles" class="level2" data-number="6.3">
 <h2 data-number="6.3" class="anchored" data-anchor-id="building-images-from-dockerfiles"><span class="header-section-number">6.3</span> Building Images from Dockerfiles</h2>
-<p>A Dockerfile is a set of instructions that you use to build a Docker Image. If you know how to accomplish something from the command line, you shouldn’t have too much trouble building a Dockerfile to do the same.</p>
-<p>One thing to consider when creating Dockerfiles is that the resulting image is immutable. That means anything you build into the image is forever frozen in time. So you’ll definitely want to set up the versions of R and Python and install system requirements. Depending on the purpose of your container, you may want to copy in code, data, and/or R and Python packages, or you may want to mount those in a volume at runtime.</p>
-<p>There are many Dockerfile commands. You can review them all in the <a href="https://docs.docker.com/engine/reference/builder/">Dockerfile documentation</a>, but here are the handful that are enough to build most images.</p>
+<p>A Dockerfile is a set of instructions that you use to build a Docker image. If you know how to accomplish something from the command line, you shouldn’t have too much trouble building a Dockerfile to do the same.</p>
+<p>One thing to consider when creating Dockerfiles is that the resulting image is immutable, meaning that anything you build into the image is forever frozen in time. You’ll definitely want to set up the versions of R and Python and install system requirements in your Dockerfile. Depending on the purpose of your container, you may want to copy in code, data, and/or R and Python packages, or you may want to mount those in from a volume at runtime.</p>
+<p>There are many Dockerfile commands. You can review them all in the Dockerfile documentation, but here are the handful that are enough to build most images.</p>
 <ul>
-<li><p><code>FROM</code> – specify the base image. Usually the first line of the Dockerfile.</p></li>
+<li><p><code>FROM</code> – specify the base image which is usually the first line of the Dockerfile.</p></li>
 <li><p><code>RUN</code> – run any command as if you were sitting at the command line inside the container.</p></li>
 <li><p><code>COPY</code> – copy a file from the host filesystem into the container.</p></li>
 <li><p><code>CMD</code> - Specify what command to run on the container’s shell when it runs, usually the last line of the Dockerfile.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p></li>
 </ul>
-<p>Every Dockerfile command defines a new <em>layer</em>.</p>
-<p>A great feature of Docker is that it only rebuilds the layers it needs to when you make changes. For example, take the following Dockerfile:</p>
-<div class="sourceCode" id="cb1" data-filename="Dockerfile"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> ubuntu:latest</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> my-data.csv /data/data.csv</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> [<span class="st">"head"</span>, <span class="st">"/data/data.csv"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Every Dockerfile command defines a new <em>layer</em>. A great feature of Docker is that it only rebuilds the layers it needs to when you make changes. For example, take the following Dockerfile:</p>
+<div class="sourceCode" id="cb2" data-filename="Dockerfile"><pre class="sourceCode dockerfile code-with-copy"><code class="sourceCode dockerfile"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">FROM</span> ubuntu:latest</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">COPY</span> my-data.csv /data/data.csv</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">RUN</span> [<span class="st">"head"</span>, <span class="st">"/data/data.csv"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Let’s say I wanted to change the <code>head</code> command to <code>tail</code>. Rebuilding this container would be nearly instantaneous because the container would only start rebuilding after the <code>COPY</code> command.</p>
 <p>Once you’ve created your Dockerfile, you build it into an image using <code>docker build -t &lt;image name&gt; &lt;build directory&gt;</code>. If you don’t provide a tag, the default tag is <code>latest</code>.</p>
 <p>You can then push the image to DockerHub or another registry using <code>docker push &lt;image name&gt;</code>.</p>
@@ -539,15 +557,9 @@ Note
 </section>
 <section id="lab-putting-an-api-in-a-container" class="level2" data-number="6.5">
 <h2 data-number="6.5" class="anchored" data-anchor-id="lab-putting-an-api-in-a-container"><span class="header-section-number">6.5</span> Lab: Putting an API in a Container</h2>
-<p>Putting an API into a container is popular way to host them. In this lab, we’re going to put the Penguin Model Prediction API from <a href="1-2-proj-arch.html">Chapter&nbsp;<span>2</span></a> into a container.</p>
-<p>If you’ve never used Docker before, start by installing <a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a> on your computer.</p>
+<p>Putting an API into a container is a popular way to host them. In this lab, we’re going to put the Penguin Model Prediction API from <a href="1-2-proj-arch.html">Chapter&nbsp;<span>2</span></a> into a container.</p>
+<p>If you’ve never used Docker before, start by installing Docker Desktop on your computer.</p>
 <p>You should feel free to write your own Dockerfile to put the API in a container. If you want to make it easy, the <code>{vetiver}</code> package, which you’ll remember auto-generated the API for us, can also auto-generate a Dockerfile. Look at the package documentation for details.</p>
-<p>I’m using this code to generate my Dockerfile</p>
-<div class="sourceCode" id="cb2" data-startfrom="9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python" style="counter-reset: source-line 8;"><span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pins <span class="im">import</span> board_folder</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> vetiver <span class="im">import</span> prepare_docker</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>board <span class="op">=</span> board_folder(<span class="st">"/data/model"</span>, allow_pickle_read<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>prepare_docker(board, <span class="st">"penguin_model"</span>, <span class="st">"docker"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>Once you’ve generated your Dockerfile, take a look at it. Here’s the one for my model:</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -575,7 +587,7 @@ Note
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># run vetiver API</span></span>
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="kw">CMD</span> [<span class="st">"uvicorn"</span>, <span class="st">"app.app:api"</span>, <span class="st">"--host"</span>, <span class="st">"0.0.0.0"</span>, <span class="st">"--port"</span>, <span class="st">"8080"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This auto-generated Dockerfile is very nicely commented, so its easy to follow.</p>
+<p>This auto-generated Dockerfile is very nicely commented, so it’s easy to follow.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -596,7 +608,7 @@ Note
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> penguin-model <span class="dt">\</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  penguin-model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p>If you go to <code>http://localhost:8080</code> you’ll find that…it doesn’t work? Why? If you run the container attached (remove the <code>-d</code> from the run command) you’ll get some feedback that might be helpful.</p>
-<p>In line 15 of the Dockerfile, we copied the <code>app.py</code> in to the container. Let’s take a look at that file to see if we can find any hints.</p>
+<p>In line 15 of the Dockerfile, we copy <code>app.py</code> in to the container. Let’s take a look at that file to see if we can find any hints.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>app.py</strong></pre>
@@ -612,9 +624,9 @@ Note
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>vetiver_api <span class="op">=</span> vetiver.VetiverAPI(v)</span>
 <span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>api <span class="op">=</span> vetiver_api.app</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Look at that (very long) line 6. The API is connecting to a local directory to pull the model. Is your spidey sense tingling? Something about container filesystem vs host filesystem?</p>
-<p>That’s right – we put our model at <code>/data/model</code> on our <em>host</em> machine. But the API inside the container is looking for <code>/data/model</code> <em>inside</em> the container, which doesn’t exist!</p>
-<p>This is a case where we need to mount a volume into the container like so</p>
+<p>Look at that (very long) line 6. The API is connecting to a local directory to pull the model. Is your Spidey-Sense tingling? Something about container filesystem vs host filesystem?</p>
+<p>That’s right: we put our model at <code>/data/model</code> on our <strong>host</strong> machine. But the API inside the container is looking for <code>/data/model</code> <strong>inside the container</strong> – which doesn’t exist!</p>
+<p>This is a case where we need to mount a volume into the container like so:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-d</span> <span class="dt">\</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">-p</span> 8080:8080 <span class="dt">\</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--name</span> penguin-model <span class="dt">\</span></span>
@@ -632,7 +644,7 @@ Note
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>This was truer before the introduction of M-series chips for Macs. Chip architecture differences fall below the level that a container captures, and many popular containers wouldn’t run on new Macs. These issues are getting better over time and will probably fully disappear relatively soon.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>This was truer before the introduction of M-series chips for Macs. Chip architecture differences fall below the level that a container captures and many popular containers wouldn’t run on new Macs. These issues are getting better over time and will probably fully disappear relatively soon.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>The big three container registries are AWS Elastic Container Registry (ECR), Azure Container Registry, and Google Container Registry.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>You may also see <code>ENTRYPOINT</code>, which sets the command <code>CMD</code> runs against. Usually the default <code>/bin/sh -c</code> to run <code>CMD</code> in the shell will be the right choice.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
