@@ -1,63 +1,60 @@
 # Deployments and code promotion {#sec-deployments}
 
-Data science work doesn't count if it just sits around on your computer.
-Your goal is to be useful, and the only way your work becomes useful is
-if you share it with the people and systems that matter. That requires
-putting it into production.
+Your work doesn't matter if it never leaves your computer. You want your
+work to be useful, and the only way to accomplish that is to share it
+with the people and systems that matter. That requires putting it into
+production.
 
-Putting code into production might sound like an ordeal, and it can be.
-But it would really be nice if putting code into production was a
-low-drama affair. That's why *deployment* is one of the primary concerns
-of DevOps best practices.
+When it goes well, putting code into production is a low-drama affair.
+When it goes poorly, putting code into production is a time-consuming
+ordeal. That's why the process of putting code into production --
+*deployment* -- is one of the primary concerns of DevOps best practices.
 
 The DevOps way to deploy code is called *CI/CD*, which is short for
 Continuous Integration and Continuous Deployment and Continuous Delivery
-(yes, the CD stands for two different things). CI/CD is a set of
-principles to ease the deployment process through a combination of good
+(yes, the CD stands for two different things). When implemented well,
+CI/CD eases the deployment process through a combination of good
 workflows and automation.
 
 A few of the principles of CI/CD workflows include:
 
--   Central availability of source code that allows you to build the
-    project from scratch -- almost always in version control.
-
+-   Central availability of source code, almost always in version
+    control, that allows you to build the project from scratch.
 -   Frequent and incremental additions to the production version of the
     code.
-
 -   Automation for carrying out the actual deployment.
-
 -   Automated testing on a pre-deployment version of the code.
 
-In this chapter, I'll talk about how to create a code promotion process
-that allows you to incorporate CI/CD principles into your data science
-deployment projects.
+In this chapter, you'll learn how to create a code promotion process
+that allows you to incorporate CI/CD principles and tools into your data
+science project deployments.
 
 ## Separate the prod environment
 
-The bedrock of a good CI/CD process is a production environment that's
-actually separate from non-production environments.
+CI/CD is all about easily promoting code into production. If there's not
+a clear boundary between what is in production and what isn't, it's all
+too easy to mess up production. That's why software environments are
+often separated into three: *dev*, *test*, and *prod*.
 
-CI/CD is all about easily promoting code into production, but if the
-boundaries of production are a mushy mess, it's all too easily to
-accidentally mess up code that's in production.
+Dev is the development environment where new work is produced, test is
+where the code is tested for performance, usability; and feature
+completeness; and prod is the production environment. Sometimes dev and
+test are collectively called the *lower environments* and prod the
+*higher environment*.
 
-In order to structure a smooth pathway to production, software
-environments are separated into three -- *dev*, *test*, and *prod*. Dev
-is the development environment where new work is produced, test is where
-the code is tested for performance, usability, and feature completeness,
-and prod is the production environment. Depending on your organization
-you might have just a dev and prod or you might have more environments
-between dev and prod.
+![](images/dev-test-prod.png){fig-alt="An app moving through dev, test, and prod environments."
+width="600"}
 
-![](images/dev-test-prod.png){fig-alt="An app moving through dev, test, and prod environments."}
-
-The number and configuration of lower environments will vary according
-to your organization and its needs. But like Tolstoy said about happy
-families, all prod environments are alike.
+While the dev/test/prod triad is the most traditional, some
+organizations have more than 2 lower environments and some organizations
+just have a dev and prod. That's all fine. The number and configuration
+of lower environments should vary according to your organization and its
+needs. But, just as, Tolstoy said about happy families, all prod
+environments are alike.
 
 Some criteria that all good prod environments meet:
 
-1.  The environment is created using code. For data science, that
+1.  The environment is created using code. For data science, that means
     managing R and Python packages using environments as code tooling,
     as discussed in [Chapter @sec-env-as-code].
 
@@ -66,36 +63,40 @@ Some criteria that all good prod environments meet:
     run tests and do the actual deployment.
 
 3.  Changes **only** happen via the promotion process. This means no
-    manual changes to the environment or the code.
+    manual changes to the environment or the code that's active in
+    production.
 
-Rules 1 and 2 are pretty straightforward to follow. But the first time
-something breaks in your prod environment, you will be sorely tempted to
-violate rule 3. Don't do it.
+Rules 1 and 2 tend to be easy to follow. It might even be fun to figure
+out how to create the environment with code and design a promotion
+process. But the first time something breaks in your prod environment,
+you will be sorely tempted to violate rule 3. Don't do it.
 
 If you want to run a data science project that becomes critical to your
-organization, keeping a pristine prod environment that you can rely on
-is critical. Re-create the issue in a lower environment to figure out
-what's wrong and push changes through your promotion process.
-
-### Dev and test environments
+organization, keeping a pristine prod environment is nonnegotiable. When
+an issue arises, you will need to reproduce it in a lower environment
+before you can push changes through your promotion process. This means
+that keeping your environments in sync is crucial so you can reliably
+reproduce prod issues in lower environments.
 
 These guidelines for a prod environment look almost identical to
 guidelines for general purpose software engineering. It's in the
 composition of lower environments that the needs of data scientists
 diverge from general purpose software engineers.
 
+### Dev and test environments
+
 As a data scientist, dev means working in a lab environment like
 RStudio, Spyder, VSCode, or PyCharm and experimenting with the data.
 You're slicing the data this way or that to see if anything meaningful
 emerges, creating plots to see if they are the right way to show off a
 finding, and checking whether certain features improve model
-performance. All this means that it's basically impossible to do work
+performance. All this means that it is basically impossible to do work
 without real data.
 
-"Duh", you say, "Of course it's silly to do data science on fake data."
+"Duh", you say, "Of course you can't do data science without real data."
 
-This may be obvious to you, but doing dev data science on real data is a
-very common source of friction with IT/Admins.
+This may be obvious to you, but needing to do data science on real data
+in dev is a common source of friction with IT/Admins.
 
 That's because this need is unique to data scientists. For general
 purpose software engineering, a lower environment needs data that is
@@ -103,12 +104,12 @@ purpose software engineering, a lower environment needs data that is
 
 For example, if you're building an online store, you need dev and test
 environments where the API calls from the sales system are in the same
-format as the real data -- but you don't actually care if it's real
+format as the real data, but you don't actually care if it's real sales
 data. In fact, you probably want to create some odd-looking cases for
 testing purposes.
 
-One way to help allay these concerns is to create a *data science
-sandbox*. A great data science sandbox provides:
+One way to help allay concerns about using real data is to create a
+*data science sandbox*. A great data science sandbox provides:
 
 -   Read-only access to real data for experimentation.
 
@@ -119,69 +120,68 @@ sandbox*. A great data science sandbox provides:
     things go to prod.
 
 Working with your IT/Admin team to get these things isn't always easy.
-One thing to point out is that creating this environment actually makes
-things *more secure*. It gives you a place to do development without any
-fear that you might actually damage production data or services.
+They might not want to give you real data in dev. One point to emphasize
+is that creating this environment actually makes things more secure. It
+gives you a place to do development without any fear that you might
+actually damage production data or services.
 
 ## Version control implements code promotion
 
-You need a way to actually operationalize your code promotion process.
-If your process says that your code needs testing and review before it's
-pushed to prod, you need a place to actually do that. *Version control*
-is the tool to make your code promotion process real.
+Once you've invented your code promotion process, you need a way to
+operationalize it. If your process says that your code needs testing and
+review before it's pushed to prod, you need a place to actually do that.
+*Version control* is the tool to make your code promotion process real.
 
 Version control is software that allows you to keep the prod version of
 your code safe, gives contributors their own copy to work on, and hosts
-tools to manage merging changes back together. These days,
-[git](https://git-scm.com/) is the industry standard for version
-control.
+tools to manage merging changes back together. These days, Git is the
+industry standard for version control.
 
-Git is a system for tracking changes in computer files in a project
-called a *repository*. Git is open source and freely available. There
-are a number of different companies that host git repositories. Many of
-them allow you to host public -- and some private - repositories for
-free and have enterprise products that your organization may pay for.
-GitHub is by far the most popular git host, but GitLab, Bitbucket, and
-Azure DevOps are also common.
+Git is an open source system for tracking changes to computer files in a
+project-level collection called a *repository*. You can host
+repositories on your own Git server, but most organizations host their
+repositories with free or paid plans from tools like GitHub, GitLab,
+Bitbucket, or Azure DevOps.
 
 This is not a book on git. If you're not already comfortable with using
-local and remote repositories, branching, and merging, the rest of this
-chapter is going to be completely useless. I recommend you take a break
-from this book and spend some time learning git.
+local and remote repositories, branching, and merging, then the rest of
+this chapter is not going to be useful right now. I recommend you take a
+break from this book and spend some time learning Git.
 
 ::: callout-note
-## Hints on Learning Git
+## Hints on learning Git
 
-People who say git is easy to learn are either lying or have forgotten.
+People who say learning Git is easy are either lying or have forgotten.
 I am sorry our industry has standardized on a tool with such terrible
-ergonomics, but it's really worth it to learn.
+ergonomics, but it's worth your time to learn.
 
 Whether you're an R or Python user, I'd recommend starting with a
-resource designed to teach git to a data science user. My recommendation
+resource designed to teach Git to a data science user. My recommendation
 is to check out [HappyGitWithR](https://happygitwithr.com/) by Jenny
 Bryan.
 
 If you're a Python user, some of the specific tooling suggestions won't
 apply, but the general principles will be exactly the same.
+
+If you know Git and just need a reminder of some common commands, see
+[Appendix @sec-append-cheat] for a cheatsheet of common ones.
 :::
 
-If you understand git and just need a reminder of some common commands, see [Appendix @sec-append-cheat] for a cheatsheet of common ones.
-
 The precise contours of your code promotion process -- and therefore
-your git policies -- are up to you and your organization's needs. Do you
-need multiple rounds of review? Can anyone promote something to prod, or
+your Git policies -- are up to you and your organization's needs. Do you
+need multiple rounds of review? Can anyone promote something to prod or
 just certain people? Is automated testing required?
 
-You should make these decisions as part of designing your code promotion
-process, which you can then enshrine in the configuration of your
-project's git repository.
+You should make these decisions as part of your code promotion process,
+which you can then enshrine in the configuration of your project's Git
+repository.
 
-One important decision you'll make is on how to configure the branches
-of your git repository. Here's how I'd suggest you do it for production
+One important decision you'll make is how to configure the branches of
+your Git repository. Here's how I'd suggest you do it for production
 data science projects:
 
 1.  Maintain two long running branches -- `main` is the prod version of
-    your project, and `test` is a long-running pre-prod version.
+    your project and `test` is a long-running pre-prod version.
 2.  Code can only be promoted to `main` via a merge from `test`. Direct
     pushes to `main` are not allowed.
 3.  New functionality is developed in short-lived *feature branches*
@@ -196,18 +196,19 @@ basically any set of approvals and testing you might want.
 Here's an example of how this might work. Let's say you were working on
 a dashboard and were trying to add a new plot.
 
-You would create a new feature branch, perhaps called `new_plot` to work
-on the plot. When you were happy with how it looked you would merge the
-feature branch to `test`. Depending on your organization's process, you
-might be able to merge to `test` yourself or you might require approval.
+You would create a new feature branch with your work, perhaps called
+`new_plot`. When you were happy with it, you would merge the feature
+branch to `test`. Depending on your organization's process, you might be
+able to merge to `test` yourself or you might require approval.
 
 If your testing turned up a bug, you'd fix the bug in the feature
 branch, merge the bug fix into `test`, re-test, and merge to `main` once
 you were satisfied.
 
-Here's what the git graph for that sequence of events might look like:
+Here's what the Git graph for that sequence of events might look like:
 
-![](images/git-branches.png){fig-alt="Diagram showing branching strategy. A feature branch called new plot is created from and then merged back to test. A bug is revealed, so another commit fixing the bug is merged into test and then into main."}
+![](images/git-branches.png){fig-alt="Diagram showing branching strategy. A feature branch called new plot is created from and then merged back to test. A bug is revealed, so another commit fixing the bug is merged into test and then into main."
+width="600"}
 
 One of the tenets of a good CI/CD practice is that changes are merged
 frequently and incrementally into production.
@@ -216,43 +217,38 @@ A good rule of thumb is that you want your merges to be the smallest
 meaningful change that can be incorporated into main in a standalone
 way.
 
-Creating feature branches for every word of text you might change is
-clearly too small. Completely rewriting the dashboard in one merge
-request is also probably too big.
+There are no hard and fast rules here. Knowing the appropriate scope for
+a single merge is an art -- one that can take years to develop. Your
+best resource here is more senior team members who've already figured it
+out.
 
-There's no hard and fast rules here. Knowing the appropriate scope for a
-single merge is an art -- one that can take years to develop. Your best
-resource here is more senior team members who've already figured it out.
+## CI/CD automates Git operations
 
-## CI/CD automates git operations
-
-The role of git is to make your code promotion process happen. Git
+The role of Git is to make your code promotion process happen. Git
 allows you to configure requirements for whatever approvals and testing
 you might need. Your CI/CD tool sits on top of that so that all this
 merging and branching actually **does** something.[^1-5-deployments-1]
 
 [^1-5-deployments-1]: Strictly speaking, this is not true. There are a
     lot of different ways to kick off CI/CD jobs. But the right way to
-    do it is to base it on git operations.
+    do it is to base it on Git operations.
 
-To be more precise a *CI/CD pipeline* for a project watches the git
-repository and does something when certain triggers are met, like a
-merge to a particular branch or a pull request opening.
+To be more precise, a *CI/CD pipeline* for a project watches the Git
+repository and does something based on a trigger. Common triggers
+include a push or merge to a particular branch or a pull request
+opening.
 
 The most common CI/CD operations are *pre-merge checks* like spell
 checking, code linting, and automated testing and *post-merge
 deployments*.
 
 There are a variety of different CI/CD tools available. Because of the
-tight linkage between GitHub repos and CI/CD, CI/CD pipelines built
-right into git providers are very popular.
+tight linkage between CI/CD operations and Git repos, CI/CD pipelines
+built right into Git providers are very popular.
 
 GitHub Actions (GHA) was released a few years ago and is eating the
 world of CI/CD. Depending on your organization and the age of your CI/CD
 pipeline, you might also see Jenkins, Travis, Azure DevOps, or GitLab.
-
-If you're curious how exactly this works, you'll get your hands dirty in
-the lab at the end of the chapter.
 
 ### Configuring per-environment behavior
 
@@ -262,25 +258,28 @@ might want to switch data sources from a dev database to a prod one, or
 switch a read-only app into write mode, or use a different level of
 logging.
 
-The easiest way to create per-environment behavior is to write code that
-behaves differently based on on the value of an environment variable and
-to set that environment variable in each environment.
+The easiest way to create per-environment behavior is to:
 
-My recommendation is to use a *config file* to store the values you want
-for your environment variables for each environment. My preference is to
-use YAML to store configuration, but there are different ways it can be
-done.
+1.  Write code that includes flags that change behavior (e.g. write to
+    the database or no).
+2.  Capture the intended behavior for each environment in a *YAML config
+    file*.
+3.  Read in the config file as your code starts.
+4.  Choose the values for the current environment based on an
+    environment variable.
 
 ::: callout-note
 Only non-secret configuration settings should go in a config file.
-Secrets should always be configured using secrets management settings in
-the tooling you're using so they don't appear in plain text.
+Secrets should always be configured using secrets management tools so
+they don't appear in plain text.
+
+Most CI/CD tooling supports injecting secrets into the pipeline as
+environment variables.
 :::
 
-For example, you could write a project that knows whether to write or
-not based on the value of the config's `write` and which database using
-the config's `db-path`. Then you could use the YAML below to specify
-which environments write and which ones use which database:
+For example, let's say you have a project that should use a special
+read-only database in dev and switch to writing in the prod database in
+prod. You might write the config file below to describe this behavior:
 
 ```{yaml filename="config.yml"}
 dev:
@@ -293,32 +292,30 @@ prod:
   db-path: prod-db
 ```
 
-You would set a relevant environment variable so your code pulls the
-`dev` configuration in dev, `test` in test, and `prod` in prod.
+Then, you'd set that an environment variable to have the value `dev` in
+dev, `test` in test, and `prod` in prod. Your code would grab the
+correct set of values based on the environment variable.
 
 In Python there are many different ways to set and read in your a
-per-environment configuration. If you want to use YAML like in the
-example above, you could save it as `config.yml` and use the `{yaml}`
-package to read it in as a dictionary, and choose which part of the
-dictionary to at the start of your script.
+per-environment configuration. The easiest way to use YAML is just to
+read it in with the `{yaml}` package and treat it as a dictionary.
 
-In R, the `{config}` package is the standard way to load an
-environmental configuration from a YAML file. The `config::get()`
-function uses the value of the `R_CONFIG_ACTIVE` environment variable to
-choose which configuration to use. That means that switching from the
-dev to the prod version of the app is as easy as making sure you've got
-the correct environment variable set on your system.
+In R, the `{config}` package is the standard way to load a configuration
+from a YAML file. The `config::get()` function uses the value of the
+`R_CONFIG_ACTIVE` environment variable to choose which configuration to
+use.
 
 ## Comprehension Questions
 
 1.  Write down a mental map of the relationship between the three
-    environments for data science?
-2.  Why is git so important to a good code promotion strategy? Can you
-    have a code promotion strategy without git?
-3.  What is the relationship between git and CI/CD? What's the benefit
-    of using git and CI/CD together?
+    environments for data science. Include the following terms: Git,
+    Promote, CI/CD, automation, deployment, dev, test, prod
+2.  Why is Git so important to a good code promotion strategy? Can you
+    have a code promotion strategy without Git?
+3.  What is the relationship between Git and CI/CD? What's the benefit
+    of using Git and CI/CD together?
 4.  Write out a mental map of the relationship of the following terms:
-    git, GitHub, CI/CD, GitHub Actions, Version Control
+    Git, GitHub, CI/CD, GitHub Actions, Version Control
 
 ## Lab 5: Host a website with automatic updates {#lab5}
 
@@ -326,15 +323,15 @@ In labs 1 through 4, you've created a Quarto website for the penguin
 model. You've got sections on EDA and model building. But it's still
 just on your computer.
 
-In this lab, we're going to actually deploy that website to a public
-site on GitHub and and set up GitHub Actions as CI/CD so the EDA and
-modeling steps re-render every time we make changes.
+In this lab, we're going to deploy that website to a public site on
+GitHub and set up GitHub Actions as CI/CD so the EDA and modeling steps
+re-render every time we make changes.
 
-Before we get into the meat of the lab, there are a few things you have
-to do on your own. If you don't know how to do these things, there are
-plenty of great tutorials online.
+Before we get into the meat of the lab, there are a few things you need
+to do on your own. If you don't know how, there are plenty of great
+tutorials online.
 
-1.  Create an empty public git repo on GitHub.
+1.  Create an empty public repo on GitHub.
 2.  Configure the repo as the remote for your Quarto project directory.
 
 Once you've got the GitHub repo connected to your project, you need to
@@ -357,50 +354,33 @@ will auto-generate for you.
 ``` {.yaml include="../../_labs/gha/publish-basic.yml" filename=".github/workflows/publish.yml"}
 ```
 
-One of the reasons GitHub Actions has gotten so popular is that the
-actions defined in a very human-readable YAML file and it's very likely
-you can read and understand this without much editorializing. But let's
-still go through it in some detail.
+This action, like all GitHub Actions, is defined in a `.yml` file in the
+`.github/workflows` directory of a project. It contains several
+sections:
 
-This particular syntax is unique to GitHub Actions, but the idea is
-universal to all CI/CD systems -- you define a trigger and a job to do
-when it's triggered.
-
-In GitHub Actions, the `on` section defines **when** the workflow
-occurs. In this case, we've configured the workflow only to trigger on a
-push to the `main` branch.[^1-5-deployments-2] Another common case would
-be to trigger on a pull request to `main` or another branch.
+-   The `on` section defines **when** the workflow occurs. In this case,
+    we've configured the workflow only to trigger on a push to the
+    `main` branch.[^1-5-deployments-2] Another common case would be to
+    trigger on a pull request to `main` or another branch.
+-   The `jobs` section defines **what** happens in `steps`, which occur
+    in sequential order.
+    -   The `runs-on` field specifies which *runner* to use. A runner is
+        a virtual machine that is started from scratch every time the
+        action runs. GitHub Actions offers runners with Ubuntu, Windows,
+        and MacOS. You can also add custom runners.
+    -   Most steps are defined with `uses`, which calls a preexisting
+        GitHub Actions step that someone else has written.
+    -   You can inject variables using `with` and environment variables
+        using `env`.
 
 [^1-5-deployments-2]: A completed merge counts as a push.
-
-The `jobs` section defines **what** happens.
-
-When your action starts up, it's in a completely standalone environment.
-This is actually a great thing -- if you can easily specify how to start
-from zero and get your code running in GitHub actions, you can bet it'll
-do the same in prod.
-
-The `runs-on` field specifies exactly where we start, which in this case
-is the latest version of the Ubuntu and not much else.
-
-Once that environment is up, each step in `jobs` runs sequentially.
-
-The most common way to define a step is with `uses`, which calls a
-preexisting GitHub Actions step that someone else has written. In some
-cases, you'll want to specify variable values using `with` or
-environment variables with `env`.
-
-Take a close look at how this action uses the `GITHUB_TOKEN`. That's an
-environment secret that's auto-provisioned for an action. By using it as
-a variable here, it's easy to see what happens, but the value is still
-totally secret.
 
 Now, if you try to run this, it probably won't work.
 
 That's because the CI/CD process occurs in a completely isolated
-environment. This auto-generated action doesn't including setting up
+environment. This auto-generated action doesn't include setting up
 versions of R and Python or the packages to run our EDA and modeling
-scripts. We have to get that configured before this action will work.
+scripts. We need to get that configured before this action will work.
 
 ::: callout-note
 If you read the Quarto documentation, they recommend freezing your
@@ -427,8 +407,8 @@ If you're having slow package installs in CI/CD for R, I'd strongly
 recommend using a repos override like in the example above.
 
 The issue is that CRAN doesn't serve binary packages for Linux, which
-means really slow installs. You've got to direct `{renv}` to install
-from Public Posit Package Manager, which does have Linux binaries.
+means slow installs. You need to direct `{renv}` to install from Public
+Posit Package Manager, which does have Linux binaries.
 :::
 
 You'll also need to add a workflow to GitHub Actions to install Python
@@ -448,9 +428,6 @@ see the Action running.
 In all honesty, it will probably fail the first time or five. You will
 almost never get your Actions correct on the first try. Just breathe
 deeply and know we've all been there. You'll figure it out.
-
-Once it finishes, you should be able to see your change reflected on
-your website.
 
 Once it's up, your website will be available at
 `https://<username>.github.io/<repo-name>`.
