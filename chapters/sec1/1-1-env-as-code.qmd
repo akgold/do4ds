@@ -29,20 +29,17 @@ share code with a colleague or deploy an app to production.
 In some cases, you might have no choice. Some industries are highly
 regulated and analysts need to be able to guarantee that they can
 reproduce an analysis exactly -- even a decade later -- down to the
-layer of machine instructions. In this world, IT/Admins take a physical
-piece of hardware that they know runs the analysis, make a backup or
-two, and just keep that physical piece of hardware running for many
-years.
+layer of machine instructions. In this world, IT/Admins need to keep a
+physical piece of hardware running for many years.
 
-If you don't work in such an industry, you don't have to go all the way
-there. Trying to craft an environment that's **completely** reproducible
-is somewhat of a fool's errand. There's always a tradeoff. Making things
-more reproducible generally takes more work -- in a way that's
-frustratingly asymptotic.
+You don't have to go there if you don't work in such an industry.
+Crafting a completely reproducible environment is a fool's errand.
+There's always a tradeoff. Making things more reproducible generally
+takes more work -- in a frustratingly asymptotic way.
 
 ![](images/repro-spectrum.png){fig-alt="Spectrum of reproducibility from not at all to \"fully\" indicating that as reproducibility rises, so does that amount of work."}
 
-But the first steps towards a more reproducible environment is simple
+But the first steps towards a more reproducible environment are simple
 enough to fit in a single book chapter (this one!) -- to create and use
 *environments as code*.
 
@@ -59,49 +56,51 @@ moving them around from place to place.
 ## Environments have layers
 
 Data science environments have three distinct layers. Reasoning clearly
-about these layers can reveal your actual reproducibility needs, and
+about these layers can reveal your actual reproducibility needs and
 which environmental layers you need to target putting into code.
 
 At the bottom of the environment is the *hardware layer.* This is the
 physical and virtual hardware where the code runs. For example, this
 might be your laptop or a virtual server from a cloud provider. Above
 that is the *system* *layer*, which includes the operating system,
-important system libraries, and Python and/or R. And above that is the
+essential system libraries, and Python and/or R. Above that is the
 *package layer*, where your Python and R packages live.
 
 **Layers of data science environments**
 
-+----------+------------------------------+
-| Layer    | Contents                     |
-+==========+==============================+
-| Packages | Python + R Packages          |
-+----------+------------------------------+
-| System   | Python + R Language Versions |
-|          |                              |
-|          | Other System Libraries       |
-|          |                              |
-|          | Operating System             |
-+----------+------------------------------+
-| Hardware | Virtual Hardware             |
-|          |                              |
-|          | Physical Hardware            |
-+----------+------------------------------+
++--------------+-----------------------+
+| Layer        | Contents              |
++==============+=======================+
+| Packages     | Python + R Packages   |
++--------------+-----------------------+
+| System       | Python + R Language   |
+|              | Versions              |
+|              |                       |
+|              | Other System          |
+|              | Libraries             |
+|              |                       |
+|              | Operating System      |
++--------------+-----------------------+
+| Hardware     | Virtual Hardware      |
+|              |                       |
+|              | Physical Hardware     |
++--------------+-----------------------+
 
 In an ideal world, the *hardware* and *system* layers should be the
-responsibility of an IT/Admin. It may be the case that you're
-responsible for them as well, but then you're just fulfilling that role.
+responsibility of an IT/Admin. You may be responsible for them, but then
+you're fulfilling the IT/Admin role.
 
 As a data scientist, you can and should be responsible for the package
 layer, and getting this layer right is where the biggest reproducibility
-bang for your buck lies. If you do find yourself managing the system or
+bang for your buck lies. If you find yourself managing the system or
 hardware layer, chapters [@sec-cloud] through [@sec-ssl] will teach you
-all about how to manage those layers.
+how to manage those layers.
 
 ## The package layer
 
 There are three different places packages can live.
 
-1.  **In a repository.** You're used to installing packages from a
+1.  **In a repository.** You're used to installing packages from
     repositories like PyPI, Conda, CRAN, or BioConductor. These
     repositories are like the grocery store. The food is packaged up and
     ready to go, but inert. There are also many varieties there.
@@ -109,13 +108,12 @@ There are three different places packages can live.
     package.[^1-1-env-as-code-1]
 2.  **In a library.** Once you install the packages you need with
     `install.packages()` or `pip install` or `conda install`, they're in
-    your library, which is the data science equivalent of a pantry.
-    Libraries can hold -- at most -- one version of any given package.
-    Libraries can be specific to the project, user, or shared across the
-    system.
+    your library, the data science equivalent of a pantry. Libraries can
+    hold -- at most -- one version of any given package. Libraries can
+    be specific to the project, user, or shared across the system.
 3.  **Loaded.** Loading a package with a `library` or `import` command
     is like taking the food out of the pantry and putting it on the
-    counter so you can actually cook with it.
+    counter so you can cook with it.
 
 [^1-1-env-as-code-1]: They don't always include archival versions, but
     they usually do.
@@ -124,10 +122,10 @@ As a data scientist, the atomic unit of package reproducibility is in
 the middle -- the library.
 
 Let's say you work on one project for a while, installing packages from
-the repository into your library. You go away for a year of working on
+the repository into your library. You go away for a year to work on
 other projects or try to share your project with someone else. When you
-come back, it's likely that future you or your colleague you won't have
-the right versions and your code will break.
+come back, it's likely that future you or your colleague won't have the
+correct versions and your code will break.
 
 What would've been better is if you'd had an environment as code
 strategy that created a portable environment for each **project** on
@@ -141,10 +139,10 @@ A successful package environment as code setup has two key attributes:
     elsewhere.
 
 In Python, there are many different options for virtual environment
-tooling. In the context of production data science, I recommend
-`{virtualenv}`/`{venv}` and related tools.
+tooling. I recommend `{virtualenv}`/`{venv}` and related tools for
+production data science.
 
-In R, there's really only one game in town; the `{renv}` package.
+In R, there's really only one game in town: the `{renv}` package.
 
 ::: callout-note
 ## A note on Conda
@@ -178,20 +176,22 @@ commands for both R and Python.
 
 **Step 1: Create standalone package libraries**
 
-Each project should have it's own `{renv}`/`{venv}` library. When you
+Each project should have its own `{renv}`/`{venv}` library. When you
 start your project, it should be in a standalone directory that includes
 everything the project needs -- including a virtual environment.
 
 This is called a *project-oriented workflow*. You can do it in either R
 or Python. The *What They Forgot to Teach You About R* course (materials
-available online at [rstats.wtf](https://rstats.wtf/)) is a great intro
-to a project-oriented workflow whether you work in R or Python. The
-tooling will be somewhat different in Python, but the idea is the same.
+available online at [rstats.wtf](https://rstats.wtf/)) is an excellent
+intro to a project-oriented workflow whether you work in R or Python.
+The tooling will be somewhat different in Python, but the idea is the
+same.
 
 ::: callout-tip
-If your project includes multiple content items (say an app, API, and
-ETL script), I recommend using one git repo for the whole project with
-each content item in its own directory with its own virtual environment.
+Suppose your project includes multiple content items (say an app, API,
+and ETL script). In that case, I recommend using one git repo for the
+whole project with each content item in its own directory with its own
+virtual environment.
 :::
 
 When you work on the project, you activate the virtual environment and
@@ -207,9 +207,9 @@ installed in the environment.
 In `{renv}`, the file is called a `lockfile` and it's a
 `requirements.txt` in `{venv}`.
 
-Since all this work is occurring in a standalone package environment,
-you don't have to worry about what will happen if you come back after a
-break. You'll still have those same packages to use.
+Since all this work occurs in a standalone package environment, you
+don't have to worry about what will happen if you return after a break.
+You'll still have those same packages to use.
 
 **Step 3: Collaborate or deploy**
 
@@ -223,10 +223,10 @@ a Windows or Linux machine, you can't share the actual package files.
 Those machines will need to install the required set of packages for
 themselves.
 
-Additionally, package files can be large. Just sharing a file of
-requirements makes downloads and uploads much more manageable,
-especially if you're using git. So the process is to check your
-`lockfile` or `requirements.txt` into git with your project.
+Additionally, package files can be large. Sharing a requirements file
+makes downloads and uploads much more manageable, especially if you're
+using git. So, check your `lockfile` or `requirements.txt` into git with
+your project.
 
 ### Step 4: Use a virtual environment
 
@@ -255,7 +255,7 @@ version is found first during the search will be returned.
 
 ::: callout-note
 This works the same for Python modules as for packages. I'm just using
-the term packages since most modules that aren't purpose built for a
+the term packages since most modules that aren't purpos-built for a
 project are in packages.
 :::
 
@@ -264,40 +264,18 @@ libraries by default. Activating a virtual environment puts
 project-level libraries at the top of the lists in `sys.path` or
 `.libPaths()` so package installs and loads happen from there.
 
-In order to economize on space and install time, both `{renv}` and
-`{venv}` do something a little clever. The packages in your
-project-level library aren't actually there. Instead, `{renv}` and
-`{venv}` keep user-level *package caches* of the actual packages and use
-*symlinks* so there's actually only ever one copy of the package
-installed.
+To economize on space and install time, both `{renv}` and `{venv}` do
+something clever. The packages in your project-level library aren't
+there. Instead, `{renv}` and `{venv}` keep user-level *package caches*
+of the actual packages and use *symlinks,* so only one copy of the
+package is installed.
 
-Sometimes, IT/Admins want to further save space by sharing package
+Sometimes, IT/Admins want to save space further by sharing package
 caches across users. This is usually a mistake. Sharing package caches
 leads to headaches over user file permissions to write to the package
 cache versus read. Storage space is cheap, way cheaper than your time.
 If you have to do it, both `{renv}` and `venv` include settings to allow
 you to relocate the package cache to a shared location on the server.
-
-## A note on Conda
-
-::: callout-note
-## Why I'm not talking about Conda
-
-Many data scientists love Conda for managing their Python environments.
-
-Conda allows you to create a virtual environment in user space on your
-laptop without having admin access. It's especially useful when your
-machine is locked down by IT.
-
-That's super useful for working on your laptop, but it's not a great fit
-for a production environment. Conda smashes together the language
-version, the package management, and, sometimes, the system library
-management. This has the benefit of being conceptually simple and
-easy-to-use. But I've often seen it go awry in production environments.
-In a production environment (or a shared workbench server) I recommend
-people use a tool that's just for package management, like `{venv}`, as
-opposed to an all-in-one tool like Conda.
-:::
 
 ## Comprehension Questions
 
@@ -315,48 +293,48 @@ opposed to an all-in-one tool like Conda.
     `.libPaths()` (R) or `sys.path`(python), lockfile
 5.  Why is it a bad idea to share package libraries? What's the best way
     to collaborate with a colleague using an environment as code? What
-    are the commands you'll run in R or Python to save a package
-    environment and restore it later?
+    commands will you run in R or Python to save a package environment
+    and restore it later?
 
 ## Lab 1: Create and use a virtual environment {#lab1}
 
-In this lab, we're going to start working on our penguin explorer
-website. We're going to create a simple website using
-[Quarto](https://quarto.org), which is an open-source scientific and
-technical publishing system that makes it easy to render R and Python
-code into beautiful documents, websites, reports, and presentations.
+In this lab, we will start working on our penguin explorer website. We
+will create a simple website using [Quarto](https://quarto.org), an
+open-source scientific and technical publishing system that makes it
+easy to render R and Python code into beautiful documents, websites,
+reports, and presentations.
 
-We're going to create pages for a simple exploratory data analysis and
-model building from the [Palmer
-Penguins](https://allisonhorst.github.io/palmerpenguins/) dataset. In
-order to get to practice with both R and Python, I'm going to do the EDA
-page in R and the modeling in Python. By the end of this lab, we'll have
-both pages created using standalone Python and R virtual environments.
+We will create pages for a simple exploratory data analysis and model
+building from the [Palmer
+Penguins](https://allisonhorst.github.io/palmerpenguins/) dataset. To
+get to practice with both R and Python, I'm going to do the EDA page in
+R and the modeling in Python. By the end of this lab, we'll have both
+pages created using standalone Python and R virtual environments.
 
-If you're just getting started, check out the Quarto website to start
-using Quarto in the editor of your choice.
+If you're starting, check out the Quarto website to use Quarto in the
+editor of your choice.
 
 ::: callout-tip
-Make sure you add each page below to your `_quarto.yml` so Quarto knows
-to render them.
+Ensure you add each page below to your `_quarto.yml` so Quarto knows to
+render them.
 :::
 
 ### EDA in R
 
 Let's add a simple R-language EDA of the Palmer Penguins data set to our
-website by adding a file called `eda.qmd` in the root directory of the
-project.
+website by adding a file called `eda.qmd` in the project's root
+directory.
 
-Before you start adding code, create and activate an `{renv}`
-environment with `renv::init()`.
+Before you add code, create and activate an `{renv}` environment with
+`renv::init()`.
 
 Now, go ahead and do your analysis. Here's the contents of my `eda.qmd`.
 
 ``` {.markdown filename="eda.qmd" include="../../_labs/eda/eda-basic.qmd"}
 ```
 
-Feel free to copy this Quarto doc right into your website or to write
-your own.
+Feel free to copy this Quarto doc into your website or to write your
+own.
 
 Once you've finished writing your EDA script and checked that it
 previews nicely into the website, save the doc, and create your lockfile
@@ -368,8 +346,8 @@ Now let's build a `{scikit-learn}` model for predicting penguin weight
 based on bill length in a Python notebook by adding a `model.qmd` to the
 root of our project.
 
-Again, you'll want to create your virtual environment and activate it
-before you start `pip install`-ing packages into the environment.
+Again, you'll want to create and activate your virtual environment
+before you start `pip install`-ing packages.
 
 Here's what's in my `model.qmd`, but you should feel free to include
 whatever you want.
@@ -377,6 +355,6 @@ whatever you want.
 ``` {.yml filename="model.qmd" include="../../_labs/model/model-basic-py.qmd"}
 ```
 
-Once you're happy with how the page is working, capture your
-dependencies in a `requirements.txt` using
-`pip freeze > requirements.txt` on the command line.
+Once you're happy with how the page works, capture your dependencies in
+a `requirements.txt` using `pip freeze > requirements.txt` on the
+command line.
