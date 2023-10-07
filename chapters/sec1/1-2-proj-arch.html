@@ -388,7 +388,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
   <li><a href="#pickle-or-rds" id="toc-pickle-or-rds" class="nav-link" data-scroll-target="#pickle-or-rds"><span class="header-section-number">2.6.3</span> Pickle or RDS</a></li>
   <li><a href="#duckdb" id="toc-duckdb" class="nav-link" data-scroll-target="#duckdb"><span class="header-section-number">2.6.4</span> DuckDB</a></li>
   </ul></li>
-  <li><a href="#consider-data-auth-up-front" id="toc-consider-data-auth-up-front" class="nav-link" data-scroll-target="#consider-data-auth-up-front"><span class="header-section-number">2.7</span> Consider data auth up front</a></li>
+  <li><a href="#consider-data-auth-upfront" id="toc-consider-data-auth-upfront" class="nav-link" data-scroll-target="#consider-data-auth-upfront"><span class="header-section-number">2.7</span> Consider data auth upfront</a></li>
   <li><a href="#create-an-api-if-you-need-it" id="toc-create-an-api-if-you-need-it" class="nav-link" data-scroll-target="#create-an-api-if-you-need-it"><span class="header-section-number">2.8</span> Create an API if you need it</a></li>
   <li><a href="#write-a-data-flow-chart" id="toc-write-a-data-flow-chart" class="nav-link" data-scroll-target="#write-a-data-flow-chart"><span class="header-section-number">2.9</span> Write a data flow chart</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">2.10</span> Comprehension Questions</a></li>
@@ -421,9 +421,9 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 </header>
 
 <p>As a data scientist, you’re also a software developer, like it or not. But you’re probably not a very good software developer. I know I’m not.</p>
-<p>For the most part, being a mediocre software developer is fine. Maybe your code is a little inefficient, but it’s not big deal. The exception is that poorly-architected software is likely to break when shared for collaboration or put into production.</p>
-<p>So in this chapter, I’ll share some guidelines about how to design your data science project so it won’t fall apart or have to be rebuilt when you take it to production.</p>
-<p>Before we get into designing a data science project, let’s talk about a standard software architecture that’s also helpful for data science projects – the <em>three-layer app</em>.</p>
+<p>For the most part, being a mediocre software developer is fine. Maybe your code is inefficient, but it’s not a big deal. The exception is that poorly-architected software is likely to break when you share it to collaborate or go to production.</p>
+<p>So, in this chapter, I’ll share some guidelines about how to design your data science project so it won’t fall apart or have to be rebuilt when you take it to production.</p>
+<p>Before we get to designing a data science project, let’s talk about a standard software architecture that’s also helpful for data science projects – the <em>three-layer app</em>.</p>
 <p>A three-layer app is divided into (you guessed it) three layers, which are:</p>
 <ol type="1">
 <li><em>Presentation Layer</em> - what the end users of the app directly interact with. It’s the displays, buttons, and functionality the user experiences.</li>
@@ -443,33 +443,33 @@ Note
 <p>You may also have heard the terms <em>front end</em> and <em>back end</em>. Front end usually refers to the presentation layer and back end to the processing and data layers.</p>
 </div>
 </div>
-<p>Thinking about these three layers can help clarify the parts of your project, but a data science project is different enough from general purpose software that you can’t just take three-layer best practices and graft them onto a data science project.</p>
+<p>Thinking about these three layers can help clarify the parts of your project. Still, a data science project differs enough from general-purpose software that you can’t just take three-layer best practices and graft them onto a data science project.</p>
 <p>First, you may not be designing an app at all. Data science projects produce all kinds of different outputs. An app is one option, but maybe you’re creating a report, API, book, or paper.</p>
-<p>Second, you’re designing a project, which is often not just an app. It’s very likely that you have, or should have, several different components like one or more ETL or modeling scripts.</p>
-<p>Third, most general purpose apps run in response to something users do. In contrast, many data science projects run in response to updates to the underlying data – either on a schedule or in response to a trigger.</p>
-<p>Lastly, general purpose software engineers usually get to design their data layers. You probably don’t. Your job is to extract meaning from a bunch of raw input data, which means you’re beholden to whatever format that data shows up in.</p>
+<p>Second, you’re designing a project, which is often not just an app. You likely have, or should have, several different components, like one or more ETL or modeling scripts.</p>
+<p>Third, most general-purpose apps run in response to something users do. In contrast, many data science projects run in response to updates to the underlying data – either on a schedule or in response to a trigger.</p>
+<p>Lastly, general-purpose software engineers usually get to design their data layers. You probably don’t. Your job is to extract meaning from raw input data, which means you’re beholden to whatever format that data shows up in.</p>
 <p>Even with these differences, you need to make choices that, if made well, can make your app easier to take to production. Here’s are some guidelines I’ve found make going to production easier.</p>
 <section id="choose-the-right-presentation-layer" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="choose-the-right-presentation-layer"><span class="header-section-number">2.1</span> Choose the right presentation layer</h2>
-<p>The presentation layer is the thing that will be consumed by your users. You need to start by figuring out the details of your presentation layer because a lot of the data flows for your project will be dictated by your presentation layer choices.</p>
+<p>The presentation layer is the thing your users will consume. The data flows for your project will be dictated by your presentation layer choices so you should start by figuring out the presentation layer for your project.</p>
 <p>Basically all data science projects fall into the following categories.</p>
 <ol type="1">
-<li><p><em>A</em> <em>job</em>. A job matters because it changes something in another system. It might move data around, build a model, or produce plots, graphs, or numbers to be used in a Microsoft Office report.</p>
-<p>Frequently, jobs are written in a SQL-based pipelining tool (<a href="https://www.getdbt.com/"><em>dbt</em></a> has been quickly rising in popularity) or in a <code>.R</code> or <code>.py</code> script.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Depending on your organization, the people who write jobs in your organization may be called <em>data engineers</em>.</p></li>
-<li><p><em>An app.</em> Data science apps are created in frameworks like Shiny (R or Python), Dash (Python), or Streamlit (Python). In contrast to general purpose web apps, which are for all sorts of purposes, data science web apps are usually used to give non-coders a way to explore data sets and see data insights.</p></li>
-<li><p><em>A report.</em> Reports are code you’re turning into an output you care about – like a paper, book, presentation, or website. Reports are the result of rendering an R Markdown doc, Quarto doc, or Jupyter Notebook for people to consume on their computer, in print, or in a presentation. These docs may be completely static (this book is a Quarto doc) or they may have some interactive elements.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p></li>
-<li><p><em>An API</em> <em>(application programming interface)</em>. An API is for machine-to-machine communication. In general purpose software, APIs are the backbone of how two distinct pieces of software communicate. In the data science world, APIs are most often used to provide data feeds and on-demand predictions from machine learning models.</p></li>
+<li><p><em>A</em> <em>job</em>. A job matters because it changes something in another system. It might move data around, build a model, or produce plots, graphs, or numbers for a Microsoft Office report.</p>
+<p>Frequently, jobs are written in a SQL-based pipelining tool (<a href="https://www.getdbt.com/"><em>dbt</em></a> has been quickly rising in popularity) or in a <code>.R</code> or <code>.py</code> script.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Depending on your organization, the people who write jobs may be called <em>data engineers</em>.</p></li>
+<li><p><em>An app.</em> Data science apps are created in frameworks like Shiny (R or Python), Dash (Python), or Streamlit (Python). In contrast to general-purpose web apps, which are for all sorts of purposes, data science web apps are usually used to give non-coders a way to explore data sets and see data insights.</p></li>
+<li><p><em>A report.</em> Reports are code you’re turning into an output you care about – like a paper, book, presentation, or website. Reports result from rendering an R Markdown doc, Quarto doc, or Jupyter Notebook for people to consume on their computer, in print, or in a presentation. These docs may be completely static (this book is a Quarto doc) or have some interactive elements.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p></li>
+<li><p><em>An API</em> <em>(application programming interface)</em>. An API is for machine-to-machine communication. In general-purpose software, APIs are the backbone of how two distinct pieces of software communicate. In data science, APIs are mostly used to provide data feeds and on-demand predictions from machine learning models.</p></li>
 </ol>
-<p>Choosing the right type of presentation layer will make it much easier to design the rest of your project. Here are some guidelines on how to choose which to use.</p>
+<p>Choosing the right type of presentation layer will make designing the rest of your project much easier. Here are some guidelines on how to choose which to use.</p>
 <p>If the results of your software are for machine-to-machine use, you’re thinking about a job or API. You should create a job if it runs in a batched way, i.e.&nbsp;you write a data file or results into a database. If you want results to be queried in real-time, it’s an API.</p>
 <p>If your project is for humans to consume, you’re thinking about creating an app or report. Reports are great if you don’t need to do data processing that depends on user input and apps are great if you do.</p>
-<p>This flow chart illustrates how I think about which of the four things to build.</p>
+<p>This flow chart illustrates how I decide which of the four types to build.</p>
 <p><img src="images/presentation-layer.png" class="img-fluid" alt="A flow chart of choosing an App, Report, API, or Job for the presentation layer as described in this section." width="600"></p>
 </section>
 <section id="do-less-in-the-presentation-layer" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="do-less-in-the-presentation-layer"><span class="header-section-number">2.2</span> Do less in the presentation layer</h2>
-<p>Data scientists usually don’t do a great job separating out their presentation layers. It’s not uncommon to see apps or reports that are thousands of lines of code, with UI components, code for plots, and data cleaning all mixed up together. These smushed up layers make it really hard to reason about the code or to add testing to logging.</p>
-<p>The only code that belongs in the presentation layer is code that shows something to the user or that collects input from the user. Creating the things that are shown to the user or doing anything with the interactions shouldn’t be in the presentation layer. These should be deferred to the processing layer.</p>
+<p>Data scientists usually don’t do a great job separating out their presentation layers. It’s not uncommon to see apps or reports that are thousands of lines of code, with UI components, code for plots, and data cleaning all mixed up together. These smushed up layers make it hard to reason about the code or to add testing or logging.</p>
+<p>The only code that belongs in the presentation layer is code that shows something to the user or that collects input from the user. Creating the things shown to the user or doing anything with the interactions shouldn’t be in the presentation layer. These should be deferred to the processing layer.</p>
 <p>Once you’ve identified what belongs in the processing layer, you should extract the code into functions that can be put in a package for easy documentation and testing and create scripts that do the processing.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -481,14 +481,14 @@ Tip
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Moving things out of the presentation layer is especially important if you’re writing a Shiny app. You really want to use the presentation layer to do reactive things and move all non-reactive interactions into the processing layer.</p>
+<p>Moving things out of the presentation layer is especially important if you’re writing a Shiny app. You want to use the presentation layer to do reactive things and move all non-reactive interactions into the processing layer.</p>
 </div>
 </div>
 </section>
 <section id="small-data-in-the-presentation-layer" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="small-data-in-the-presentation-layer"><span class="header-section-number">2.3</span> Small data in the presentation layer</h2>
-<p>Everything is easy when your data is small. You can simply load it into your Python or R session as your code starts and never think about it again.</p>
-<p>“Real engineers” may scoff at this pattern, but don’t let their criticism dissuade you. If your data size is small and your project performance is good enough, just read in all of your data and operate on it. Don’t over-complicate things. These days, this pattern often works well into the range of millions of rows.</p>
+<p>Everything is easy when your data is small. You can load it into your Python or R session as your code starts and never think about it again.</p>
+<p>“Real engineers” may scoff at this pattern, but don’t let their criticism dissuade you. If your data size is small and your project performance is good enough, just read in all of your data and operate on it. Don’t over-complicate things. This pattern often works well into the range of millions of rows.</p>
 <p>It may be the case that your data isn’t small – but not all large data is created equal.</p>
 <p>Truly <em>big</em> <em>data</em> can’t fit into the memory on your computer all at once. As computer memory gets more plentiful, truly big data is getting rarer.</p>
 <p>It’s much more common to encounter <em>medium data</em>. You can technically load it into memory, but it’s substantial enough that loading it all makes your project’s performance too slow.</p>
@@ -499,13 +499,13 @@ Tip
 <p>If your data is truly big, it’s big. But if your data is medium-sized, the thing keeping it from being small isn’t some esoteric hardware issue, its <strong>performance</strong>.</p>
 <p>An app requires high performance. Someone staring at their screen through a 90-second wait may think your project stinks depending on expectations.</p>
 <p>But if you can pre-calculate a lookup table of values or turn your app into a report that gets re-rendered on a schedule, you can turn large data into a small data set in the presentation layer.</p>
-<p>Talking to your users and figuring out what cuts of the data they really care about can help you determine whether pre-calculation is feasible or whether you really need to load all the data into the presentation layer.</p>
+<p>Talking to your users and figuring out what cuts of the data they care about can help you determine whether pre-calculation is feasible or whether you need to load all the data into the presentation layer.</p>
 </section>
 <section id="can-you-reduce-data-granularity" class="level3" data-number="2.3.2">
 <h3 data-number="2.3.2" class="anchored" data-anchor-id="can-you-reduce-data-granularity"><span class="header-section-number">2.3.2</span> Can you reduce data granularity?</h3>
 <p>If you can pre-calculate results and you’re still hitting performance issues, it’s always worth asking if your data can get smaller.</p>
-<p>Let’s think about a specific project to make this a little clearer.</p>
-<p>Suppose you work for a large retailer and are responsible for creating a dashboard of weekly sales. Your input data is a dataset of every item sold at every store going back for years. Clearly this isn’t naturally small data.</p>
+<p>Let’s think about a specific project to make this a little more straightforward.</p>
+<p>Suppose you work for a large retailer and are responsible for creating a dashboard of weekly sales. Your input data is a dataset of every item sold at every store for years. This isn’t naturally small data.</p>
 <p>But you might be able to make the data small if you don’t need to allow the user to slice the data in too many different dimensions. Each additional dimension you allow <strong>multiplies</strong> the amount of data you need in the presentation layer.</p>
 <p>For example, weekly sales at the department level only requires a lookup table as big as <span class="math inline">\(\text{number of weeks} * \text{number of stores} * \text{number of departments}\)</span>. Even with a lot of stores and a lot of departments, you’re probably still squarely in the small data category.</p>
 <p>But if you have to switch to a daily view, you multiply the amount of data you need by 7. If you break it out across 12 products, your data has to get 12 times bigger. And if you do both, it gets 84 times bigger. It’s not long before you’re back to a big data problem.</p>
@@ -515,21 +515,21 @@ Tip
 <section id="big-data-patterns" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="big-data-patterns"><span class="header-section-number">2.4</span> Make big data small</h2>
 <p>The way to make big data small is to avoid pulling all the data into your Python or R session. Instead, you want to pull in only some of the data.</p>
-<p>There are a few different ways you can avoid pulling all the data. This isn’t an exhaustive list and each of these patterns will only work for some projects, but adopting one or more can be helpful.</p>
+<p>There are a few different ways you can avoid pulling all the data. This isn’t an exhaustive list; each pattern will only work for some projects, but adopting one or more can be helpful.</p>
 <section id="push-work-to-the-data-source" class="level3" data-number="2.4.1">
 <h3 data-number="2.4.1" class="anchored" data-anchor-id="push-work-to-the-data-source"><span class="header-section-number">2.4.1</span> Push work to the data source</h3>
 <p>In most cases, the most time-consuming step is transmitting the data from the data source to your project. So, as a general rule, you <strong>should do</strong> anything you <strong>can do</strong> before you pull the data out.</p>
-<p>This tends to work quite well when you’re creating simple summary statistics and when your database is reasonably fast. If your data source is slow or if you’re doing complicated machine learning tasks on a database that only supports SQL, it may not be possible.</p>
+<p>This works quite well when you’re creating simple summary statistics and when your database is reasonably fast. It may be unwise if your data source is slow or impossible if you’re doing complicated machine learning tasks on a database that only supports SQL.</p>
 </section>
 <section id="be-lazy-with-data-pulls" class="level3" data-number="2.4.2">
 <h3 data-number="2.4.2" class="anchored" data-anchor-id="be-lazy-with-data-pulls"><span class="header-section-number">2.4.2</span> Be lazy with data pulls</h3>
-<p>As you’re pushing more work into the database, it’s also worth considering when the project actually pulls its data during its runtime. The most basic pattern is to include the data pull in the project setup in an <em>eager</em> pattern. This is often a good first cut at writing an app, as it’s much simpler than doing anything else.</p>
+<p>As you’re pushing more work into the database, it’s also worth considering when the project pulls its data during its runtime. The most basic pattern is to include the data pull in the project setup in an <em>eager</em> pattern. This is often a good first cut at writing an app, as it’s much simpler than doing anything else.</p>
 <p>If that turns out to be too slow, consider being <em>lazy</em> with your data pulls. In a lazy data pattern, you have a live connection to your data source and pull in only the data that’s needed when it’s needed.</p>
-<p>If you don’t always need all the data, especially if needs depend on what the user does inside a session, it might be worthwhile to pull only once the user interactions clarify what you need.</p>
+<p>If you don’t always need all the data, especially if the required data depends on what the user does inside a session, it might be worthwhile to pull only once the user interactions clarify what you need.</p>
 </section>
 <section id="sample-the-data" class="level3" data-number="2.4.3">
 <h3 data-number="2.4.3" class="anchored" data-anchor-id="sample-the-data"><span class="header-section-number">2.4.3</span> Sample the data</h3>
-<p>For many tasks, especially machine learning ones, it may be adequate to work on only a sample of the data. In some cases, like classification of highly imbalanced classes, it may actually work <em>better</em> to work on a sample of the data rather than the whole data set.</p>
+<p>It may be adequate to work on only a sample of the data for many tasks, especially machine learning ones. In some cases, like classification of highly imbalanced classes, it may work <em>better</em> to work on a sample rather than the whole data set.</p>
 <p>Sampling tends to work well when you’re trying to compute statistical attributes of your datasets. Computing averages or rates and creating machine learning models works just fine on samples of your data. Be careful to consider the statistical implications of sampling, especially remaining unbiased. You may also want to consider stratifying your sampling to ensure good representation across important dimensions.</p>
 <p>Sampling doesn’t work well on counting tasks. It’s hard to count when you don’t have all the data!</p>
 </section>
@@ -543,30 +543,30 @@ Tip
 <section id="choose-location-by-update-frequency" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="choose-location-by-update-frequency"><span class="header-section-number">2.5</span> Choose location by update frequency</h2>
 <p>Where you store your data should be dictated by how often the data is updated.</p>
-<p>The simplest answer is to put it in the <em>presentation bundle</em>, which is the code and assets that make up your presentation layer. For example, let’s say you’re building a simple Dash app, <code>app.py</code>.</p>
+<p>The simplest answer is to put it in the <em>presentation bundle</em>, the code and assets that comprise your presentation layer. For example, let’s say you’re building a simple Dash app, <code>app.py</code>.</p>
 <p>You could create a project structure like this:</p>
 <pre><code>my-project/
 ├─ app.py
 ├─ data/
 │  ├─ my_data.csv
 │  ├─ my_model.pkl</code></pre>
-<p>This works well only if your data will be updated at the same cadence as the app or report itself. If your project is an annual report that will be rewritten when you update the data, this works well.</p>
-<p>But if your data updates more frequently than your project code, you really want to put the data outside the project bundle.</p>
+<p>This works well only if your data will be updated at the same cadence as the app or report itself. This works well if your project is something like an annual report that will be rewritten when you update the data.</p>
+<p>But if your data updates more frequently than your project code, you want to put the data outside the project bundle.</p>
 <section id="filesystem" class="level3" data-number="2.5.1">
 <h3 data-number="2.5.1" class="anchored" data-anchor-id="filesystem"><span class="header-section-number">2.5.1</span> Filesystem</h3>
 <p>There are a few ways you can do this. The most basic is to put the data on a location in your file system that isn’t inside the app bundle.</p>
-<p>But when it comes to deployment, data on the file system can be complicated. If you’re writing and deploying your project it on the same server, then you can access the same directory. If not, you’ll need to worry about how to make sure that directory is also accessible on the server where you’re deploying your project.</p>
+<p>But when it comes to deployment, data on the file system can be complicated. You can use the same directory if you write and deploy your project on the same server. If not, you’ll need to worry about how to make sure that directory is also accessible on the server where you’re deploying your project.</p>
 </section>
 <section id="blob-storage-or-pins" class="level3" data-number="2.5.2">
 <h3 data-number="2.5.2" class="anchored" data-anchor-id="blob-storage-or-pins"><span class="header-section-number">2.5.2</span> Blob Storage or Pins</h3>
 <p>If you’re not going to store the flat file on the filesystem and you’re in the cloud, it’s most common to use <em>blob storage</em>. Blob storage allows you to store and recall things by name.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Each of the major cloud providers has blob storage – AWS’s has <em>s3</em> (short for simple storage service), Azure has <em>Azure Blob Store</em>, and Google has <em>Google Storage</em>.</p>
-<p>The nice thing about blob storage is that it can be accessed from anywhere that has access to the cloud. You can also control access using standard cloud identity management tooling.</p>
-<p>There are packages in both R and Python for interacting with AWS that are very commonly used for getting access to s3 – <code>{boto3}</code> in Python and <code>{paws}</code> in R.</p>
-<p>There’s also the popular <code>{pins}</code> package in both R and Python that basically wraps using blob storage into neater code. It can use a variety of storage backends, including cloud blob storage, networked or cloud drives like Dropbox, Microsoft365 sites, and Posit Connect.</p>
+<p>The nice thing about blob storage is that it can be accessed from anywhere with access to the cloud. You can also control access using standard cloud identity management tooling.</p>
+<p>There are packages in both R and Python for interacting with AWS that are very commonly used to access s3 – <code>{boto3}</code> in Python and <code>{paws}</code> in R.</p>
+<p>The popular <code>{pins}</code> package in both R and Python wraps using blob storage into neater code. It can use a variety of storage backends, including cloud blob storage, networked or cloud drives like Dropbox, Microsoft365 sites, and Posit Connect.</p>
 </section>
 <section id="google-sheets" class="level3" data-number="2.5.3">
 <h3 data-number="2.5.3" class="anchored" data-anchor-id="google-sheets"><span class="header-section-number">2.5.3</span> Google Sheets</h3>
-<p>If you’re still early in your project lifecycle, a Google Sheet can be a great way to save and recall a flat file. I wouldn’t recommend a Google Sheet as a permanent home for data, but it can be a good intermediate step while you’re still figuring out what the right answer is for your pipeline.</p>
+<p>If you’re still early in your project lifecycle, a Google Sheet can be a great way to save and recall a flat file. I wouldn’t recommend a Google Sheet as a permanent home for data, but it can be a good intermediate step while you’re still figuring out the right solution for your pipeline.</p>
 <p>The primary weakness of a Google Sheet – that it’s editable by someone who logs in – can also be an asset if that’s something you need.</p>
 </section>
 </section>
@@ -574,7 +574,7 @@ Tip
 <h2 data-number="2.6" class="anchored" data-anchor-id="store-intermediate-artifacts-in-the-right-format"><span class="header-section-number">2.6</span> Store intermediate artifacts in the right format</h2>
 <p>As you break your processing layer into components, you’ll probably have intermediate artifacts like analysis datasets, models, and lookup tables to pass from one stage to the next.</p>
 <p>If you’re producing rectangular data frames (or vectors) and you have write access to a database, use that.</p>
-<p>But very often you don’t have write access to a database or you’ve got other sorts of artifacts that you need to save between steps and can’t go into a database, like machine learning models or rendered plots. In that case, you’ll need to choose how to store your data.</p>
+<p>But you often don’t have write access to a database or have other sorts of artifacts that you need to save between steps and can’t go into a database, like machine learning models or rendered plots. In that case, you must choose how to store your data.</p>
 <section id="flat-files" class="level3" data-number="2.6.1">
 <h3 data-number="2.6.1" class="anchored" data-anchor-id="flat-files"><span class="header-section-number">2.6.1</span> Flat files</h3>
 <p><em>Flat files</em> are data files that can be moved around just like any other file on your computer.</p>
@@ -583,30 +583,30 @@ Tip
 <h3 data-number="2.6.2" class="anchored" data-anchor-id="csv"><span class="header-section-number">2.6.2</span> CSV</h3>
 <p>The most common is a <em>comma separated value (csv)</em> file, which is just a literal text file of the values in your data with commas as separators.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> You could open it in a text editor and read it if you wanted to.</p>
 <p>The advantage of <code>.csv</code>s is that they’re completely ubiquitous. Every programming language has some way to read in a <code>.csv</code> file and work with it.</p>
-<p>On the downside, <code>.csv</code>s are completely uncompressed. That makes them quite large relative to other sorts of files and slow to read and write. Additionally, because <code>.csv</code>s aren’t language-specific, complicated data types may not be preserved when saving to <code>.csv</code>. For example, dates are often mangled going into a <code>.csv</code> file and back.</p>
-<p>They also can only hold rectangular data, so if you’re trying to save a machine learning model, a <code>.csv</code> doesn’t make any sense.</p>
+<p>On the downside, <code>.csv</code>s are completely uncompressed. That makes them quite large relative to other files and slow to read and write. Additionally, because <code>.csv</code>s aren’t language-specific, complicated data types may not be preserved when saving to <code>.csv</code>. For example, dates are often mangled in the roundtrip to a <code>.csv</code> file and back.</p>
+<p>They also can only hold rectangular data, so if you’re trying to save a machine learning model, a <code>.csv</code> doesn’t make sense.</p>
 </section>
 <section id="pickle-or-rds" class="level3" data-number="2.6.3">
 <h3 data-number="2.6.3" class="anchored" data-anchor-id="pickle-or-rds"><span class="header-section-number">2.6.3</span> Pickle or RDS</h3>
-<p>Both R and Python have language-specific flat file types – <code>pickle</code> in Python and <code>rds</code> in R. These are nice because they include some amount of compression and preserve data types when you save a data frame. They also can hold non-rectangular data, which can be great if you want to save a machine learning model.</p>
+<p>R and Python have language-specific flat file types – <code>pickle</code> in Python and <code>rds</code> in R. These are nice because they include some compression and preserve data types when you save a data frame. They also can hold non-rectangular data, which can be great if you want to save a machine learning model.</p>
 </section>
 <section id="duckdb" class="level3" data-number="2.6.4">
 <h3 data-number="2.6.4" class="anchored" data-anchor-id="duckdb"><span class="header-section-number">2.6.4</span> DuckDB</h3>
-<p>If you don’t have a database but are storing rectangular data, you should strongly consider using <a href="https://duckdb.org">DuckDB</a>. Its an in-memory database that’s great for analytics use cases. In contrast to a standard database that runs its own live process, there’s no overhead for setting up DuckDB.</p>
+<p>If you don’t have a database but store rectangular data, you should strongly consider using <a href="https://duckdb.org">DuckDB</a>. Its an in-memory database that’s great for analytics use cases. In contrast to a standard database that runs its own live process, there’s no overhead for setting up DuckDB.</p>
 <p>You just run it against flat files on disk (usually Parquet files), which you can move around like any other. And unlike a <code>.csv</code>, <code>pickle</code>, or <code>rds</code> file, a DuckDB is query-able, so you only load the data you need into memory.</p>
 <p>It’s hard to stress how cool DuckDB is. Data sets that were big just a few years ago are now medium or even small.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 </section>
 </section>
-<section id="consider-data-auth-up-front" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="consider-data-auth-up-front"><span class="header-section-number">2.7</span> Consider data auth up front</h2>
-<p>If everyone who views your project has the same permissions to see the data, life is easy. You can just allow the project access to the data and check for authorization to view the project.</p>
-<p>But if you need to provide different data access to different users, you’re much more constrained. First off, you probably need to use an app rather than a report so that you can respond to which user is accessing the app.</p>
-<p>Sometimes you can adjust data access in the app itself. Many app frameworks pass the username or user groups into the session, and you can write code that changes app behavior based on the user. For example, you can gate access to certain tabs or features of your app based on the user.</p>
-<p>Sometimes you’ll need to pass database credentials along to the database. If this is the case for you, you’ll need to figure out how to establish the user’s database credentials, how to make sure those credentials stay only in the user’s session, and how those credentials get passed along to the database. More on this topic in <a href="../sec3/3-2-auth.html">Chapter&nbsp;<span>16</span></a>.</p>
+<section id="consider-data-auth-upfront" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="consider-data-auth-upfront"><span class="header-section-number">2.7</span> Consider data auth upfront</h2>
+<p>Life is easy if everyone who views your project has the same permissions to see the data. You can allow the project access to the data and check for authorization to view the project.</p>
+<p>But you’re much more constrained if you need to provide different data access to different users. First, you probably need to use an app rather than a report so that you can respond to which user is accessing the app.</p>
+<p>Sometimes, you can adjust data access in the app itself. Many app frameworks pass the username or user groups into the session, and you can write code that changes app behavior based on the user. For example, you can gate access to specific tabs or features of your app based on the user.</p>
+<p>Sometimes, you’ll need to pass database credentials along to the database. If this is the case for you, you’ll need to figure out how to establish the user’s database credentials, ensure those credentials stay only in the user’s session, and how those credentials get passed along to the database. More on this topic in <a href="../sec3/3-2-auth.html">Chapter&nbsp;<span>16</span></a>.</p>
 </section>
 <section id="create-an-api-if-you-need-it" class="level2" data-number="2.8">
 <h2 data-number="2.8" class="anchored" data-anchor-id="create-an-api-if-you-need-it"><span class="header-section-number">2.8</span> Create an API if you need it</h2>
-<p>In the case of a general purpose three-layer app, it is almost always the case that the middle tier will be an API. In a data science app, separating processing logic into functions is often sufficient. But if you’ve got a long-running bit of business logic, like training an ML model, it’s often helpful to separate it into an API.</p>
+<p>In the case of a general-purpose three-layer app, it is almost always the case that the middle tier will be an API. Separating processing logic into functions is often sufficient in a data science app. But separating it into an API is often helpful if you’ve got a long-running bit of business logic, like training an ML model.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -619,20 +619,20 @@ Note
 <div class="callout-body-container callout-body">
 <p>You may have heard the term REST API or REST-ful.</p>
 <p>REST is a set of architectural standards for how to build an API. An API that conforms to those standards is called REST-ful or a REST API.</p>
-<p>If you’re using standard methods for constructing an API like R’s <code>{plumber}</code> package or <code>{FastAPI}</code> in Python, they’re going to be REST-ful – or at least close enough for standard usage.</p>
+<p>If you’re using standard methods for constructing an API like R’s <code>{plumber}</code> package or <code>{FastAPI}</code> in Python, they will be REST-ful – or at least close enough for standard usage.</p>
 </div>
 </div>
 <p>You can think of an API as a “function as a service”. That is, an API is just one or more functions, but instead of being called within the same process that your app is running or your report is processing, it will run in a completely separate process.</p>
-<p>For example, let’s say you’ve got an app that allows users to feed in input data and then generate a model based on that data. If you generate the model inside the app, the user will have the experience of pressing the button to generate the model and having the app seize up on them while they’re waiting. Moreover, other users of the app will find themselves affected by this behavior.</p>
-<p>If, instead, the button in the app ships the long-running process to a separate API, it gives you the ability to think about scaling out the presentation layer separate from the business layer.</p>
-<p>Luckily, if you’ve written functions for your app, turning them into an API is trivial since packages like <code>{fastAPI}</code> and <code>{plumber}</code> let you turn a function into an API with just the addition of some specially-formatted comments.</p>
+<p>For example, let’s say you’ve got an app that allows users to feed in input data and then generate a model based on that data. If you generate the model inside the app, the user will have the experience of pressing the button to generate the model and having the app seize up on them while they’re waiting. Moreover, other app users will find themselves affected by this behavior.</p>
+<p>If, instead, the button in the app ships the long-running process to a separate API, it allows you to think about scaling out the presentation layer separate from the business layer.</p>
+<p>Luckily, if you’ve written functions for your app, turning them into an API is trivial since packages like <code>{fastAPI}</code> and <code>{plumber}</code> let you turn a function into an API by adding some specially-formatted comments.</p>
 </section>
 <section id="write-a-data-flow-chart" class="level2" data-number="2.9">
 <h2 data-number="2.9" class="anchored" data-anchor-id="write-a-data-flow-chart"><span class="header-section-number">2.9</span> Write a data flow chart</h2>
-<p>Once you’ve figured out the project architecture you need, it can be helpful to write a <em>data flow chart</em>.</p>
-<p>A data flow chart maps the different project components you’ve got into the three parts of the project and documents all the intermediate artifacts you’re creating along the way.</p>
+<p>Once you’ve figured out the project architecture you need, writing a <em>data flow chart</em> can be helpful.</p>
+<p>A data flow chart maps the different project components into the project’s three parts and documents all the intermediate artifacts you’re creating along the way.</p>
 <p>Once you’ve mapped your project, figuring out where the data should live and in what format will be much simpler.</p>
-<p>For example, here’s a very simple data flow chart for the labs in this book. You may want to annotate your data flow charts with other attributes like data types, update frequencies, and where data objects live.</p>
+<p>For example, here’s a simple data flow chart for the labs in this book. You may want to annotate your data flow charts with other attributes like data types, update frequencies, and where data objects live.</p>
 <p><img src="images/data-flow-chart.png" class="img-fluid" alt="A data flow chart showing how the palmer penguins data flows into the model creation API, which creates the model and the model creation report. The model serving API uses the model and feeds the model explorer API." width="600"></p>
 </section>
 <section id="comprehension-questions" class="level2" data-number="2.10">
@@ -647,12 +647,12 @@ Note
 </section>
 <section id="lab2" class="level2" data-number="2.11">
 <h2 data-number="2.11" class="anchored" data-anchor-id="lab2"><span class="header-section-number">2.11</span> Lab 2: Build the processing layer</h2>
-<p>In <a href="1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>, we did some EDA of the Palmer Penguins data set and also built an ML model. In this lab, we’re going to take that work we did and turn it into the actual presentation layer for our project.</p>
+<p>In <a href="1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>, we did some EDA of the Palmer Penguins data set and built an ML model. In this lab, we will take that work we did and turn it into the actual presentation layer for our project.</p>
 <section id="step-1-write-the-model-outside-the-bundle" class="level3" data-number="2.11.1">
 <h3 data-number="2.11.1" class="anchored" data-anchor-id="step-1-write-the-model-outside-the-bundle"><span class="header-section-number">2.11.1</span> Step 1: Write the model outside the bundle</h3>
 <p>When we originally wrote our <code>model.qmd</code> script, we didn’t save the model at all.</p>
-<p>It seems likely that our model will get updated more frequently than our app, so we don’t want to store it in the app bundle. Later in the book, I’ll show you how to store it in the cloud. For now, I’m just going to store it in a directory on my computer.</p>
-<p>I’m going to use the <code>{vetiver}</code> package, which is an R and Python package to version, deploy, and monitor a machine learning model.</p>
+<p>Our model will likely be updated more frequently than our app, so we don’t want to store it in the app bundle. Later in the book, I’ll show you how to store it in the cloud. For now, I will store it in a directory on my computer.</p>
+<p>I will use the <code>{vetiver}</code> package, an R and Python package to version, deploy, and monitor a machine learning model.</p>
 <p>We can take our existing model, turn it into a <code>{vetiver}</code> model, and save it to the <code>/data/model</code> folder with</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -671,7 +671,7 @@ Note
 <section id="step-2-create-an-api-for-model-predictions" class="level3" data-number="2.11.2">
 <h3 data-number="2.11.2" class="anchored" data-anchor-id="step-2-create-an-api-for-model-predictions"><span class="header-section-number">2.11.2</span> Step 2: Create an API for model predictions</h3>
 <p>I’ll serve the model from an API to allow for real-time predictions.</p>
-<p>As the point of this lab is to focus on the architecture, I’m just going to use the auto-generation capabilities of <code>{vetiver}</code>. If you’re interested in getting better at writing APIs in general, I encourage you to consult the documentation for <code>{plumber}</code> or <code>{fastAPI}</code>.</p>
+<p>As the point of this lab is to focus on the architecture, I’m just going to use the auto-generation capabilities of <code>{vetiver}</code>. If you want to improve at writing APIs, I encourage you to consult the documentation for <code>{plumber}</code> or <code>{fastAPI}</code>.</p>
 <p>If you’ve closed your modeling code, you can get your model back from your pin with:</p>
 <div class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> pins.board_folder(<span class="st">'data/model'</span>, allow_pickle_read<span class="op">=</span><span class="va">True</span>)</span>
