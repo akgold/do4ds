@@ -333,7 +333,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#issues-with-inbound-proxies" id="toc-issues-with-inbound-proxies" class="nav-link" data-scroll-target="#issues-with-inbound-proxies"><span class="header-section-number">15.3.1</span> Issues with inbound proxies</a></li>
   </ul></li>
-  <li><a href="#airgapping-with-outbound-proxies" id="toc-airgapping-with-outbound-proxies" class="nav-link" data-scroll-target="#airgapping-with-outbound-proxies"><span class="header-section-number">15.4</span> Airgapping with outbound proxies</a></li>
+  <li><a href="#air-gapping-with-outbound-proxies" id="toc-air-gapping-with-outbound-proxies" class="nav-link" data-scroll-target="#air-gapping-with-outbound-proxies"><span class="header-section-number">15.4</span> Air gapping with outbound proxies</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">15.5</span> Comprehension Questions</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec3/3-1-ent-networks.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
@@ -358,13 +358,13 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>Though it may sound hyperbolic, enterprises really are constantly under siege. The public internet is swirling with people and bots trying to get access to a private environment with the aim of getting in and exfiltrating data or co-opting resources they don’t have to pay for.</p>
-<p>Networking is the outermost layer of security for a private computing environment. It’s like the outer wall of a gated community that houses all of the servers the IT/Admin group maintains.</p>
-<p>In this chapter, you’ll learn about how an enterprise IT/Admin thinks about configuring networking and some of the issues that come up trying to do data science inside an enterprise networking environment.</p>
+<p>Though it may sound hyperbolic, enterprise networks are constantly under siege. The public internet is swirling with people and bots trying to access private environments to exfiltrate data or co-opt free computational resources.</p>
+<p>Networking is the outermost layer of security for a private computing environment. It’s like the outer wall of a gated community for all the servers the IT/Admin group maintains.</p>
+<p>In this chapter, you’ll learn about how an enterprise IT/Admin thinks about configuring networking, as well as some of the issues that come up when trying to do data science inside a locked-down enterprise environment.</p>
 <section id="enterprise-networks-are-private" class="level2" data-number="15.1">
 <h2 data-number="15.1" class="anchored" data-anchor-id="enterprise-networks-are-private"><span class="header-section-number">15.1</span> Enterprise networks are private</h2>
 <p>An enterprise network houses dozens or hundreds of servers, each with its own connection requirements. Some are accessible to the outside, while others are only accessible to other servers inside the network.</p>
-<p>For that reason, the servers an enterprise controls all live inside one or more <em>private networks</em>. Every host in a private network has a <em>private IP Address</em>, which is valid only inside the private network. Those IP Addresses are handed out by the private router that governs the network. And like a public IP Address is aliased to a domain for ease of remembering, many private networks make use of <em>hostnames</em> to have human-friendly ways to talk about servers.</p>
+<p>For that reason, the servers controlled by an enterprise live inside one or more <em>private networks</em>. The good news is that private networks look like public ones, which you learned about in <a href="../sec2/2-6-networking.html">Chapter&nbsp;<span>12</span></a>. Every host in a private network has an IP Address. It’s just a private IP address handed out by the router that governs the network and is valid only inside the private network. And, like you can get a domain for a human-friendly way to address a server on a public network, many private networks use private <em>hostnames</em> to have human-friendly ways to talk about servers.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -375,19 +375,25 @@ Where’s my private network?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>In AWS, every server lives inside a private network called a <em>virtual private cloud (VPC)</em>. When we set up our data science workbench throughout Section 2, we basically just ignored the VPC and assigned the instance a public IP address, which is why this is the first time you’re hearing about it.</p>
+<p>In AWS, every server lives inside a private network called a <em>virtual private cloud (VPC)</em>. When we set up our data science workbench throughout Section 2, we ignored the VPC and assigned the instance a public IP address – which explains why this is the first time you’ve heard about it.</p>
 <p>In an enterprise context, this kind of configuration would be a no-go.</p>
 </div>
 </div>
-<p>When there are this many services running inside a network, networking requirements can get somewhat byzantine. For example, you probably want to set up a data science workbench and a data science hosting environment that should be reachable from user’s laptops and that needs to reach one or more databases. They also may need to access a public package repository.</p>
-<p>But the servers that house the databases should be accessible from the workbench and wherever the data is being loaded from, but probably shouldn’t be directly accessible from anyone’s laptop. And in order to comply with the principle of least privilege, you don’t want any of these servers to be more available than needed.</p>
-<p><img src="images/private_network.png" class="img-fluid" alt="A picture of traffic coming into a private network from laptops going to a workbench. There's a connection from the workbench to a database and package repository, but only to there."></p>
-<p>And that’s just the servers for actually doing work. Enterprise networks also host a variety of devices that are purely for controlling the flow of traffic through the network. So when you’re working in a data science environment and running into trouble, one of the first questions to ask yourself is whether the issue could be with network traffic struggling to get into, out of, or across the private network.</p>
+<p>With so many services running inside a network, connection requirements can get byzantine. For example, you probably want to set up a data science workbench and a data science hosting environment.</p>
+<p>The servers in the data science environment should:</p>
+<ul>
+<li><p>Be reachable from users’ laptops.</p></li>
+<li><p>Reach one or more databases that are only accessible from inside the private network and may also connect to data sources.</p></li>
+<li><p>Access a package repository.</p></li>
+</ul>
+<p>And, to comply with the principle of least privilege, you don’t want any of these servers to be more available than needed. Providing precisely the right level of networking access isn’t a trivial undertaking.</p>
+<p><img src="images/private_network.png" class="img-fluid" alt="A picture of traffic coming into a private network from laptops going to a workbench. There's a connection from the workbench to a database and package repository, but only to there." width="600"></p>
+<p>Those are just the servers for actually doing work. Enterprise networks also include various devices that control the network traffic itself. When you’re working in a data science environment and run into trouble, you should start by asking whether the issue could be with network traffic struggling to get into, out of, or across the private network.</p>
 </section>
 <section id="the-shape-of-an-enterprise-network" class="level2" data-number="15.2">
 <h2 data-number="15.2" class="anchored" data-anchor-id="the-shape-of-an-enterprise-network"><span class="header-section-number">15.2</span> The shape of an enterprise network</h2>
-<p>When you access something important inside a private network, the IP Address is almost never a server that actually does work. Instead, it’s usually the address of a <em>proxy server</em> or <em>proxy</em>, which is an entire server that exists just to run proxy software that routes traffic around the network.</p>
-<p>Routing all traffic through the proxy ensures that the important servers only ever get traffic from other servers the organization controls. This decreases the number of attack vectors to the important servers. Proxy servers may also do other tasks like terminate SSL or authentication.</p>
+<p>When you access something important inside a private network, the IP Address is rarely the server doing the work. Instead, it’s usually the address of a <em>proxy server</em> or <em>proxy</em>, an entire server that exists just to run proxy software that routes traffic around the network.</p>
+<p>Routing all traffic through the proxy ensures that the work servers only get traffic from other servers that the organization controls, decreasing the number of attack vectors to the work servers. Proxy servers may also do other tasks like terminate SSL or authentication.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -398,18 +404,18 @@ VPN vs VPC?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>You may have to log into a <em>VPN (Virtual Private Network)</em> for work or school from your personal computer. Where a VPC is a private network inside a cloud environment, a VPN is a private network for remote access to a shared network. You generally don’t directly log into an enterprise VPC (or on-prem private network), but you might login to an adjacent VPN ensuring that anyone who accesses the network is coming from an authenticated machine.</p>
+<p>You may have to log in to a <em>VPN (Virtual Private Network)</em> for work or school. Where a VPC is a private network inside a cloud environment, a VPN is a private network for remote access to a shared network. You generally don’t directly log in to an enterprise VPC (or on-prem private network), but you might log in to an adjacent VPN ensuring that anyone who accesses the network is coming from an authenticated machine.</p>
 </div>
 </div>
 <p>Enterprise networks are almost always subdivided into <em>subnets</em>, which are logically separate partitions of the private network.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> In most cases, the private network is divided between the <em>public subnet</em> or <em>demilitarized zone (DMZ)</em> where the proxies live and the <em>private subnet</em> where all the important servers live.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
-<p><img src="images/subnets.png" class="img-fluid" alt="A private network where people come to public subnet with HTTP proxy and Bastion Host. Access to Work Nodes in Private Subnet is only from Public Subnet." width="453"></p>
-<p>Aside from the security benefits, putting the important servers in the private subnet is also more convenient because the IT/Admin use hostnames and IP Addresses without worrying about uniqueness outside of the private subnet. For example, they could use the hostname <span class="math inline">\(\text{google.com}\)</span> for a server because it only needs to be valid inside the private network. But that’s also bound to be confusing and I wouldn’t recommend it.</p>
+<p><img src="images/subnets.png" class="img-fluid" alt="A private network where people come to public subnet with HTTP proxy and Bastion Host. Access to Work Nodes in Private Subnet is only from Public Subnet." width="600"></p>
+<p>Aside from the security benefits, putting the important servers in the private subnet is also more convenient because the IT/Admins can use private hostnames and IP Addresses without worrying about uniqueness on the public internet. For example, they could use the hostname <span class="math inline">\(\text{google.com}\)</span> for a server because it only needs to be valid inside the private network. But, that’s confusing and I wouldn’t recommend it.</p>
 </section>
 <section id="networking-pain-follows-proxies" class="level2" data-number="15.3">
 <h2 data-number="15.3" class="anchored" data-anchor-id="networking-pain-follows-proxies"><span class="header-section-number">15.3</span> Networking pain follows proxies</h2>
-<p>The simplest networking issue is that a connection simply doesn’t exist where one is needed. This is usually pretty obvious using tools like <code>ping</code> and <code>curl</code> and is straightforward to solve by working with your IT/Admin team.</p>
-<p>Difficulties tend to be more subtle when there are proxies involved, and enterprise networks can feature proxies all over the place. Much like the watertight bulkheads between every room on a naval ship, they show up between any two parts of the network you might want to be able to seal off at some point. And where a proxy exists, it can cause you trouble.</p>
-<p>In fact, there are actually two proxies that might be messing with traffic you care about. There could be a proxy that intercepts <em>inbound</em> traffic and also a a proxy that intercepts <em>outbound</em> traffic.</p>
+<p>The most straightforward networking issue is that a connection doesn’t exist where one is needed. This is usually clear when using tools like <code>ping</code> and <code>curl</code> and can be solved by working with your IT/Admin team.</p>
+<p>Difficulties tend to be more subtle when proxies are involved and enterprise networks feature proxies all over the place. Much like the watertight bulkheads between every room on a naval ship, proxies show up between any two parts of the network that you might want to seal off at some point. And where a proxy exists, it can cause you trouble.</p>
+<p>In fact, two different proxies might mess with any given leg of the journey. There could be a proxy that handles the traffic as it leaves one server (<em>outbound</em>) as well as one that intercepts traffic arriving at the destination (<em>inbound</em>).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -420,13 +426,13 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>I’ve made up the terms inbound and outbound.</p>
-<p>Traditionally, proxies are classified as <em>forward</em> or <em>reverse</em>. They’re classified as if you’re a host inside the private network, so inbound proxies are reverse and outbound ones are forward. I find it nearly impossible to remember which is which. I started using inbound and outbound to keep myself clear, and I’ve always been understood on the first try. I recommend you do the same.</p>
+<p>Inbound and outbound are terms I’ve chosen.</p>
+<p>Traditionally, proxies are classified as <em>reverse</em> or <em>forward</em> as if you’re a host inside the private network, with inbound proxies called reverse and outbound ones called forward. I found that nearly impossible to remember and started using inbound and outbound. I find it much easier to remember and IT/Admins always understand what I mean.</p>
 </div>
 </div>
 <p><img src="images/proxy-dir.png" class="img-fluid" alt="Inbound/Reverse proxies handle traffic into the private network. Outbound/Forward proxies handle traffic going out." width="600"></p>
-<p>The first step in debugging networking issues is to ask whether there might be a proxy in the middle. You can jumpstart that discussion by clearly describing the path of the traffic so the IT/Admin can consider whether there’s a proxy in the way.</p>
-<p>People often get tripped up in this, especially when using their laptop to access a server. When you’re accessing a data science project running on a server, the only inbound traffic to the private network is the connection from your laptop to the server. Code that runs on the server can only generate outbound traffic. So nearly all the traffic you care about is outbound, including package installation, making API calls in your code with <code>{requests}</code> or <code>{httr}</code>, connecting to a git repo, or connecting to data sources.</p>
+<p>The first step in debugging networking issues is to ask whether one or more proxies might be in the middle. You can jumpstart that discussion by clearly describing where the traffic originates, where it’s going, the protocol it’s using, and the port it’s targeting.</p>
+<p>People often get tripped up on where the traffic originates and terminates, especially when using their laptop to access a server. When you’re accessing a data science project running on a server, the only inbound traffic to the private network is the connection from your laptop to the server. Code that runs on the server can only generate outbound traffic. So nearly all the traffic you care about is outbound, including package installation, making API calls in your code with <code>{requests}</code> or <code>{httr}</code>, connecting to a Git repo, or connecting to data sources.</p>
 <section id="issues-with-inbound-proxies" class="level3" data-number="15.3.1">
 <h3 data-number="15.3.1" class="anchored" data-anchor-id="issues-with-inbound-proxies"><span class="header-section-number">15.3.1</span> Issues with inbound proxies</h3>
 <p>Almost all private networks feature inbound proxies that handle traffic coming in from the internet. This can cause problems in a data science environment if everything isn’t configured correctly.</p>
@@ -440,29 +446,29 @@ What ports do I need?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>One of the first questions IT/Admins ask is what ports need to be open in the proxy.</p>
-<p>Database traffic often runs using non-HTTP traffic to special ports. For example, Postgres runs on port <span class="math inline">\(5432\)</span>. However, your database traffic should probably all occur inside the private network and this won’t be an issue.</p>
+<p>One of the first questions IT/Admins ask is what ports must be open in the proxy.</p>
+<p>Database traffic often runs using non-HTTP traffic to special ports. For example, Postgres runs on port <span class="math inline">\(5432\)</span>. However, your database traffic should probably all occur inside the private network so this won’t be an issue.</p>
 <p>Almost other traffic, including package downloads, is standard HTTP(S) traffic, so it can happily run over <span class="math inline">\(80\)</span> or <span class="math inline">\(443\)</span>.</p>
 </div>
 </div>
-<p>Inbound redirection issues can be quite hairy to debug. Very often, these issues arise because the application you’re using expects to be able to redirect you back to itself. If the proxy isn’t configured quite correctly, everything can break in really funky ways.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> This is particularly likely to show up when starting new sessions or launching something from inside the platform. Usually, your application will have an admin guide that includes directions on how to host it behind a proxy. You should confirm with your admin those steps have been followed.</p>
-<p>Proxies also often impose file size limits and/or session duration timeouts. If weird things are happening during file uploads or downloads or sessions ending unexpectedly, checking on inbound proxy settings is a good first step.</p>
-<p>Some data science app frameworks, including Shiny and Streamlit, use a technology called <em>websockets</em> for maintaining the connection between the user and the app session. Most modern proxies support websockets, but some older on-prem proxies don’t, and you may have to figure out a workaround if you can’t get websockets enabled on your proxy.</p>
+<p>Inbound redirection issues can be hairy to debug. Very often, these issues arise because the application you’re using (say, JupyterHub or RStudio) expects to be able to redirect you back to itself. If the proxy isn’t configured correctly, the service will start and run just fine, but certain user interactions won’t work the way you expect.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> This will likely surface upon starting new sessions or launching something (like an app or doc) inside the platform. Your application should have an admin guide with directions on hosting it behind a proxy. Confirm with your admin that those steps have been followed.</p>
+<p>Proxies also often impose file size limits and/or session duration timeouts. If weird things happen during file uploads or downloads, or sessions end unexpectedly, start by checking on the inbound proxy settings.</p>
+<p>Some data science app frameworks, including Shiny and Streamlit, use a technology called <em>websockets</em> to maintain the connection between the user and the app session. Most modern proxies support websockets, but since some older on-prem proxies don’t, you may have to figure out a workaround if you can’t get websockets enabled on your proxy.</p>
 </section>
 </section>
-<section id="airgapping-with-outbound-proxies" class="level2" data-number="15.4">
-<h2 data-number="15.4" class="anchored" data-anchor-id="airgapping-with-outbound-proxies"><span class="header-section-number">15.4</span> Airgapping with outbound proxies</h2>
-<p>Unlike inbound proxies, which occur on virtually every enterprise private network, outbound proxies generally only occur when the IT/Admin team needs to restrict the ability of people to go outside. This can be necessary to avoid data exfiltration or to ensure that users only acquire resources that have been explicitly allowed into the environment.</p>
-<p>Environments with limited outbound access are called <em>offline</em> or <em>airgapped</em>. The term airgap originates with machines that are physically disconnected from the outside world with a literal air gap, but truly airgapped networks are very rare. In most cases, airgapping is accomplished by putting in an outbound proxy that disallows (nearly) all connections.</p>
-<p>The biggest issue in an airgapped environment is that you can’t install anything from the outside, including Python and R packages. You will be to make sure your IT/Admin understands that you cannot do your job without a way to work with packages. There’s more on managing packages in an airgapped environment in <a href="3-4-ent-pm.html">Chapter&nbsp;<span>18</span></a>.</p>
-<p>Additionally, your IT/Admin will have to figure out how they’re going to manage operating system updates, system library installations, and licensing any paid software that’s inside the environment.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> They likely already have solutions that might include some sort of transfer system, internal repositories, and/or temporarily opening the firewall.</p>
+<section id="air-gapping-with-outbound-proxies" class="level2" data-number="15.4">
+<h2 data-number="15.4" class="anchored" data-anchor-id="air-gapping-with-outbound-proxies"><span class="header-section-number">15.4</span> Air gapping with outbound proxies</h2>
+<p>Unlike inbound proxies, which appear in virtually every enterprise private network, outbound proxies are only used when there is a need to restrict traffic from leaving the private network. This can be necessary to avoid data exfiltration or to ensure that users only acquire resources that have been explicitly allowed into the environment.</p>
+<p>Environments with limited outbound access are called <em>offline</em> or <em>air gapped</em>. The term air gap originates from before ubiquitous wireless connections and referred to a literal gap of air where a network cable might otherwise be. These days, truly air gapped networks are very rare and air gapping is usually accomplished by routing outbound traffic to an outbound proxy that disallows (nearly) all connections.</p>
+<p>The biggest issue in an air gapped environment is that you can’t access anything outside the network, including public repositories of Python and R packages. You will be to make sure your IT/Admin understands that you cannot do your job without a way to work with packages. There’s more on managing packages in an air gapped environment in <a href="3-4-ent-pm.html">Chapter&nbsp;<span>18</span></a>.</p>
+<p>Your IT/Admin must also determine how to manage operating system updates, system library installations, and licensing of any paid software inside the environment.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> They likely already have solutions that include a data transfer system, internal repositories, and/or temporarily opening the firewall.</p>
 </section>
 <section id="comprehension-questions" class="level2" data-number="15.5">
 <h2 data-number="15.5" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">15.5</span> Comprehension Questions</h2>
 <ol type="1">
-<li>What is the advantage of adopting a more complex networking setup than a server just deployed directly on the internet? Are there advantages other than security?</li>
+<li>What is the advantage of adopting a more complex networking setup over a server deployed directly on the internet? Are there advantages other than security?</li>
 <li>Draw a mental map with the following entities: inbound traffic, outbound traffic, proxy, private subnet, public subnet, VPC</li>
-<li>Let’s say you’ve got a private VPC that hosts an instance of RStudio Server, an instance of JupyterHub, and a Shiny Server that has an app deployed. Here are a few examples of traffic – are they outbound, inbound, or within the network?
+<li>Let’s say you’ve got a private VPC that hosts an instance of RStudio Server, JupyterHub, and Shiny Server with an app deployed. Here are a few examples of traffic. Are they outbound, inbound, or within the network?
 <ol type="1">
 <li><p>Someone connecting to and starting a session on RStudio Server.</p></li>
 <li><p>Someone SFTP-ing an app and packages from RStudio Server to Shiny Server.</p></li>
@@ -485,10 +491,10 @@ What ports do I need?
 <p>Don’t try to remember this. There are online CIDR block calculators if you ever need to create them.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>The public subnet usually hosts at least two proxies – one to handle regular HTTP(S) traffic and one just to route SSH traffic to hosts in the private network. The SSH proxy is often called a <em>bastion host</em> or <em>jump box</em>.</p>
 <p>There are also network infrastructure devices to translate public and private IP addresses back and forth that go alongside the proxies. Private subnets have a device that only allows outbound traffic called a <em>NAT (Network Address Translation) Gateway</em> by AWS. Public subnets have a two-way device called an <em>Internet Gateway</em> by AWS.</p>
-<p>It’s also very common to actually have 4 subnets and duplicate the public/private subnet configuration across two availability zones to be resilient to failures in one availability zone.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>For example, remember those headers we had to add to traffic to RStudio Server in Chapters <a href="../sec2/2-6-networking.html"><span>Chapter&nbsp;12</span></a> and <a href="../sec2/2-8-ssl.html"><span>Chapter&nbsp;14</span></a> so it knew it was on a subpath and on HTTPS.</p>
-<p>This can be particularly gnarly if your proxy also does authentication. If your proxy expects that ever request has credentials attached, but your application doesn’t realize it has to go through the proxy, weird behavior can ensue.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>Licenses are often applied by reaching out to a license server owned by the software vendor.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<p>It’s also very common to have 4 subnets and duplicate the public/private subnet configuration across two availability zones to be resilient to failures in one availability zone.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>For example, remember those headers we had to add to traffic to RStudio Server in <a href="../sec2/2-6-networking.html">Chapter&nbsp;<span>12</span></a> and <a href="../sec2/2-8-ssl.html">Chapters&nbsp;<span>14</span></a> so it knew it was on a subpath and on HTTPS.</p>
+<p>This can be particularly gnarly if your proxy also does authentication. If your proxy expects that every request has credentials attached, but your application doesn’t realize it has to go through the proxy, weird behavior can ensue when your application calls itself via HTTP.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>In online neworks, licenses are often applied by reaching out to a license server owned by the software vendor.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

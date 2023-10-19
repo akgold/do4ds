@@ -363,7 +363,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
   <ul class="collapse">
   <li><a href="#application-configuration" id="toc-application-configuration" class="nav-link" data-scroll-target="#application-configuration"><span class="header-section-number">10.1.1</span> Application configuration</a></li>
   <li><a href="#where-to-find-application-files" id="toc-where-to-find-application-files" class="nav-link" data-scroll-target="#where-to-find-application-files"><span class="header-section-number">10.1.2</span> Where to find application files</a></li>
-  <li><a href="#configuration-with-vim-and-nano" id="toc-configuration-with-vim-and-nano" class="nav-link" data-scroll-target="#configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Configuration with <code>vim</code> and <code>nano</code></a></li>
+  <li><a href="#configuration-with-vim-and-nano" id="toc-configuration-with-vim-and-nano" class="nav-link" data-scroll-target="#configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Configuration with Vim and Nano</a></li>
   </ul></li>
   <li><a href="#reading-logs" id="toc-reading-logs" class="nav-link" data-scroll-target="#reading-logs"><span class="header-section-number">10.2</span> Reading logs</a></li>
   <li><a href="#running-the-right-commands" id="toc-running-the-right-commands" class="nav-link" data-scroll-target="#running-the-right-commands"><span class="header-section-number">10.3</span> Running the right commands</a></li>
@@ -412,12 +412,12 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>The last few chapters have focused on how to run a Linux server. But you don’t really care about running a Linux server – you care about doing data science. To do that, you’ll need to run applications.</p>
-<p>In this chapter, you’ll learn a little about how to install and administer applications on a Linux server, as well as specific pointers for data science tools like R, Python, and the system packages they use.</p>
+<p>The last few chapters have focused on how to run a Linux server. But you don’t care about running a Linux server – you care about doing data science on a server. That means you’ll need the know-how to run data science applications like JupyterHub, RStudio, R, Python, and more.</p>
+<p>In this chapter, you’ll learn how to install and administer applications on a Linux server and pointers for managing data science tools like R, Python, and the system packages they use.</p>
 <section id="linux-app-install-config" class="level2" data-number="10.1">
 <h2 data-number="10.1" class="anchored" data-anchor-id="linux-app-install-config"><span class="header-section-number">10.1</span> Linux app install + config</h2>
-<p>You can install applications to Linux from a distro-specific repository, much like the app store for your phone, or you can just download the application from the internet and install it locally.</p>
-<p>For Ubuntu, the <code>apt</code> command is used for interacting with repositories of <code>.deb</code> files. For CentOS and RedHat, the <code>yum</code> command is used for installing <code>.rpm</code> files.</p>
+<p>The first step to running applications on a server is installing them. Most software you install will come from system repositories. Your system will have several default repositories; you can add others to install software from non-default repositories.</p>
+<p>For Ubuntu, the <code>apt</code> command is used for interacting with repositories of <code>.deb</code> files. The <code>yum</code> command is used for installing <code>.rpm</code> files on CentOS and Red Hat.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -431,14 +431,14 @@ Note
 <p>The examples below are all for Ubuntu, since that’s what we are using in the labs for this book. Conceptually, using <code>yum</code> is very similar, though the exact commands differ somewhat.</p>
 </div>
 </div>
-<p>In addition to installing packages, <code>apt</code> is also the utility for ensuring the lists of available packages you have are up to date with <code>update</code> and that all packages on your system are at their latest version with <code>upgrade</code>. When you find Ubuntu commands online, it’s common to see them prefixed with <code>apt-get update &amp;&amp; apt-get upgrade -y</code>. The <code>-y</code> flag bypasses a manual confirmation step.</p>
-<p>Packages are installed with <code>apt-get install &lt;package&gt;</code>. Depending on which user you are, you may need to prefix the command with <code>sudo</code>.</p>
-<p>Much of the software you’re installing will come from the default system repositories. You may have to add extra repositories to install software in non-default repositories. Some packages may not live in system repositories at all. To install that software, you will download a file on the command line, usually with <code>wget</code>, and then install the software from the file, often with <code>gdebi</code>.</p>
+<p>On Ubuntu, packages are installed with <code>apt-get install &lt;package&gt;</code>. Depending on your user, you may need to prefix the command with <code>sudo</code>.</p>
+<p>In addition to installing packages, <code>apt</code> is also the utility for ensuring the lists of available packages you have are up to date with <code>update</code> and that all packages on your system are at their latest version with <code>upgrade</code>. When you find Ubuntu commands online, it’s common to see them prefixed with <code>apt-get update &amp;&amp; apt-get upgrade -y</code> to update all system packages to the latest version. The <code>-y</code> flag bypasses a manual confirmation step.</p>
+<p>Some packages may not live in system repositories at all. To install that software, you will download a file on the command line, usually with <code>wget</code>, and then install the software from the file, often with <code>gdebi</code>.</p>
 <section id="application-configuration" class="level3" data-number="10.1.1">
 <h3 data-number="10.1.1" class="anchored" data-anchor-id="application-configuration"><span class="header-section-number">10.1.1</span> Application configuration</h3>
-<p>Once you’ve installed an application, it will generally require some configuration, such as display defaults, the set of users allowed in, or the frequency something updates.</p>
-<p>On your personal computer, you’d probably find the setting in a series of dropdown menus at the top of the screen. On a server, no such menu exists.</p>
-<p>For applications running on your server, application behavior is usually configured through one or more <em>config files</em>. For applications hosted inside a Docker Container, behavior is often configured with environment variables, sometimes in addition to config files.</p>
+<p>Most applications require some configuration after they’re installed. Configuration may include connecting to auth soures, setting display and access controls, or configuring networking. You’d probably find the setting in menus on your personal computer. On a server, no such menu exists.</p>
+<p>Application behavior is usually configured through one or more <em>config files</em>. For applications hosted inside a Docker Container, behavior is often configured with environment variables, sometimes in addition to config files.</p>
+<p>The application you’re running will have documentation on how to set different configuration options. That documentation is probably dry and boring, but reading it will put you ahead of most people trying to administer the application.</p>
 </section>
 <section id="where-to-find-application-files" class="level3" data-number="10.1.2">
 <h3 data-number="10.1.2" class="anchored" data-anchor-id="where-to-find-application-files"><span class="header-section-number">10.1.2</span> Where to find application files</h3>
@@ -451,26 +451,38 @@ Note
 <p>This means that on a Linux server, the files for a particular application probably don’t all live in the same directory. Instead, you might run the application from the executable in <code>/opt</code>, configure it with files in <code>/etc</code>, and troubleshoot from logs in <code>/var</code>.</p>
 </section>
 <section id="configuration-with-vim-and-nano" class="level3" data-number="10.1.3">
-<h3 data-number="10.1.3" class="anchored" data-anchor-id="configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Configuration with <code>vim</code> and <code>nano</code></h3>
-<p>Obviously, if you’re administering applications on a server, you’ll need to spend a fair bit of time editing text files. Unlike on your personal computer, where you click a text file to open and edit it, you’ll need to work with a <em>command line text editor</em> when you’re working on a server.</p>
-<p>There are two command line text editors you’ll probably encounter: <code>nano</code> and <code>vi</code>/<code>vim</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> While they’re both powerful text editing tools, they can also be intimidating if you’ve never used them before.</p>
-<p>You can open a file by typing <code>nano &lt;filename&gt;</code> or <code>vi &lt;filename&gt;</code>.</p>
-<p>At this point many newbie command line users find themselves completely stuck, unable to do anything – even just to exit and try again. But don’t worry, there’s a way out of this labyrinth.</p>
-<p>If you opened nano, there will be some helpful-looking prompts at the bottom. You’ll see that once you’re ready to go, you can exit with <code>^x</code>. But the <code>^</code> isn’t actually the caret character. On Windows, <code>^</code> is short for <code>Ctrl</code> and on Mac it’s for Command (<code>⌘</code>), so <code>Ctrl+x</code> or <code>⌘+x</code> will exit.</p>
-<p>Where nano gives you helpful – if obscure – hints, a first experience in vim is the stuff of command line nightmares. You’ll type words and they won’t appear onscreen. Instead, you’ll experience dizzying jumps around the page and words and lines of text will disappear without a trace.</p>
-<p>This is because vim uses the letter keys not just to type, but also to navigate the page and interact with vim itself. You see, vim was created before keyboards uniformly had arrow keys.</p>
-<p>I’m going to give you a very brief intro to vim so you aren’t afraid, but vim is an extremely powerful text editor. Vim includes keyboard shortcuts, called <em>keybindings</em>, that make it very fast to move within and between lines and to select and edit text. The learning curve is steep, but I recommend printing a list of keybindings and spending some time getting comfortable. Most IDEs you might use, including RStudio, JupyterLab, and VSCode, have vim modes.</p>
-<p>When you enter <code>vim</code>, you’re in the (now poorly named) <em>normal mode</em>, which is for navigation only. Pressing the <code>i</code> key activates <em>insert mode</em>, which will feel normal for those of us used to arrow keys. In insert mode, words will appear when you type and the arrow keys will navigate you around the page.</p>
-<p>Once you’ve escaped, you may wish never to return to normal mode, but it’s the only way to save files and exit <code>vim</code>. You can return to normal mode with the <code>escape</code> key.</p>
-<p>To do file operations, you type a colon, <code>:</code>, followed by the shortcut for what you want to do, and <code>enter</code>. The two most common commands you’ll use are <code>w</code> for save (write) and <code>q</code> for quit. You can combine these together so you can save and quit in one command using <code>:wq</code>.</p>
-<p>Sometimes you may want to exit without saving or you may have opened and changed a file you don’t actually have permission to edit. If you’ve made changes and try to exit with <code>:q</code>, you’ll find yourself in an endless loop of warnings that your changes won’t be saved. You can tell <code>vim</code> you mean it with the exclamation mark, <code>!</code>, and exit using <code>:q!</code>.</p>
+<h3 data-number="10.1.3" class="anchored" data-anchor-id="configuration-with-vim-and-nano"><span class="header-section-number">10.1.3</span> Configuration with Vim and Nano</h3>
+<p>Since application configuration is in text files, you’ll spend a fair bit of time editing text files to administer applications. Unlike on your personal computer, where you click a text file to open and edit it, you’ll need to work with a <em>command line text editor</em> when you’re working on a server.</p>
+<p>There are two command line text editors you’ll probably encounter: <em>Nano</em> and <em>Vim</em>. While they’re both powerful text editing tools, they can also be intimidating if you’ve never used them.</p>
+<p>You can open a file by typing <code>nano &lt;filename&gt;</code> or <code>vim &lt;filename&gt;</code>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Depending on your system, you may have Vi in place of Vim. Vi is the original fullscreen text editor for Linux. Vim is its successor (Vim stands for Vi improved). The only difference germane to this section is that you open Vi with <code>vi &lt;filename&gt;</code>.</p>
+</div>
+</div>
+<p>When you open Nano, some helpful-looking prompts will be at the bottom of the screen. You’ll see that you can exit with <code>^x</code>. But should you try to type that, you’ll discover the <code>^</code> isn’t the caret character. On Windows, <code>^</code> is short for <code>Ctrl</code>; on Mac, it’s for Command (<code>⌘</code>), so <code>Ctrl+x</code> or <code>⌘+x</code> will exit.</p>
+<p>Where Nano gives you helpful – if obscure – hints, a first experience with Vim is the stuff of computer nightmares. You’ll type words, and they won’t appear onscreen. Instead, you’ll experience dizzying jumps around the page. Words and entire lines of text will disappear without a trace.</p>
+<p>Many newbie command line users would now be unable to do anything – even to exit and try again. But don’t worry; there’s a way out of this labyrinth. This happens because Vim uses the letter keys to navigate the page, interact with Vim itself, and type words. You see, Vim was created before keyboards uniformly had arrow keys.</p>
+<p>Vim is an extremely powerful text editor. Vim includes keyboard shortcuts, called <em>keybindings</em>, that make it fast to move within and between lines and to select and edit text. The learning curve is steep, but I recommend posting a list of keybindings beside your desk and getting comfortable. Most IDEs you might use, including RStudio, JupyterLab, and VSCode, have vim modes. This introduction will be just enough to get you in and out of Vim successfully.</p>
+<p>When you enter Vim, you’re in the (now poorly named) <em>normal mode</em>, which is for navigation only. Pressing the <code>i</code> key activates <em>insert mode</em>, which will feel normal for those used to arrow keys. In insert mode, words will appear when you type, and the arrow keys will navigate you around the page.</p>
+<p>Once you’ve escaped, you may wish never to return to normal mode, but it’s the only way to save files and exit Vim. You can return to normal mode with the <code>escape</code> key.</p>
+<p>To do file operations, you type a colon, <code>:</code>, followed by the shortcut for what you want to do, and <code>enter</code>. The two most common commands you’ll use are <code>w</code> for save (write) and <code>q</code> for quit. You can combine these to save and quit in one command using <code>:wq</code>.</p>
+<p>Sometimes, you may want to exit without saving, or you may have opened and changed a file you don’t have permission to edit. If you’ve made changes and try to exit with <code>:q</code>, you’ll find yourself in an endless loop of warnings that your changes won’t be saved. You can tell Vim you mean it with the exclamation mark, <code>!</code>, and exit using <code>:q!</code>.</p>
 </section>
 </section>
 <section id="reading-logs" class="level2" data-number="10.2">
 <h2 data-number="10.2" class="anchored" data-anchor-id="reading-logs"><span class="header-section-number">10.2</span> Reading logs</h2>
-<p>Once your applications are up and running, you may run into issues. Even if you don’t, you may want to take a look at how things are going.</p>
-<p>Most applications write their logs into somewhere inside the <code>/var</code> directory. Some activities will get logged to the main log at <code>/var/log/syslog</code>. Other things may get logged to <code>/var/log/&lt;application name&gt;</code> or <code>/var/lib/&lt;application name&gt;</code>.</p>
-<p>It’s important to get comfortable with the commands to read text files so you can examine logs (and other files). The commands I use most commonly are:</p>
+<p>Once your applications are up and running, you may run into issues. Even if you don’t, you may want to examine how things are going.</p>
+<p>Most applications write their logs somewhere inside the <code>/var</code> directory. Some activities will get logged to the main log at <code>/var/log/syslog</code>. Other things may get logged to <code>/var/log/&lt;application name&gt;</code> or <code>/var/lib/&lt;application name&gt;</code>.</p>
+<p>It’s essential to get comfortable with the commands to read text files so you can examine logs (and other files). The commands I use most commonly are:</p>
 <ul>
 <li><p><code>cat</code> prints a whole file, starting at the beginning.</p></li>
 <li><p><code>less</code> prints a file, starting at the beginning, but only a few lines at a time.</p></li>
@@ -481,12 +493,12 @@ Note
 </ul></li>
 </ul>
 <p>Sometimes you want to search around inside a text file. You’re probably familiar with the power and hassle of <em>regular expressions (regex)</em> to search for specific character sequences in text strings. The Linux command <code>grep</code> is the main regex command.</p>
-<p>In addition to searching in text files, <code>grep</code> is often useful in combination with other commands. For example, it’s often useful to put the output of <code>ls</code> into <code>grep</code> to search for a particular file in a big directory using the pipe.</p>
+<p>In addition to searching in text files, <code>grep</code> is often helpful in combination with other commands. For example, you may want to put the output of <code>ls</code> into <code>grep</code> to search for a particular file in a big directory using the pipe.</p>
 </section>
 <section id="running-the-right-commands" class="level2" data-number="10.3">
 <h2 data-number="10.3" class="anchored" data-anchor-id="running-the-right-commands"><span class="header-section-number">10.3</span> Running the right commands</h2>
 <p>Let’s say you want to open Python on your command line. One option would be to type the absolute path to a Python install every time. For example, I’ve got a version of Python in <code>/usr/bin</code>, so <code>/usr/bin/python3</code> works.</p>
-<p>But in most cases, it’s nice to just type <code>python3</code> and have the right version open up.</p>
+<p>But in most cases, it’s nice to type <code>python3</code> and have the correct version open up.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -497,7 +509,7 @@ Note
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">Type</span> <span class="st">"help"</span>, <span class="st">"copyright"</span>, <span class="st">"credits"</span> or <span class="st">"license"</span> for more information.</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Sometimes you might want to go the other way. Maybe <code>python3</code> correctly opens Python, but you’re not sure where it’s located. You can use the <code>which</code> command to identify the actual executable for a command. For example this is the result of <code>which python3</code> on my system.</p>
+<p>Sometimes you might want to go the other way. Maybe <code>python3</code> opens Python correctly, but you’re unsure where it’s located. You can use the <code>which</code> command to identify the actual executable for a command. For example this is the result of <code>which python3</code> on my system.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -505,9 +517,9 @@ Note
 <div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> which <span class="ex">python3</span>                                                    </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/usr/bin/python3</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>In some cases, you will need to make a program available without providing a full path every time. Certain applications rely on other programs being available, like RStudio Server needing to find R or Jupyter Notebook finding your Python kernels.</p>
-<p>The operating system knows how to find executables on the system via the <em>path</em>. The path is a set of directories that the system knows to search when it tries to run a program. The path is stored in an environment variable, conveniently named <code>PATH</code>.</p>
-<p>You can check your path at any time with <code>echo $PATH</code>. On my MacBook, this is what the path looks like.</p>
+<p>Sometimes, you must make a program available without providing a full path every time. Some applications rely on others, like RStudio Server needing to find R or Jupyter Notebook needing your Python kernels.</p>
+<p>The operating system knows how to find executables via the <em>path</em>. The path is a set of directories that the system knows to search when it tries to run a program. The path is stored in an environment variable conveniently named <code>PATH</code>.</p>
+<p>You can check your path at any time with <code>echo $PATH</code>. On my MacBook, this is what it looks like.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -515,14 +527,14 @@ Note
 <div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;</span> echo <span class="va">$PATH</span>                                                      </span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>When you install a new piece of software you’ll need to add it to the path. Let’s say I installed a new version of Python in <code>/opt/python</code>. That’s not on my <code>PATH</code>, so my system wouldn’t be able to find it.</p>
+<p>When you install a new application, you must add it to the path. Let’s say I installed a new version of Python in <code>/opt/python</code>. That’s not on my <code>PATH</code>, so my system couldn’t find it.</p>
 <p>I can get it on the path in one of two ways. The first option would be to add <code>/opt/python</code> to my <code>PATH</code> every time a terminal session starts, usually via a file in <code>/etc</code> or the <code>.zshrc</code>.</p>
-<p>The other option is to create a <em>symlink</em> to the new application in a directory already on the <code>PATH</code>. A symlink does what it sounds like; it creates a way to link to a file from a different directory without moving it. Symlinks are created with the <code>ln</code> command.</p>
+<p>The other option is to create a <em>symlink</em> to the new application in a directory already on the <code>PATH</code>. A symlink makes it appear that a copy of a file is in a different location without actually moving it. Symlinks are created with the <code>ln</code> command.</p>
 </section>
 <section id="running-applications-as-services" class="level2" data-number="10.4">
 <h2 data-number="10.4" class="anchored" data-anchor-id="running-applications-as-services"><span class="header-section-number">10.4</span> Running applications as services</h2>
-<p>On your personal computer, you probably have programs that start every time your computer does. Maybe this happens for Slack, Microsoft Teams, or Spotify. Such applications that execute on startup and run in the background waiting for some sort of input are called a <em>daemon</em> or a <em>service</em>.</p>
-<p>On a server, most of the applications are configured to run as a service so they’re ready for users who may not have the permissions to start them. For example, on a data science workbench, you’d want JupyterHub and/or RStudio Server to run as a service.</p>
+<p>On your personal computer, you probably have programs that start every time your computer does. Maybe this happens for Slack, Microsoft Teams, or Spotify. Such applications that execute on startup and run in the background, waiting for input, are called a <em>daemon</em> or a <em>service</em>.</p>
+<p>Most server-based applications are configured to run as a service, so users can access them without needing permissions to start them first. For example, on a data science workbench, you’d want JupyterHub and/or RStudio Server to run as a service.</p>
 <p>In Linux, the tool to turn a regular application into a daemon is called <code>systemd</code>. Some applications automatically configure themselves with <code>systemd</code> when they’re installed. If your application doesn’t, or you want to alter the startup behavior, most applications have their <code>systemd</code> configuration in <code>/etc/systemd/system/&lt;service name&gt;.service</code>.</p>
 <p>Daemonized services are controlled using the <code>systemctl</code> command line tool.</p>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -538,64 +550,76 @@ Note
 <p>Basically all modern Linux distros have coalesced around using <code>systemd</code> and <code>systemctl</code>. Older systems may not have it installed by default and you may have to install it or use a different tool.</p>
 </div>
 </div>
-<p>The <code>systemctl</code> command has a set of sub-commands that are useful for working with applications. They look like <code>systemctl &lt;subcommand&gt; &lt;application&gt;</code>. Often <code>systemctl</code> has to be run as <code>sudo</code>, since you’re working with an application for all users of the system.</p>
-<p>The most useful <code>systemctl</code> commands include <code>start</code> and <code>stop</code>, <code>status</code> for checking whether a program is running or not, and <code>restart</code> for a <code>stop</code> followed by a <code>start</code>. Many applications also support a <code>reload</code> command, which reloads configuration settings without having to actually restart the process. Which settings require a <code>restart</code> vs a <code>reload</code> depends on the author of the application.</p>
+<p>The <code>systemctl</code> command has a set of sub-commands that are useful for working with applications. They look like <code>systemctl &lt;subcommand&gt; &lt;application&gt;</code>. Often <code>systemctl</code> has to be run as <code>sudo</code>, since you’re working with an application for all system users.</p>
+<p>The most useful <code>systemctl</code> commands include <code>start</code> and <code>stop</code>, <code>status</code> for checking whether a program is running, and <code>restart</code> for a <code>stop</code> followed by a <code>start</code>. Many applications also support a <code>reload</code> command, which reloads configuration settings without restartingt the process. Which settings require a <code>restart</code> vs a <code>reload</code> depends on the application.</p>
 <p>If you’ve changed a service’s <code>systemd</code> configuration, you can load changes with <code>daemon-reload</code>. You also can turn a service on or off for the next time the server starts with <code>enable</code> and <code>disable</code>.</p>
 <section id="running-docker-containers-as-a-service" class="level3" data-number="10.4.1">
 <h3 data-number="10.4.1" class="anchored" data-anchor-id="running-docker-containers-as-a-service"><span class="header-section-number">10.4.1</span> Running Docker Containers as a service</h3>
-<p>People love Docker Containers because they run basically anywhere. To run a container as a service, you’ll need to make sure Docker itself is daemonized and then ensure the container you care about comes up whenever Docker does by setting a <em>restart policy</em> for the container.</p>
-<p>However, many Docker services involve coordinating more than one container. If that’s the case, you’ll want to use a system that’s custom built for managing multiple containers. The most popular are <em>Docker Compose</em> or <em>Kubernetes</em>.</p>
-<p>Docker Compose is a relatively lightweight system that allows you to write a YAML file to describe the containers you need and the relationship between them. You can then use a single command to launch the entire set of Docker Containers.</p>
-<p>Docker Compose is fantastic for prototyping systems of Docker Containers and for running small-scale Docker-ized deployments on a single server. There are many great resources online to learn more about Docker Compose.</p>
+<p>People love Docker Containers because they easily run on most machines. To run a container as a service, you’ll need to make sure Docker itself is daemonized and then ensure the container you care about comes up whenever Docker does by setting a <em>restart policy</em> for the container.</p>
+<p>However, many Docker services involve coordinating more than one container. If so, you’ll want to use a purpose-built system for managing multiple containers. The most popular are <em>Docker Compose</em> or <em>Kubernetes</em>.</p>
+<p>Docker Compose is a relatively lightweight system that allows you to write a YAML file describing the containers you need and their relationship. You can then use a single command to launch the entire set of Docker Containers.</p>
+<p>Docker Compose is fantastic for prototyping systems of Docker Containers and for running small-scale Dockerized deployments on a single server. There are many great resources online to learn more about Docker Compose.</p>
 <p>Kubernetes is designed for a similar purpose, but instead of running a handful of containers on one server, Kubernetes is a heavy-duty production system designed to schedule up to hundreds or thousands of Docker-based workloads across a cluster of many servers.</p>
 <p>In general, I’d recommend sticking with Docker Compose for the work you’re doing. If you need the full might of Kubernetes to do what you want, you probably should be working closely with a professional IT/Admin</p>
 </section>
 </section>
 <section id="managing-r-and-python" class="level2" data-number="10.5">
 <h2 data-number="10.5" class="anchored" data-anchor-id="managing-r-and-python"><span class="header-section-number">10.5</span> Managing R and Python</h2>
-<p>As the admin of a data science server, Python and R are among of the most critical software you’ll manage.</p>
-<p>In general, the easiest path to making many users happy is having several versions of R and Python installed side-by-side. That way you can allow users to upgrade their version of R or Python as it works for their project, not according to your upgrade schedule.</p>
-<p>I’ve seen this work best by installing R and Python into the <code>/opt/python</code> and <code>/opt/R</code> directory. Users can grab them from there to create project-specific virtual environments. You’ll need to make sure the permissions on those directories are correct for this to work.</p>
-<p>This isn’t what will happen if you just <code>sudo apt-get install python</code> or <code>sudo apt-get install R</code>, so you’ll need to take a few more steps. My favorite route (though I’m obviously biased) is to install Python and R from the pre-built binaries provided by Posit.</p>
+<p>As the admin of a data science server, Python and R are probably the most critical applications you’ll manage.</p>
+<p>The easiest path to making many users happy is having several versions of R and Python installed side-by-side. That way, users can upgrade their version of R or Python as it works for their project, not according to your upgrade schedule.</p>
+<p>If you just <code>sudo apt-get install python</code> or <code>sudo apt-get install R</code>, you’ll end up with only one version of Python or R, which will get overwritten every time you re-run the command.</p>
 <section id="python-specific-considerations" class="level3" data-number="10.5.1">
 <h3 data-number="10.5.1" class="anchored" data-anchor-id="python-specific-considerations"><span class="header-section-number">10.5.1</span> Python-specific considerations</h3>
-<p>Python is one of the world’s most popular programming languages for general-purpose computing. This actually makes configuring Python <strong>harder</strong>. Getting Python up and running can be very frustrating, both on servers and your personal computer.</p>
-<p>Almost every system comes with a <em>system version</em> of Python. This is the version of Python that’s used by the operating system for various tasks. It’s almost always old and you really don’t want to mess with it.</p>
-<p>In order to configure Python for data science, you have to install the versions of Python you actually want to use, get them on the path, and get the system version of Python off the path.</p>
-<p>This is why it’s a good idea to install data science Python versions into <code>/opt/python</code>. It’s easy to add that one directory to the path, and it’s completely distinct from where the system Python lives.</p>
-<p>On your personal computer, Conda is a great solution for this problem. Conda allows you to install a standalone version of Python in <em>user-space</em>. That means you can install and manage versions of Python even if your organization doesn’t let you have admin rights on your computer.</p>
-<p>For the same reason, Conda isn’t a great choice for administering a data science server. You’re not a user – you’re an admin. Giving everyone on the server access to Python versions is generally easier without Conda.</p>
+<p>Python is one of the world’s most popular programming languages for general-purpose computing. This makes configuring Python <strong>harder</strong>. Getting Python up and running is famously frustrating on both servers and your personal computer.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Almost every system comes with a <em>system version</em> of Python. This is the version of Python the operating system uses for various tasks. It’s almost always old, and you don’t want to mess with it.</p>
+<p>To configure Python for data science, you have to install the versions of Python you want to use, get them on the path, and get the system version of Python off the path.</p>
+<p>Installing data science Python versions into <code>/opt/python</code> makes this simpler. Managing versions of Python somewhere wholly distinct from the system Python removes some headaches, and adding a single directory to the path is easy.</p>
+<p>My favorite route (though I’m biased) is to install Python from the pre-built binaries provided by Posit.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A Note on Conda
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Conda is an excellent solution for managing data science Python versions on your personal computer. Conda allows you to install a standalone version of Python in <em>user space</em>. That means you can install and manage versions of Python even if your organization doesn’t let you have admin rights on your computer.</p>
+<p>For the same reason, Conda isn’t as good for administering a data science server. You’re not a user – you’re an admin. Configuring server-wide data science versions of Python is more straightforward without Conda.</p>
+</div>
+</div>
 </section>
 <section id="r-specific-considerations" class="level3" data-number="10.5.2">
 <h3 data-number="10.5.2" class="anchored" data-anchor-id="r-specific-considerations"><span class="header-section-number">10.5.2</span> R-specific considerations</h3>
-<p>Generally, people only ever install R to do data science so where you install R is usually not a big issue. If you want just one version of R, using <code>apt-get install</code> is fine.</p>
-<p>If you want multiple versions, you’ll need to manually install them (I recommend <code>/opt/R</code>) or use <code>rig</code>, which is a great R-specific installation manager that supports Windows, Mac, and Ubuntu.</p>
+<p>Generally, people only install R to do data science, so where you install R is usually not a big issue. Using <code>apt-get install</code> is fine if you know you’ll only ever want one version of R.</p>
+<p>If you want multiple versions, you’ll need to install them manually. I recommend installing into <code>/opt/R</code> with binaries provided by Posit or using <code>rig</code>, a great R installation manager that supports Windows, Mac, and Ubuntu.</p>
 </section>
 </section>
 <section id="managing-system-libraries" class="level2" data-number="10.6">
 <h2 data-number="10.6" class="anchored" data-anchor-id="managing-system-libraries"><span class="header-section-number">10.6</span> Managing System Libraries</h2>
 <p>As an admin, you’ll also have to decide what to do about <em>system packages</em>, which are Linux libraries you install from a Linux repository or the internet.</p>
-<p>Many packages in Python and R don’t do any work themselves. Instead, they’re just language-specific interfaces to system packages. For example, any R or Python library that uses a JDBC database connector will need to make use of Java on your system. And many geospatial libraries make use of system packages like GDAL.</p>
-<p>As the administrator, you’ll need to make sure you understand what system libraries are needed for the Python and R packages you’re using. You’ll also need to make sure they’re available and on the path.</p>
-<p>For many of these libraries, it’s not a huge problem. You’ll just install the required library using <code>apt</code> or the system package manager for your distro. In some cases (especially Java), more configuration may be required to ensure that the package you need shows up on the path.</p>
-<p>Some admins with sophisticated requirements around versions of system libraries make use of Docker Containers or Linux <em>Environment Modules</em> to keep system libraries linked to projects.</p>
+<p>Many packages in Python and R don’t do any work themselves. Instead, they’re just language-specific interfaces to system packages. For example, any R or Python library that uses a JDBC database connector must use Java on your system. And many geospatial libraries make use of system packages like GDAL.</p>
+<p>As the administrator, you must understand the system libraries required for your Python and R packages. You’ll also need to ensure they’re available and on the path.</p>
+<p>For many of these libraries, it’s not a huge problem. You’ll install the required library using <code>apt</code> or the system package manager for your distro. In some cases (especially Java), more configuration may be necessary to ensure that the system package you need appears on the path when your code runs.</p>
+<p>Some admins with sophisticated requirements around system library versions use Docker Containers or Linux <em>Environment Modules</em> to keep system libraries linked to projects.</p>
 </section>
 <section id="comprehension-questions" class="level2" data-number="10.7">
 <h2 data-number="10.7" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">10.7</span> Comprehension Questions</h2>
 <ol type="1">
-<li>What are two different ways to install Linux applications and what are commands to do so?</li>
+<li>What are two different ways to install Linux applications, and what are the commands?</li>
 <li>What does it mean to daemonize a Linux application? What programs and commands are used to do so?</li>
-<li>How do you know if you’ve opened <code>nano</code> or <code>vim</code>? How would you exit them if you didn’t mean to?</li>
-<li>What are 4 commands to read text files?</li>
+<li>How do you know if you’ve opened Nano or Vim? How would you exit them if you didn’t mean to?</li>
+<li>What are four commands to read text files?</li>
 <li>How would you create a file called <code>secrets.txt</code>, open it with vim, write something in, close and save it, and make it so that only you can read it?</li>
 </ol>
 </section>
 <section id="lab-installing-applications" class="level2" data-number="10.8">
 <h2 data-number="10.8" class="anchored" data-anchor-id="lab-installing-applications"><span class="header-section-number">10.8</span> Lab: Installing Applications</h2>
-<p>As we’ve started to administer our server, we’ve mostly been doing very generic server administration tasks. Now let’s set up the applications we need to run a data science workbench and get our API and Shiny app set up.</p>
+<p>As we’ve started to administer our server, we’ve mostly been doing generic server administration tasks. Now, let’s set up the applications we need to run a data science workbench and get our API and Shiny app set up.</p>
 <section id="step-1-install-python" class="level3" data-number="10.8.1">
 <h3 data-number="10.8.1" class="anchored" data-anchor-id="step-1-install-python"><span class="header-section-number">10.8.1</span> Step 1: Install Python</h3>
-<p>Let’s start by installing a data science version of Python so we’re not using the system Python for data science purposes.</p>
+<p>Let’s start by installing a data science version of Python, so we’re not using the system Python for data science purposes.</p>
 <p>If you want just one version of Python, you can <code>apt-get install</code> a specific version. As of this writing, Python 3.10 is a relatively new version of Python, so we’ll install that one with</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -603,23 +627,23 @@ Note
 </div>
 <div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install python3.10-venv</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Once you’ve installed Python, you can check that you’ve got the right version by running</p>
+<p>Once you’ve installed Python, you can check that you’ve got the correct version by running</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
 </div>
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">--version</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>This method, using <code>apt-get</code>, is great when you just want one version of Python. But if you want multiple versions sitting side by side, you’ll need to do something else. I recommend installing using the instructions on the Posit website, which will involve downloading and installing from <code>.deb</code> files.</p>
+<p>This route to installing Python is easy if you only want one version. If you want to enable multiple versions of Python, <code>apt-get install</code>-ing Python isn’t the way to go.</p>
 </section>
 <section id="step-2-install-r" class="level3" data-number="10.8.2">
 <h3 data-number="10.8.2" class="anchored" data-anchor-id="step-2-install-r"><span class="header-section-number">10.8.2</span> Step 2: Install R</h3>
 <p>Since we’re using Ubuntu, we can use <code>rig</code>. There are good instructions on downloading <code>rig</code> and using it to install R on the <code>rlib/rig</code> GitHub repo. Use those instructions to install the current R release on your server.</p>
-<p>Once you’ve installed R on your server, you can check that it’s running by just typing <code>R</code> into the command line. If that works, you’re good to move on to the next step. If not, you’ll need to make sure R got onto the path.</p>
+<p>Once you’ve installed R on your server, you can check that it’s running by just typing <code>R</code> into the command line. If that works, you can move on to the next step. If not, you’ll need to ensure R got onto the path.</p>
 </section>
 <section id="step-3-install-jupyerhub-jupyterlab" class="level3" data-number="10.8.3">
 <h3 data-number="10.8.3" class="anchored" data-anchor-id="step-3-install-jupyerhub-jupyterlab"><span class="header-section-number">10.8.3</span> Step 3: Install JupyerHub + JupyterLab</h3>
-<p>JupyterHub and JupyterLab are Python programs, so we’re going to run them from within a Python virtual environment. I’d recommend putting that virtual environment inside <code>/opt/jupyterhub</code>.</p>
+<p>JupyterHub and JupyterLab are Python programs, so we will run them from within a Python virtual environment. I’d recommend putting that virtual environment inside <code>/opt/jupyterhub</code>.</p>
 <p>Here are the commands to create and activate a <code>jupyterhub</code> virtual environment in <code>/opt/jupyterhub</code>:</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -628,14 +652,14 @@ Note
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> python3 <span class="at">-m</span> venv /opt/jupyterhub</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> /opt/jupyterhub/bin/activate</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now we’re going to get JupyterHub up and running inside the virtual environment we just created. JupyterHub has great docs (Google “JupyterHub quickstart”) to help you get up and running very quickly. If you must stop for any reason, make sure to come back, assume sudo, and start the JupyterHub virtual environment we created before continuing.</p>
+<p>Now we will get JupyterHub up and running inside the virtual environment we just created. JupyterHub has great docs (Google “JupyterHub quickstart”) to get up and running quickly. If you must stop for any reason, assume sudo and start the JupyterHub virtual environment we created when you return.</p>
 <p>Note that because we’re working inside a virtual environment, you may have to use the <code>jupyterhub-singleuser</code> version of the binary.</p>
 </section>
 <section id="step-4-daemonize-jupyterhub" class="level3" data-number="10.8.4">
 <h3 data-number="10.8.4" class="anchored" data-anchor-id="step-4-daemonize-jupyterhub"><span class="header-section-number">10.8.4</span> Step 4: Daemonize JupyterHub</h3>
 <p>Because JupyterHub is a Python process, not a system process, it won’t automatically get daemonized, so we’ll have to do it manually.</p>
 <p>We don’t need it right now, but it will be easier to manage JupyterHub later on from a config file that’s in <code>/etc/jupyterhub</code>. To do so, activate the <code>jupyterhub</code> virtual environment, create a default JupyterHub config (Google for the command), and move it into <code>/etc/jupyterhub/jupyterhub_config.py</code>.</p>
-<p>Now let’s move on to daemonizing JupyterHub. To start, kill the existing JupyterHub process (consult the cheatsheet in <a href="../append/cheatsheets.html">Appendix&nbsp;<span>D</span></a> if you need help). Since JupyterHub wasn’t automatically daemonized, you’ll have to manually create the systemd file.</p>
+<p>Now let’s move on to daemonizing JupyterHub. To start, kill the existing JupyterHub process (consult the cheatsheet in <a href="../append/cheatsheets.html">Appendix&nbsp;<span>D</span></a> if you need help). Since JupyterHub wasn’t automatically daemonized, you must create the <code>systemd</code> file manually.</p>
 <p>Here’s the file I created in <code>/etc/systemd/system/jupyterhub.service</code>.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
@@ -659,13 +683,13 @@ Note
 </section>
 <section id="step-5-install-rstudio-server" class="level3" data-number="10.8.5">
 <h3 data-number="10.8.5" class="anchored" data-anchor-id="step-5-install-rstudio-server"><span class="header-section-number">10.8.5</span> Step 5: Install RStudio Server</h3>
-<p>You can find the commands to install RStudio Server on the Posit website. Make sure to pick the version that matches your operating system. Since you’ve already installed R, you can skip down to the “Install RStudio Server” step.</p>
-<p>Unlike JupyterHub, RStudio Server does daemonize itself right out of the box, so you can check and control the status with <code>systemctl</code> without any further work.</p>
+<p>You can find the commands to install RStudio Server on the Posit website. Make sure to pick the version that matches your operating system. Since you’ve already installed R, skip to the “Install RStudio Server” step.</p>
+<p>Unlike JupyterHub, RStudio Server daemonizes itself right out of the box, so you can check and control the status with <code>systemctl</code> without further work.</p>
 </section>
 <section id="step-6-run-the-penguin-api-from-docker" class="level3" data-number="10.8.6">
 <h3 data-number="10.8.6" class="anchored" data-anchor-id="step-6-run-the-penguin-api-from-docker"><span class="header-section-number">10.8.6</span> Step 6: Run the penguin API from Docker</h3>
-<p>First, you’ll have to make sure that Docker itself is available on the system. It can be installed from <code>apt</code> using <code>apt-get install docker.io</code>. You may need to adopt <code>sudo</code> privileges to do so.</p>
-<p>Once Docker is installed, getting the API running is almost trivially easy using the command we used in <a href="../sec1/1-6-docker.html">Chapter&nbsp;<span>6</span></a> to run our container.</p>
+<p>First, you’ll have to ensure that Docker is available. It can be installed from <code>apt</code> using <code>apt-get install docker.io</code>. You may need to adopt <code>sudo</code> privileges to do so.</p>
+<p>Once Docker is installed, running the API is almost trivially easy using the command we used in <a href="../sec1/1-6-docker.html">Chapter&nbsp;<span>6</span></a> to run our container.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -679,13 +703,13 @@ Note
 </section>
 <section id="step-7-put-up-the-shiny-app" class="level3" data-number="10.8.7">
 <h3 data-number="10.8.7" class="anchored" data-anchor-id="step-7-put-up-the-shiny-app"><span class="header-section-number">10.8.7</span> Step 7: Put up the Shiny app</h3>
-<p>We’re going to use Shiny Server to host our Shiny app on the server. Start by moving the app code to the server. I put mine in <code>/home/test-user/do4ds-lab/app</code> by cloning the Git repo.</p>
+<p>We will use Shiny Server to host our Shiny app on the server. Start by moving the app code to the server. I put mine in <code>/home/test-user/do4ds-lab/app</code> by cloning the Git repo.</p>
 <p>After that, you’ll need to:</p>
 <ol type="1">
 <li>Open R or Python and rebuild the package library with <code>{renv}</code> or <code>{venv}</code>.</li>
 <li>Install Shiny Server using the instructions from the Shiny Server Admin Guide.
 <ul>
-<li>Note that you can skip steps to install R and/or Python, as well as the <code>{shiny}</code> package since we’ve already done that.</li>
+<li>Note that you can skip steps to install R and/or Python, and the <code>{shiny}</code> package since we’ve already done that.</li>
 </ul></li>
 <li>Edit Shiny Server’s configuration file to run the right app.</li>
 <li>Start and enable Shiny Server with <code>systemctl</code>.</li>
@@ -693,10 +717,10 @@ Note
 </section>
 <section id="lab-extensions" class="level3" data-number="10.8.8">
 <h3 data-number="10.8.8" class="anchored" data-anchor-id="lab-extensions"><span class="header-section-number">10.8.8</span> Lab Extensions</h3>
-<p>There are a few things you might want to consider before moving into the next chapter where we’ll start working on giving this server a stable public URL.</p>
-<p>First, we haven’t daemonized the API. Feel free to try Docker Compose or setting a restart policy for the container.</p>
-<p>Second, neither the API nor the Shiny app will automatically update when we make changes to them. You might want to set up a GitHub Action to do so. For Shiny Server, you’ll need to push the updates to the server and then restart Shiny Server. For the API, you’d need to configure a GitHub action to rebuild the container and push it to a registry. You’d then need to tell Docker on the server to re-pull and restart the container.</p>
-<p>Finally, there’s no authentication in front of our API. The API has pretty limited functionality, so that’s not a huge worry. But if you had an API with more functionality that might be a problem. Additionally, someone could try to flood your API with requests to make it unusable. The most common way to solve this is to buy a product that hosts the API for you or to put an authenticating proxy in front of the API. We’ll be adding NGINX soon, so you can try adding authentication later if you want.</p>
+<p>You might want to consider a few things before moving into the next chapter, where we’ll start working on giving this server a stable public URL.</p>
+<p>First, we haven’t daemonized the API. Feel free to try Docker Compose or set a restart policy for the container.</p>
+<p>Second, neither the API nor the Shiny app will automatically update when we change them. You might want to set up a GitHub Action to do so. For Shiny Server, you’ll need to push the updates to the server and then restart Shiny Server. For the API, you’d need to configure a GitHub action to rebuild the container and push it to a registry. You’d then need to tell Docker on the server to re-pull and restart the container.</p>
+<p>Finally, there’s no authentication in front of our API. The API has limited functionality, so that’s not a huge worry. But if you had an API with more functionality, that might be a problem. Additionally, someone could try to flood your API with requests to make it unusable. The most common way to solve this is to buy a product that hosts the API for you or to put an authenticating proxy in front of the API. We’ll be adding NGINX soon, so you can try adding authentication later.</p>
 
 
 </section>
@@ -704,7 +728,7 @@ Note
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p><code>vi</code> is the original fullscreen text editor for Linux. <code>vim</code> is its successor (<code>vim</code> stands for <code>vi</code> improved). I’m not going to worry about the distinction.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>See, for example, the XKCD comic titled Python Environment.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 

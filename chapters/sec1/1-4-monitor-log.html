@@ -394,32 +394,32 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>You get a call, a text, a slack. A bead of cold sweat runs down your back. Your entire world – it seems all your world has ever been – is your failed job or error-bound app, which the CEO needs <strong>right now</strong>.</p>
-<p>It didn’t have to be this way. You can’t control whether code will fail – it will. And you can’t ensure it will happen at a convenient time. But you can live in a world where you sleep soundly, assured that you’ll know when issues arise and that you’ll be able to figure out why.</p>
+<p>You get a call, a text, a Slack. A bead of cold sweat runs down your back. Your entire world – it seems all your world has ever been – is your failed job or error-bound app, which the CEO needs <strong>right now</strong>.</p>
+<p>It didn’t have to be this way. You can’t control whether code will fail – it will. And you can’t ensure it will happen at a convenient time. But you can live in a world where you sleep soundly, assured that you’ll know when issues arise and can figure out why.</p>
 <p>The key to living in that world is <em>observability</em>. If your code is observable, you’ll know when something goes wrong because you have enabled <em>monitoring</em> on the system and when you dig in, you’ll have <em>logging</em> that lets you reconstruct the pathway to failure.</p>
-<p>Beyond getting a good night’s sleep, making your work more observable can also help you demonstrate its value. Being able to show who is using your work and how can help decision makers understand that your team matters.</p>
-<p>There are two halves to observability – emitting the logs and metrics that reveal what’s going on inside your project and aggregating and consuming them. As a data scientist, you need to take on the task of emitting helpful logs and metrics for your code. In most cases, you’ll integrate with tooling your organization alread has for aggregation.</p>
-<p>In this chapter we’ll get into how to make your code observable. You’ll learn how to use tooling in R and Python to see what’s going on inside your data science project. I’ll also give you some specific tips about what I always monitor or log and how to consume and use the metrics and logs your project is now emitting.</p>
+<p>Beyond getting a good night’s sleep, making your work more observable can also help demonstrate its value. Being able to show who is using your work and how can help decision makers understand that your team matters.</p>
+<p>There are two halves to observability – emitting the logs and metrics that reveal what’s happening inside your project and aggregating and consuming them. As a data scientist, you need to take on the task of emitting helpful logs and metrics for your code. In most cases, you’ll integrate with tooling your organization already has for aggregation.</p>
+<p>In this chapter we’ll get into how to make your code observable. You’ll learn how to use tooling in R and Python to see what’s happening inside your data science project. I’ll also give you some specific tips about what I always monitor or log and how to consume and use the metrics and logs your project is now emitting.</p>
 <section id="observing-correctness" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="observing-correctness"><span class="header-section-number">4.1</span> Observing Correctness</h2>
-<p>Observability of general-purpose software is primarily concerned with the <em>operational</em> qualities of the software. A software engineer wants to know whether their software is using too much RAM or CPU, whether its fast enough, or whether its crashed.</p>
+<p>Observability of general-purpose software is primarily concerned with the <em>operational</em> qualities of the software. A software engineer wants to know whether their software uses too much RAM or CPU, is fast enough, or has crashed.</p>
 <p>For a general-purpose software engineer, an uncaught exception that makes the software crash is about as bad as it gets.</p>
-<p>For a data scientist, there’s something even scarier, an issue that doesn’t result in code failure but yields incorrect answers. Data joins usually complete even if the merge quality is terrible. Model APIs will return a prediction even if the prediction is very, very bad.</p>
-<p>Checking correctness of the numbers and figures you produce is hard because data scientists are (basically by definition) doing something novel. The solution is to put process metrics in place to hopefully reveal a problem before it surfaces in your results.</p>
-<p>One important tool is correctly architecting your project. Jobs are generally much easier to check for correctness than presentation layers. By moving as much processing as possible out of the presentation layer and into the data and processing layers, you can make it easier to observe.</p>
+<p>For a data scientist, something even scarier is an issue that doesn’t result in code failure but yields incorrect answers. Data joins usually complete even if the merge quality is terrible. Model APIs will return a prediction even if the prediction is very, very bad.</p>
+<p>Checking the correctness of the numbers and figures you produce is hard because data scientists are (basically by definition) doing something novel. The solution is to use process metrics to reveal a problem before it surfaces in your results.</p>
+<p>One crucial tool is correctly architecting your project. Jobs are generally much simpler to check for correctness than presentation layers. By moving as much processing as possible out of the presentation layer and into the data and processing layers, you can make it easier to observe.</p>
 <p>Moreover, you’re already probably familiar with tools for <em>literate programming</em> like Jupyter Notebooks, R Markdown Documents, and Quarto Documents.</p>
-<p>One of my spicier opinions is that <em>all</em> jobs should be in a literate programming format. These tools, when used well, intersperse code, commentary, and output – having the output of a run weaved in with context makes it much easier to spot issues.</p>
+<p>One of my spicier opinions is that <em>all</em> jobs should be in a literate programming format. When used well, these tools intersperse code, commentary, and output – having the output of a run weaved in with context makes it much easier to spot issues.</p>
 <p>There are a few particular things I always make sure to include in job output.</p>
-<p>The first is the quality of data joins. Based on the number of rows (or unique ids), I know how many rows should be in the data set after a join. Figuring out how many rows to expect can take a minute, but checking that the size of the joined data matches my expectations has avoided many gnarly issues.</p>
-<p>The second is checking cross-tabulations before and after recoding a categorical variable. I’ve caught many mistakes in my recode logic by checking that the post-recode values match what I think they should. Input values also can change over time. Checking recode values is a good way to spot novel values to make sure they’re recoded correctly.</p>
-<p>The last is goodness-of-fit metrics of an ML model in production. There are many frameworks and products for monitoring model quality and model drift once your model is in production. I don’t have strong opinions on these other than that you need to use one if you’ve got a model that’s producing results you hope to rely on.</p>
+<p>The first is the quality of data joins. Based on the number of rows (or unique IDs), I know how many rows should be in the data set after a join. Figuring out how many rows to expect can take a minute, but checking that the size of the joined data matches my expectations has avoided many gnarly issues.</p>
+<p>The second is checking cross-tabulations before and after recoding a categorical variable. I’ve caught many mistakes in my recode logic by checking that the post-recode values match what I think they should. Input values also can change over time. Checking recode values is a good way to spot novel values to ensure they’re recoded correctly.</p>
+<p>The last is goodness-of-fit metrics of an ML model in production. There are many frameworks and products for monitoring model quality and model drift once your model is in production. I don’t have strong opinions on these other than that you need to use one if you’ve got a model producing results you hope to rely on.</p>
 </section>
 <section id="observing-operations" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="observing-operations"><span class="header-section-number">4.2</span> Observing Operations</h2>
-<p>As a data scientist, you can’t only pay attention to correctness. If you want people to find your work valuable, you still need to pay attention to the operational qualities of your code like the speed and responsiveness, system resources it’s consuming, the number of users, and user interactions just before an error occurs.</p>
-<p>The first step to making your app or API observable is to add logging. You may be accustomed to just adding <code>print</code> statements throughout your code. Honestly, this is far better than nothing. But purpose-built tooling for logging allows you to apply consistent formats within logs, emit logs in useful formats, and provide visibility into severity of issues.</p>
-<p>There are great logging packages in both Python and R. Python’s logging package is standard and included. There is not a standard logging package in R, but I recommend <code>{log4r}</code>.</p>
-<p>These packages – and basically every other logging package – work very similarly. At the outset of your code, you’ll create and parameterize a <em>log session</em> that persists as long as the Python or R session. When your code does something, you’ll use the log session to write <em>log statements</em>. When the log statement runs, it creates a <em>log entry</em>.</p>
+<p>As a data scientist, you can’t only pay attention to correctness. You still need to pay attention to the operational qualities of your code like the speed and responsiveness, system resources it’s consuming, the number of users, and user interactions just before an error occurs.</p>
+<p>The first step to making your app or API observable is to add logging. You may be accustomed to just adding <code>print</code> statements throughout your code. Honestly, this is far better than nothing. But purpose-built tooling for logging allows you to apply consistent formats within logs, emit logs in useful formats, and provide visibility into the severity of issues.</p>
+<p>There are great logging packages in both Python and R. Python’s logging package is standard and included. There is no standard logging package in R, but I recommend <code>{log4r}</code>.</p>
+<p>These packages – and basically every other logging package – work very similarly. At the outset of your code, you’ll create and parameterize a <em>log session</em> that persists as long as the Python or R session. You’ll use the log session to write <em>log statements</em> about what your code does. When the log statement runs, it creates a <em>log entry</em>.</p>
 <p>For example, here’s what logging for an app starting up might look like in Python</p>
 <div class="cell">
 <div class="code-with-filename">
@@ -455,29 +455,29 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <pre><code>2022-11-18 21:57:50 INFO App Started</code></pre>
 <p>Like all log entries, this entry has three components:</p>
 <ul>
-<li><p>The <em>log metadata</em> is data that the logging library automatically includes on every entry. It is configured when you initialize logging. In the example above, the only metadata is the timestamp. Log metadata can include additional information, such as which server you’re running on or the user.</p></li>
+<li><p>The <em>log metadata</em> is data the logging library automatically includes on every entry. It is configured when you initialize logging. In the example above, the only metadata is the timestamp. Log metadata can include additional information, such as which server you’re running on or the user.</p></li>
 <li><p>The second component is the <em>log level</em>. The log level indicates the severity of the event you’re logging. In the example above the log level was <code>INFO</code>.</p></li>
-<li><p>The last component is the <em>log data</em>, which provides details on the event you want to log – <code>App Started</code> in this case.</p></li>
+<li><p>The last component is the <em>log data</em>, which details the event you want to log – <code>App Started</code> in this case.</p></li>
 </ul>
 <section id="understanding-log-levels" class="level3" data-number="4.2.1">
 <h3 data-number="4.2.1" class="anchored" data-anchor-id="understanding-log-levels"><span class="header-section-number">4.2.1</span> Understanding log levels</h3>
-<p>The log level indicates how serious the logged event is. Most logging libraries have 5-7 log levels. As you’re writing statements into your code, you’ll have to think carefully about the appropriate logging level for a given event.</p>
+<p>The log level indicates how serious the logged event is. Most logging libraries have 5-7 log levels.</p>
 <p>Both the Python <code>{logging}</code> library and <code>{log4r}</code> have five levels from least to most scary:</p>
 <ol type="1">
-<li><em>Debug</em>: detail on what the code was doing. Debug statements are designed to be useful to make sense to someone who really knows the code. For example, you might include which function ran and with what arguments in a debug log.</li>
+<li><em>Debug</em>: detail on what the code was doing. Debug statements are designed to be useful to make sense to someone who knows the code. For example, you might include which function ran and with what arguments in a debug log.</li>
 <li><em>Info</em>: something normal happened in the app. Info statements record actions like starting and stopping, successfully making database and other connections, and runtime configuration options.</li>
 <li><em>Warn/Warning</em>: an unexpected application issue that isn’t fatal. For example, you might include having to retry doing something or noticing that resource usage is high. If something were to go wrong later, these might be helpful breadcrumbs to look at.</li>
-<li><em>Error</em>: an issue that will make an operation not work, but that won’t bring down your app. An example might be a user submitting invalid input and the app recovering.</li>
+<li><em>Error</em>: an issue that will make an operation not work, but that won’t crash your app. An example might be a user submitting invalid input and the app recovering.</li>
 <li><em>Critical</em>: an error so big that the app itself shuts down. This is the SOS your app sends as it shuts down. For example, if your app cannot run without a connection to an outside service, you might log an inability to connect as a Critical error.</li>
 </ol>
-<p>When you initialize your logging session, you’ll set your session’s log level, which is the <strong>least critical</strong> level you want to see in the logs for the session. In development, you probably want to log everything down to the debug level though that probably isn’t ideal in prod.</p>
+<p>When you initialize your logging session, you’ll set your session’s log level, which is the <strong>least critical</strong> level you want to see in the logs for the session. In development, you probably want to log everything down to the debug level, though that probably isn’t ideal in prod.</p>
 </section>
 <section id="configuring-log-formats" class="level3" data-number="4.2.2">
 <h3 data-number="4.2.2" class="anchored" data-anchor-id="configuring-log-formats"><span class="header-section-number">4.2.2</span> Configuring log formats</h3>
 <p>When you initialize your logging session, you’ll choose where logs will be written and in what format. You’ll configure the format with a <em>formatter</em> or <em>layout</em>.</p>
-<p>The default for most logging is to emit logs in <em>plain text</em>. For example, a plain text log of an app starting might put this on your console</p>
+<p>The default for most logging is to emit logs in <em>plain text</em>. For example, a plain text log of an app starting might put this on your console:</p>
 <pre><code>2022-11-18 21:57:50 INFO App Started</code></pre>
-<p>Plain text logging is a great choice if the only use of the logs is for humans to read them. You might prefer <em>structured logs</em> if you’re shipping your logs to an <em>aggregation service</em>.</p>
+<p>Plain text logging is an excellent choice if the only use of the logs is for humans to read them. You might prefer <em>structured logs</em> if you’re shipping your logs to an <em>aggregation service</em>.</p>
 <p>The most common structured logging format is JSON, though YAML and XML are often options. If you used JSON logging, the same record might be emitted as</p>
 <pre><code>{
   "time": "2022-11-18 21:57:50",
@@ -488,10 +488,10 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 </section>
 <section id="where-logs-go" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="where-logs-go"><span class="header-section-number">4.3</span> Where logs go</h2>
-<p>By default, logs go to the console. This is a great choice in development, because it makes it easy to see the logs as you go. If you want to choose a different place for them, you can configure it with a <em>handler</em> or an <em>appender</em>.</p>
-<p>In production, the most common place to send logs is to a file on disk. Over time, logs can become quite voluminous, so it’s common to delete logs after a certain retention period via <em>log rotation.</em></p>
-<p>A common log rotation pattern is to have each individual log file last for 24 hours and then be retained for 30 days before it is deleted. The Python <code>{logging}</code> library does log rotation itself. <code>{log4r}</code> does not, but there is a Linux library called <code>logrotate</code> that you can use in concert with <code>{log4r}</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<p>If you run in a relatively sophisticated organization, they probably want to move logs off of the server and into a centralized monitoring location. In many cases, they’ll just run a log collection agent on your server, which is configured to send logs to the central monitoring platform.</p>
+<p>By default, logs go to the console. This is an excellent development choice because it makes it easy to see the logs as you go. If you want to choose a different place for them, you can configure it with a <em>handler</em> or an <em>appender</em>.</p>
+<p>In production, the most common place to send logs is to a file on disk. Over time, logs can become quite voluminous, so it’s common to delete logs after a retention period via <em>log rotation.</em></p>
+<p>A typical log rotation pattern is to have each log file last for 24 hours and then be retained for 30 days before it is deleted. The Python <code>{logging}</code> library does log rotation itself. <code>{log4r}</code> does not, but there is a Linux library called <code>logrotate</code> that you can use in concert with <code>{log4r}</code>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>If you run in a relatively sophisticated organization, they probably want to move logs off the server and into a centralized monitoring location. In many cases, they’ll just run a log collection agent on your server, which is configured to send logs to the central monitoring platform.</p>
 <p>If you’re running in a Docker Container, you need to direct the logs outside the Container. This is usually accomplished by sending normal operating logs to <em>stdout</em> (usually pronounced standard out) and failures to <em>stderr</em> (standard error).</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -503,38 +503,37 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>As you’ll learn more about in <a href="1-6-docker.html">Chapter&nbsp;<span>6</span></a>, anything that lives inside a Docker Container is ephemeral. This is obviously bad if you’re writing a log that might contain clues for why a Docker Container was unexpectedly killed.</p>
+<p>As you’ll learn more about in <a href="1-6-docker.html">Chapter&nbsp;<span>6</span></a>, anything that lives inside a Docker Container is ephemeral. This is bad if you’re writing a log that might contain clues for why a Docker Container was unexpectedly killed.</p>
 </div>
 </div>
-<p>It’s also possible you want to do something else completely custom with your logs. This is most common for critical or error logs. For example, you may want to send an email, slack, or text message immediately if your system emits a high-level log message.</p>
+<p>You may also want to do something else completely custom with your logs. This is most common for critical or error logs. For example, you may want to send an email, slack, or text message immediately if your system emits a high-level log message.</p>
 <section id="working-with-metrics" class="level3" data-number="4.3.1">
 <h3 data-number="4.3.1" class="anchored" data-anchor-id="working-with-metrics"><span class="header-section-number">4.3.1</span> Working with Metrics</h3>
 <p>The most common place to see metrics in a data science context is when deploying and monitoring ML models in production. While it’s relatively nascent in 2023, I think it’s likely that more organizations will start monitoring ETL data quality over time.</p>
-<p>If you are going to configure metrics emission or consumption, most modern metrics stacks are built around the open-source tools <em>Prometheus</em> and <em>Grafana</em>.</p>
-<p>Prometheus is an open-source monitoring tool that makes it easy to store metrics data, query that data, and alert based on it. Grafana is an open source dashboarding tool that sits on top of Prometheus to do visualization of metrics. They are usually used together to do monitoring and visualization of metrics.</p>
-<p>You can run Prometheus and Grafana yourself, but Grafana Labs provides a generous free tier for their SaaS service. This is great because you can just set up their service and point your app to it. Many organizations also use DataDog, which is a SaaS service for log aggregation and monitoring.</p>
-<p>Because the Prometheus/Grafana stack started out in the DevOps world, they are most optimized to do monitoring of a whole server or fleet of servers; however, it’s not hard to use them to monitor things you might care about like data quality or API response times.</p>
-<p>If you want to register metrics from your API or app with Prometheus, there is an official Prometheus client in Python and the <code>{openmetrics}</code> package in R makes it easy to register metrics from a Plumber API or Shiny app.</p>
-<p>There’s a great Get Started with Grafana and Prometheus doc on the Grafana Labs website if you want to actually try it out.</p>
+<p>If you will configure metrics emission or consumption, most modern metrics stacks are built around the open-source tools <em>Prometheus</em> and <em>Grafana</em>.</p>
+<p>Prometheus is an open-source monitoring tool that makes it easy to store metrics data, query it, and alert based on it. Grafana is an open source dashboarding tool that sits on top of Prometheus to do visualization of metrics. They are usually used together to do monitoring and visualization of metrics.</p>
+<p>You can run Prometheus and Grafana, but Grafana Labs provides a generous free tier for their SaaS service. This is great because you can set up their service and point your app to it. Many organizations also use DataDog, a SaaS service for log aggregation and monitoring.</p>
+<p>Because the Prometheus/Grafana stack started in the DevOps world, they are most optimized to monitor a whole server or fleet of servers; however, it’s not hard to use them to monitor things you might care about, like data quality or API response times. There is an official Prometheus client in Python and the <code>{openmetrics}</code> package in R makes registering metrics from a Plumber API or Shiny app easy.</p>
+<p>There’s a great Get Started with Grafana and Prometheus doc on the Grafana Labs website if you want to try it out.</p>
 </section>
 </section>
 <section id="comprehension-questions" class="level2" data-number="4.4">
 <h2 data-number="4.4" class="anchored" data-anchor-id="comprehension-questions"><span class="header-section-number">4.4</span> Comprehension Questions</h2>
 <ol type="1">
 <li>What is the difference between monitoring and logging? What are the two halves of the monitoring and logging process?</li>
-<li>In general, logging is good, but what are some things you should be careful <em>not to log</em>?</li>
+<li>Logging is generally good, but what are some things you should be careful <em>not to log</em>?</li>
 <li>At what level would you log each of the following events:
 <ol type="1">
 <li><p>Someone clicks on a particular tab in your Shiny app.</p></li>
 <li><p>Someone puts an invalid entry into a text entry box.</p></li>
-<li><p>An <code>http</code> call your app makes to an external API fails.</p></li>
+<li><p>An HTTP call your app makes to an external API fails.</p></li>
 <li><p>The numeric values that are going into your computational function.</p></li>
 </ol></li>
 </ol>
 </section>
 <section id="lab-4-an-app-with-logging" class="level2" data-number="4.5">
 <h2 data-number="4.5" class="anchored" data-anchor-id="lab-4-an-app-with-logging"><span class="header-section-number">4.5</span> Lab 4: An App with Logging</h2>
-<p>Let’s go back to the prediction generator app from the last lab and add a little logging. This is quite easy in both R and Python. In both, we just declare that we’re using the logger and then we put logging statements into our code.</p>
+<p>Let’s return to the last lab’s prediction generator app and add a little logging. This is easy in both R and Python. We declare that we’re using the logger and then put logging statements into our code.</p>
 <p>I decided to log when the app starts, just before and after each request, and an error logger if an HTTP error code comes back from the API.</p>
 <p>With the logging now added, here’s what the app looks like in R:</p>
 <div class="code-with-filename">
@@ -696,8 +695,8 @@ Note
 <span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>app <span class="op">=</span> App(app_ui, server)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now, if you load up this app locally, you can see the logs of what’s happening stream in as you’re pressing buttons in the app.</p>
-<p>You can feel free to log whatever you think is helpful. For example, it would probably be useful to get the actual error contents if an HTTP error comes back.</p>
+<p>Now, if you load up this app locally, you can see the logs of what’s happening stream in as you press buttons.</p>
+<p>You can feel free to log whatever you think is helpful. For example, getting the actual error contents would probably be helpful if an HTTP error comes back.</p>
 
 
 </section>
