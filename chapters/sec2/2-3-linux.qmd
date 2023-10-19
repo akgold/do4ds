@@ -1,17 +1,17 @@
 # Intro to Linux Administration {#sec-linux}
 
-You're accustomed to interacting with a computer and a phone running
-MacOS or Windows or iOS or Android. But most servers don't run any of
+You're accustomed to interacting with a computer and phone running
+MacOS, Windows, iOS, or Android. But most servers don't run any of
 those.
 
-Outside of personal computers and phones, *Linux* is the world's
-predominant *operating system (OS)*. Almost all of the world's embedded
+*Linux* is the world's predominant *operating system (OS)* outside of
+personal computers and phones. Almost all of the world's embedded
 computers run Linux -- in ATMs, cars and planes, TVs, smart thermostats,
 and most other gadgets and gizmos. Android is a version of Linux, as is
 ChromeOS. Almost all of the world's supercomputers run Linux.
 
-Most importantly for our purposes, the majority of the world's servers
-also run on Linux.[^2-3-linux-1]
+Most importantly for our purposes, most of the world's servers also run
+on Linux.[^2-3-linux-1]
 
 [^2-3-linux-1]: The remainder are mostly Windows servers. There are a
     few rarer OSes you might encounter, like Oracle Solaris. There is a
@@ -22,10 +22,9 @@ also run on Linux.[^2-3-linux-1]
     Despite the best efforts of many hopeful nerds, desktop Linux is
     pretty much only used by professional computer people.
 
-That means in order to administer a server, you're going to have to
-learn a little about Linux. In this chapter, you'll learn about the
-history of Linux and about how to navigate and manipulate a server
-running Linux.
+To administer a server, you'll have to learn a little about Linux. In
+this chapter, you'll learn about the history of Linux and how to
+navigate and manipulate a server running Linux.
 
 ## A brief history of Linux
 
@@ -33,11 +32,10 @@ A computer's OS defines how applications can interact with the
 underlying hardware. OSes dictate how files are stored and accessed, how
 applications are installed, how network connections work, and more.
 
-Before the early 1970s, the market for computer hardware and software
-looked nothing like it does today. Computers of that era had extremely
-tight linkages between hardware and software. There was no Microsoft
-Word you could use on a Dell machine or an HP machine or an Apple
-machine.
+Before the early 1970s, the computer hardware and software market looked
+nothing like today. Computers of that era had extremely tight linkages
+between hardware and software. There was no Microsoft Word you could use
+on a machine from Dell or HP or Apple.
 
 Instead, every hardware company was also a software company. If Example
 Corp's computer did text editing, it was because Example Corp had
@@ -55,14 +53,14 @@ ran on Unix.
 The one issue (for everyone but Bell Labs) was that they were paying
 Bell Labs a lot of money for Unix licenses. So, in the 1980s,
 programmers started writing Unix-like OSes. These so-called *Unix
-clones* behaved just like Unix but didn't include any actual Unix
+clones* behaved like Unix but didn't include any actual Unix
 code.[^2-3-linux-2]
 
 [^2-3-linux-2]: Or at least they weren't supposed to. There's an
     interesting history of lawsuits, especially around whether the BSD
     OS illegally included Unix code.
 
-In 1991, Linus Torvalds -- then a 21 year-old Finnish grad student --
+In 1991, Linus Torvalds -- then a 21-year-old Finnish grad student --
 released an open-source Unix clone called Linux via a nonchalant
 newsgroup posting, saying, "I'm doing a (free) operating system (just a
 hobby, won't be big and professional like gnu)...Any suggestions are
@@ -75,13 +73,12 @@ welcome, but I won't promise I'll implement them :-)."[^2-3-linux-3]
     operating system *kernel*, not a full operating system like Unix.
     Duly noted, now go away.
 
-Obviously, the Linux project outgrew that modest newsgroup post.
-Currently, there are over 600 *distros* (short for distribution) of
-Linux, which differ by technical attributes and licensing model. The
-number of distros reflects both the natural fragmentation of popular
-open-source projects, as well as the disparate requirements for systems
-as varied as your car's infotainment system, a smartphone, and the
-controller for your smart thermostat.
+The Linux project outgrew that modest newsgroup post. There are over 600
+*distros* (short for distributions) of Linux, which differ by technical
+attributes and licensing model. The number of distros reflects the
+natural fragmentation of popular open-source projects and the disparate
+requirements for systems as varied as your car's infotainment system, a
+smartphone, and the controller for your smart thermostat.
 
 Luckily, you don't have to know hundreds of distros. Most organizations
 use one of only a handful on their servers. The most common open-source
@@ -99,20 +96,19 @@ originally a RHEL derivative.[^2-3-linux-5]
     Amazon Linux 2023 (AL2023) was recently released. I'd expect AL2023
     or its successor to be dominant by the time you read this.
 
-Most individuals who have a choice in the matter, including me, prefer
-Ubuntu. It's a little simpler and easier to configure than the others.
+Most individuals who have a choice, including me, prefer Ubuntu. It's a
+little simpler and easier to configure than the others.
 
 ::: callout-note
 ### A note on Ubuntu Versioning
 
 [Ubuntu versions](https://wiki.ubuntu.com/Releases) are numbered by the
 year and month they were released. Most people use the Long Term Support
-(LTS) releases, which are released in April of even years.
+(LTS) releases, released in April of even years.
 
 Ubuntu versions have fun alliterative names, so you'll hear people refer
 to releases by name or version. As of this writing, most Ubuntu machines
-are running Focal (20.04, Focal Fossa) or Jammy (22.04, Jammy
-Jellyfish).
+run Focal (20.04, Focal Fossa) or Jammy (22.04, Jammy Jellyfish).
 :::
 
 ## Administering Linux with Bash
@@ -121,7 +117,7 @@ Linux is administered from the command line using bash or a bash
 alternative like zsh. The philosophy behind bash and its derivatives
 says that you should be able to accomplish anything you want with small
 programs invoked via a *command*. Each command should do just one thing,
-and complicated things should be accomplished by *composing* commands --
+and complicated things should be performed by *composing* commands --
 taking the output from one as the input to the next.
 
 Invoking a command is done by typing the command on the command line and
@@ -132,7 +128,7 @@ Helpfully, most bash commands are an abbreviation of the word for what
 the command does. Unhelpfully, the letters often seem somewhat random.
 
 For example, the command to *list* the contents of a directory is `ls`,
-which sort of makes sense. Over time, you'll get very comfortable with
+which mostly makes sense. Over time, you'll get very comfortable with
 the commands you use frequently.
 
 Bash commands can be modified to behave the way you need them to.
@@ -147,28 +143,27 @@ for the `ls` command is the current directory. So if I'm in
 `/home/alex`, I'd get the same thing from either `ls` or
 `ls /home/alex`.
 
-*Options* or *flags* modify how the command operates and come between
-the command and arguments. Flags are denoted by having one or more
-dashes before them. For example, `ls` allows the `-l` flag, which
-displays the output as a list. So, `ls -l /home/alex` would get the
-files in `/home/alex` as a list.
+*Options* or *flags* modify the command's operation and come between the
+command and arguments. Flags are denoted by having one or more dashes
+before them. For example, `ls` allows the `-l` flag, which displays the
+output as a list. So, `ls -l /home/alex` would get the files in
+`/home/alex` as a list.
 
 Some flags themselves have *flag arguments*. For example, the `-D` flag
-allows specifying a format for how the datetime is displayed from
-`ls -l`. So running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` lists all
-the files in `/home/alex` with the date-time of the last update
-formatted in *ISO-8601* format, which is always the correct format for
-dates.
+allows you to specify how the datetime from `ls -l` is displayed. So
+running `ls -l -D %Y-%m-%dT%H:%M:%S /home/alex` lists all the files in
+`/home/alex` with the date-time of the last update formatted in
+*ISO-8601* format, which is always the correct format for dates.
 
 Bash commands are always formatted as
 `<command> <flags + flag args> <command args>`.
 
 It's nice that this structure is standard. It's not nice that the main
-argument is all the way at the end, because it makes long bash commands
-hard to read. To make commands more readable, you can break the command
-over multiple lines and include one flag or argument per line. You can
-tell bash you want it to continue a command after a line break by ending
-the line with a space and a `\`.
+argument is at the end because it makes long bash commands hard to read.
+To make commands more readable, you can break the command over multiple
+lines and include one flag or argument per line. You can tell bash you
+want it to continue a command after a line break by ending the line with
+a space and a `\`.
 
 For example, here's that long `ls` command more nicely formatted:
 
@@ -178,12 +173,12 @@ For example, here's that long `ls` command more nicely formatted:
   /home/alex
 ```
 
-All of the flags and arguments for commands can be found in the
-program's *man page* (short for manual). You can access the man page for
-any command with `man <command>`. You can scroll the man page with arrow
-keys and exit with `q`.
+All flags and command arguments are found on the program's *man page*
+(short for manual). You can access the man page for any command with
+`man <command>`. You can scroll the man page with arrow keys and exit
+with `q`.
 
-Bash is a fully functional programming language, so you can assign
+Bash is a fully functional programming language, so that you can assign
 variables with `<var-name>=<value>` (no spaces allowed) and access them
 `$<var-name>`. The bash version of `print` is `echo`.
 
@@ -196,9 +191,9 @@ Hello World!
 ```
 
 For the most part, you'll write commands directly on the command line.
-It's also possible to write and run bash scripts that include
-conditionals, loops, and functions. Bash scripts usually end in `.sh`
-and are most often run with the `sh` command like `sh my-script.sh`.
+You also can write and run bash scripts that include conditionals,
+loops, and functions. Bash scripts usually end in `.sh` and are often
+run with the `sh` command like `sh my-script.sh`.
 
 The advantage of writing bash scripts is that they can run basically
 anywhere. The disadvantage of writing bash scripts is that bash is a
@@ -206,8 +201,8 @@ truly ugly programming language that is hard to debug.
 
 ## Programs run on behalf of users
 
-Whenever a program is running, it is running as a particular user who
-can be identified by their *username*.
+Whenever a program is running, it is running as a particular user
+identified by their *username*.
 
 On any Unix-like system, the `whoami` command returns the username of
 the active user. When I run `whoami` on my MacBook, I get:
@@ -218,11 +213,11 @@ alexkgold
 ```
 
 Usernames have to be unique on the system -- but they're not the true
-identifier for a user. A user is uniquely identified by their *user id
+identifier for a user. A user is uniquely identified by their *user ID
 (`uid`)*, which maps to all the other user attributes like username,
 password, home directory, groups, and more. The `uid` for a user is
-assigned at the time the user is created and usually don't need to be
-changed or specified manually.[^2-3-linux-6]
+assigned when the user is created and usually don't need to be changed
+or specified manually.[^2-3-linux-6]
 
 [^2-3-linux-6]: The one exception to this is when you've got the same
     user accessing resources across multiple machines. Then the `uid`s
@@ -237,8 +232,8 @@ RStudio Server goes to do something -- start an `R` session for example
 -- it will do so as `rstudio-server`.
 
 User `uid`s start at 10,000 with those below 10,000 reserved for system
-processes. There's also one special user -- called the admin, root,
-sudo, or super user who gets the special `uid` 0.
+processes. There's also one special user -- the admin, root, sudo, or
+superuser who gets the special `uid` 0.
 
 Users belong to *groups*, which are collections of one or more users.
 Each user has exactly one *primary* *group* and can be a member of
@@ -247,9 +242,9 @@ their username.
 
 Like a user has a `uid`, a group has a `gid`. User `gid`s start at 100.
 
-You can see a user's username, `uid`, groups, and `gid` with the `id`
-command. On my MacBook, I'm a member of several different groups, with
-the primary group `staff`.
+The `id` command shows a user's username, `uid`, groups, and `gid`. On
+my MacBook, I'm a member of several groups, with the primary group
+`staff`.
 
 ``` {.bash filename="Terminal"}
 > id                                                     
@@ -260,9 +255,9 @@ If you ever need to add users to a server, the easiest way is with the
 `useradd` command. Once you have a user, you may need to change the
 password, which you can do at any time with the `passwd` command. Both
 `useradd` and `passwd` start interactive prompts, so you don't need to
-do much more than run those commands.
+do more than run those commands.
 
-If you ever need to alter a user -- the most common task being to add a
+If you ever need to alter a user -- the most common task is adding a
 user to a group, you would use the `usermod` command with the `-aG`
 flag.
 
@@ -272,23 +267,22 @@ In Linux, everything you can interact with is just a file. Every log --
 file. Every picture -- file. Every application -- file. Every
 configuration -- file.
 
-Determining whether a user can take an action is really a question of
-whether they have the right permissions on a particular file.
+So whether a user can take an action is determined by whether they have
+the proper permissions on a particular file.
 
-Basic Linux permissions (called *POSIX permissions*) consist of a 3x3
-matrix of read, write, and execute for the owner, the owning group, and
-everyone else. Read means the user can see the contents of a file, write
-means the user can save a changed version of a file, and execute means
-they can run the file as a program.
+Basic Linux permissions (*POSIX permissions*) consist of a 3x3 matrix of
+read, write, and execute for the owner, the owning group, and everyone
+else. Read means the user can see the contents of a file, write means
+the user can save a changed version, and execute means they can run the
+file as a program.
 
 ::: callout-note
 There are more complex ways to manage Linux permissions. For example,
 you might hear about Access Control Lists (ACLs). They're beyond the
 scope of this book.
 
-There is more information on different ways organizations manage users
-and what they're allowed to do in [Chapter @sec-auth], which is all
-about auth.
+There is more information on how organizations manage users and what
+they can do in [Chapter @sec-auth], which is all about auth.
 :::
 
 For example, here's a set of permissions that you might have for a
@@ -303,21 +297,21 @@ in the directory, write allows the user to alter what's in the
 directory, and execute allows the user to enter the directory.
 
 File permissions and directory permissions don't have to match. For
-example, a user could have read permissions on a directory so they could
-see the names of the files, but not actually have read permissions on
-any of the files so they can't look at the contents.
+example, a user could have read permissions on a directory to see the
+names of the files, but not have read permissions on any of the files so
+they can't look at the contents.
 
 When you're working on the command line, you don't get a little grid of
-permissions. Instead they're expressed in one of two ways. The first is
-the string representation, which is a 10-character string that looks
-something like `-rw-r–r--`.
+permissions. Instead, they're expressed in one of two ways. The first is
+the string representation, a 10-character string that looks like
+`-rw-r–r--`.
 
 The first character indicates the type of file: most often `-` for
 normal (file) or `d` for a directory.
 
-The next nine characters are indicators for the three permissions for
-the user, the group, and everyone else. There will be an `r` for read, a
-`w` for write, and an `x` for execute or `-` to indicate that they don't
+The following nine characters indicate the three permissions for the
+user, the group, and everyone else. There will be an `r` for read, a `w`
+for write, and an `x` for execute or `-` to indicate that they don't
 have the permission.
 
 So the permissions in the graphic would be `-rwxr-x--x` for a file and
@@ -342,8 +336,8 @@ owner (`alexkgold`) has write permission, but everyone has read
 permission. In addition, there's a `tests` directory, with read and
 execute for everyone and write only for `alexkgold`.
 
-In the course of administering a server, you will probably need to
-change a file's permissions. You can do so using the `chmod` command.
+You will probably need to change a file's permissions when administering
+a server. You can do so using the `chmod` command.
 
 For `chmod`, permissions are indicated as a three digit number, like
 `600`, where the first digit is the permission for the user, the second
@@ -360,21 +354,19 @@ permission set `751` to give the user full permissions (4 + 2 + 1), read
 and execute (4 + 1) to the group, and execute only (1) to everyone else.
 
 ::: callout-note
-If you spend any time administering a Linux server, at some point you
-almost certainly will find yourself applying `chmod 777` to a directory
-or file to rule out a permissions issue.
+If you spend any time administering a Linux server, you will almost
+certainly find yourself applying `chmod 777` to a directory or file to
+rule out a permissions issue.
 
 I can't tell you not to do this -- we've all been there. But if it's
-something important, be sure you change it back once you've figured
-things out.
+something important, change it back once you've figured things out.
 :::
 
-In some cases, you might actually want to change the owner or group of a
-file. You can change users and groups with the `chown` command. Changing
-users just involves the username and changing groups get prefixed with a
-colon.
+You might want to change a file's owner or group. You can change users
+and groups with the `chown` command. Users get changed with a username,
+and groups can be changed with the group name prefixed by a colon.
 
-In some cases, you might not be the correct user to take a particular
+Sometimes, you might not be the correct user to take a particular
 action. If you want to change your user, you can use the `su` (switch
 user) command. You'll be prompted for a password to make sure you're
 allowed.
@@ -396,25 +388,20 @@ called `sudo`.
 
 ## The Linux Filesystem is a tree
 
-Regardless of which Linux distro you're running, understanding where to
-find things on your system is crucial.
-
 All the information available to a computer is indexed by its
-*filesystem*, which is made up of *directories* or *folders*, which are
-containers for other directories and for files.
+*filesystem*, which comprises *directories* or *folders*, which are
+containers for other directories and files.
 
-On your laptop, you're probably used to browsing the filesystem with
-your mouse. On your phone, the filesystem is completely obscured by
-apps, but it's there.
+You're probably used to browsing the filesystem with your mouse on your
+laptop. Apps completely obscure the filesystem on your phone, but it's
+there. On a Linux server, the only way to traverse the filesystem is
+with written commands. Therefore a good mental model for the filesystem
+on your server is critical.
 
-On a Linux server, the only way to traverse the filesystem is with
-written commands. Having a good mental model for what the filesystem
-looks like is, therefore, really important.
-
-In Linux, each computer has exactly one filesystem, which is based at
-the *root directory*, `/`. The rest of the filesystem is a tree (or
-perhaps an upside-down tree). Every directory is contained in by a
-*parent directory* and may contain one or more *children* or
+In Linux, each computer has precisely one filesystem, based at the *root
+directory*, `/`. The rest of the filesystem is a tree (or perhaps an
+upside-down tree). Every directory is contained in by a *parent
+directory* and may contain one or more *children* or
 *sub-directories*.[^2-3-linux-8] A `/` in between two directories means
 that it's a sub-directory.
 
@@ -423,29 +410,11 @@ that it's a sub-directory.
 
 Every directory is a sub-directory of `/` or a sub-directory of a
 sub-directory of `/` or...you get the picture. The `/home/alex` *file
-path* defines a particular location, which is the `alex` sub-directory
-of `/home`, which is a sub-directory of the root directory, `/`.
+path* defines a particular location, the `alex` sub-directory of
+`/home`, itself a sub-directory of the root directory, `/`.
 
 ![](images/directories.png){fig-alt="A tree of directories. / is the root, /home is a sub directory, /home/alex is a sub-sub-directory, and /etc is another sub-directory."
 width="600"}
-
-Because the entire Linux filesystem is based at `/`, it doesn't matter
-what physical or virtual disks you have attached to your system. They
-will fall somewhere under the main filesystem (often inside `/mnt`), but
-the fact that they're on separate drives is obscured from the user.
-
-This will be familiar to MacOS users, because MacOS is based on an
-operating system called BSD that, like Linux, is a Unix clone. If you're
-familiar with Windows, the Linux filesystem may seem a little strange.
-
-In Windows, each physical or logical disk has its own filesystem with
-its own root. You're probably familiar with `C:` as your main
-filesystem. Your machine may also have a `D:` drive. If you've got
-network share drives, they're likely at `M:` or `N:` or `P:`.
-
-One other difference is that Windows uses `\` to separate file path
-elements rather than `/`. This used to be a big deal, but newer versions
-of Windows accept file paths using `/`.
 
 ::: callout-tip
 It's never necessary, but viewing the tree-like layout for a directory
@@ -453,12 +422,30 @@ can sometimes be helpful. The `tree` utility can show you one. It
 doesn't always come pre-installed, so you might have to install it.
 :::
 
+Because the entire Linux filesystem is based at `/`, it doesn't matter
+what physical or virtual disks you have attached to your system. They
+will fall somewhere under the main filesystem (often inside `/mnt`), but
+the fact that they're on separate drives is obscured from the user.
+
+This will be familiar to MacOS users because MacOS is based on an
+operating system called BSD that, like Linux, is a Unix clone. If you're
+familiar with Windows, the Linux filesystem may seem strange.
+
+In Windows, each physical or logical disk has its own filesystem with
+its own root. You're probably familiar with `C:` as your main
+filesystem. Your machine may also have a `D:` drive. If you've got
+network share drives, they're likely at `M:` or `N:` or `P:`.
+
+Another difference is that Windows uses `\` to separate file path
+elements rather than `/`. This used to be a big deal, but newer versions
+of Windows accept file paths using `/`.
+
 ### Working with file paths
 
-Whenever a program runs, it runs at a particular path in the filesystem,
+Whenever a program runs, it runs at a particular path in the filesystem
 called the *working directory*. You can get the absolute path to your
-working directory with the `pwd` command, which is an abbreviation for
-*print working directory*.
+working directory with the `pwd` command, an abbreviation for *print
+working directory*.
 
 When you want a program to run the same regardless of where it's run
 from, it's best to use an *absolute path*, specified relative to the
@@ -473,27 +460,27 @@ The working directory's parent is at `..`. You could see everything in
 the parent directory of your current working directory with `ls ..` or
 its parent with `ls ../..`.
 
-All accounts that represent actual humans should have a *home
-directory*, which usually live inside `/home`.
+All accounts representing actual humans should have a *home directory*,
+which usually live inside `/home`.
 
 The home directory and all its contents are owned by the user to whom it
-belongs. The home directory is the user's space to store the things they
-need, including user-specific configuration. When navigating the file
-system, the user can find their home directory is at `~`.
+belongs. The home directory is the user's space to store what they need,
+including user-specific configuration. Users can find their home
+directory at `~`.
 
-Along with being able to inspect directories with `ls`, it's useful to
-be able to change your working directory with the `cd` command, short
-for *change directory*. You can use either absolute or relative file
-paths with `cd`. If you were in `/home/alex` and wanted to navigate to
-`/home`, either `cd ..` or `cd /home` would work.
+You will need to change your working directory, which you can do with
+the `cd` command, short for *change directory*. You can use either
+absolute or relative file paths with `cd`. If you were in `/home/alex`
+and wanted to navigate to `/home`, either `cd ..` or `cd /home` would
+work.
 
 Some files or directories are *hidden* so they don't appear in a normal
 `ls`. You know a file or directory is hidden because its name starts
-with `.`. Hidden files are usually configuration files that you aren't
-manipulating in normal usage. These aren't secret or protected in any
-way, they're just skipped by `ls` for convenience. If you want to
-display all files in a directory, including hidden ones, you can use the
-`-a` flag (for *all*) with `ls`.
+with `.`. Hidden files are usually configuration files you don't
+manipulate in normal usage. These aren't secret or protected in any way;
+they're just skipped by `ls` for convenience. If you want to display all
+files in a directory, including hidden ones, you can use the `-a` flag
+(for *all*) with `ls`.
 
 You've already seen a couple of hidden files in this book -- like the
 `.github` directory, command line configuration in `.zprezto` and
@@ -506,9 +493,9 @@ You will frequently need to change where files and directories are on
 your system, including copying, deleting, moving, and more.
 
 You can copy a file or directory from one place to another using the
-`cp` command. `cp` leaves behind the old file or directory and adds the
-new one at the specified location. You can use the `-r` flag to
-recursively copy everything in a directory.
+`cp` command. `cp` leaves the old file or directory behind and
+duplicates it at the specified location. You can use the `-r` flag to
+copy everything in a directory recursively.
 
 You can move a file with the `mv` command, which does not leave the old
 file behind. If you want to remove a file entirely, you can use the `rm`
@@ -530,16 +517,16 @@ sub-directories. For example, if you're in `/home/alex`, you could
 sub-directory.
 
 The `mkdir` command throws an error if you try to create a path that
-includes some directories that already exist -- for example if
-`project1` already existed in the example above. The `-p` flag can be
-handy to create only the parts of the path that don't exist.
+includes some existing directories -- for example if `project1` already
+existed in the example above. The `-p` flag can be handy to create only
+the parts of the path that don't exist.
 
-Sometimes it's useful to operate on every file inside a directory. You
+Sometimes, it's useful to operate on every file inside a directory. You
 can get every file that matches a pattern with the wildcard, `*`. You
 can also do partial matching with the wildcard to get all the files that
 match part of a pattern.
 
-For example, let's say I have a `/data` directory and I want to put a
+For example, let's say I have a `/data` directory, and want to put a
 copy of only the `.csv` files inside into a new `data-copy`
 sub-directory. I could do the following:
 
@@ -551,26 +538,26 @@ sub-directory. I could do the following:
 ### Moving things to and from the server
 
 It's very common to have a file on your server that you want to move to
-your desktop or vice versa. There are a few different ways to move files
-and directories.
+your desktop or vice versa. There are a few different ways to transfer
+files and directories.
 
-If you're moving multiple files, it's easier to first combine them into
-a single object. The `tar` command turns a set of files or whole
-directory into a single archive file, usually with the file suffix
-`.tar.gz`. Creating an archive also does some compression. The amount
-depends on the content.
+If you're moving multiple files, first combining them into a single
+object can make things easier. The `tar` command turns a set of files or
+a whole directory into a single archive file, usually with the file
+suffix `.tar.gz`. Creating an archive also does some compression. The
+amount depends on the content.
 
 In my opinion, `tar` is a rare failure of bash to provide standalone
-commands for anything you need to do. `tar` is used to both create and
-unpack (extract) archive files, but telling it which one requires the
-use of several flags. You'll basically never use `tar` without a bunch
-of flags and the incantation is hard to remember. I google it every time
-I use it. The flags you'll use most often are in the cheatsheet in
-[Appendix @sec-append-cheat].
+commands for anything you need to do. `tar` is used to create and unpack
+(extract) archive files. Telling it which one requires several flags.
+You'll basically never use `tar` without a bunch of flags, and the
+incantation is hard to remember. I google it every time I use it. The
+flags you'll most often use are in the cheatsheet in [Appendix
+@sec-append-cheat].
 
 You can move files to or from a server with the `scp` command. `scp`
-(short for *secure copy*) is basically `cp`, but with an SSH connection
-in the middle.[^2-3-linux-9]
+(short for *secure copy*) is `cp`, but with an SSH connection in the
+middle.[^2-3-linux-9]
 
 [^2-3-linux-9]: It's worth noting that `scp` is now considered "insecure
     and outdated". The ways it is insecure are rather obscure and not
@@ -583,7 +570,7 @@ in the middle.[^2-3-linux-9]
 Since `scp` establishes an SSH connection, you need to make the request
 to somewhere that is accepting SSH connections. That means that whether
 you're copying something to or from a server, you'll run `scp` from a
-regular terminal on your laptop, not one that's already SSH-ed into your
+regular terminal on your laptop, not one already SSH-ed into your
 server.
 
 Regular `ssh` options work with `scp`, like `-i` and `-v`.
@@ -594,8 +581,8 @@ You can always copy and paste command outputs or write them to a file,
 but it can also be helpful to just chain a few commands together. Linux
 provides a few handy *operators* that you can use to make this easy.
 
-The simplest operator is the *pipe* `|`, which just takes the output of
-one command and makes it the input for the next command.
+The simplest operator is the *pipe* `|`, which takes the output of one
+command and makes it the input for the subsequent command.
 
 For example, you might want to see how many files are in a directory.
 The `wc -l` (word count, lines) command counts lines, so you could do
@@ -604,12 +591,12 @@ The `wc -l` (word count, lines) command counts lines, so you could do
 ::: callout-note
 ## Ceci n'est pas une pipe?
 
-The pipe should feel extremely familiar to R users.
+The pipe should feel familiar to R users.
 
 The pipe from the `{magrittr}` package, `%>%`, was introduced in 2013,
 and is a popular part of the `{tidyverse}`.[^2-3-linux-10] The
-`{magrittr}` pipe was inspired by both the Unix (Linux) pipe and the
-pipe operator in the `F#` programming language.
+`{magrittr}` pipe was inspired by pipe operators from Unix (Linux) and
+the `F#` programming language.
 
 Due to its popularity, the pipe `|>` was formally added to the base R
 language in R 4.1 in 2021.
@@ -618,8 +605,7 @@ language in R 4.1 in 2021.
 [^2-3-linux-10]: The title of this callout box is also the tagline for
     the `{magrittr}` package.
 
-There are a few operators that write the output of the left-hand side
-into a file.
+A few operators write the output of the left-hand side into a file.
 
 The `>` command takes the output of a command on the left and writes it
 as a new file. If the file you specify already exists, it will be
@@ -640,31 +626,31 @@ new public key to your `.ssh/authorized_keys` file.
     repeated as a character string. Otherwise `.env` would be treated as
     a command.
 
-There are times when you want to make files or directories with nothing
-in them. The `touch` command makes a blank file at the specified file
-path. If you `touch` a preexisting file, it updates the time the file
-was last updated without actually making any changes. This can be useful
-because some applications look at the timestamp on files to see if
-action is needed.
+Sometimes, you want to create empty files or directories. The `touch`
+command makes a blank file at the specified file path. If you `touch` a
+preexisting file, it updates the time it was last edited without making
+any changes. This can be useful because some applications use the file
+timestamp to see if action is needed.
 
 ## Comprehension Questions
 
 1.  What are the parts of a bash command?
-2.  Where do commands run? How do you know where they're going to run or
-    specify a relative path?
-3.  How can you copy, move, or delete a file? What about to or from a
+2.  What is the difference between a relative and an absolute path?
+3.  What are some ways to direct them to run in a particular place on
+    the filesystem?
+4.  How can you copy, move, or delete a file? What about to or from a
     server?
-4.  Create a mind map of the following terms: Operating System, Windows,
+5.  Create a mind map of the following terms: Operating System, Windows,
     MacOS, Unix, Linux, Distro, Ubuntu
-5.  What are the 3x3 options for Linux file permissions? How are they
+6.  What are the 3x3 options for Linux file permissions? How are they
     indicated in an `ls -l` command?
 
 ## Lab: Set up a user
 
 When you use your server's `.pem` key, you login as the root user, but
-that's too much power to acquire on a regular basis. Additionally, since
-your server is probably for multiple people, you're going to want to
-create users for them.
+that's too much power to acquire regularly. Additionally, since your
+server is probably for multiple people, you will want to create users
+for them.
 
 In this lab, you'll create a regular user for yourself and add an SSH
 key for them so you can directly login from your personal computer.
@@ -672,13 +658,13 @@ key for them so you can directly login from your personal computer.
 ### Step 1: Create a non-root user
 
 Let's create a user using the `adduser` command. This will walk us
-through a set of prompts to create a new user with a home directory and
-a password. Feel free to add any information you want -- or to leave it
+through prompts to create a new user with a home directory and a
+password. Feel free to add any information you want -- or to leave it
 blank -- when prompted.
 
 I'm going to use the username `test-user`. If you want to be able to
 copy/paste commands, I'd advise doing the same. If you were creating
-users based on real humans, I'd advise using their names.
+users for actual humans, I'd recommend using their names.
 
 ``` {.bash filename="Terminal"}
 > adduser test-user
@@ -696,7 +682,7 @@ them to the `sudo` group with
 Let's register an SSH key for the new user by adding the key from the
 last lab to the server user's `authorized_users` file.
 
-First, you need to get your public key to the server using scp.
+First, you must get your public key to the server using scp.
 
 For me, the command looks like this
 
@@ -712,16 +698,16 @@ with the server's `.pem` key because there isn't another one registered
 yet.
 :::
 
-Now the public key is on the server, but it's in the `ubuntu` user's
-home directory. You'll need to do the following:
+The public key is on the server but in the `ubuntu` user's home
+directory. You'll need to do the following:
 
 1.  Create `.ssh/authorized_keys` in `test-user`'s home directory.
 
 2.  Copy the contents of the public key you uploaded into the
     `authorized_keys` file (recall `>>`).
 
-3.  Make sure the `.ssh` directory and `authorized_keys` files are owned
-    by `test-user` with `700` permissions on `.ssh` and `600` on
+3.  Ensure the `.ssh` directory and `authorized_keys` files are owned by
+    `test-user` with `700` permissions on `.ssh` and `600` on
     `authorized_keys`.
 
 You could do this all as the admin user, but I'd recommend switching to
@@ -729,7 +715,7 @@ being `test-user` at some point with the `su` command.
 
 ::: callout-tip
 If you run into trouble assuming `sudo` with your new user, try exiting
-SSH and coming back. Sometimes these changes aren't picked up until you
+SSH and returning. Sometimes, these changes aren't picked up until you
 restart the shell.
 :::
 

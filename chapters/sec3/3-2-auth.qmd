@@ -121,7 +121,7 @@ existing LDAP/AD system.
 
 *Single Sign On (SSO)* is when you log in once to a standalone *identity
 provider* at the start of your workday. The identity provider gives you
-a secure SSO token that is responsible for granting access to various
+a secure *SSO token* that is responsible for granting access to various
 services you might use.[^3-2-auth-1] Usually, the acquisition and
 management of SSO tokens are hidden from the user, resulting in a
 pleasant experience where accessing different services throughout the
@@ -165,74 +165,19 @@ either is very similar as a user.
     Active Directory, which confusingly was for SSO, not Active
     Directory. That's probably why they changed the name.
 
-[^3-2-auth-3]: There is a technology called *Kerberos* that some
-    organizations use to accomplish SSO with LDAP/AD, though this is
-    rare.
+[^3-2-auth-3]: OIDC is an authentication standard based on the much
+    broader OAuth authorization standard. As a user, you'll never know
+    the difference.
+
+    There is a technology called *Kerberos* that some organizations use
+    to accomplish SSO with LDAP/AD, though this is rare.
 
 As I write this in 2023, there's a transition underway from on-prem
 systems like LDAP/AD to cloud-friendly SSO systems and the enhanced
 security they enable. In particular, the use of non-password credentials
-like biometrics and passphrases and the use of OAuth to do sophisticated
-authorization management inside enterprises are now cutting-edge, but
-will be standard practices within a few years.
-
-## Managing permissions
-
-Irrespective of the technology used, your organization will have
-policies about managing permissions that you must incorporate or adopt.
-
-::: callout-note
-There are meaningful differences in how LDAP, SAML, and OAuth
-communicate to services about permissions. That's a level of detail
-beyond this chapter -- more in [Appendix @sec-append-auth] if you're
-interested.
-:::
-
-If your organization has a policy that you're going to need to be able
-to enforce inside the data science environment, it's most likely a *Role
-Based Access Control (RBAC)* policy. In RBAC, permissions are assigned
-to an abstraction called a role. Users and groups are then given roles
-depending on their needs.
-
-For example, there might be a `manager` role that should have access to
-specific permissions in the HR software. This role would be applied to
-anyone in the `data-science-manager` group as well as the
-`data-engineering-manager` group.
-
-There are a few issues with RBAC. Most importantly, if there are many
-idiosyncratic permissions, creating tons of special roles is often
-simpler than figuring out how to harmonize them into a system.
-
-Many organizations haven't reached the complexity of adopting RBAC. They
-often use simple *Access Control Lists (ACLs)* of who can access each
-service.[^3-2-auth-4] ACLs have the advantage of being conceptually
-simple, but maintaining individual lists for each service is a lot of
-work with many services and users.
-
-[^3-2-auth-4]: Standard Linux permissions (POSIX permissons) that were
-    discussed in [Chapter @sec-linux] are a special case of ACLs. ACLs
-    allow setting individual-level permissions for any number of users
-    and groups, as opposed to the one owner, one group, and everyone
-    else permissions set for POSIX.
-
-    Linux distros now have support for ACLs on top of the standard POSIX
-    permissions.
-
-Some organizations are moving towards even more granular techniques than
-RBAC and are adopting *Attribute Based Access Control (ABAC)*. In ABAC,
-permissions are granted based on an interaction of user-level and
-object-level attributes and a rules engine.
-
-For example, you can imagine three distinct attributes a user could
-have: `data-science`, `data-engineer`, and `manager`. You could create a
-rules engine that provides access to different resources based on the
-combinations of these attributes.
-
-Relative to RBAC, ABAC is a more robust system that allows for more
-granular permissions, but it's a much bigger lift to configure
-initially. You've already encountered an ABAC system in the AWS IAM
-system. You were probably completely befuddled if you tried to configure
-anything in IAM. You can thank the power and complexity of ABAC.
+like passkeys and the use of OAuth to do sophisticated authorization
+management inside enterprises are now cutting-edge, but will be standard
+practices within a few years.
 
 ## Connecting to data sources
 
@@ -283,12 +228,68 @@ old, but very secure, technology called *Kerberos* that uses a *Kerberos
 Ticket* to connect to databases and file shares. Kerberos is most often
 used in on-prem Windows environments with LDAP/AD.
 
+## Managing permissions
+
+Irrespective of the technology used, your organization will have
+policies about managing permissions that you must incorporate or adopt.
+
+There are meaningful differences in how LDAP, SAML, and OAuth
+communicate to services about permissions. That's a level of detail
+beyond this chapter -- more in [Appendix @sec-append-auth] if you're
+interested.
+
+If your organization has a policy that you're going to need to be able
+to enforce inside the data science environment, it's most likely a *Role
+Based Access Control (RBAC)* policy. In RBAC, permissions are assigned
+to an abstraction called a role. Users and groups are then given roles
+depending on their needs.
+
+For example, there might be a `manager` role that should have access to
+specific permissions in the HR software. This role would be applied to
+anyone in the `data-science-manager` group as well as the
+`data-engineering-manager` group.
+
+There are a few issues with RBAC. Most importantly, if there are many
+idiosyncratic permissions, creating tons of special roles is often
+simpler than figuring out how to harmonize them into a system.
+
+Many organizations haven't reached the complexity of adopting RBAC. They
+often use simple *Access Control Lists (ACLs)* of who can access each
+service.[^3-2-auth-4] ACLs have the advantage of being conceptually
+simple, but maintaining individual lists for each service is a lot of
+work with many services and users.
+
+[^3-2-auth-4]: Standard Linux permissions (POSIX permissons) that were
+    discussed in [Chapter @sec-linux] are a special case of ACLs. ACLs
+    allow setting individual-level permissions for any number of users
+    and groups, as opposed to the one owner, one group, and everyone
+    else permissions set for POSIX.
+
+    Linux distros now have support for ACLs on top of the standard POSIX
+    permissions.
+
+Some organizations are moving towards even more granular techniques than
+RBAC and are adopting *Attribute Based Access Control (ABAC)*. In ABAC,
+permissions are granted based on an interaction of user-level and
+object-level attributes and a rules engine.
+
+For example, you can imagine three distinct attributes a user could
+have: `data-science`, `data-engineer`, and `manager`. You could create a
+rules engine that provides access to different resources based on the
+combinations of these attributes.
+
+Relative to RBAC, ABAC is a more robust system that allows for more
+granular permissions, but it's a much bigger lift to configure
+initially. You've already encountered an ABAC system in the AWS IAM
+system. You were probably completely befuddled if you tried to configure
+anything in IAM. You can thank the power and complexity of ABAC.
+
 ## Comprehension Questions
 
 1.  What is the difference between authentication and authorization?
-2.  What are some different ways to manage permissions? What are the
-    advantages and drawbacks of each?
-3.  What are some advantages of token-based auth? Why are most
+2.  What are some advantages of token-based auth? Why are most
     organizations adopting it? Are there any drawbacks?
-4.  For each of the following, is it a username + password method or a
+3.  For each of the following, is it a username + password method or a
     token method? PAM, LDAP, Kerberos, SAML, ODIC/OAuth
+4.  What are some different ways to manage permissions? What are the
+    advantages and drawbacks of each?
