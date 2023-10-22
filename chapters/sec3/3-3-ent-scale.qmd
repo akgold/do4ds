@@ -257,46 +257,67 @@ have a competent Kubernetes admin, you should be in good shape, but you
 should be careful that setting up your data science environment doesn't
 become someone else's chance to learn Kubernetes.
 
-## Size an enterprise cluster
+## Sizing and scaling clusters
 
-Your IT/Admin team probably knows much about scaling a computational
-cluster, but little about data scientists use computational resources.
-They want to know how many machines, what size, and in what
-configuration will best support your data science work. Here are some
-mental models I've found helpful to communicate with IT/Admin teams
-about scaling an enterprise cluster.
+Your IT/Admin team probably knows a lot about how to run a cluster but
+not much about how data scientists use computational resources. To run a
+cluster for your work, they will need your help deciding how many
+machines you need and how to size and configure those machines. Here are
+some mental models I've found helpful to communicate with IT/Admin teams
+about sizing and scaling an enterprise cluster.
 
-Usually, a data science organization has a *baseline load*. This
-consists of everyday data science users working on the platform, jobs
-running, and visitors coming to apps and reports. Aside from the total
-load for this work, the IT/Admins will also need to know the minimum
-node size to support a workload. For example, some organization could
-run all their jobs on machines with 16 GB of RAM, but that would be
-woefully inadequate for others.
+Generally, organizations run the workbench in one cluster and the
+deployment platform in a second. That's because the usage patterns are
+very different between the two. From a resource perspective, a
+deployment platform looks a lot like any other application hosting
+platform. Your IT/Admin team will probably want help figuring out the
+size, but they'll be comfortable with the basic idea.
 
-Second, there's *burst usage*. This is extra capacity sometimes needed
-to support additional users, jobs, or applications. For example, your
-organization might occasionally do workshops that pull in more users
-than usual, or you're launching a new data science app that will add
-load to the cluster.
+A data science workbench, on the other hand, probably looks nothing like
+the platforms your IT/Admin team is most used to supporting. A workbench
+supports a relatively small number of professionals doing
+computationally-intensive tasks, but in patterns that may be unusual for
+the IT/Admin team to support.
+
+Usually, a data science platform has a *baseline load*. For the
+workbench, this is the average number of data professionals who visit on
+a daily basis and the scale of the jobs they're running. For the
+deployment platform, it's the number of jobs and app and API sessions
+that run on a normal day. Aside from the total load for this work, the
+IT/Admins will also need to know the minimum node size to support a
+single session. For example, some organizations have a large cluster,
+but each job could comfortably fit on a machine with 16 GB of RAM, but
+that would be woefully inadequate for others.
+
+Second, there's *burst usage*. This is extra capacity across both the
+workbench and deployment environment that is sometimes needed to support
+additional users, jobs, or applications. For example, your organization
+might occasionally do workshops that pull in more users than usual, or
+you're launching a new data science app that will add load to the
+deployment cluster.
 
 Last, there's the need for *special-purpose computational resources*.
 These needs for very large or GPU-backed instances are usually transient
 for particular projects with very large data or while training specific
-machine learning models.
+machine learning models. These are common needs for a workbench
+environment but are less likely in the deployment environment unless
+you're re-training machine learning models on a schedule in the
+deployment environment.
 
 The IT/Admin team will be pleased if you can help them figure out a
 reasonable estimate for each of the following:
 
 1.  Baseline number of CPU cores, amount of RAM, and the largest jobs
-    you'll have to accommodate daily.
+    you'll have to accommodate daily for the workbench and deployment
+    environment.
 2.  Burst usage in terms of frequency, duration of burst demand, and
     amount of CPU cores and RAM as best you can estimate.
 3.  Special-purpose needs in frequency, duration, job sizes, and GPU
     needs.
 
-It will be unaffordable for most teams to keep all this capacity
-continuously available, and a scaling strategy is needed.
+Most teams will find it unaffordable to keep all this capacity
+continuously available, and your IT/Admin team will want to devise a
+scaling strategy.
 
 Usually, the IT/Admin team will target some always-on capacity, often
 matching the baseline load. Ideally, this can be run on just one
@@ -305,85 +326,80 @@ laptop-sized machines is common. In AWS, this often means a certain
 number of `t3.xlarges` with four CPU cores and 16 GB of RAM or
 `t3.2xlarges` with twice that capacity.
 
-When burst usage or special purpose machines are needed and the need is
-for a discrete time (i.e., a day or longer), it's often easiest for an
-IT/Admin to use IaC to stand up more machines temporarily. Creating a
-standalone environment for special-purpose projects or manually
-expanding the size of an existing cluster are often the simplest,
-especially if your organization has good IaC practices.
+When burst usage or special purpose machines are needed for a discrete
+time (i.e., a day or longer), it's often easiest for an IT/Admin to
+manually stand up more machines with IaC. That means creating a
+temporary standalone environment for special-purpose projects or
+manually expanding the size of an existing cluster.
 
 However, manual adjustment doesn't work for some organizations.
 Organizations with complex data source and authentication interactions
 may be unable to create new clusters quickly. In others, organizational
-rules and requirements might make it hard to stand up nodes, or easy to
-get more nodes for an existing cluster but hard to get a new cluster.
+rules and requirements might make it hard to stand up new nodes.
 
-Other organizations want to run only one cluster and want that cluster
-to scale itself automatically. Some very competent IT/Admin teams can
-create a single autoscaling data science cluster, but it's hard. I've
-often found that organizations trying for a single cluster are besotted
-with the elegance of the idea and underestimate the difficulty of making
-it work. Unless you want to have a bad time, you may have to impress
-upon your IT/Admins that running heterogeneous workloads in one cluster
-isn't trivial and that a data science workbench is a particularly
-awkward fit for the autoscaling frameworks they probably prefer.
+These other organizations often want to run only one cluster and may
+want that cluster to scale itself automatically. Some very competent
+IT/Admin teams can create a single autoscaling data science cluster, but
+it's hard. I've often found that organizations trying for a single
+cluster are besotted with the elegance of the idea and underestimate the
+difficulty of making it work. You may have to impress upon your
+IT/Admins that running heterogeneous workloads in one cluster isn't
+trivial and that a data science workbench is a particularly awkward fit
+for the autoscaling frameworks they probably prefer.
 
-Autoscaling to make a cluster bigger is never a problem, but things get
-tricky when you try to scale down. Most autoscaling frameworks choose
-the cluster size based on actual resource usage (usually CPU). But CPU
-usage is very uneven for a data science environment, particularly a
-workbench. Most activities in a data science IDE, like typing code,
-debugging, or examining data, use minuscule amounts of CPU. Your brain
-is cranking, but the CPU is not.
+Autoscaling to make a cluster bigger is never a problem, but autoscaling
+a workbench cluster back down is tricky. Most autoscaling frameworks
+choose the cluster size based on actual resource usage (usually CPU).
+But CPU usage is very uneven for a workbench cluster. Most activities in
+a data science workbench, like typing code, debugging, or examining
+data, use minuscule amounts of CPU. Your brain is cranking, but the CPU
+is not.
 
-From the perspective of a CPU-based autoscaling framework, you're not
-doing anything and it will want to rip the node out from under you. This
-is an incredibly frustrating user experience. Autoscaling frameworks
-that work well for a data science workbench need to have a notion of
-active sessions that doesn't depend on actual resource usage. If your
-IT/Admin wants to autoscale your data science workbench, this is the
-number one thing you must impress on them, or you will have a bad time.
+That means a CPU-based autoscaling framework will register that node as
+unused and think it's ok to autoscale away. As a cluster user, you will
+experience this as a frustratingly unstable system. Autoscaling
+frameworks that work well for a data science workbench need to have a
+notion of active sessions that isn't based on moment-to-moment resource
+usage.
 
-These days, autoscaling implies Kubernetes for many organizations.
-Unfortunately, Kubernetes is an awkward fit for a heterogeneous data
-science cluster for three reasons. First, Kubernetes pods are generally
+These days, many IT/Admins automatically assume autoscaling means
+Kubernetes, as it has powerful tools for managing cluster size.
+Unfortunately, Kubernetes can be an awkward fit for a data science
+workbench depending on your needs. First, Kubernetes pods are generally
 limited to the size of the underlying nodes. So if you've got a cluster
 of `t3.xlarge`s, pods are usually limited to 16 GB of RAM or less.
-Second, Kubernetes has powerful tooling to scale a cluster up and down
-quickly. Unfortunately, it is usually CPU-based and you must trick the
-Kubernetes scheduling engine to work well for a data science
-environment. Last, Kubernetes allows for heterogeneous nodes (e.g.,
-large or GPU-backed) in one cluster, but it's not a core use case and
-can be awkward to configure.[^3-3-ent-scale-5]
+Second, Kubernetes autoscaling is usually CPU-based and you must trick
+the Kubernetes scheduling engine to work well for a data science
+workbench. Last, Kubernetes allows for heterogeneous nodes (e.g., large
+or GPU-backed) in one cluster, but it's not a core use case and can be
+awkward to configure.[^3-3-ent-scale-5]
 
 [^3-3-ent-scale-5]: You, or your IT/Admin, will have to work with
     *taints*, *tolerations*, *node pool selectors*, *node affinities*,
     and more.
 
-A better solution exists, though it's often overlooked -- *high
-performance computing (HPC)* frameworks like *Slurm*, *LSF*, and *Grid
-Engine*. HPC is that it allows users to address a cluster of many
-machines as one. This allows creating supercomputers with thousands of
-CPU cores, and so that's when people mostly think about HPC. But HPC
-also works quite well at a more modest size, for example, to run a
-workload requiring 30 GB of RAM in a cluster with only `t3.xlarge`s with
-16GB of RAM each.
+*High performance computing (HPC)* frameworks like *Slurm* are often a
+better fit for a data science workbench. Most people think about HPC in
+the context of supercomputing. That's because HPC allows users to
+address a cluster of many machines as one, so you can have thousands of
+CPU cores working on one job. But HPC also works quite well at a more
+modest size, for example, to run a workload requiring 10 cores in a
+cluster with only `t3.xlarge`s with 4 cores each.
 
-Even if you don't have any node sizing issues, HPC can be a great fit
-for autoscaling or a cluster with heterogeneous nodes. HPC frameworks
-are generally quite session-aware, making them a great choice for
-autoscaling a data science workbench. Most also support different
+Even if you don't have any node sizing issues, HPC can be an excellent
+fit for autoscaling or a cluster with heterogeneous nodes. HPC
+frameworks are generally quite session-aware, making them a good choice
+for autoscaling a data science workbench. Most also support different
 categories of work (called *queues* in Slurm) right out of the box. If
-you're interested in trying out Slurm, AWS has a great service called
+you're interested in trying out Slurm, AWS has a service called
 *ParallelCluster* that allows users to set up an HPC cluster with no
 additional cost beyond the EC2 instances in the cluster.
 
-The upshot is that it's easiest to create standalone data science
-environments for special-purpose machines or manually scale a cluster.
-Most IT/Admins will use a standard autoscaling framework or Kubernetes
-if you need heterogeneous nodes or autoscaling. If possible, you should
-explain the difficulties with autoscaling and suggest that HPC may be a
-better solution.
+The upshot is that running a single data science cluster that autoscales
+is hard. It's usually easier to create one-off data science environments
+or manually scale a cluster. If your organization does want a single
+environment, most IT/Admins will use a standard autoscaling framework or
+Kubernetes, but HPC may be a better solution.
 
 ## Comprehension Questions
 
