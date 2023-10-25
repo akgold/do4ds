@@ -360,18 +360,12 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">Table of contents</h2>
    
-  <ul>
+  <ul class="collapse">
   <li><a href="#what-https-does" id="toc-what-https-does" class="nav-link active" data-scroll-target="#what-https-does"><span class="header-section-number">14.1</span> What HTTPS does</a></li>
   <li><a href="#how-ssltls-works" id="toc-how-ssltls-works" class="nav-link" data-scroll-target="#how-ssltls-works"><span class="header-section-number">14.2</span> How SSL/TLS works</a></li>
   <li><a href="#getting-and-using-ssl-certificates" id="toc-getting-and-using-ssl-certificates" class="nav-link" data-scroll-target="#getting-and-using-ssl-certificates"><span class="header-section-number">14.3</span> Getting and using SSL certificates</a></li>
   <li><a href="#comprehension-questions" id="toc-comprehension-questions" class="nav-link" data-scroll-target="#comprehension-questions"><span class="header-section-number">14.4</span> Comprehension Questions</a></li>
-  <li><a href="#lab-configure-ssl" id="toc-lab-configure-ssl" class="nav-link" data-scroll-target="#lab-configure-ssl"><span class="header-section-number">14.5</span> Lab: Configure SSL</a>
-  <ul class="collapse">
-  <li><a href="#step-1-follow-instructions-to-add-ssl-for-nginx" id="toc-step-1-follow-instructions-to-add-ssl-for-nginx" class="nav-link" data-scroll-target="#step-1-follow-instructions-to-add-ssl-for-nginx"><span class="header-section-number">14.5.1</span> Step 1: Follow instructions to add SSL for NGINX</a></li>
-  <li><a href="#step-2-let-rstudio-server-know-its-on-https" id="toc-step-2-let-rstudio-server-know-its-on-https" class="nav-link" data-scroll-target="#step-2-let-rstudio-server-know-its-on-https"><span class="header-section-number">14.5.2</span> Step 2: Let RStudio Server know it’s on HTTPS</a></li>
-  <li><a href="#step-3-configure-security-groups" id="toc-step-3-configure-security-groups" class="nav-link" data-scroll-target="#step-3-configure-security-groups"><span class="header-section-number">14.5.3</span> Step 3: Configure security groups</a></li>
-  <li><a href="#step-4-we-did-it" id="toc-step-4-we-did-it" class="nav-link" data-scroll-target="#step-4-we-did-it"><span class="header-section-number">14.5.4</span> Step 4: We did it!</a></li>
-  </ul></li>
+  <li><a href="#lab-configure-ssl" id="toc-lab-configure-ssl" class="nav-link" data-scroll-target="#lab-configure-ssl"><span class="header-section-number">14.5</span> Lab: Configure SSL</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/akgold/do4ds/edit/main/chapters/sec2/2-8-ssl.qmd" class="toc-action">Edit this page</a></p></div></div></nav>
     </div>
@@ -451,8 +445,8 @@ SSL vs TLS
 <h2 data-number="14.5" class="anchored" data-anchor-id="lab-configure-ssl"><span class="header-section-number">14.5</span> Lab: Configure SSL</h2>
 <p>We’re going to use Let’s Encrypt’s <em>certbot</em> utility to automatically generate an SSL certificate, share it with the CA, install it on the server, and even update the NGINX configuration.</p>
 <p>If you’ve never had to manually configure SSL in the past, let me tell you, this is magical!</p>
-<section id="step-1-follow-instructions-to-add-ssl-for-nginx" class="level3" data-number="14.5.1">
-<h3 data-number="14.5.1" class="anchored" data-anchor-id="step-1-follow-instructions-to-add-ssl-for-nginx"><span class="header-section-number">14.5.1</span> Step 1: Follow instructions to add SSL for NGINX</h3>
+<section id="step-1-follow-instructions-to-add-ssl-for-nginx" class="level3">
+<h3 class="anchored" data-anchor-id="step-1-follow-instructions-to-add-ssl-for-nginx">Step 1: Follow instructions to add SSL for NGINX</h3>
 <p>Using Let’s Encrypt to add an SSL certificate to NGINX configuration is a very common task. As of this writing, there’s a great blog post entitled <em>Using Free Let’s Encrypt SSL/TLS Certificates with NGINX</em>. I’d encourage you to look for that article (or something similar) and follow the steps there.</p>
 <p>At a high level, what you’ll do is</p>
 <ol type="1">
@@ -464,8 +458,8 @@ SSL vs TLS
 <p>Relative to the old version, you’ll notice two things. First, the line that read <code>listen 80</code> is gone from the server block because we no longer listen for HTTP traffic. In its place, there’s now a <code>listen 443</code> along with lines that tell NGINX where to find the certificate on the server.</p>
 <p>Scrolling down a little, there’s a new server block that is listening on <span class="math inline">\(80\)</span>. This block returns a <code>301</code> status code (permanent redirect) and sends traffic to HTTPS on <span class="math inline">\(443\)</span>.</p>
 </section>
-<section id="step-2-let-rstudio-server-know-its-on-https" class="level3" data-number="14.5.2">
-<h3 data-number="14.5.2" class="anchored" data-anchor-id="step-2-let-rstudio-server-know-its-on-https"><span class="header-section-number">14.5.2</span> Step 2: Let RStudio Server know it’s on HTTPS</h3>
+<section id="step-2-let-rstudio-server-know-its-on-https" class="level3">
+<h3 class="anchored" data-anchor-id="step-2-let-rstudio-server-know-its-on-https">Step 2: Let RStudio Server know it’s on HTTPS</h3>
 <p>Before we exit and test it out, let’s do one more thing. As mentioned when we configured NGINX the first time, RStudio Server does a bunch of proxying traffic back to itself, so it needs to know that it’s on HTTPS.</p>
 <p>You can add a header to all traffic letting RStudio Server know the protocol is HTTPS by adding this line to your <code>nginx.conf</code>:</p>
 <div class="code-with-filename">
@@ -477,15 +471,15 @@ SSL vs TLS
 <p>Ok, now try to visit RStudio Server at your URL and you’ll find that…it’s broken again.</p>
 <p>Before you read along, think for just a moment. Why is it broken?</p>
 </section>
-<section id="step-3-configure-security-groups" class="level3" data-number="14.5.3">
-<h3 data-number="14.5.3" class="anchored" data-anchor-id="step-3-configure-security-groups"><span class="header-section-number">14.5.3</span> Step 3: Configure security groups</h3>
+<section id="step-3-configure-security-groups" class="level3">
+<h3 class="anchored" data-anchor-id="step-3-configure-security-groups">Step 3: Configure security groups</h3>
 <p>If your thoughts went to something involving ports and AWS security groups, you’re right!</p>
 <p>By default, our server was open to SSH traffic on port <span class="math inline">\(22\)</span>. Since then, we may have opened or closed port <span class="math inline">\(80\)</span>, <span class="math inline">\(8000\)</span>, <span class="math inline">\(8080\)</span>, <span class="math inline">\(8787\)</span>, and/or <span class="math inline">\(3838\)</span>.</p>
 <p>But now the proxy is exclusively receiving HTTPS traffic on <span class="math inline">\(443\)</span> and redirecting or refusing all other traffic. You have to adjust the security group so there are only 2 rules – one that allows SSH traffic on <span class="math inline">\(22\)</span> and one that allows HTTPS traffic on <span class="math inline">\(443\)</span>.</p>
 <p>It’s up to you whether you want to leave port <span class="math inline">\(80\)</span> open. If you do, it will redirect people to HTTPS on <span class="math inline">\(443\)</span>. If you close it entirely, people who come to port <span class="math inline">\(80\)</span> will be blocked and will eventually get a timeout. If people are already coming to the server via HTTP, it might be nice to leave <span class="math inline">\(80\)</span> open so they get a smooth redirect experience instead of getting confusingly blocked.</p>
 </section>
-<section id="step-4-we-did-it" class="level3" data-number="14.5.4">
-<h3 data-number="14.5.4" class="anchored" data-anchor-id="step-4-we-did-it"><span class="header-section-number">14.5.4</span> Step 4: We did it!</h3>
+<section id="step-4-we-did-it" class="level3">
+<h3 class="anchored" data-anchor-id="step-4-we-did-it">Step 4: We did it!</h3>
 <p>This is the end of the labs in this book.</p>
 <p>At this point, your server is fully configured. You have three real data science services available on a server at a domain of your choosing, all protected by HTTPS.</p>
 <p>Take a moment to celebrate. It’s very cool to be able to stand up and administer your own data science workbench. Whether you’re working at a small organization or you’re a hobbyist, you can really use this server to do real data science work.</p>
