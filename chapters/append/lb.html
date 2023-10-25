@@ -292,7 +292,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/auth.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span></a>
+ <span class="menu-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technical Detail: Auth Technologies</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -352,32 +352,32 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p><a href="../sec3/3-3-ent-scale.html">Chapter&nbsp;<span>17</span></a> introduced you to the idea of a load balancer as a kind of proxy server to serve as the “front door” to a computational cluster. This appendix chapter will explain a few of the different configuration options for load balancers that your organization’s IT/Admins may consider.</p>
-<p>Depending on your organization, they may run their own load balancing servers using software like <em>F5</em>, <em>HA Proxy</em>, or <em>Hostwinds</em>. If your organization is in the cloud, it’s very likely they use a cloud load balancer like AWS <em>ELB</em> <em>(Elastic Load Balancer)</em>, Azure <em>App Proxy</em>, or GCP <em>Cloud Load Balancing</em>. If they’re running in Kubernetes, they are likely to use the open-source <em>Traefik</em>.</p>
+<p><a href="../sec3/3-3-ent-scale.html">Chapter&nbsp;<span>17</span></a> introduced the idea of a load balancer as the “front door” to a computational cluster. This appendix chapter will explain a few of the different configuration options for load balancers that your organization’s IT/Admins may consider.</p>
+<p>Depending on your organization, they may run load balancing servers using software like <em>F5</em>, <em>HA Proxy</em>, or <em>Hostwinds</em>. If your organization is in the cloud, it probably uses the cloud provider’s load balancer like AWS <em>ELB</em> <em>(Elastic Load Balancer)</em>, Azure <em>App Proxy</em>, or GCP <em>Cloud Load Balancing</em>. If they’re running in Kubernetes, they are likely to use the open-source <em>Traefik</em>.</p>
 <section id="load-balancer-settings" class="level2" data-number="B.1">
 <h2 data-number="B.1" class="anchored" data-anchor-id="load-balancer-settings"><span class="header-section-number">B.1</span> Load balancer settings</h2>
-<p>Regardless of which load balancer you’re using, a basic requirement is that it knows what nodes are accepting traffic. This is accomplished by configuring a <em>health check/heartbeat</em> for the application on the node. A health check is a feature of the application that responds to periodic pings from the load balancer. If no response comes back, the load balancer treats that node as unhealthy and doesn’t send traffic there.</p>
-<p>One other feature that may come up is <em>sticky sessions</em> or <em>sticky cookies</em>. For stateful applications, like Shiny apps, you want to get back to the same node in the cluster so you can resume a previous session. In most load balancers, this is just an option you can activate.</p>
+<p>Regardless of which load balancer you’re using, a basic requirement is that it knows what nodes are accepting traffic. This is accomplished by configuring a <em>health check/heartbeat</em> for the application on the node. A health check is an application feature that responds to periodic pings from the load balancer. If no response comes back, the load balancer treats that node as unhealthy and doesn’t send traffic there.</p>
+<p>For applications that maintain user state, like Shiny apps, you want to get back to the same node in the cluster so you can resume a previous session. This can be enabled with <em>sticky sessions</em> or <em>sticky cookies</em>. In most load balancers, this is simply an option you can activate.</p>
 </section>
 <section id="ways-to-configure-load-balancing" class="level2" data-number="B.2">
 <h2 data-number="B.2" class="anchored" data-anchor-id="ways-to-configure-load-balancing"><span class="header-section-number">B.2</span> Ways to configure load balancing</h2>
-<p>The simplest form of load balancing is to just rotate traffic to each node that is healthy in a <em>round-robin</em> configuration. Depending on the capabilities of the load balancer and what metrics are emitted by the application, it may also be possible or desirable to do more complicated load balancing that pays attention to how loaded different nodes are.</p>
-<p>Usually, load balancers are configured to send traffic to all the nodes in the cluster in an <em>active/active</em> configuration. It is also possible to configure the load balancer in an <em>active/passive</em> configuration to send traffic to only some of the nodes, with the rest remaining inert until they are switched on, usually in the event of a failure in the active ones. This is sometimes called a <em>blue/green</em> or <em>red/black</em> configuration when it’s used to diminish downtime in upgrades and migrations.</p>
+<p>The simplest form of load balancing is to rotate traffic to each healthy node in a <em>round-robin</em> configuration. Depending on the capabilities of the load balancer and what metrics are emitted by the application, it may also be possible or desirable to do more sophisticated load balancing that routes sessions according to how loaded each node is.</p>
+<p>Usually, load balancers are configured to send traffic to all the nodes in the cluster in an <em>active/active</em> configuration. It is also possible to configure the load balancer in an <em>active/passive</em> configuration to send traffic to only some of the nodes, with the rest remaining inert until they are switched on – usually in the event of a failure in the active ones. This is sometimes called a <em>blue/green</em> or <em>red/black</em> configuration when it’s used to diminish downtime in upgrades and migrations.</p>
 </section>
 <section id="shared-state" class="level2" data-number="B.3">
 <h2 data-number="B.3" class="anchored" data-anchor-id="shared-state"><span class="header-section-number">B.3</span> Shared state</h2>
-<p>Aside from the load balancer, the nodes need to be able to share state with each other so users can have the same experience on each node. The requirements for that shared state depend on the software.</p>
+<p>Aside from the load balancer, the nodes need to be able to share state so users can have the same experience on each node. The requirements for that shared state depend on the software.</p>
 <p>Often the shared state takes the form of a database (often Postgres) and/or <em>Network Attached Storage (NAS, pronounced naahz)</em> for things that get stored in a filesystem.</p>
-<p>If your NAS is exclusively for Linux, you it would use <em>NFS (Network File System)</em>. If Windows is involved, you’d use <em>SMB (Server Message Block)</em> or <em>Samba</em> to connect SMB to a Linux server. There’s also an outdated Windows NAS called <em>CIFS (Common Internet File System)</em> that you might see in older systems.</p>
+<p>If your NAS is exclusively for Linux, it would use <em>NFS (Network File System)</em>. If Windows is involved, you’d use <em>SMB (Server Message Block)</em> or <em>Samba</em> to connect SMB to a Linux server. There’s also an outdated Windows NAS called <em>CIFS (Common Internet File System)</em> that you might see in older systems.</p>
 <p>Each of the cloud providers has a NAS offering. AWS has <em>EFS (Elastic File System)</em> and <em>FSx</em>. Azure has <em>Azure File</em>, and GCP has <em>Filestore</em>.</p>
 </section>
 <section id="upgrades-in-ha" class="level2" data-number="B.4">
 <h2 data-number="B.4" class="anchored" data-anchor-id="upgrades-in-ha"><span class="header-section-number">B.4</span> Upgrades in HA</h2>
-<p>Sometimes IT/Admins want to run an HA cluster with software that supports <em>zero downtime upgrades</em>. In order to do a zero-downtime upgrade, you need to take some nodes offline, upgrade them, put them back online, and then upgrade the rest of the nodes.</p>
-<p>There are a two features the application you’re upgrading needs to support to accomplish this feat. If it doesn’t support both, you’ll need to endure some downtime to do an upgrade.</p>
+<p>Sometimes IT/Admins want to upgrade the software running in the cluster without taking the service offline. This is called a <em>zero-downtime upgrade</em>. In a zero-downtime upgrade, you take some nodes offline, upgrade them, put them back online, and then upgrade the remainder.</p>
+<p>To accomplish this feat, there are two features the application needs to support. If it doesn’t support both, you’ll need to endure some downtime to do an upgrade.</p>
 <p>The first is <em>node draining</em>. If you just naively removed a node, you might kill someone’s active session. Instead, you’d want to configure the node so that it doesn’t kill any existing sessions but also doesn’t accept any new ones. As the current sessions end, the node empties and you can safely take it offline when all the sessions are gone.</p>
-<p>The second is <em>rolling upgrade</em>. Some software supports being in a load balanced cluster with different versions of the software and other does not. If your software doesn’t support a cluster with mixed versions, a rolling upgrade won’t be possible. Supporting a rolling upgrade is relatively rare. It requires that the cluster understand how to maintain metadata across different versions simultaneously, which is a tricky bit of application programming.</p>
-<p>If your application doesn’t support zero downtime upgrades, some organizations like to get close by building a second copy of the environment, getting it almost live, and then taking downtime just to switch the networking over. That’s generally much faster than building the whole thing during downtime.</p>
+<p>The second is <em>rolling upgrade</em>, which is the ability to support mixed software versions in the same cluster. When you upgrade a piece of software, there are often changes to how the data in the shared state is stored. That means the creators would need to undertake painstaking work to avoid conflicts during the upgrade process. Because it’s tricky to support active sessions in a cluster with mixed versions, it’s relatively uncommon.</p>
+<p>If your application doesn’t support zero downtime upgrades, some organizations like to get close by building a second copy of the server and its applications, getting it almost live, and then taking downtime solely to switch the networking over. That’s generally much faster than building the whole thing during downtime.</p>
 
 
 </section>
@@ -619,7 +619,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="../../chapters/append/auth.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Auth Technologies</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">A</span>&nbsp; <span class="chapter-title">Technical Detail: Auth Technologies</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
