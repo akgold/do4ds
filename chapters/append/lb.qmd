@@ -1,14 +1,13 @@
 # Technical Detail: Load balancers {#sec-append-lb}
 
-[Chapter @sec-ent-scale] introduced you to the idea of a load balancer
-as a kind of proxy server to serve as the "front door" to a
-computational cluster. This appendix chapter will explain a few of the
-different configuration options for load balancers that your
-organization's IT/Admins may consider.
+[Chapter @sec-ent-scale] introduced the idea of a load balancer as the
+"front door" to a computational cluster. This appendix chapter will
+explain a few of the different configuration options for load balancers
+that your organization's IT/Admins may consider.
 
-Depending on your organization, they may run their own load balancing
-servers using software like *F5*, *HA Proxy*, or *Hostwinds*. If your
-organization is in the cloud, it's very likely they use a cloud load
+Depending on your organization, they may run load balancing servers
+using software like *F5*, *HA Proxy*, or *Hostwinds*. If your
+organization is in the cloud, it probably uses the cloud provider's load
 balancer like AWS *ELB* *(Elastic Load Balancer)*, Azure *App Proxy*, or
 GCP *Cloud Load Balancing*. If they're running in Kubernetes, they are
 likely to use the open-source *Traefik*.
@@ -18,29 +17,28 @@ likely to use the open-source *Traefik*.
 Regardless of which load balancer you're using, a basic requirement is
 that it knows what nodes are accepting traffic. This is accomplished by
 configuring a *health check/heartbeat* for the application on the node.
-A health check is a feature of the application that responds to periodic
-pings from the load balancer. If no response comes back, the load
-balancer treats that node as unhealthy and doesn't send traffic there.
+A health check is an application feature that responds to periodic pings
+from the load balancer. If no response comes back, the load balancer
+treats that node as unhealthy and doesn't send traffic there.
 
-One other feature that may come up is *sticky sessions* or *sticky
-cookies*. For stateful applications, like Shiny apps, you want to get
-back to the same node in the cluster so you can resume a previous
-session. In most load balancers, this is just an option you can
-activate.
+For applications that maintain user state, like Shiny apps, you want to
+get back to the same node in the cluster so you can resume a previous
+session. This can be enabled with *sticky sessions* or *sticky cookies*.
+In most load balancers, this is simply an option you can activate.
 
 ## Ways to configure load balancing
 
-The simplest form of load balancing is to just rotate traffic to each
-node that is healthy in a *round-robin* configuration. Depending on the
-capabilities of the load balancer and what metrics are emitted by the
-application, it may also be possible or desirable to do more complicated
-load balancing that pays attention to how loaded different nodes are.
+The simplest form of load balancing is to rotate traffic to each healthy
+node in a *round-robin* configuration. Depending on the capabilities of
+the load balancer and what metrics are emitted by the application, it
+may also be possible or desirable to do more sophisticated load
+balancing that routes sessions according to how loaded each node is.
 
 Usually, load balancers are configured to send traffic to all the nodes
 in the cluster in an *active/active* configuration. It is also possible
 to configure the load balancer in an *active/passive* configuration to
 send traffic to only some of the nodes, with the rest remaining inert
-until they are switched on, usually in the event of a failure in the
+until they are switched on -- usually in the event of a failure in the
 active ones. This is sometimes called a *blue/green* or *red/black*
 configuration when it's used to diminish downtime in upgrades and
 migrations.
@@ -48,18 +46,18 @@ migrations.
 ## Shared state
 
 Aside from the load balancer, the nodes need to be able to share state
-with each other so users can have the same experience on each node. The
-requirements for that shared state depend on the software.
+so users can have the same experience on each node. The requirements for
+that shared state depend on the software.
 
 Often the shared state takes the form of a database (often Postgres)
 and/or *Network Attached Storage (NAS, pronounced naahz)* for things
 that get stored in a filesystem.
 
-If your NAS is exclusively for Linux, you it would use *NFS (Network
-File System)*. If Windows is involved, you'd use *SMB (Server Message
-Block)* or *Samba* to connect SMB to a Linux server. There's also an
-outdated Windows NAS called *CIFS (Common Internet File System)* that
-you might see in older systems.
+If your NAS is exclusively for Linux, it would use *NFS (Network File
+System)*. If Windows is involved, you'd use *SMB (Server Message Block)*
+or *Samba* to connect SMB to a Linux server. There's also an outdated
+Windows NAS called *CIFS (Common Internet File System)* that you might
+see in older systems.
 
 Each of the cloud providers has a NAS offering. AWS has *EFS (Elastic
 File System)* and *FSx*. Azure has *Azure File*, and GCP has
@@ -67,14 +65,14 @@ File System)* and *FSx*. Azure has *Azure File*, and GCP has
 
 ## Upgrades in HA
 
-Sometimes IT/Admins want to run an HA cluster with software that
-supports *zero downtime upgrades*. In order to do a zero-downtime
-upgrade, you need to take some nodes offline, upgrade them, put them
-back online, and then upgrade the rest of the nodes.
+Sometimes IT/Admins want to upgrade the software running in the cluster
+without taking the service offline. This is called a *zero-downtime
+upgrade*. In a zero-downtime upgrade, you take some nodes offline,
+upgrade them, put them back online, and then upgrade the remainder.
 
-There are a two features the application you're upgrading needs to
-support to accomplish this feat. If it doesn't support both, you'll need
-to endure some downtime to do an upgrade.
+To accomplish this feat, there are two features the application needs to
+support. If it doesn't support both, you'll need to endure some downtime
+to do an upgrade.
 
 The first is *node draining*. If you just naively removed a node, you
 might kill someone's active session. Instead, you'd want to configure
@@ -82,16 +80,16 @@ the node so that it doesn't kill any existing sessions but also doesn't
 accept any new ones. As the current sessions end, the node empties and
 you can safely take it offline when all the sessions are gone.
 
-The second is *rolling upgrade*. Some software supports being in a load
-balanced cluster with different versions of the software and other does
-not. If your software doesn't support a cluster with mixed versions, a
-rolling upgrade won't be possible. Supporting a rolling upgrade is
-relatively rare. It requires that the cluster understand how to maintain
-metadata across different versions simultaneously, which is a tricky bit
-of application programming.
+The second is *rolling upgrade*, which is the ability to support mixed
+software versions in the same cluster. When you upgrade a piece of
+software, there are often changes to how the data in the shared state is
+stored. That means the creators would need to undertake painstaking work
+to avoid conflicts during the upgrade process. Because it's tricky to
+support active sessions in a cluster with mixed versions, it's
+relatively uncommon.
 
 If your application doesn't support zero downtime upgrades, some
-organizations like to get close by building a second copy of the
-environment, getting it almost live, and then taking downtime just to
-switch the networking over. That's generally much faster than building
-the whole thing during downtime.
+organizations like to get close by building a second copy of the server
+and its applications, getting it almost live, and then taking downtime
+solely to switch the networking over. That's generally much faster than
+building the whole thing during downtime.
