@@ -1,4 +1,4 @@
-# Deployments and code promotion {#sec-deployments}
+# Deployments and Code Promotion {#sec-deployments}
 
 Your work doesn't matter if it never leaves your computer. You want your
 work to be useful, and it only becomes useful if you share it with the
@@ -43,7 +43,7 @@ test are collectively called the *lower environments* and prod the
 *higher environment*.
 
 ![](images/dev-test-prod.png){fig-alt="An app moving through dev, test, and prod environments."
-width="600"}
+}
 
 While the dev/test/prod triad is the most traditional, some
 organizations have more than two lower environments and some have only
@@ -205,7 +205,7 @@ you were satisfied.
 Here's what the Git graph for that sequence of events might look like:
 
 ![](images/git-branches.png){fig-alt="Diagram showing branching strategy. A feature branch called new plot is created from and then merged back to test. A bug is revealed, so another commit fixing the bug is merged into test and then into main."
-width="600"}
+}
 
 One of the tenets of a good CI/CD practice is that changes are merged
 frequently and incrementally into production.
@@ -277,7 +277,7 @@ For example, let's say you have a project that should use a special
 read-only database in dev and switch to writing in the prod database in
 prod. You might write the config file below to describe this behavior:
 
-```{yaml filename="config.yml"}
+```{.yaml filename="config.yml"}
 dev:
   write: false
   db-path: dev-db
@@ -346,7 +346,32 @@ Following those instructions will accomplish three things for you:
 Here's the basic GitHub Actions file (or close to it) that the process
 will auto-generate for you.
 
-``` {.yaml include="../../_labs/gha/publish-basic.yml" filename=".github/workflows/publish.yml"}
+``` {.yaml filename=".github/workflows/publish.yml"}
+on:
+  workflow_dispatch:
+  push:
+    branches: main
+
+name: Quarto Publish
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render and Publish
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 Like all GitHub Actions, this action is defined in a `.yml` file in the
@@ -394,7 +419,19 @@ code working in CI/CD you **should not** freeze your environment.
 First, add the commands to install R, `{renv}`, and the packages for
 your content to the GitHub Actions workflow.
 
-``` {.yml filename=".github/workflows/publish.yml" include="../../_labs/gha/publish-r-py.yml" start-line="20" end-line="31"}
+``` {.yml filename=".github/workflows/publish.yml"}
+      - name: Install R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.2.0'
+          use-public-rspm: true
+
+      - name: Setup renv and install packages
+        uses: r-lib/actions/setup-renv@v2
+        with:
+          cache-version: 1
+        env:
+          RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.rstudio.com/all/latest
 ```
 
 ::: callout-note
@@ -409,7 +446,14 @@ Posit Package Manager, which does have Linux binaries.
 You'll also need to add a workflow to GitHub Actions to install Python
 and the necessary Python packages from the `requirements.txt`.
 
-``` {.yml filename=".github/workflows/publish.yml" include="../../_labs/gha/publish-r-py.yml" start-line="33" end-line="39"}
+``` {.yml filename=".github/workflows/publish.yml"}
+    - name: Install Python and Dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - run: pip install jupyter
+      - run: pip install -r requirements.txt
 ```
 
 Note that, we run the Python environment restore commands with `run`

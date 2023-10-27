@@ -19,8 +19,7 @@ environment is the stack of software and hardware below your code, from
 the R and Python packages you're using right down to the physical
 hardware your code runs on.
 
-![](images/environment.png){fig-alt="Code and data going into an environment with hardware, R and Python, and packages."
-width="600"}
+![](images/environment.png){fig-alt="Code and data going into an environment with hardware, R and Python, and packages."}
 
 Ignoring the readiness of the data science environment results in the
 dreaded *it works on my machine* phenomenon with a failed attempt to
@@ -68,23 +67,22 @@ essential system libraries, and Python and/or R. Above that is the
 
 **Layers of data science environments**
 
-+--------------+-----------------------+
-| Layer        | Contents              |
-+==============+=======================+
-| Packages     | Python + R Packages   |
-+--------------+-----------------------+
-| System       | Python + R Language   |
-|              | Versions              |
-|              |                       |
-|              | Other System          |
-|              | Libraries             |
-|              |                       |
-|              | Operating System      |
-+--------------+-----------------------+
-| Hardware     | Virtual Hardware      |
-|              |                       |
-|              | Physical Hardware     |
-+--------------+-----------------------+
++-------------+--------------------------+
+| Layer       | Contents                 |
++=============+==========================+
+| Packages    | Python + R Packages      |
++-------------+--------------------------+
+| System      | Python + R Language      |
+|             | Versions                 |
+|             |                          |
+|             | Other System Libraries   |
+|             |                          |
+|             | Operating System         |
++-------------+--------------------------+
+| Hardware    | Virtual Hardware         |
+|             |                          |
+|             | Physical Hardware        |
++-------------+--------------------------+
 
 In an ideal world, the *hardware* and *system* layers should be the
 responsibility of an IT/Admin. You may be responsible for them, but then
@@ -246,8 +244,7 @@ allowed. And when you load a package with `import` or `library`, it
 searches the directories from `sys.path` or `.libPaths()` and returns
 the package when it finds it.
 
-![](images/pkg-libs.png){fig-alt="A diagram of package libraries. An import or library statement triggers a call to sys.path or .libPaths(), which returns directories to search. That returns a package to the session."
-width="600"}
+![](images/pkg-libs.png){fig-alt="A diagram of package libraries. An import or library statement triggers a call to sys.path or .libPaths(), which returns directories to search. That returns a package to the session."}
 
 Each library can contain, at most, one version of any package. So order
 matters for the directories in `sys.path` or `.libPaths()`. Whatever
@@ -330,8 +327,46 @@ Before you add code, create and activate an `{renv}` environment with
 
 Now, go ahead and do your analysis. Here's the contents of my `eda.qmd`.
 
-``` {.markdown filename="eda.qmd" include="../../_labs/eda/eda-basic.qmd"}
+```` {.markdown filename="eda.qmd"}
+---
+title: "Penguins EDA"
+format:
+  html:
+    code-fold: true
+---
+
+## Penguin Size and Mass by Sex and Species
+
+```{r}
+library(palmerpenguins)
+library(dplyr)
+library(ggplot2)
+
+df <- palmerpenguins::penguins
 ```
+
+```{r}
+df %>%
+  group_by(species, sex) %>%
+  summarise(
+    across(
+      where(is.numeric), 
+      \(x) mean(x, na.rm = TRUE)
+      )
+    ) %>%
+  knitr::kable()
+```
+
+## Penguin Size vs Mass by Species
+
+```{r}
+df %>%
+  ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
+  geom_point() + 
+  geom_smooth(method = "lm")
+```
+
+````
 
 Feel free to copy this Quarto doc into your website or to write your
 own.
@@ -352,8 +387,49 @@ before you start `pip install`-ing packages.
 Here's what's in my `model.qmd`, but you should feel free to include
 whatever you want.
 
-``` {.yml filename="model.qmd" include="../../_labs/model/model-basic-py.qmd"}
+```` {.markdown filename="model.qmd"}
+---
+title: "Model"
+format:
+  html:
+    code-fold: true
+---
+
+```{python}
+from palmerpenguins import penguins
+from pandas import get_dummies
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing
 ```
+
+## Get Data
+
+```{python}
+df = penguins.load_penguins().dropna()
+
+df.head(3)
+```
+
+## Define Model and Fit
+
+```{python}
+X = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)
+y = df['body_mass_g']
+
+model = LinearRegression().fit(X, y)
+```
+
+## Get some information
+
+```{python}
+print(f"R^2 {model.score(X,y)}")
+print(f"Intercept {model.intercept_}")
+print(f"Columns {X.columns}")
+print(f"Coefficients {model.coef_}")
+```
+
+````
 
 Once you're happy with how the page works, capture your dependencies in
 a `requirements.txt` using `pip freeze > requirements.txt` on the

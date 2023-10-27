@@ -114,7 +114,7 @@ When the log statement runs, it creates a *log entry*.
 For example, here's what logging for an app starting up might look like
 in Python
 
-```{python filename="app.py"}
+```{.python filename="app.py"}
 import logging
 
 # Configure the log object
@@ -129,7 +129,7 @@ logging.info("App Started")
 
 And here's what that looks like using `{log4r}`
 
-```{r filename="app.R"}
+```{.r filename="app.R"}
 # Configure the log object
 log <- log4r::logger()
 
@@ -333,14 +333,96 @@ I decided to log when the app starts, just before and after each
 request, and an error logger if an HTTP error code comes back from the
 API.
 
-With the logging now added, here's what the app looks like in R:
+This is what the server block of the app looks like now in R:
 
-``` {.r include="../../_labs/app/app-log.R" filename="app.R"}
+``` {.r filename="app.R"}
+server <- function(input, output) {
+  log <- log4r::logger()
+  log4r::info(log, "App Started")
+  # Input params
+  vals <- reactive(
+    list(
+      bill_length_mm = input$bill_length,
+      species_Chinstrap = input$species == "Chinstrap",
+      species_Gentoo = input$species == "Gentoo",
+      sex_male = input$sex == "Male"
+    )
+  )
+
+  # Fetch prediction from API
+  pred <- eventReactive(
+    input$predict,
+    {
+      log4r::info(log, "Prediction Requested")
+      r <- httr2::request(api_url) |>
+        httr2::req_body_json(vals()) |>
+        httr2::req_perform()
+      log4r::info(log, "Prediction Returned")
+
+      if (httr2::resp_is_error(r)) {
+        log4r::error(log, paste("HTTP Error"))
+      }
+
+      httr2::resp_body_json(r)
+    },
+    ignoreInit = TRUE
+  )
+
+  # Render to UI
+  output$pred <- renderText(pred()$predict[[1]])
+  output$vals <- renderPrint(vals())
+}
 ```
 
-And in Python:
+At the outset of the Python app, I've added:
 
-``` {.python include="../../_labs/app/app-log.py" filename="app.py"}
+``` {.python filename="app.py"}
+import logging
+
+logging.basicConfig(
+    format='%(asctime)s - %(message)s',
+    level=logging.INFO
+)
+```
+
+And the server block now looks like: 
+
+``` {.python filename="app.py"}
+def server(input, output, session):
+    logging.info("App start")
+
+    @reactive.Calc
+    def vals():
+        d = {
+            "bill_length_mm" : input.bill_length(),
+            "sex_Male" : input.sex() == "Male",
+            "species_Gentoo" : input.species() == "Gentoo", 
+            "species_Chinstrap" : input.species() == "Chinstrap"
+
+        }
+        return d
+    
+    @reactive.Calc
+    @reactive.event(input.predict)
+    def pred():
+        logging.info("Request Made")
+        r = requests.post(api_url, json = vals())
+        logging.info("Request Returned")
+
+        if r.status_code != 200:
+            logging.error("HTTP error returned")
+
+        return r.json().get('predict')[0]
+
+    @output
+    @render.text
+    def vals_out():
+        return f"{vals()}"
+
+    @output
+    @render.text
+    def pred_out():
+        return f"{round(pred())}"
 ```
 
 Now, if you load up this app locally, you can see the logs of what's

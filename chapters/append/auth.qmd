@@ -22,12 +22,12 @@ services and legacy systems that were designed for on-prem software.
 
 | Auth Technology | Token-Based? | "Modern"? |
 |-----------------|--------------|-----------|
-| Service-based   | ❌           | ❌        |
-| Linux Accounts  | ❌[^auth-2]  | ❌        |
-| LDAP/AD         | ❌           | ❌        |
-| Kerberos        | ✅           | ❌        |
-| SAML            | ✅           | ✅        |
-| OAuth           | ✅           | ✅        |
+| Service-based   | No           | No        |
+| Linux Accounts  | No[^auth-2]  | No        |
+| LDAP/AD         | No           | No        |
+| Kerberos        | Yes          | No        |
+| SAML            | Yes          | Yes       |
+| OAuth           | Yes          | Yes       |
 
 [^auth-2]: To be precise, possible if integrated with Kerberos, but
     unlikely.
@@ -94,7 +94,7 @@ against different systems. The most common is to authenticate against
 the underlying Linux server, but it can also use LDAP/AD (common) or
 Kerberos tickets (uncommon).
 
-![](images/auth-pam.png){width="539"}
+![](images/auth-pam.png){fig-alt="A visual representation of PAM auth flow as described above.."}
 
 PAM can also be used to do things when users log in. The most common of
 these is initializing Kerberos tickets to connect with databases or
@@ -137,8 +137,7 @@ base*, which is the subtree to look for users inside. Additionally, you
 may configure LDAP/AD with *bind credentials* of a service account to
 authenticate to the LDAP/AD server itself.
 
-![](images/auth-ldap.png){fig-alt="A diagram of the LDAP flow. 1-User provides username and password to service. 2-service sends bind credentials w/ ldapsearch to LDAP server. 3-LDAP server checks credentials. 4-LDAP server returns results to service."
-width="600"}
+![](images/auth-ldap.png){fig-alt="A diagram of the LDAP flow. 1-User provides username and password to service. 2-service sends bind credentials w/ ldapsearch to LDAP server. 3-LDAP server checks credentials. 4-LDAP server returns results to service."}
 
 ::: callout-note
 Depending on your application and LDAP/AD configuration, it may be
@@ -196,8 +195,7 @@ KDC again along with the service they're trying to access and get a
 *session key* (sometimes referred to as a *service ticket*) that allows
 access to a particular service.
 
-![](images/auth-kerberos.png){fig-alt="The kerberos flow. 1 - User on server requests TGT from KDC. 2 - TGT granted. 3 - user requests service ticket with TGT from KDC. 4 - Service ticket granted. 5 - user uses service ticket to access service."
-width="553"}
+![](images/auth-kerberos.png){fig-alt="The kerberos flow. 1 - User on server requests TGT from KDC. 2 - TGT granted. 3 - user requests service ticket with TGT from KDC. 4 - Service ticket granted. 5 - user uses service ticket to access service."}
 
 Kerberos is only used inside a corporate network and is tightly linked
 to the underlying servers. That makes it very secure. Even if someone
@@ -241,7 +239,7 @@ you.[^auth-3]
 [^auth-3]: The diagram assumes you don't already have a token in your
     browser. If the user has a token already, steps 2-5 get skipped.
 
-![](images/auth-saml.png){width="600"}
+![](images/auth-saml.png){fig-alt="A visual representation of SAML auth flow as described above."}
 
 A SAML token contains several *claims*, which usually include a username
 and may include groups or other attributes. Whoever controls the IdP can
@@ -286,7 +284,7 @@ For example, if you want to read my Google Calendar, you need a JWT that
 includes a claim granting *read* access against the scope of *events on
 Alex's calendar*.
 
-![](images/auth-oauth.png){width="600"}
+![](images/auth-oauth.png){fig-alt="A visual representation of OAuth flow as described above."}
 
 Unlike in SAML where action occurs via browser redirects, OAuth makes no
 assumptions about how this flow happens. The process of requesting and

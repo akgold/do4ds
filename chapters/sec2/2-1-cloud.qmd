@@ -527,7 +527,12 @@ model to S3 is easy by changing the `{vetiver}` board type to
 
 It'll look something like this.
 
-``` {.python include="../../_labs/model/model-vetiver-s3.qmd" filename="model.qmd" start-line="64" end-line="68"}
+``` {.python filename="model.qmd"}
+from pins import board_s3
+from vetiver import vetiver_pin_write
+
+board = board_s3("do4ds-lab", allow_pickle_read=True)
+vetiver_pin_write(board, v)
 ```
 
 Under the hood, `{vetiver}` uses standard R and Python tooling to access
@@ -547,7 +552,16 @@ than the local folder.
 
 Now, the script to build the `Dockerfile` looks like this:
 
-``` {.python include="../../_labs/docker/docker-s3/build-docker-s3.qmd" start_line="11" end_line="19"}
+``` {.python}
+from dotenv import load_dotenv
+
+load_dotenv()
+
+from pins import board_s3
+from vetiver import vetiver_prepare_docker
+
+board = board_s3("do4ds-lab", allow_pickle_read=True)
+vetiver_prepare_docker(board, "penguin_model")
 ```
 
 ### Step 4: Give GitHub Actions S3 credentials
@@ -562,7 +576,12 @@ of the Action.
 Once you're done, that section of the `publish.yml` should look
 something like this.
 
-``` {.yaml include="../../_labs/gha/publish-s3.yml" filename=".github/workflows/publish.yml" start_line="45" end_line="49"}
+``` {.yaml filename=".github/workflows/publish.yml"}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
 ```
 
 Now, unlike the `GITHUB_TOKEN` secret, which GitHub Actions

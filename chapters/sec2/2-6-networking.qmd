@@ -216,8 +216,7 @@ go to your service and it hangs with no response before eventually
 timing out.
 :::
 
-![](images/firewall-proxy.png){fig-alt="Traffic coming through firewall only on port 80. Proxy routes /jupyter to port 8000 on server and /rstudio to port 8787."
-width="600"}
+![](images/firewall-proxy.png){fig-alt="Traffic coming through firewall only on port 80. Proxy routes /jupyter to port 8000 on server and /rstudio to port 8787."}
 
 We've been talking exclusively about HTTP and HTTPS traffic arriving on
 $80$ and $443$, because web traffic arrives as a series of HTTP `GET`
@@ -412,20 +411,17 @@ and RStudio Server:
 2.  Install NGINX with `sudo apt install nginx`.
 3.  Save a backup of the default `nginx.conf`,
     `cp /etc/nginx/nginx.conf /etc/nginx/nginx-backup.conf`.[^2-6-networking-7]
-4.  Edit the NGINX configuration with `sudo vim /etc/nginx/nginx.conf`
-    and replace it with:
+4.  Edit the NGINX configuration with `sudo vim /etc/nginx/nginx.conf`.
+    There is an example in the Git repo for this book under
+    `_labs/server-config`.
+5.  Test that your configuration is valid `sudo nginx -t`.
+6.  Start NGINX with `sudo systemctl start nginx`. If you see nothing
+    all is well.
 
 [^2-6-networking-7]: This is generally a good practice before you start
     messing with config files. Bad configuration is usually preferable
     to a service that can't start at all because you've messed up the
     config so badly. It happens.
-
-``` {.bash include="../../_labs/server-config/http-nginx.conf" filename="/etc/nginx/nginx.conf"}
-```
-
-4.  Test that your configuration is valid `sudo nginx -t`.
-5.  Start NGINX with `sudo systemctl start nginx`. If you see nothing
-    all is well.
 
 If you need to change anything, update the config and then restart with
 `sudo systemctl restart nginx`.
@@ -523,3 +519,4 @@ good results.
 One thing to consider is whether the model API should be publicly
 accessible at all. If the only thing calling it is the Shiny app, maybe
 it shouldn't be.
+
