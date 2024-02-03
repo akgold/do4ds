@@ -355,7 +355,7 @@ server <- function(input, output) {
     {
       log4r::info(log, "Prediction Requested")
       r <- httr2::request(api_url) |>
-        httr2::req_body_json(vals()) |>
+        httr2::req_body_json(list(vals())) |>
         httr2::req_perform()
       log4r::info(log, "Prediction Returned")
 
@@ -395,7 +395,7 @@ def server(input, output, session):
     def vals():
         d = {
             "bill_length_mm" : input.bill_length(),
-            "sex_Male" : input.sex() == "Male",
+            "sex_male" : input.sex() == "Male",
             "species_Gentoo" : input.species() == "Gentoo", 
             "species_Chinstrap" : input.species() == "Chinstrap"
 
@@ -406,7 +406,7 @@ def server(input, output, session):
     @reactive.event(input.predict)
     def pred():
         logging.info("Request Made")
-        r = requests.post(api_url, json = vals())
+        r = requests.post(api_url, json = [vals()])
         logging.info("Request Returned")
 
         if r.status_code != 200:
