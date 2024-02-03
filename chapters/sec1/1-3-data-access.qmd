@@ -509,6 +509,7 @@ In R, we will replace our data loading with connecting to the database.
 Leaving out all the parts that don't change, it looks like
 
 ``` {.r filename="eda.qmd"}
+library(dbplyr)
 con <- DBI::dbConnect(
   duckdb::duckdb(), 
   dbdir = "my-db.duckdb"
@@ -580,7 +581,7 @@ req_data = {
   "species_Gentoo": False,
   "sex_male": False
 }
-req = requests.post('http://127.0.0.1:8080/predict', json = req_data)
+req = requests.post('http://127.0.0.1:8080/predict', json = [req_data])
 res = req.json().get('predict')[0]
 ```
 
@@ -590,14 +591,16 @@ or equivalently in R
 req <- httr2::request("http://127.0.0.1:8080/predict") |>
   httr2::req_body_json(
     list(
-      "bill_length_mm" = 0,
-      "species_Chinstrap" = FALSE,
-      "species_Gentoo" = FALSE,
-      "sex_male" = FALSE
+      list(
+        "bill_length_mm" = 0,
+        "species_Chinstrap" = FALSE,
+        "species_Gentoo" = FALSE,
+        "sex_male" = FALSE
+      )
     )
   ) |>
   httr2::req_perform()
-res <- httr2::resp_body_json(r)$predict[[1]]
+res <- httr2::resp_body_json(req)$predict[[1]]
 ```
 
 Note that there's no translation necessary to send the request. The
@@ -656,7 +659,7 @@ def server(input, output, session):
     def vals():
         d = {
             "bill_length_mm" : input.bill_length(),
-            "sex_Male" : input.sex() == "Male",
+            "sex_male" : input.sex() == "Male",
             "species_Gentoo" : input.species() == "Gentoo", 
             "species_Chinstrap" : input.species() == "Chinstrap"
 
@@ -666,7 +669,7 @@ def server(input, output, session):
     @reactive.Calc
     @reactive.event(input.predict)
     def pred():
-        r = requests.post(api_url, json = vals())
+        r = requests.post(api_url, json = [vals()])
         return r.json().get('predict')[0]
 
     @output
@@ -745,7 +748,7 @@ server <- function(input, output) {
   pred <- eventReactive(
     input$predict,
     httr2::request(api_url) |>
-      httr2::req_body_json(vals()) |>
+      httr2::req_body_json(list(vals())) |>
       httr2::req_perform() |>
       httr2::resp_body_json(),
     ignoreInit = TRUE
