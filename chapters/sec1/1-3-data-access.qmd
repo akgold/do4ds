@@ -5,7 +5,7 @@ to extract nuggets of real information -- and then use that information.
 Working at the end of an external process, you must meet the data where
 it lives.
 
-Usually, that will be in a database or a data API. This chapter is about
+Usually, that will be in a database or a data \index{API}. This chapter is about
 the mechanics of working with those data sources, i.e., how to access
 the data and keep those connections secure.
 
@@ -44,17 +44,17 @@ Python or R have standard connection APIs that define operations like
 connecting and disconnecting, sending queries, and retrieving results.
 
 In Python, packages for individual databases like `{psychopg2}` directly
-implement the API, which is why the example above calls the `connect()`
+implement the \index{API}, which is why the example above calls the `connect()`
 method of the `{psychopg2}` package.
 
-In R, the API is split into two parts. The `{DBI}` package (short for
+In R, the \index{API} is split into two parts. The `{DBI}` package (short for
 database interface) implements the actual connections. It works with a
 database driver package, which is the first argument to
 `DBI::dbConnect()`. Packages that implement the `{DBI}` interface are
 called *DBI-compliant*.
 
 ::: callout-note
-There are Python packages that don't implement the connections API and
+There are Python packages that don't implement the connections \index{API} and
 non DBI-compliant database packages in R. I'd recommend sticking with
 the standard route if possible.
 :::
@@ -153,60 +153,60 @@ require working with an IT/Admin. More on this topic in [Chapter
 
 ## Connecting to APIs
 
-Some data sources come in the form of an API.
+Some data sources come in the form of an \index{API}.
 
 It's common to have Python or R packages that wrap APIs, so you write
-Python or R code without thinking about the API underneath. Using these
+Python or R code without thinking about the \index{API} underneath. Using these
 patterns often looks similar to databases -- you create and use a
-connection object that stores the connection details. If your API has a
+connection object that stores the connection details. If your \index{API} has a
 package like this, you should use it.
 
-If you're consuming a private API at your organization, a helper package
+If you're consuming a private \index{API} at your organization, a helper package
 probably doesn't exist, or you may have to write it yourself.
 
 ::: callout-note
-There's increasingly good tooling to auto-generate packages based on API
-documentation, so you may never have to write an API wrapper package by
+There's increasingly good tooling to auto-generate packages based on \index{API}
+documentation, so you may never have to write an \index{API} wrapper package by
 hand. It's still helpful to understand how it works.
 :::
 
-If you have to call an API directly, you can use the `{requests}`
+If you have to call an \index{API} directly, you can use the `{requests}`
 package in Python or `{httr2}` in R.
 
 These packages provide idiomatic R and Python ways to call APIs. It's
 worth understanding that they're purely syntactic sugar. There's nothing
-special about calling an API from inside Python or R versus using the
+special about calling an \index{API} from inside Python or R versus using the
 command line and you can go back and forth as you please. It is
-sometimes helpful to try to replicate Python or R API calls without the
+sometimes helpful to try to replicate Python or R \index{API} calls without the
 language wrapper for debugging reasons.
 
-### What's in an API?
+### What's in an \index{API}?
 
-APIs are the standard way for two computer systems to communicate. API
+APIs are the standard way for two computer systems to communicate. \index{API}
 is a general term that describes machine-to-machine communication. For
 our purposes, we're talking about `http`-based `REST`-ful APIs.
 
-`http` operates on a request-response model. So when you use an API, you
-send a request to the API and it sends a response back.
+`http` operates on a request-response model. So when you use an \index{API}, you
+send a request to the \index{API} and it sends a response back.
 
 ![](images/req_resp.png){fig-alt="A client requesting puppy pictures from a server and getting back a 200-coded response with a puppy."
 }
 
-The best way to learn about a new API is to read the documentation,
+The best way to learn about a new \index{API} is to read the documentation,
 which will include many details about usage. Let's go through some of
 the most salient ones.
 
-### API Endpoints and Paths
+### \index{API} Endpoints and Paths
 
-Each request to an API is directed to a specific *endpoint*. An API can
+Each request to an \index{API} is directed to a specific *endpoint*. An \index{API} can
 have many endpoints, each of which you can think of like a function in a
 package. Each endpoint lives on a *path*, where you find that particular
 endpoint.
 
 For example, if you did the lab in [Chapter @sec-proj-arch] and used
-`{vetiver}` to create an API for serving the penguin mass model, you
-found your API at `http://localhost:8080`. By default, you went to the
-*root* path at `/` and found the API documentation there.
+`{vetiver}` to create an \index{API} for serving the penguin mass model, you
+found your \index{API} at `http://localhost:8080`. By default, you went to the
+*root* path at `/` and found the \index{API} documentation there.
 
 As you scrolled the documentation, there were two endpoints -- `/ping`
 and `/predict`. You can read the definition to see what parameters you
@@ -220,9 +220,9 @@ When you make an HTTP request, you ask a server to do something. The
 operation you're asking for. Each endpoint has one or more verbs that it
 knows how to use.
 
-Looking at the penguin mass API, you'll see that `/ping` is a `GET`
+Looking at the penguin mass \index{API}, you'll see that `/ping` is a `GET`
 endpoint and `/predict` is a `POST`. This isn't a coincidence. I'd
-approximate that 95% of the API endpoints you'll use as a data scientist
+approximate that 95% of the \index{API} endpoints you'll use as a data scientist
 are `GET` and `POST`, which respectively fetch information from the
 server and provide information to the server.
 
@@ -251,26 +251,26 @@ Python and `{jsonlite}` in R to figure out how to get it nested
 correctly.
 
 [^1-3-data-access-2]: You may see `POST` for things that look like
-    `GET`s. For example, fetching a model prediction from an API feels
+    `GET`s. For example, fetching a model prediction from an \index{API} feels
     like a `GET` to me. The reason is the HTTP spec only recently
     allowed `GET` endpoints to use request bodies and it's still
-    discouraged. So if the API wants to use a body in the request, it's
+    discouraged. So if the \index{API} wants to use a body in the request, it's
     likely to be a `POST` even if it's more of a `GET` activity.
 
 ### (Auth) Headers
 
 Most APIs require authentication. The most common forms of
-authentication are a username and password combination, an API key, or
+authentication are a username and password combination, an \index{API} key, or
 an OAuth token.
 
-API keys and OAuth tokens are often associated with particular *scopes*.
-Scopes are permissions to do particular things. For example, an API key
+\index{API} keys and OAuth tokens are often associated with particular *scopes*.
+Scopes are permissions to do particular things. For example, an \index{API} key
 might be scoped to have `GET` access to a given endpoint but not `POST`
 access.
 
 Regardless of your authentication type, it will be provided in a
-*header* to your API call. Your API documentation will tell you how to
-provide your username and password, API key, or token to the API in a
+*header* to your \index{API} call. Your \index{API} documentation will tell you how to
+provide your username and password, \index{API} key, or token to the \index{API} in a
 header. Both `{requests}` and `{httr2}` provide easy helpers for adding
 authentication headers and more general ways to set headers if needed.
 
@@ -285,7 +285,7 @@ Status codes indicate what happened with your request to the server. You
 always hope to see `200` codes, which indicate a successful response.
 
 There are also two common error codes. `4xx` codes indicate a problem
-with your request and the API couldn't understand what you were asking.
+with your request and the \index{API} couldn't understand what you were asking.
 `5xx` codes indicate that your request was fine, but some error happened
 in processing your request.
 
@@ -297,21 +297,21 @@ The contents of the response are in the *body*. You'll need to turn the
 body into a Python or R object you can work with.
 
 Most often, bodies are in JSON and you'll decode them with `{json}` or
-`{jsonlite}`. Depending on the API, you may have the option to request
+`{jsonlite}`. Depending on the \index{API}, you may have the option to request
 something other than JSON as the return. I rarely need anything other
 than JSON.
 
-### Common API patterns
+### Common \index{API} patterns
 
-Here are a couple of common API patterns that are good to know about:
+Here are a couple of common \index{API} patterns that are good to know about:
 
 -   **Pagination** -- many data-feed APIs implement pagination. A
-    paginated API returns only a certain number of results to keep data
-    sizes modest. Check out the API documentation to learn how to get
+    paginated \index{API} returns only a certain number of results to keep data
+    sizes modest. Check out the \index{API} documentation to learn how to get
     all your pages.
 
 -   **Job APIs** -- HTTP is designed for relatively quick
-    request-response cycles. If your API kicks off a long-running job,
+    request-response cycles. If your \index{API} kicks off a long-running job,
     it's rare to wait until the job is done to get a response. Instead,
     a common pattern is to return a `job-id`, which you can use to poll
     a `job-status` endpoint to check how things are going and eventually
@@ -328,7 +328,7 @@ while keeping your secrets secure is crucial.
 
 The most important thing you can do to secure your credentials is to
 avoid ever putting credentials in your code. **Your username and
-password or API key should never appear in your code.**
+password or \index{API} key should never appear in your code.**
 
 The simplest way to provide credentials without the values appearing in
 your code is with an *environment variable*. Environment variables are
@@ -336,7 +336,7 @@ set before your code starts -- sometimes from completely outside Python
 or R.
 
 ::: callout-note
-This section assumes you can use a username and password or an API key
+This section assumes you can use a username and password or an \index{API} key
 to connect to your data source. That may not be true, depending on your
 organization. See [Chapter @sec-auth] for handling data connections if
 you can't directly connect with a username and password.
@@ -391,7 +391,7 @@ prod doesn't solve the problem of putting secrets in code. And using
 `{keyring}` in a production environment is quite cumbersome.
 
 Your production environment may provide environment management tools.
-For example, GitHub Actions and Posit Connect both allow you to set
+For example, GitHub Actions and \index{Posit} Connect both allow you to set
 secrets that aren't visible to the users, but are accessible to the code
 at runtime in an environment variable.
 
@@ -457,14 +457,14 @@ time by the user, this code will just work.
     database driver in a Python or R package vs an ODBC or JDBC driver.
     You should (at a minimum) include the nodes database package, DBI (R
     only), driver, system driver, ODBC, JDBC, and database.
-2.  Draw a mental map for using an API from R or Python. You should (at
+2.  Draw a mental map for using an \index{API} from R or Python. You should (at
     a minimum) include nodes for `{requests}`/`{httr2}`, request, http
     verb/request method, headers, query parameters, body, json,
     response, and response code.
 3.  How can environment variables be used to keep secrets secure in your
     code?
 
-## Lab: Use a database and an API
+## Lab: Use a database and an \index{API}
 
 In this lab, we will build the data and the presentation layers for our
 penguin mass model exploration. We're going to create an app to explore
@@ -555,9 +555,9 @@ con.close()
 Now let's switch to figuring out the connection we'll need to our
 processing layer in the presentation layer.
 
-### Step 2: Call the model API from code
+### Step 2: Call the model \index{API} from code
 
-Before you start, ensure the API is running on your machine from the
+Before you start, ensure the \index{API} is running on your machine from the
 last lab.
 
 ::: callout-note
@@ -570,7 +570,7 @@ If you want to call the model in code, you can use any http request
 library. In R you should use `httr2` and in Python you should use
 `requests`.
 
-Here's what it looks like to call the API in Python
+Here's what it looks like to call the \index{API} in Python
 
 ```{python}
 import requests
@@ -612,11 +612,11 @@ JSON returned. This is quite common.
 
 ::: callout-note
 The `{vetiver}` package also includes the ability to auto-query a
-`{vetiver}` API. I'm not using it here to expose the details of calling
-an API.
+`{vetiver}` \index{API}. I'm not using it here to expose the details of calling
+an \index{API}.
 :::
 
-Let's take this API-calling code and build the presentation layer around
+Let's take this \index{API}-calling code and build the presentation layer around
 it.
 
 ### Step 3: Build a shiny app
@@ -744,7 +744,7 @@ server <- function(input, output) {
     )
   )
 
-  # Fetch prediction from API
+  # Fetch prediction from \index{API}
   pred <- eventReactive(
     input$predict,
     httr2::request(api_url) |>

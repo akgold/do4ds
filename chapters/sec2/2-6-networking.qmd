@@ -11,7 +11,7 @@ forth, is the second big component of administering a server.
 
 Digital messages (*network traffic*) always exist on a call-and-response
 model. When your computer does something over a network, like open a
-website, print something, or call an API, it sends network traffic and
+website, print something, or call an \index{API}, it sends network traffic and
 waits for a response. That traffic is addressed to a particular location
 and a particular *service*, which is the program that will do something
 with that incoming traffic.
@@ -127,16 +127,16 @@ probably see $127.0.0.1$ a lot, which is also known as
 $\text{localhost}$ or loopback. $\text{localhost}$ is how a machine
 sends traffic back to itself.
 
-For example, if you open a Shiny app in RStudio Desktop, the app will
-pop up in a little window along with a notice that says
+For example, if you open a \index{Shiny} app in \index{RStudio} Desktop,
+the app will pop up in a little window along with a notice that says
 
 ``` {.bash filename="Terminal"}
 Listening on http://127.0.0.1:6311
 ```
 
-That means that the Shiny app is running on the same computer and is
-available on port $6311$. You can open that location in your browser to
-view the app as it runs.
+That means that the \index{Shiny} app is running on the same computer
+and is available on port $6311$. You can open that location in your
+browser to view the app as it runs.
 
 There are also a few blocks of IPv4 addresses; those that start with
 $192.168$, $172.16$, and $10$ that are reserved for use on private
@@ -172,14 +172,15 @@ the same port and you don't want users to have to remember non-standard
 ports. In that case, you run each service on a unique port and make the
 traffic go to that port.
 
-For example, maybe you have RStudio and JupyterHub running on the same
-server. If you run them on their default ports, RStudio will be on port
-$8787$ and JupyterHub will be on $8000$.[^2-6-networking-5] Somehow
-you've got to smoothly redirect user traffic, which comes in on $80$ or
-$443$, to those other ports. The most common configuration is to use a
-piece of technology called a *proxy* to put each service on a path. For
-example, you might configure the path $\text{/rstudio}$ to go to port
-$8787$ on the server and the $\text{/jupyter}$ path to go to $8000$.
+For example, maybe you have \index{RStudio} and \index{JupyterHub}
+running on the same server. If you run them on their default ports,
+\index{RStudio} will be on port $8787$ and \index{JupyterHub} will be on
+$8000$.[^2-6-networking-5] Somehow you've got to smoothly redirect user
+traffic, which comes in on $80$ or $443$, to those other ports. The most
+common configuration is to use a piece of technology called a *proxy* to
+put each service on a path. For example, you might configure the path
+$\text{/rstudio}$ to go to port $8787$ on the server and the
+$\text{/jupyter}$ path to go to $8000$.
 
 [^2-6-networking-5]: Authors of server-based software choose their own
     default ports. They usually choose a relatively high number to make
@@ -227,8 +228,8 @@ For example, in this book, you've already seen a lot about SSH which is
 an application layer protocol for allowing secure login and
 communication over an unsecured network. SSH defaults to port $22$. Some
 protocols piggyback on others. For example, SFTP for file transfers
-secured with SSH also use $22$, and websockets, which are used by Shiny
-and Streamlit, use standard HTTP(S) ports.
+secured with SSH also use $22$, and websockets, which are used by
+\index{Shiny} and Streamlit, use standard HTTP(S) ports.
 
 Other protocols have their own ports, like SMTP for emails ($465$,
 $587$, or $25$) and LDAP(S) for auth ($389$ or $636$). There's a list of
@@ -282,10 +283,10 @@ and I need to google it every time I use it.[^2-6-networking-6]
     use it for most frequently.
 
 So, for example, if your server were running at $64.56.223.5$ and you
-have the SSH user `test-user`, you might forward JupyterHub on port
-$8000$ with `ssh -L 8000:localhost:8000 test-user@64.56.223.5`. Once the
-tunnel was established, you could access JupyerHub in your browser on
-$\text{localhost:8000}$.
+have the SSH user `test-user`, you might forward \index{JupyterHub} on
+port $8000$ with `ssh -L 8000:localhost:8000 test-user@64.56.223.5`.
+Once the tunnel was established, you could access JupyerHub in your
+browser on $\text{localhost:8000}$.
 
 ### Checking what ports are open
 
@@ -351,9 +352,9 @@ else, take a look at the http code cheatsheet in [Appendix
 @sec-append-cheat].
 
 If `ping` succeeds, but `curl` does not, it means that the server is up,
-but the path or port is incorrect. If you're running inside a container,
+but the path or port is incorrect. If you're running inside a \index{container},
 you should check that you've properly configured the port inside the
-container to be forwarded to the outside.
+\index{container} to be forwarded to the outside.
 
 ## Comprehension Questions
 
@@ -364,8 +365,8 @@ container to be forwarded to the outside.
     Include the following terms: URL, domain, IP Address, port, path,
     $80$, $443$, `8000`, proxy, server, HTTP, HTTPS, status code,
     protocol
-    1.  A Shiny app on a server at $\text{http://my-shiny.com}$ where
-        Shiny Server is sitting on port $80$.
+    1.  A \index{Shiny} app on a server at $\text{http://my-shiny.com}$
+        where \index{Shiny} Server is sitting on port $80$.
     2.  JupyterHub on a server at $\text{https://example.com/jupyter}$
         where Jupyter is on port $8000$.
 
@@ -386,8 +387,8 @@ here's a reminder of where everything is:
 |-------------------|--------|
 | JupyterHub        | $8000$ |
 | RStudio           | $8787$ |
-| Penguin model API | $8080$ |
-| Shiny App         | $3838$ |
+| Penguin model \index{API} | $8080$ |
+| Shiny App | $3838$ |
 
 Once you're finished playing, make sure to change your security group
 rules back.
@@ -404,8 +405,8 @@ changes. The hard part is figuring out the right configuration.
 Configuring proxies can be quite painful as the configuration is very
 sensitive to seemingly meaningless syntax issues.
 
-Here are the steps to configure your proxy on your server for JupyterHub
-and RStudio Server:
+Here are the steps to configure your proxy on your server for
+\index{JupyterHub} and \index{RStudio Server}:
 
 1.  SSH into your server.
 2.  Install NGINX with `sudo apt install nginx`.
@@ -445,23 +446,23 @@ get the default NGINX landing page.
 
 ### Step 3: Configure your applications
 
-Complex web apps like RStudio and JupyterHub frequently proxy traffic
-back to themselves. For example, when you launch a Shiny app in RStudio,
-you're just opening a "headless" browser window that gets proxied back
-into your session.
+Complex web apps like \index{RStudio} and \index{JupyterHub} frequently
+proxy traffic back to themselves. For example, when you launch a
+\index{Shiny} app in RStudio, you're just opening a "headless" browser
+window that gets proxied back into your session.
 
 This works by default when those apps are on the root path $\text{/}$.
-We're running RStudio and JupyterHub on subpaths, so we've got to let
-the services know where they're located.
+We're running RStudio and \index{JupyterHub} on subpaths, so we've got
+to let the services know where they're located.
 
-Configuring RStudio Server is already done. The `X-RStudio-Root-Path`
-line in the NGINX configuration adds a header to each request coming
-through the proxy that tells RStudio Server that it's on the
-$\text{/rstudio}$ path.
+Configuring \index{RStudio Server} is already done. The
+`X-RStudio-Root-Path` line in the NGINX configuration adds a header to
+each request coming through the proxy that tells \index{RStudio Server}
+that it's on the $\text{/rstudio}$ path.
 
-JupyterHub needs a configuration update to let it know that it's on a
-subpath. Luckily it's a very simple change. You can edit the Jupyter
-configuration with
+\index{JupyterHub} needs a configuration update to let it know that it's
+on a subpath. Luckily it's a very simple change. You can edit the
+Jupyter configuration with
 
 ``` {.bash filename="Terminal"}
 sudo vim /etc/jupyterhub/jupyterhub_config.py
@@ -478,7 +479,8 @@ Delete the `#` to uncomment the line and add the subpath on the end. If
 you're using the $\text{/jupyter}$ subpath and the default $8000$ port,
 that line will read `c.JupyterHub.bind_url = 'http://:8000/jupyter'`.
 
-JupyterHub should pick up the new config when it's restarted with
+\index{JupyterHub} should pick up the new config when it's restarted
+with
 
 ``` {.bash filename="Terminal"}
 sudo systemctl restart jupyterhub
@@ -486,9 +488,10 @@ sudo systemctl restart jupyterhub
 
 ### Step 4: Try it out!
 
-Now we should have each service configured on a subpath. RStudio Server
-at $\text{/rstudio}$, JupyterHub at $\text{/jupyter}$. For example, with
-my server at $\text{64.56.223.5}$, I can get to RStudio Server at
+Now we should have each service configured on a subpath.
+\index{RStudio Server} at $\text{/rstudio}$, \index{JupyterHub} at
+$\text{/jupyter}$. For example, with my server at $\text{64.56.223.5}$,
+I can get to \index{RStudio Server} at
 $\text{http://64.56.223.5/rstudio}$.
 
 Right now this server is on HTTP, which is not a best practice. In fact,
@@ -506,17 +509,16 @@ with links to the other services. Or maybe you want one of the services
 at $\text{/}$ and the others at a different subpath. You should have the
 tools to reconfigure NGINX to accomplish that.
 
-Right now, neither the penguins model API nor the Shiny app are
+Right now, neither the penguins model \index{API} nor the \index{Shiny} app are
 available from the outside. You might want to add them to the proxy to
 make them accessible. I'll leave that as an exercise for you.
 
 ::: callout-tip
-It's very common to put an API and/or a Shiny app behind a proxy.
-Googling "Shiny app behind nginx" or "FastAPI with nginx" will yield
-good results.
+It's very common to put an \index{API} and/or a \index{Shiny} app behind a
+proxy. Googling "\index{Shiny} app behind nginx" or "FastAPI with nginx"
+will yield good results.
 :::
 
-One thing to consider is whether the model API should be publicly
-accessible at all. If the only thing calling it is the Shiny app, maybe
-it shouldn't be.
-
+One thing to consider is whether the model \index{API} should be publicly
+accessible at all. If the only thing calling it is the \index{Shiny}
+app, maybe it shouldn't be.

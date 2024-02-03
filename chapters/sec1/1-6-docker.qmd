@@ -1,56 +1,56 @@
-# Demystifying Docker {#sec-docker}
+# Demystifying \index{Docker} {#sec-docker}
 
-Docker is an open-source tool for building, sharing, and running
-software. Docker is currently the dominant way software developers
+\index{Docker} is an open-source tool for building, sharing, and running
+software. \index{Docker} is currently the dominant way software developers
 capture a development environment and is an increasingly popular tool to
 take code to production.
 
-Docker has become so popular because it makes code portable. In most
-cases, the only system prerequisite to run almost any Docker Container
-is Docker itself.[^1-6-docker-1] Everything else comes in the container.
+\index{Docker} has become so popular because it makes code portable. In most
+cases, the only system prerequisite to run almost any \index{Docker} \index{Container}
+is \index{Docker} itself.[^1-6-docker-1] Everything else comes in the \index{container}.
 
 [^1-6-docker-1]: This was truer before the introduction of M-series
     chips for Macs. Chip architecture differences fall below the level
-    that a container captures and many popular containers wouldn't run
+    that a \index{container} captures and many popular containers wouldn't run
     on new Macs. These issues are getting better over time and will
     probably fully disappear relatively soon.
 
 Unlike language-specific environment as code tools like `{renv}` or
-`{venv}`, Docker captures the entire reproducibility stack down to the
+`{venv}`, \index{Docker} captures the entire reproducibility stack down to the
 operating system. The appeal is evident if you've ever struggled with
 someone else running code you've written.
 
-Docker has so many strengths that it's easy to believe it will solve all
+\index{Docker} has so many strengths that it's easy to believe it will solve all
 reproducibility problems. It's worth keeping a little perspective.
 
-While Docker usually ensures that the code inside will **run**, it
+While \index{Docker} usually ensures that the code inside will **run**, it
 doesn't fully solve reproducibility or IT/Admin concerns. Some highly
-regulated contexts consider a container insufficiently rigorous for
+regulated contexts consider a \index{container} insufficiently rigorous for
 reproducibility purposes.
 
-Running a container also makes it easy to stand things up, but
+Running a \index{container} also makes it easy to stand things up, but
 integrations to other services, like data sources and authentication,
 still must be configured externally.
 
-Lastly, running a container adds one more services between you and the
+Lastly, running a \index{container} adds one more services between you and the
 code you're trying to run. Trying to get docker to work without a good
 mental model of how the services interact can be very frustrating.
 
 ::: callout-note
-This chapter focuses solely on the local use of Docker for building and
+This chapter focuses solely on the local use of \index{Docker} for building and
 running containers. For more on running containers in a production
 context, including using Kubernetes, see [Chapter @sec-ent-scale].
 :::
 
 In this chapter, I aim to provide a little familiarity with the basic
-terminology and concepts for running other people's Docker containers
+terminology and concepts for running other people's \index{Docker} containers
 and creating your own. In the lab at the end of the chapter, we'll
-practice hosting an API inside a container.
+practice hosting an \index{API} inside a \index{container}.
 
-## Container lifecycle
+## \index{Container} lifecycle
 
-Docker is primarily concerned with the creation, movement, and running
-of *containers*. A container is a software entity that packages code and
+\index{Docker} is primarily concerned with the creation, movement, and running
+of *containers*. A \index{container} is a software entity that packages code and
 its dependencies down to the operating system. Containers are one way to
 have completely different environments coexisting side by side on one
 physical machine.
@@ -59,55 +59,55 @@ physical machine.
 Containers aren't the only way to run multiple virtual environments on
 one host. They're just the most talked about right now.
 
-And Docker Containers aren't the only type of container. You may run
+And \index{Docker} Containers aren't the only type of \index{container}. You may run
 across other kinds, like Apptainer (formerly Singularity), often used in
 *high performance computing (HPC)* contexts.
 :::
 
-A *Docker Image* is an immutable snapshot of a container. When you want
-to run a container, you *pull* the image and run it as an *instance* or
-*container* that you'll interact with.
+A *\index{Docker} Image* is an immutable snapshot of a \index{container}. When you want
+to run a \index{container}, you *pull* the image and run it as an *instance* or
+*\index{container}* that you'll interact with.
 
 ::: callout-note
-Confusingly, the term container is used both to refer to a running
-instance ("Here's my running container") as well as which image ("I used
-the newest Ubuntu container").
+Confusingly, the term \index{container} is used both to refer to a running
+instance ("Here's my running \index{container}") as well as which image ("I used
+the newest Ubuntu \index{container}").
 
-I prefer the term instance for the running container to eliminate this
+I prefer the term instance for the running \index{container} to eliminate this
 confusion.
 :::
 
 Images are usually stored in *registries*, which are similar to Git
-repositories. The most common registry for public containers is Docker
+repositories. The most common registry for public containers is \index{Docker}
 Hub, which allows public and private hosting of images in free and paid
-tiers. Docker Hub includes official images for operating systems and
+tiers. \index{Docker} Hub includes official images for operating systems and
 programming languages, as well as many community-contributed containers.
 Some organizations run private registries, usually using *registry as a
 service* offerings from cloud providers.[^1-6-docker-2]
 
-[^1-6-docker-2]: The big three container registries are AWS Elastic
-    Container Registry (ECR), Azure Container Registry, and Google
-    Container Registry.
+[^1-6-docker-2]: The big three \index{container} registries are AWS Elastic
+    \index{Container} Registry (ECR), Azure \index{Container} Registry, and Google
+    \index{Container} Registry.
 
 Images are built from *Dockerfiles* -- the code that defines the image.
 Dockerfiles are usually stored in a git repository. Building and pushing
 images in a CI/CD pipeline is common so changes to the Dockerfile are
 immediately reflected in the registry.
 
-You can control Docker Containers from the Docker Desktop app. If you're
-using Docker on a server, you'll mostly interact via the command line
-interface (CLI). All Docker CLI commands are formatted as
+You can control \index{Docker} Containers from the \index{Docker} Desktop app. If you're
+using \index{Docker} on a server, you'll mostly interact via the command line
+interface (CLI). All \index{Docker} CLI commands are formatted as
 `docker <command>`.
 
-The graphic below shows the different states for a container and the CLI
+The graphic below shows the different states for a \index{container} and the CLI
 commands to move from one to another.
 
-![](images/docker-lifecycle.png){fig-alt="A diagram. A dockerfile turns into a Docker Image with docker build. The image can push or pull to or from an image registry. The image can run as a container instance."
+![](images/docker-lifecycle.png){fig-alt="A diagram. A dockerfile turns into a \index{Docker} Image with docker build. The image can push or pull to or from an image registry. The image can run as a \index{container} instance."
 }
 
 ::: callout-note
 I've included `docker pull` on the graphic for completeness, but you'll
-rarely run it. `docker run` auto-pulls the container(s) it needs.
+rarely run it. `docker run` auto-pulls the \index{container}(s) it needs.
 :::
 
 Instances run on an underlying machine called a *host*. A primary
@@ -115,7 +115,7 @@ feature -- also a liability -- of using containers is that they are
 ephemeral. Unless configured otherwise, anything inside an instance when
 it shuts down vanishes without a trace.
 
-See [Appendix @sec-append-cheat] for a cheatsheet listing common Docker
+See [Appendix @sec-append-cheat] for a cheatsheet listing common \index{Docker}
 commands.
 
 ### Image Names
@@ -124,69 +124,69 @@ You must know which image you're referencing to build, push, pull, or
 run it. Every image has a name that consists of an *id* and a *tag*.
 
 ::: callout-note
-If you're using Docker Hub, container IDs take the form
-`<user>/<container name>`, so I might have the container
-`alexkgold/my-container`. This should look familiar to GitHub users.
+If you're using \index{Docker} Hub, \index{container} IDs take the form
+`<user>/<\index{container} name>`, so I might have the \index{container}
+`alexkgold/my-\index{container}`. This should look familiar to GitHub users.
 
 Other registries may enforce similar conventions for IDs, or they may
 allow IDs in any format they want.
 :::
 
 Tags specify versions and variants of containers and come after the `id`
-and `:`. For example, the official Python Docker image has tags for each
+and `:`. For example, the official Python \index{Docker} image has tags for each
 version of Python like `python:3`, variants for different operating
 systems, and a `slim` version that saves space by excluding recommended
 packages.
 
 Some tags, usually used for versions, are immutable. For example, the
-`rocker/r-ver` container is built on Ubuntu and has a version of R
-built-in. There's a `rocker/r-ver:4.3.1`, which is a container with R
+`rocker/r-ver` \index{container} is built on Ubuntu and has a version of R
+built-in. There's a `rocker/r-ver:4.3.1`, which is a \index{container} with R
 4.3.1.
 
 Other tags are relative to the point in time. If you don't see a tag on
-a container name, it's using the default `latest`. Other common relative
+a \index{container} name, it's using the default `latest`. Other common relative
 tags refer to the current development state of the software inside, like
 `devel`, `release`, or `stable`.
 
 ## Running Containers
 
-The `docker run` command runs container images as an instance. You can
-run `docker run <image name>` to get a running container. However, most
+The `docker run` command runs \index{container} images as an instance. You can
+run `docker run <image name>` to get a running \index{container}. However, most
 things you want to do with your instance require several command line
 flags.
 
 The `-name <name>` flag names an instance. If you don't provide a name,
 each instance gets a random alphanumeric ID on start. Names are useful
-because they persist across individual instances of a container, so they
+because they persist across individual instances of a \index{container}, so they
 can be easily remembered or used in code.
 
-The `-rm` flag automatically removes the container after it's done. If
-you don't use the `-rm` flag, the container will stick around until you
+The `-rm` flag automatically removes the \index{container} after it's done. If
+you don't use the `-rm` flag, the \index{container} will stick around until you
 clean it up manually with `docker rm`. The `-rm` flag can be useful when
 iterating quickly -- especially because you can't re-use names until you
-remove the container.
+remove the \index{container}.
 
-The `-d` flag will run your container in detached mode. This is useful
-when you want your container to run in the background and not block your
+The `-d` flag will run your \index{container} in detached mode. This is useful
+when you want your \index{container} to run in the background and not block your
 terminal session. It's useful when running containers in production, but
 you probably don't want to use it when trying things out and want to see
-logs streaming out as the container runs.
+logs streaming out as the \index{container} runs.
 
 ### Getting information in and out
 
-When a container runs, it is isolated from the host. This is a great
-feature. It means programs running inside the container can address the
-container's filesystem and networking without worrying about the host
+When a \index{container} runs, it is isolated from the host. This is a great
+feature. It means programs running inside the \index{container} can address the
+\index{container}'s filesystem and networking without worrying about the host
 outside. But it also means that using resources on the host requires
 explicit declarations as part of the `docker run` command.
 
-To get data in or out of a container, you must mount a shared *volume*
-(directory) between the container and host with the `-v` flag. You
-specify a host directory and a container directory separated by `:`.
+To get data in or out of a \index{container}, you must mount a shared *volume*
+(directory) between the \index{container} and host with the `-v` flag. You
+specify a host directory and a \index{container} directory separated by `:`.
 Anything in the volume will be available to both the host and the
-container at the file paths specified.
+\index{container} at the file paths specified.
 
-For example, maybe you've got a container that runs a job against data
+For example, maybe you've got a \index{container} that runs a job against data
 it expects in the `/data` directory. On your host machine, this data
 lives at `/home/alex/data`. You could make this happen with
 
@@ -196,10 +196,10 @@ docker run -v /home/alex/data:/data
 
 Here's a diagram of how this works.
 
-![](images/docker-on-host.png){fig-alt="A diagram showing how the flag -v /home/data:/data mounts the /home/data directory of the host to /data in the container."}
+![](images/docker-on-host.png){fig-alt="A diagram showing how the flag -v /home/data:/data mounts the /home/data directory of the host to /data in the \index{container}."}
 
-Similarly, if you have a service running in a container on a particular
-port, you'll need to map the container port to a host port with the `-p`
+Similarly, if you have a service running in a \index{container} on a particular
+port, you'll need to map the \index{container} port to a host port with the `-p`
 flag.
 
 ### Other runtime commands
@@ -207,15 +207,15 @@ flag.
 If you want to see your containers, `docker ps` lists them. This is
 especially useful to get instance IDs if you didn't bother with names.
 
-To stop a running container `docker stop` does so nicely and
-`docker kill` terminates a container immediately.
+To stop a running \index{container} `docker stop` does so nicely and
+`docker kill` terminates a \index{container} immediately.
 
-You can view the logs from a container with `docker logs`.
+You can view the logs from a \index{container} with `docker logs`.
 
-Lastly, you can execute a command inside a running container with
+Lastly, you can execute a command inside a running \index{container} with
 `docker exec`. This is most commonly used to access the command line
-inside the container as if SSH-ing to a server with
-`docker exec -it <container> /bin/bash`.
+inside the \index{container} as if SSH-ing to a server with
+`docker exec -it <\index{container}> /bin/bash`.
 
 While it's normal to SSH into a server to poke around, it's somewhat of
 an anti-pattern to `exec` in to fix problems. Generally, you should
@@ -223,7 +223,7 @@ prefer to review logs and adjust Dockerfiles and `run` commands.
 
 ## Building Images from Dockerfiles
 
-A Dockerfile is a set of instructions to build a Docker image. If you
+A Dockerfile is a set of instructions to build a \index{Docker} image. If you
 know how to accomplish something from the command line, you shouldn't
 have too much trouble building a Dockerfile to do the same.
 
@@ -231,7 +231,7 @@ One thing to consider when creating Dockerfiles is that the resulting
 image is immutable, meaning that anything you build into the image is
 forever frozen in time. You'll want to set up the versions of R and
 Python and install system requirements in your Dockerfile. Depending on
-the purpose of your container, you may want to copy in code, data,
+the purpose of your \index{container}, you may want to copy in code, data,
 and/or R and Python packages, or you may want to mount those in from a
 volume at runtime.
 
@@ -243,11 +243,11 @@ build most images.
     Dockerfile.
 
 -   `RUN` -- run any command as if you were sitting at the command line
-    inside the container.
+    inside the \index{container}.
 
--   `COPY` -- copy a file from the host filesystem into the container.
+-   `COPY` -- copy a file from the host filesystem into the \index{container}.
 
--   `CMD` - Specify what command to run on the container's shell when it
+-   `CMD` - Specify what command to run on the \index{container}'s shell when it
     runs, usually the last line of the Dockerfile.[^1-6-docker-3]
 
 [^1-6-docker-3]: You may also see `ENTRYPOINT`, which sets the command
@@ -255,7 +255,7 @@ build most images.
     the shell will be the right choice.
 
 Every Dockerfile command defines a new *layer*. A great feature of
-Docker is that it only rebuilds the layers it needs to when you make
+\index{Docker} is that it only rebuilds the layers it needs to when you make
 changes. For example, take the following Dockerfile:
 
 ``` {.dockerfile filename="Dockerfile"}
@@ -267,7 +267,7 @@ RUN ["head", "/data/data.csv"]
 ```
 
 Let's say I wanted to change the `head` command to `tail`. Rebuilding
-this container would be nearly instantaneous because the container would
+this \index{container} would be nearly instantaneous because the \index{container} would
 only start rebuilding after the `COPY` command.
 
 Once you've created your Dockerfile, you build it into an image using
@@ -280,24 +280,24 @@ You can then push the image to DockerHub or another registry using
 ## Comprehension Questions
 
 1.  Draw a mental map of the relationship between the following:
-    Dockerfile, Docker Image, Docker Registry, Docker Container
+    Dockerfile, \index{Docker} Image, \index{Docker} Registry, \index{Docker} \index{Container}
 2.  When would you want to use each of the following flags for
     `docker run`? When wouldn't you?
     -   `-p`, `--name`, `-d`, `--rm`, `-v`
 3.  What are the most important Dockerfile commands?
 
-## Lab: Putting an API in a Container
+## Lab: Putting an \index{API} in a \index{Container}
 
-Putting an API into a container is a popular way to host them. In this
-lab, we will put the Penguin Model Prediction API from [Chapter
-@sec-proj-arch] into a container.
+Putting an \index{API} into a \index{container} is a popular way to host them. In this
+lab, we will put the Penguin Model Prediction \index{API} from [Chapter
+@sec-proj-arch] into a \index{container}.
 
-If you've never used Docker before, start by installing Docker Desktop
+If you've never used \index{Docker} before, start by installing \index{Docker} Desktop
 on your computer.
 
-Feel free to write your own Dockerfile to put the API in a container. If
+Feel free to write your own Dockerfile to put the \index{API} in a \index{container}. If
 you want to make it easy, the `{vetiver}` package, which you'll remember
-auto-generated the API for us, can also auto-generate a Dockerfile. Look
+auto-generated the \index{API} for us, can also auto-generate a Dockerfile. Look
 at the package documentation for details.
 
 Once you've generated your Dockerfile, take a look at it. Here's the one
@@ -308,7 +308,7 @@ for my model:
 # start with python base image
 FROM python:3.9
 
-# create directory in container for vetiver files
+# create directory in \index{container} for vetiver files
 WORKDIR /vetiver
 
 # copy  and install requirements
@@ -323,7 +323,7 @@ COPY app.py /vetiver/app/app.py
 # expose port
 EXPOSE 8080
 
-# run vetiver API
+# run vetiver \index{API}
 CMD ["uvicorn", "app.app:api", "--host", "0.0.0.0", "--port", "8080"]
 ```
 
@@ -331,15 +331,15 @@ This auto-generated Dockerfile is nicely commented so it's easy to
 follow.
 
 ::: callout-note
-This container follows the best practices from [Chapter @sec-proj-arch].
+This \index{container} follows the best practices from [Chapter @sec-proj-arch].
 We'd expect the model to be updated much more frequently than the
-container, so the model **isn't** built into the container. Instead, the
-container knows how to fetch the model using the `{pins}` package.
+\index{container}, so the model **isn't** built into the \index{container}. Instead, the
+\index{container} knows how to fetch the model using the `{pins}` package.
 :::
 
-Now build the container using `docker build -t penguin-model .`.
+Now build the \index{container} using `docker build -t penguin-model .`.
 
-You can run the container using
+You can run the \index{container} using
 
 ``` {.bash filename="Terminal"}
 docker run --rm -d \
@@ -349,10 +349,10 @@ docker run --rm -d \
 ```
 
 If you go to `http://localhost:8080` you'll find that...it doesn't work?
-Why? If you run the container attached (remove the `-d` from the run
+Why? If you run the \index{container} attached (remove the `-d` from the run
 command) you'll get some feedback that might be helpful.
 
-In line 15 of the Dockerfile, we copy `app.py` in to the container.
+In line 15 of the Dockerfile, we copy `app.py` in to the \index{container}.
 Let's look at that file to see if we can find any hints.
 
 ``` {.python filename="app.py"}
@@ -368,15 +368,15 @@ vetiver_api = vetiver.VetiverAPI(v)
 api = vetiver_api.app
 ```
 
-Look at that (very long) line 6. The API is connecting to a local
+Look at that (very long) line 6. The \index{API} is connecting to a local
 directory to pull the model. Is your Spidey-Sense tingling? Something
-about container filesystem vs host filesystem?
+about \index{container} filesystem vs host filesystem?
 
 That's right: we put our model at `/data/model` on our **host** machine.
-But the API inside the container is looking for `/data/model` **inside
-the container** -- which doesn't exist!
+But the \index{API} inside the \index{container} is looking for `/data/model` **inside
+the \index{container}** -- which doesn't exist!
 
-This is a case where we need to mount a volume into the container like
+This is a case where we need to mount a volume into the \index{container} like
 so:
 
 ``` bash
@@ -391,9 +391,9 @@ Now you should be able to get your model up in no time.
 
 ### Lab Extensions
 
-Right now, logs from the API stay inside the container instance. But
-that means that the logs go away when the container does. That's bad if
-the container dies because something goes wrong.
+Right now, logs from the \index{API} stay inside the \index{container} instance. But
+that means that the logs go away when the \index{container} does. That's bad if
+the \index{container} dies because something goes wrong.
 
-How might you ensure the container's logs get written somewhere more
+How might you ensure the \index{container}'s logs get written somewhere more
 permanent?
