@@ -1,605 +1,262 @@
-# Cheatsheets {#sec-append-cheat}
+# Cheat Sheets {#sec-append-cheat}
 
 ## Environments as code
 
-### Checking library + repository status
+### Check library and repository status
 
-+-------------------------+------------------+----------------------+
-| **Step**                | R Command.       | Python Command       |
-+-------------------------+------------------+----------------------+
-| Check whether library   | `renv::status()` | None                 |
-| is in sync with         |                  |                      |
-| lockfile.               |                  |                      |
-+-------------------------+------------------+----------------------+
+| Step                                            | R Command        | Python Command |
+|----------------------------|--------------------|-------------------------|
+| Check whether library is in sync with lockfile. | `renv::status()` | None           |
 
-### Creating and using a standalone project library
+### Create and use a standalone project library
 
 Make sure you're in a standalone project library.
 
-+------------------+----------------------------+----------------------+
-| **Step**         | R Command                  | Python Command       |
-+------------------+----------------------------+----------------------+
-| Create a         | `renv::init()`             | `python              |
-| standalone       |                            | -m venv <dir>`       |
-| library.         | Tip: get `{renv}`          |                      |
-|                  | w/                         | Convention: use      |
-|                  | `install.packages("renv")` | `.venv` for `<dir>`  |
-|                  |                            |                      |
-|                  |                            | Tip: `{venv}`        |
-|                  |                            | included w/ Python   |
-|                  |                            | 3.5+                 |
-+------------------+----------------------------+----------------------+
-| Activate project | `                          | `source              |
-| library.         | renv::activate()`          | <dir> /bin/activate` |
-|                  |                            |                      |
-|                  | Happens                    |                      |
-|                  | automatically if           |                      |
-|                  | in RStudio                 |                      |
-|                  | project.                   |                      |
-+------------------+----------------------------+----------------------+
-| Install packages | `                          | `python -m           |
-| as normal.       | install.packages("<pkg>")` | pip install <pkg>`   |
-+------------------+----------------------------+----------------------+
-| Snapshot package | `renv::snapshot()`         | `pip freeze          |
-| state.           |                            |  > requirements.txt` |
-+------------------+----------------------------+----------------------+
-| Exit project     | Leave R project or         | `deactivate`         |
-| environment.     | `renv::deactivate()`       |                      |
-|                  |                            |                      |
-+------------------+----------------------------+----------------------+
+| Step                         | R Command                                                             | Python Command                                                  |
+|----------------------|-------------------------------|-------------------|
+| Create a standalone library. | `renv::init()` **Tip**: get `{renv}` w/ `install.packages("renv")`.   | `python -m venv <dir>` **Convention**: use `.venv` for `<dir>` |
+| Activate project library.    | `renv::activate()` **Tip**: happens automatically in RStudio project. | `source <dir> /bin/activate`                                   |
+| Install packages as normal.  | `install.packages("<pkg>")`                                           | `python -m pip install <pkg>`                                  |
+| Snapshot package state.      | `renv::snapshot()`                                                    | `pip freeze > requirements.txt`                                |
+| Exit project environment.    | Leave R project or `renv::deactivate()`                               | `deactivate`                                                    |
 
-### Collaborating on someone else's project
+### Collaborate on someone else's project
 
 Start by downloading the project into a directory on your machine.
 
-+-------------+--------------------------+----------------------+
-| **Step**    | **R Command**            | **Python Command**   |
-+-------------+--------------------------+----------------------+
-| Move into   | `setwd("<project-dir>")` | `cd <project-dir>`   |
-| project     |                          |                      |
-| directory.  | Or open project in       |                      |
-|             | RStudio.                 |                      |
-+-------------+--------------------------+----------------------+
-| Create      | `renv::init()`           | `python              |
-| project     |                          | -m venv <dir>`       |
-| e           |                          |                      |
-| nvironment. |                          | Recommend: use       |
-|             |                          | `.venv` for `<dir>`  |
-+-------------+--------------------------+----------------------+
-| Enter       | Happens automatically or | `source              |
-| project     | `renv::activate()`.      | <dir> /bin/activate` |
-| e           |                          |                      |
-| nvironment. |                          |                      |
-+-------------+--------------------------+----------------------+
-| Restore     | Happens automatically or | `pip install         |
-| packages.   | `renv::restore()`.       | -r requirements.txt` |
-+-------------+--------------------------+----------------------+
+| Step                             | R Command                                                | Python Command                                                 |
+|------------------|----------------------------|--------------------------|
+| Move into the project directory. | `setwd("<project-dir>")` Or open the project in RStudio. | `cd <project-dir>`                                             |
+| Create a project environment.    | `renv::init()`                                           | `python -m venv <dir>` **Convention**: use `.venv` for `<dir>` |
+| Enter a project environment.     | Happens automatically or `renv::activate()`.             | `source <dir> /bin/activate`                                  |
+| Restore packages.                | Happens automatically or `renv::restore()`.              | `pip install -r requirements.txt`                             |
 
-## HTTP code cheatsheet {#cheat-http}
+## HTTP codes {#cheat-http}
 
 As you work with HTTP traffic, you'll learn some of the common codes.
 Here's are some of those used most frequently.
 
-+---------------+------------------------------------------------+
-| Code          | Meaning                                        |
-+===============+================================================+
-| $200$         | Everyone's favorite, a successful response.    |
-+---------------+------------------------------------------------+
-| $\text{3xx}$  | Your query was redirected somewhere else,      |
-|               | usually ok.                                    |
-+---------------+------------------------------------------------+
-| $\text{4xx}$  | Errors with the request                        |
-+---------------+------------------------------------------------+
-| $400$         | Bad request. This isn't a request the server   |
-|               | can understand.                                |
-+---------------+------------------------------------------------+
-| $401$/$403$   | Unauthorized or forbidden. Required            |
-|               | authentication hasn't been provided.           |
-+---------------+------------------------------------------------+
-| $404$         | Not found. There isn't any content to access   |
-|               | here.                                          |
-+---------------+------------------------------------------------+
-| $\text{5xx}$  | Errors with the server once your request got   |
-|               | there.                                         |
-+---------------+------------------------------------------------+
-| $500$         | Generic server-side error. Your request was    |
-|               | received, but there was an error processing    |
-|               | it.                                            |
-+---------------+------------------------------------------------+
-| $504$         | Gateway timeout. This means that a proxy or    |
-|               | gateway between you and the server you're      |
-|               | trying to access timed out before it got a     |
-|               | response from the server.                      |
-+---------------+------------------------------------------------+
+| Code         | Meaning                                                                                                                                                    |
+|---------------------------|---------------------------------------------|
+| $200$        | Everyone's favorite, a successful response.                                                                                                                |
+| $\text{3xx}$ | Your query was redirected somewhere else, usually ok.                                                                                                      |
+| $\text{4xx}$ | Errors with the request.                                                                                                                                    |
+| $400$        | Bad request. This isn't a request the server can understand.                                                                                               |
+| $401$/$403$  | Unauthorized or forbidden. Required authentication hasn't been provided.                                                                                   |
+| $404$        | Not found. There isn't any content to access here.                                                                                                         |
+| $\text{5xx}$ | Errors with the server once your request got there.                                                                                                        |
+| $500$        | Generic server-side error. Your request was received, but there was an error processing it.                                                                |
+| $504$        | Gateway timeout. This means that a proxy or gateway between you and the server you're trying to access timed out before it got a response from the server. |
 
 ## Git {#cheat-git}
 
-+----------------------+----------------------------------------+
-| **Command (prefixed  | **What it does**                       |
-| with `git`**)        |                                        |
-+----------------------+----------------------------------------+
-| `clone <remote>`     | Clone a remote repo -- make sure       |
-|                      | you're using SSH URL.                  |
-+----------------------+----------------------------------------+
-| `add <files/dir>`    | Add files/directory to staging area.   |
-+----------------------+----------------------------------------+
-| `                    | Commit staging area.                   |
-| commit -m <message>` |                                        |
-+----------------------+----------------------------------------+
-| `push                | Push to a remote.                      |
-| origin <branch>`     |                                        |
-+----------------------+----------------------------------------+
-| `pull                | Pull from a remote.                    |
-| origin <branch>`     |                                        |
-+----------------------+----------------------------------------+
-| `checkout            | Checkout a branch.                     |
-| <branch name>`       |                                        |
-+----------------------+----------------------------------------+
-| `checkout            | Create and checkout a branch.          |
-| -b <branch name>`    |                                        |
-+----------------------+----------------------------------------+
-| `branch              | Delete a branch.                       |
-| -d <branch name>`    |                                        |
-+----------------------+----------------------------------------+
+All commands run prefixed with `git`
+
+| Command                     | What It Does                           |
+|-----------------------------|----------------------------------------|
+| `clone <remote>`            | Clone a remote repo (use the SSH URL). |
+| `add <files/dir>`           | Add files/directory to staging area.   |
+| `commit -m <message>`       | Commit staging area.                   |
+| `push origin <branch>`      | Push to a remote.                      |
+| `pull origin <branch>`      | Pull from a remote.                    |
+| `checkout <branch name>`    | Check out a branch.                     |
+| `checkout -b <branch name>` | Create and check out a branch.          |
+| `branch -d <branch name>`   | Delete a branch.                       |
 
 ## Docker {#cheat-docker}
 
 ### Docker CLI commands
 
-+------------+--------------+------------+---------------------+
-| **Stage**  | **Command    | **What it  | **Notes and helpful |
-|            | (prefix w/   | does**     | options**           |
-|            | `            |            |                     |
-|            | docker`)**   |            |                     |
-+------------+--------------+------------+---------------------+
-| Build      | `build       | Builds a   | `-t <name:tag>`     |
-|            | <directory>` | directory  | provides a name to  |
-|            |              | into an    | the container.      |
-|            |              | image.     |                     |
-|            |              |            | `tag` is optional,  |
-|            |              |            | defaults to         |
-|            |              |            | `latest`.           |
-+------------+--------------+------------+---------------------+
-| Move       | `push        | Push a     |                     |
-|            | <image>`     | container  |                     |
-|            |              | to a       |                     |
-|            |              | registry.  |                     |
-+------------+--------------+------------+---------------------+
-| Move       | `pull        | Pull a     | Rarely needed       |
-|            | <image>`     | container  | because `run` pulls |
-|            |              | from a     | the container if    |
-|            |              | registry.  | needed.             |
-+------------+--------------+------------+---------------------+
-| Run        | `run         | Run a      | See flags in next   |
-|            | <image>`     | container. | table.              |
-+------------+--------------+------------+---------------------+
-| Run        | `stop        | Stop a     | `docker kill` can   |
-|            | <container>` | running    | be used if `stop`   |
-|            |              | container. | fails.              |
-+------------+--------------+------------+---------------------+
-| Run        | `ps`         | List       | Useful to get       |
-|            |              | running    | container `id` to   |
-|            |              | c          | do things to it.    |
-|            |              | ontainers. |                     |
-+------------+--------------+------------+---------------------+
-| Run        | `exec        | Run a      | Basically always    |
-|            | <container>  | command    | used to open a      |
-|            | <command>`   | inside a   | shell with          |
-|            |              | running    | `docker exec -it    |
-|            |              | container. | <container>         |
-|            |              |            | /bin/bash`          |
-+------------+--------------+------------+---------------------+
-| Run        | `logs        | Views logs |                     |
-|            | <container>` | for a      |                     |
-|            |              | container. |                     |
-+------------+--------------+------------+---------------------+
+All prefixed with `docker`.
+
+| Stage | Command                      | What It Does                              | Notes and Helpful Options                                                                  |
+|------------------|------------------|------------------|------------------|
+| Build | `build <directory>`          | Builds a directory into an image.         | `-t <name:tag>` provides a name to the container. `tag` is optional, defaults to `latest`. |
+| Move  | `push <image>`               | Push a container to a registry.           |                                                                                            |
+| Move  | `pull <image>`               | Pull a container from a registry.         | Rarely needed because `run` pulls the container if needed.                                 |
+| Run   | `run <image>`                | Run a container.                          | See flags in next table.                                                                   |
+| Run   | `stop <container>`          | Stop a running container.                 | `docker kill` can be used if `stop` fails.                                                 |
+| Run   | `ps`                         | List running containers.                  | Useful to get container `id`.                                                              |
+| Run   | `exec <container> <command>` | Run a command inside a running container. | Basically always used to open a shell with `docker exec -it <container> /bin/bash`         |
+| Run   | `logs <container>`           | Views logs for a container.               |                                                                                            |
 
 ### Flags for `docker run`
 
-+------------------+------------------+----------------------+
-| Flag             | Effect           | Notes                |
-+------------------+------------------+----------------------+
-| `--name <name>`  | Give a name to   | Optional.            |
-|                  | container.       | Auto-assigned if not |
-|                  |                  | provided             |
-+------------------+------------------+----------------------+
-| `--rm`           | Remove container | Don't use in         |
-|                  | when its         | production. You      |
-|                  | stopped.         | probably want to     |
-|                  |                  | inspect failed       |
-|                  |                  | containers.          |
-+------------------+------------------+----------------------+
-| `-d`             | Detach container | Almost always used   |
-|                  | (don't block the | in production.       |
-|                  | terminal).       |                      |
-+------------------+------------------+----------------------+
-| `-p              | Publish port     | Needed if you want   |
-| <port>:<port>`   | from inside      | to access an app or  |
-|                  | running          | API inside the       |
-|                  | container to     | container.           |
-|                  | outside.         |                      |
-+------------------+------------------+----------------------+
-| `-v <dir>:<dir>` | Mount volume     |                      |
-|                  | into the         |                      |
-|                  | container.       |                      |
-+------------------+------------------+----------------------+
+| Flag                | Effect                                                 | Notes                                                                    |
+|-----------------------|-----------------------|---------------------------|
+| `--name <name>`     | Give a name to container.                              | Optional. Auto-assigned if not provided.                                  |
+| `--rm`              | Remove container when its stopped.                     | Don't use in production. You probably want to inspect failed containers. |
+| `-d`                | Detach container (don't block the terminal).           | Almost always used in production.                                        |
+| `-p  <port>:<port>` | Publish port from inside running container to outside. | Needed if you want to access an app or API inside the container.         |
+| `-v <dir>:<dir>`    | Mount volume into the container.                       |                                                                          |
 
-*Reminder: Order for `-p` and `-v` is `<host>:<container>`*
+Reminder: Order for `-p` and `-v` is `<host>:<container>`.
 
 ### Dockerfile commands
 
-These are the commands that go in a Dockerfile when you're building it.
+These commands go in a Dockerfile when you're building it.
 
-+-----------------+--------------------+------------------------+
-| Command         | Purpose            | Example                |
-+-----------------+--------------------+------------------------+
-| `FROM`          | Indicate base      | `FROM                  |
-|                 | container.         | rocker/r-ver:4.1.0`    |
-+-----------------+--------------------+------------------------+
-| `RUN`           | Run a command when | `RUN apt-get update`   |
-|                 | building.          |                        |
-+-----------------+--------------------+------------------------+
-| `COPY`          | Copy from build    | `COPY . /app/`         |
-|                 | directory into the |                        |
-|                 | container.         |                        |
-+-----------------+--------------------+------------------------+
-| `CMD`           | Specify the        | `CMD quarto render .`  |
-|                 | command to run     |                        |
-|                 | when the container |                        |
-|                 | starts.            |                        |
-+-----------------+--------------------+------------------------+
+| Command | Purpose                                               | Example                   |
+|---------------------|-----------------------|----------------------------|
+| `FROM`  | Indicate base container.                              | `FROM rocker/r-ver:4.1.0` |
+| `RUN`   | Run a command when building.                          | `RUN apt-get update`      |
+| `COPY`  | Copy from build directory into the container.         | `COPY . /app/`            |
+| `CMD`   | Specify the command to run when the container starts. | `CMD quarto render .`     |
 
 ## Cloud services
 
-+--------------+--------------+--------------+--------------+
-| **Service**  | **AWS**      | **Azure**    | **GCP**      |
-+--------------+--------------+--------------+--------------+
-| Kubernetes   | EKS or       | AKS          | GKE          |
-| cluster      | Fargate      |              |              |
-+--------------+--------------+--------------+--------------+
-| Run a        | ECS or       | Azure        | Google App   |
-| container or | Elastic      | Container    | Engine       |
-| application  | Beanstalk    | Apps         |              |
-+--------------+--------------+--------------+--------------+
-| Run an API   | Lambda       | Azure        | Google Cloud |
-|              |              | Functions    | Functions    |
-+--------------+--------------+--------------+--------------+
-| Database     | RDS          | Azure SQL    | Google Cloud |
-|              |              |              | Database     |
-+--------------+--------------+--------------+--------------+
-| Data         | Redshift     | DataLake     | BigQuery     |
-| Warehouse    |              |              |              |
-+--------------+--------------+--------------+--------------+
-| ML Platform  | SageMaker    | Azure ML     | Vertex AI    |
-+--------------+--------------+--------------+--------------+
-| NAS          | EFS or FSx   | Azure File   | Filestore    |
-+--------------+--------------+--------------+--------------+
+| Service                        | AWS                      | Azure                | GCP                    |
+|------------------|------------------|------------------|------------------|
+| Kubernetes                     | EKS or Fargate           | AKS                  | GKE                    |
+| Run a container or application | ECS or Elastic Beanstalk | Azure Container Apps | Google App Engine      |
+| Run an API                     | Lambda                   | Azure Functions      | Google Cloud Functions |
+| Database                       | RDS                      | Azure SQL            | Google Cloud Database  |
+| Data Warehouse                 | Redshift                 | DataLake             | BigQuery               |
+| ML Platform                    | SageMaker                | Azure ML             | Vertex AI              |
+| NAS                            | EFS or FSx               | Azure File           | Filestore              |
 
 ## Command line {#cheat-cli}
 
 ### General command line
 
-+------------------------+---------------------------------------+
-| Symbol                 | What it is                            |
-+========================+=======================================+
-| `man <command>`        | Open manual for `command`.            |
-+------------------------+---------------------------------------+
-| `q`                    | Quit the current screen.              |
-+------------------------+---------------------------------------+
-| `\`                    | Continue bash command on new line.    |
-+------------------------+---------------------------------------+
-| `ctrl + c`             | Quit current execution.               |
-+------------------------+---------------------------------------+
-| `echo <string>`        | Print string (useful for piping).     |
-+------------------------+---------------------------------------+
+| Symbol          | What It Is                         |
+|-----------------|------------------------------------|
+| `man <command>` | Open manual for `command`.         |
+| `q`             | Quit the current screen.           |
+| `\`             | Continue bash command on new line. |
+| `ctrl + c`      | Quit current execution.            |
+| `echo <string>` | Print string (useful for piping).  |
 
 ### Linux filesystem navigation
 
-+----------------+----------------------+-----------------------+
-| Command        | What it does/is      | Notes + Helpful       |
-|                |                      | options               |
-+================+======================+=======================+
-| `/`            | System root or file  |                       |
-|                | path separator.      |                       |
-+----------------+----------------------+-----------------------+
-| `.`            | Current working      |                       |
-|                | directory.           |                       |
-+----------------+----------------------+-----------------------+
-| `..`           | Parent of working    |                       |
-|                | directory.           |                       |
-+----------------+----------------------+-----------------------+
-| `~`            | Home directory of    |                       |
-|                | the current user.    |                       |
-+----------------+----------------------+-----------------------+
-| `ls <dir>`     | List objects in a    | `-l` - format as list |
-|                | directory.           |                       |
-|                |                      | `-a` - all (include   |
-|                |                      | hidden files that     |
-|                |                      | start with `.`)       |
-+----------------+----------------------+-----------------------+
-| `pwd`          | Print working        |                       |
-|                | directory.           |                       |
-+----------------+----------------------+-----------------------+
-| `cd <dir>`     | Change directory.    | Can use relative or   |
-|                |                      | absolute paths.       |
-+----------------+----------------------+-----------------------+
+| Command    | What It Does/Is                     | Notes and Helpful Options                                                    |
+|--------------------|-----------------------|-----------------------------|
+| `/`        | System root or file path separator. |                                                                              |
+| `.`        | Current working directory.          |                                                                              |
+| `..`       | Parent of working directory.        |                                                                              |
+| `~`        | Home directory of the current user. |                                                                              |
+| `ls <dir>` | List objects in a directory.        | `-l` to format as a list, `-a` for all (include hidden files that start with `.`) |
+| `pwd`      | Print working directory.            |                                                                              |
+| `cd <dir>` | Change working directory to `<dir>` | Can use relative or absolute paths.                                          |
 
 ### Reading text files
 
-+---------------+----------------+-------------------------------+
-| **Command**   | **What it      | **Notes + Helpful options**   |
-|               | does**         |                               |
-+---------------+----------------+-------------------------------+
-| `cat <file>`  | Print a file   |                               |
-|               | from the top.  |                               |
-+---------------+----------------+-------------------------------+
-| `less <file>` | Print a file,  | Can be very helpful to look   |
-|               | but just a     | at a few rows of csv.         |
-|               | little.        |                               |
-|               |                | Lazily reads lines, so can be |
-|               |                | *much* faster than `cat` for  |
-|               |                | big files.                    |
-+---------------+----------------+-------------------------------+
-| `head <file>` | Look at the    | Defaults to 10 lines, can     |
-|               | beginning of a | specify a different number    |
-|               | file.          | with `-n <n>`.                |
-+---------------+----------------+-------------------------------+
-| `tail <file>` | Look at the    | Useful for logs where the     |
-|               | end of a file. | newest part is last.          |
-|               |                |                               |
-|               |                | The `-f` flag is useful to    |
-|               |                | follow for a live view.       |
-+---------------+----------------+-------------------------------+
-| `grep         | Search a file  | Writing regex can be a pain.  |
-| <expression>` | using regex.   | I suggest testing on .        |
-|               |                |                               |
-|               |                | Often useful in combination   |
-|               |                | with the pipe.                |
-+---------------+----------------+-------------------------------+
-| `|`           | The pipe.      |                               |
-+---------------+----------------+-------------------------------+
-| `wc <file>`   | Count words in | Use `-l` to count lines,      |
-|               | a file.        | useful for `.csv` files.      |
-+---------------+----------------+-------------------------------+
+|    Command                 |     What It Does/Is                             |       Notes and Helpful Options                                                         |
+|-------------------|--------------------|---------------------------------|
+| `cat <file>`        | Print a file from the top.       |                                                                                              |
+| `less <file>`       | Print a file, but just a little. | Useful to look at a few rows of `.csv` files. Can be *much* faster than `cat` for big files. |
+| `head <file>`       | Look at the beginning of a file. | Defaults to 10 lines, specify with `-n <n >`.                                                |
+| `tail <file>`       | Look at the end of a file.       | Useful for logs where the newest part is last. Use the `-f` flag to follow a live view.      |
+| `grep <expression>` | Search a file using reg ex.      | Test regex on $\text{regex101.com}$. Useful in combination with the pipe.                 |
+| `|`                 | The pipe.                        |                                                                                              |
+| `wc <file>`         | Count the words in a file.       | Use `-l` to count lines, useful for `.csv` files.                                            |
 
 ### Manipulating files
 
-+---------------+----------------+-------------------------------+
-| **Command**   | **What it      | **Notes + Helpful Options**   |
-|               | does**         |                               |
-+---------------+----------------+-------------------------------+
-| `rm <path>`   | Remove.        | `-r` - recursively remove     |
-|               |                | everything below a file path  |
-|               |                |                               |
-|               |                | `-f` - force - dont ask for   |
-|               |                | each file                     |
-|               |                |                               |
-|               |                | **Be very careful, its        |
-|               |                | permanent!**                  |
-+---------------+----------------+-------------------------------+
-| `cp           | Copy.          |                               |
-| <from> <to>`  |                |                               |
-+---------------+----------------+-------------------------------+
-| `mv           | Move.          |                               |
-| <from> <to>`  |                |                               |
-+---------------+----------------+-------------------------------+
-| `*`           | Wildcard.      |                               |
-+---------------+----------------+-------------------------------+
-| `mkdir`       | Make/remove    | `-p` - create any parts of    |
-| /`rmdir`      | directory.     | path that dont exist          |
-+---------------+----------------+-------------------------------+
+|   Command                 |  What It Does/Is                           |   Notes and Helpful Options                                                                                                                                                         |
+|------------------|------------------|-----------------------------------|
+| `rm <path>`     | Remove.                    | `-r` to recursively remove everything below a file path. `-f` for force to skip asking for each file. **Be very careful, it's permanent!** |
+| `cp <from> <to>` | Copy.                       |                                                                                                                                                            |
+| `mv <from> <to>` | Move.                       |                                                                                                                                                            |
+| `*`                | Wildcard.                  |                                                                                                                                                            |
+| `mkdir`/`rmdir` | Make/remove directory. | `-p` to create any parts of path that don't exist.                                                                                                      |
 
 ### Move things to/from server
 
-+-------------+---------------+--------------------------------+
-| **Command** | **What it     | **Notes + Helpful Options**    |
-|             | does**        |                                |
-+-------------+---------------+--------------------------------+
-| `tar`       | C             | Almost always used with flags. |
-|             | reate/extract |                                |
-|             | archive file. | Create is usually              |
-|             |               | `tar -czf <archive> <file(s)>` |
-|             |               |                                |
-|             |               | Extract is usually             |
-|             |               | `tar -xfv <archive>`           |
-+-------------+---------------+--------------------------------+
-| `scp`       | Secure copy   | Run on laptop to server.       |
-|             | via `ssh`.    |                                |
-|             |               | Can use most `ssh` flags (like |
-|             |               | `-i` and `-v`).                |
-+-------------+---------------+--------------------------------+
+| Command | What It Does                 | Notes and Helpful Options                                                                                                 |
+|-------------|-------------|-----------------------------------------------|
+| `tar`   | Create/extract archive file. | Almost always used with flags. Create is usually `tar -czf <archive> <file(s)>`. Extract is usually `tar -xfv <archive>`. |
+| `scp`   | Secure copy via `ssh`.       | Run from laptop. You can use most `ssh` flags, like `-i` and `-v`.                                                        |
 
 ### Write files from the command line
 
-+-------------+---------------+-------------------------------+
-| Command     | What it does  | Notes                         |
-+=============+===============+===============================+
-| `touch`     | Creates file  | Updates last updated to       |
-|             | if doesn't    | current time if it does       |
-|             | exist.        | exist.                        |
-+-------------+---------------+-------------------------------+
-| `>`         | Overwrite     | Creates a new file if it      |
-|             | file          | doesn't exist.                |
-|             | contents.     |                               |
-+-------------+---------------+-------------------------------+
-| `>>`        | Concatenate   | Creates a new file if it      |
-|             | to end of     | doesn't exist.                |
-|             | file.         |                               |
-+-------------+---------------+-------------------------------+
+| Command | What It Does                   | Notes                                                  |
+|--------------------|--------------------|--------------------------------|
+| `touch` | Creates file if it doesn't exist. | Updates last updated to current time if it does exist. |
+| `>`     | Overwrite file contents.       | Creates a new file if it doesn't exist.                |
+| `>>`    | Concatenate to end of file.    | Creates a new file if it doesn't exist.                |
 
-### Command line text editors (Vim + Nano)
+### Command line text editors (Vim and Nano)
 
-+-------------+-----------------------------+-------------------+
-| Command     | What it does                | Notes + Helpful   |
-|             |                             | options           |
-+=============+=============================+===================+
-| `^`         | Prefix for file command in  | It's the `⌘` or   |
-|             | `nano` editor.              | `Ctrl` key, not   |
-|             |                             | the caret symbol. |
-+-------------+-----------------------------+-------------------+
-| `i`         | Enter insert mode (able to  |                   |
-|             | type) in `vim`.             |                   |
-+-------------+-----------------------------+-------------------+
-| `escape`    | Enter normal mode           |                   |
-|             | (navigation) in `vim`.      |                   |
-+-------------+-----------------------------+-------------------+
-| `:w`        | Write the current file in   | Can be combined   |
-|             | `vim` (from normal mode).   | to save and quit  |
-|             |                             | in one, `:wq`.    |
-+-------------+-----------------------------+-------------------+
-| `:q`        | Quit `vim` (from normal     | `:q!` quit        |
-|             | mode).                      | without saving.   |
-+-------------+-----------------------------+-------------------+
+| Command  | What It Does                                        | Notes and Helpful Options                         |
+|---------------------|------------------------------|---------------------|
+| `^`      | Prefix for file command in `nano` editor.           | It's the `⌘` or `Ctrl` key, not the caret symbol. |
+| `i`      | Enter insert mode (able to type) in `vim`.          |                                                   |
+| `escape` | Enter normal mode (navigation) in `vim`.            |                                                   |
+| `:w`     | Write the current file in `vim` (from normal mode). | Can be combined to save and quit in one, `:wq`.   |
+| `:q`     | Quit `vim` (from normal mode).                      | `:q!` quit without saving.                        |
 
 ## SSH {#cheat-ssh}
 
 General usage:
 
-``` bash
+``` {.bash filename="Terminal"}
 ssh <user>@<host>
 ```
 
-+------------+-----------------+--------------------------------+
-| Flag       | What it does    | Notes                          |
-+============+=================+================================+
-| `-v`       | Verbose, good   | Add more `v`s as you please,   |
-|            | for debugging.  | `-vv` or `-vvv`.               |
-+------------+-----------------+--------------------------------+
-| `-i`       | Choose identity | Not necessary with default key |
-|            | file (private   | names.                         |
-|            | key).           |                                |
-+------------+-----------------+--------------------------------+
+| Flag | What It Does                        | Notes                                         |
+|--------------------|--------------------|--------------------------------|
+| `-v` | Verbose, good for debugging.        | Add more `v`s as you please, `-vv` or `-vvv`. |
+| `-i` | Choose identity file (private key). | Not necessary with default key names.         |
 
 ## Linux admin
 
 ### Users
 
-+---------------+--------------------------+-------------------+
-| **Command**   | **What it does**         | **Helpful         |
-|               |                          | options + notes** |
-+---------------+--------------------------+-------------------+
-| `su           | Change to be a different |                   |
-| <username>`   | user.                    |                   |
-+---------------+--------------------------+-------------------+
-| `whoami`      | Get username of current  |                   |
-|               | user.                    |                   |
-+---------------+--------------------------+-------------------+
-| `id`          | Get full user + group    |                   |
-|               | info on current user.    |                   |
-+---------------+--------------------------+-------------------+
-| `passwd`      | Change password.         |                   |
-+---------------+--------------------------+-------------------+
-| `useradd`     | Add a new user.          |                   |
-+---------------+--------------------------+-------------------+
-| `usermod      | Modify user `username`.  | `-aG <group>`     |
-| <username>`   |                          | adds to a group   |
-|               |                          | (e.g.,`sudo`)     |
-+---------------+--------------------------+-------------------+
+| Command              | What It Does                                  | Notes and Helpful Options                   |
+|---------------------|-----------------------------|----------------------|
+| `su <username>`      | Change to be a different user.                |                                             |
+| `whoami`             | Get username of current user.                 |                                             |
+| `id`                 | Get full user and group info on current user. |                                             |
+| `passwd`             | Change password.                              |                                             |
+| `useradd`            | Add a new user.                               |                                             |
+| `usermod <username>` | Modify user `username`.                       | `-aG <group>` adds to a group (e.g., `sudo`) |
 
 ### Permissions
 
-+--------------------+-------------------+---------------------+
-| Command            | What it does      | Helpful options +   |
-|                    |                   | notes               |
-+====================+===================+=====================+
-| `chmod             | Modifies          | Number indicates    |
-| <permissions>      | permissions on a  | permissions for     |
-| <file>`            | file or           | user, group,        |
-|                    | directory.        | others: add `4` for |
-|                    |                   | read, `2` for       |
-|                    |                   | write, `1` for      |
-|                    |                   | execute, `0` for    |
-|                    |                   | nothing,            |
-|                    |                   | e.g.,`644`.         |
-+--------------------+-------------------+---------------------+
-| `chown             | Change the owner  | Can be used for     |
-| <user>:<group>     | of a file or      | user or group,      |
-| <file>`            | directory.        | e.g.,`:my-group`.   |
-+--------------------+-------------------+---------------------+
-| `sudo <command>`   | Adopt root        |                     |
-|                    | permissions for   |                     |
-|                    | the following     |                     |
-|                    | command.          |                     |
-+--------------------+-------------------+---------------------+
+| Command                       | What It Does                                      | Notes and Helpful Options                                                                                                            |
+|-------------------------|-----------------------|-------------------------|
+| `chmod <permissions> <file>`  | Modifies permissions on a file or directory.      | Number indicates permissions for user, group, others: add `4` for read, `2` for write, `1` for execute, `0` for nothing, e.g., `644`. |
+| `chown <user>:<group> <file>` | Change the owner of a file or directory.          | Can be used for user or group, e.g., `:my-group`.                                                                                    |
+| `sudo <command>`              | Adopt root permissions for the following command. |                                                                                                                                      |
 
 ### Install applications (Ubuntu)
 
-+----------------------------+-----------------------------------+
-| **Command**                | **What it does**                  |
-+----------------------------+-----------------------------------+
-| `apt-get update            | Fetch and install upgrades to     |
-| && apt-get upgrade -y`.    | system packages                   |
-+----------------------------+-----------------------------------+
-| `                          | Install a system package.         |
-| apt-get install <package>` |                                   |
-+----------------------------+-----------------------------------+
-| `wget`                     | Download a file from a URL.       |
-+----------------------------+-----------------------------------+
-| `gdebi`                    | Install local `.deb` file.        |
-+----------------------------+-----------------------------------+
+| Command                                 | What It Does                                  |
+|--------------------------------|----------------------------------------|
+| `apt-get update && apt-get upgrade -y`. | Fetch and install upgrades to system packages. |
+| `apt-get install <package>`             | Install a system package.                     |
+| `wget`                                  | Download a file from a URL.                   |
+| `gdebi`                                 | Install local `.deb` file.                    |
 
 ### Storage
 
-+-------------+-----------------+-----------------------------+
-| Command     | What it does    | Helpful options             |
-+=============+=================+=============================+
-| `df`        | Check storage   | `-h` for human readable     |
-|             | space on        | file sizes.                 |
-|             | device.         |                             |
-+-------------+-----------------+-----------------------------+
-| `du`        | Check size of   | Most likely to be used as   |
-|             | files.          | `du -h <dir> | sort -h`     |
-|             |                 |                             |
-|             |                 | Also useful to combine with |
-|             |                 | `head`.                     |
-+-------------+-----------------+-----------------------------+
+| Command | What It Does                           | Notes and Helpful Options                                                                                   |
+|----------------|----------------|----------------------------------------|
+| `df`      | Check storage space on device. | `- h` for human-readable file sizes.                                                           |
+| `du`      | Check size of files.           | Most likely to be used as `du -h <dir> | sort -h`. Also useful to combine with `head`. |
 
 ### Processes
 
-+-------------+--------------------+---------------------------+
-| Command     | What it does       | Helpful options           |
-+=============+====================+===========================+
-| `top`       | See what's running |                           |
-|             | on the system.     |                           |
-+-------------+--------------------+---------------------------+
-| `ps aux`    | See all system     | Consider using `--sort`   |
-|             | processes.         | and pipe into `head` or   |
-|             |                    | `grep`.                   |
-+-------------+--------------------+---------------------------+
-| `kill`      | Kill a system      | `-9` to force kill        |
-|             | process.           | immediately               |
-+-------------+--------------------+---------------------------+
+| Command  | What It Does                      | Notes and Helpful Options                                         |
+|---------------------|----------------------|-----------------------------|
+| `top`    | See what's running on the system. |                                                         |
+| `ps aux` | See all system processes.         | Consider using `--sort` and pipe into `head` or `grep`. |
+| `kill`   | Kill a system process.            | `-9` to force kill immediately.                          |
 
 ### Networking
 
-+----------------------------+----------------------+-----------------------+
-| **Command**                | **What it does**     | **Helpful Options**   |
-+----------------------------+----------------------+-----------------------+
-| `netstat`                  | See ports and        | Usually used with     |
-|                            | services using them. | `-tlp`, for tcp       |
-|                            |                      | listening             |
-|                            |                      | applications,         |
-|                            |                      | including `pid`.      |
-+----------------------------+----------------------+-----------------------+
-| `ssh -L                    | Port forwards a      | Remote `ip` is        |
-| <port>:<ip>:<port>:<host>` | remote port on       | usually `localhost`.  |
-|                            | remote host to       |                       |
-|                            | local.               | Choose local port to  |
-|                            |                      | match remote port.    |
-+----------------------------+----------------------+-----------------------+
+|   Command                                      |      What It Does                                        |   Notes and Helpful Options                                    |
+|------------------------|------------------------|------------------------|
+| `netstat`                               | See ports and services using them.           | Usually used with `-tlp`, to get `tcp` listeners with their `pid`s. |
+| `ssh -L <port>:localhost:<port>:<host>` | Forwards a port on remote `<host>` to local. | Choose local port to match remote port.                    |
 
 ### The path
 
-+-------------------------+---------------------------------------------+
-| **Command**             | **What it does**                            |
-+-------------------------+---------------------------------------------+
-| `                       | Finds the location of the binary that runs  |
-| which <command>`        | when you run `command`.                     |
-+-------------------------+---------------------------------------------+
-| `ln -s                  | Creates a symlink from file/directory at    |
-| <linked location>       | `linked location` to                        |
-| <where to put symlink>` | `where to put symlink`.                     |
-+-------------------------+---------------------------------------------+
+| Command                                          | What It Does                                    |
+|---------------------------|---------------------------------------------|
+| `which <command>`                                | Finds the location of the binary for `command`. |
+| `ln -s <linked location> <where to put symlink>` | Creates a symlink.                              |
 
 ### `systemd`
 
@@ -608,63 +265,36 @@ Daemonizing services is accomplished by configuring them in
 
 The format of all commands is `systemctl <command> <application>`.
 
-+-------------+-------------------------------------------------+
-| Command     | Notes/Tips                                      |
-+=============+=================================================+
-| `status`    | Report status.                                  |
-+-------------+-------------------------------------------------+
-| `start`     |                                                 |
-+-------------+-------------------------------------------------+
-| `stop`      |                                                 |
-+-------------+-------------------------------------------------+
-| `restart`   | `stop` then `start`.                            |
-+-------------+-------------------------------------------------+
-| `reload`    | Reload configuration that doesn't require       |
-|             | restart (depends on service).                   |
-+-------------+-------------------------------------------------+
-| `enable`    | Daemonize the service.                          |
-+-------------+-------------------------------------------------+
-| `disable`   | Un-daemonize the service.                       |
-+-------------+-------------------------------------------------+
+| Command   | Notes/Tips                                                              |
+|---------------------------|---------------------------------------------|
+| `status`  | Report status.                                                          |
+| `start`   |                                                                         |
+| `stop`    |                                                                         |
+| `restart` | `stop` then `start`.                                                    |
+| `reload`  | Reload configuration that doesn't require restart (depends on service). |
+| `enable`  | Daemonize the service.                                                  |
+| `disable` | Un-daemonize the service.                                               |
 
 ## IP Addresses and ports {#cheat-ports}
 
-### Special IP Addresses
+### Special IPv4 Addresses
 
-+-------------------------+------------------------------------+
-| Address                 | Meaning                            |
-+=========================+====================================+
-| $127.0.0.1$             | $\text{localhost}$ or loopback --  |
-|                         | the machine that originated the    |
-|                         | request.                           |
-+-------------------------+------------------------------------+
-| $\text{10.x.x.x}$       | Protected address blocks used for  |
-|                         | private IP addresses.              |
-| $\text{172.16.x.x}$ to  |                                    |
-| $\text{172.31.x.x}$     |                                    |
-|                         |                                    |
-| $\text{192.168.x.x}$    |                                    |
-+-------------------------+------------------------------------+
+| Address                                                                           | Meaning                                                           |
+|---------------------------|---------------------------------------------|
+| $127.0.0.1$                                                                       | `localhost` or loopback, the machine that originated the request. |
+| $\text{10.x.x.x}$, $\text{172.16.x.x}$, $\text{172.31.x.x}$, $\text{192.168.x.x}$ | Protected address blocks used for private IP addresses.           |
 
 ### Special ports
 
 All ports below $1024$ are reserved for server tasks and cannot be
 assigned to admin-controlled services.
 
-+-----------------------+---------------------------------------+
-| Protocol/application  | Default port                          |
-+=======================+=======================================+
-| HTTP                  | $80$                                  |
-+-----------------------+---------------------------------------+
-| HTTPS                 | $443$                                 |
-+-----------------------+---------------------------------------+
-| SSH                   | $22$                                  |
-+-----------------------+---------------------------------------+
-| PostgreSQL            | $5432$                                |
-+-----------------------+---------------------------------------+
-| RStudio Server        | $8787$                                |
-+-----------------------+---------------------------------------+
-| Shiny Server          | $3939$                                |
-+-----------------------+---------------------------------------+
-| JupyterHub            | $8000$                                |
-+-----------------------+---------------------------------------+
+| Protocol/Application | Port   |
+|----------------------|--------|
+| HTTP                 | $80$   |
+| HTTPS                | $443$  |
+| SSH                  | $22$   |
+| PostgreSQL           | $5432$ |
+| RStudio Server       | $8787$ |
+| Shiny Server         | $3939$ |
+| JupyterHub           | $8000$ |

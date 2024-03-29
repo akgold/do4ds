@@ -13,7 +13,7 @@ library(ggplot2)
 library(logger)
 
 #* @apiTitle Palmer Penguins API
-#* @apiDescription An API for exploring the Palmer Penguins data set
+#* @apiDescription An API for exploring the Palmer Penguins dataset
 
 # A function to help with arg parsing
 parse_args <- function(

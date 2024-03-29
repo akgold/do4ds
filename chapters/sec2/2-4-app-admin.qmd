@@ -3,13 +3,14 @@
 The last few chapters have focused on how to run a Linux server. But you
 don't care about running a Linux server -- you care about doing data
 science on a server. That means you'll need the know-how to run data
-science applications like \index{JupyterHub}, \index{RStudio}, R, Python, and more.
+science applications like \index{JupyterHub}JupyterHub,
+\index{RStudio}RStudio, R, Python, and more.
 
 In this chapter, you'll learn how to install and administer applications
 on a Linux server and pointers for managing data science tools like R,
 Python, and the system packages they use.
 
-## Linux app install + config
+## Linux app install and config
 
 The first step to running applications on a server is installing them.
 Most software you install will come from system repositories. Your
@@ -42,7 +43,7 @@ that software, you will download a file on the command line, usually
 with `wget`, and then install the software from the file, often with
 `gdebi`.
 
-### Application configuration
+### Application Configuration
 
 Most applications require some configuration after they're installed.
 Configuration may include connecting to auth soures, setting display and
@@ -51,27 +52,28 @@ setting in menus on your personal computer. On a server, no such menu
 exists.
 
 Application behavior is usually configured through one or more *config
-files*. For applications hosted inside a \index{Docker} \index{Container}, behavior is
-often configured with environment variables, sometimes in addition to
-config files.
+files*. For applications hosted inside a \index{Docker}Docker
+\index{container}container, behavior is often configured with
+\index{environment variable}environment variables, sometimes in addition
+to config files.
 
 The application you're running will have documentation on how to set
 different configuration options. That documentation is probably dry and
 boring, but reading it will put you ahead of most people trying to
 administer the application.
 
-### Where to find application files
+### Where To Find Application Files
 
 Linux applications often use several files located in different
 locations on the filesystem. Here are some of the ones you'll use most
 frequently:
 
--   `/bin`, `/opt`, `/usr/local`, `/usr/bin` - installation locations
+-   `/bin`, `/opt`, `/usr/local`, `/usr/bin` -- installation locations
     for software.
 
--   `/etc` - configuration files for applications.
+-   `/etc` -- configuration files for applications.
 
--   `/var` - variable data, most commonly log files in `/var/log` or
+-   `/var` -- variable data, most commonly log files in `/var/log` or
     `/var/lib`.
 
 This means that on a Linux server, the files for a particular
@@ -136,10 +138,10 @@ Once you've escaped, you may wish never to return to normal mode, but
 it's the only way to save files and exit Vim. You can return to normal
 mode with the `escape` key.
 
-To do file operations, you type a colon, `:`, followed by the shortcut
-for what you want to do, and `enter`. The two most common commands
-you'll use are `w` for save (write) and `q` for quit. You can combine
-these to save and quit in one command using `:wq`.
+To do file operations, type a colon, `:`, followed by the shortcut for
+what you want to do, and `enter`. The two most common commands you'll
+use are `w` for save (write) and `q` for quit. You can combine these to
+save and quit in one command using `:wq`.
 
 Sometimes, you may want to exit without saving, or you may have opened
 and changed a file you don't have permission to edit. If you've made
@@ -171,16 +173,16 @@ commonly are:
     -- so you can quickly preview the column heads and the first few
     values.
 
--   `tail` prints a file going backwards from the end. This is
-    especially useful for log files, as the newest logs are appended to
-    the end of a file. This is such a common practice that "tailing a
-    log file" is a common phrase.
+-   `tail` prints a file going backward from the end. This is especially
+    useful for log files, as the newest logs are appended to the end of
+    a file. This is such a common practice that "tailing a log file" is
+    a common phrase.
 
     -   Sometimes, you'll want to use the `-f` flag (for *follow*) to
         tail a file with a live view as it updates.
 
-Sometimes you want to search around inside a text file. You're probably
-familiar with the power and hassle of *regular expressions (regex)* to
+Sometimes, you want to search around inside a text file. You're probably
+familiar with the power and hassle of *regular expressions* (regex) to
 search for specific character sequences in text strings. The Linux
 command `grep` is the main regex command.
 
@@ -203,14 +205,14 @@ version open up.
 > python3
 Python 3.9.6 (default, May  7 2023, 23:32:45) 
 [Clang 14.0.3 (clang-1403.0.22.14.1)] on darwin
-Type "help", "copyright", "credits" or "license" for more information.
+Type "help", "copyright", "credits" or "license" for more.
 >>> 
 ```
 
-Sometimes you might want to go the other way. Maybe `python3` opens
+Sometimes, you might want to go the other way. Maybe `python3` opens
 Python correctly, but you're unsure where it's located. You can use the
 `which` command to identify the actual executable for a command. For
-example this is the result of `which python3` on my system.
+example, this is the result of `which python3` on my system.
 
 ``` {.bash filename="Terminal"}
 > which python3                                                    
@@ -218,20 +220,23 @@ example this is the result of `which python3` on my system.
 ```
 
 Sometimes, you must make a program available without providing a full
-path every time. Some applications rely on others, like \index{RStudio Server}
-needing to find R or \index{Jupyter Notebook} needing your Python kernels.
+path every time. Some applications rely on others, like
+\index{RStudio}RStudio Server needing to find R or
+\index{Jupyter Notebook}Jupyter Notebook needing your Python kernels.
 
-The operating system knows how to find executables via the *path*. The
-path is a set of directories that the system knows to search when it
-tries to run a program. The path is stored in an environment variable
+The \index{operating system}operating system knows how to find
+executables via the *path*. The path is a set of directories that the
+system knows to search when it tries to run a program. The path is
+stored in an \index{environment variable}environment variable
 conveniently named `PATH`.
 
 You can check your path at any time with `echo $PATH`. On my MacBook,
-this is what it looks like.
+this is what it looks like:
 
 ``` {.bash filename="Terminal"}
 > echo $PATH                                                      
-/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
+/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:
+  /System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
 ```
 
 When you install a new application, you must add it to the path. Let's
@@ -256,8 +261,9 @@ background, waiting for input, are called a *daemon* or a *service*.
 
 Most server-based applications are configured to run as a service, so
 users can access them without needing permissions to start them first.
-For example, on a data science workbench, you'd want \index{JupyterHub} and/or
-\index{RStudio Server} to run as a service.
+For example, on a data science workbench, you'd want
+\index{JupyterHub}JupyterHub and/or \index{RStudio}RStudio Server to run
+as a service.
 
 In Linux, the tool to turn a regular application into a daemon is called
 `systemd`. Some applications automatically configure themselves with
@@ -269,9 +275,9 @@ Daemonized services are controlled using the `systemctl` command line
 tool.
 
 ::: callout-note
-Basically all modern Linux distros have coalesced around using `systemd`
-and `systemctl`. Older systems may not have it installed by default and
-you may have to install it or use a different tool.
+Basically, all modern Linux distros have coalesced around using
+`systemd` and `systemctl`. Older systems may not have it installed by
+default and you may have to install it or use a different tool.
 :::
 
 The `systemctl` command has a set of sub-commands that are useful for
@@ -283,45 +289,48 @@ users.
 The most useful `systemctl` commands include `start` and `stop`,
 `status` for checking whether a program is running, and `restart` for a
 `stop` followed by a `start`. Many applications also support a `reload`
-command, which reloads configuration settings without restartingt the
-process. Which settings require a `restart` vs a `reload` depends on the
-application.
+command, which reloads configuration settings without restarting the
+process. Which settings require a `restart` vs. a `reload` depends on
+the application.
 
 If you've changed a service's `systemd` configuration, you can load
 changes with `daemon-reload`. You also can turn a service on or off for
 the next time the server starts with `enable` and `disable`.
 
-### Running \index{Docker} Containers as a service
+### Running \index{Docker}Docker Containers as a Service
 
-People love \index{Docker} Containers because they easily run on most machines.
-To run a \index{container} as a service, you'll need to make sure \index{Docker} itself
-is daemonized and then ensure the \index{container} you care about comes up
-whenever \index{Docker} does by setting a *restart policy* for the \index{container}.
+People love \index{Docker}Docker Containers because they easily run on
+most machines. To run a \index{container}container as a service, you'll
+need to make sure \index{Docker}Docker itself is daemonized and then
+ensure the \index{container}container you care about comes up whenever
+\index{Docker}Docker does by setting a *restart policy* for the
+\index{container}container.
 
-However, many \index{Docker} services involve coordinating more than one
-\index{container}. If so, you'll want to use a purpose-built system for managing
-multiple containers. The most popular are *\index{Docker} Compose* or
-*Kubernetes*.
+However, many \index{Docker}Docker services involve coordinating more
+than one \index{container}container. If so, you'll want to use a
+purpose-built system for managing multiple containers. The most popular
+are \index{Docker}Docker Compose or \index{Kubernetes}*Kubernetes*.
 
-\index{Docker} Compose is a relatively lightweight system that allows you to
-write a YAML file describing the containers you need and their
-relationship. You can then use a single command to launch the entire set
-of \index{Docker} Containers.
+\index{Docker}Docker Compose is a relatively lightweight system that
+allows you to write a YAML file describing the containers you need and
+their relationship. You can then use a single command to launch the
+entire set of \index{Docker}Docker Containers.
 
-\index{Docker} Compose is fantastic for prototyping systems of \index{Docker} Containers
-and for running small-scale Dockerized deployments on a single server.
-There are many great resources online to learn more about \index{Docker}
-Compose.
+\index{Docker}Docker Compose is fantastic for prototyping systems of
+\index{Docker}Docker Containers and for running small-scale Dockerized
+deployments on a single server. There are many great resources online to
+learn more about \index{Docker}Docker Compose.
 
 Kubernetes is designed for a similar purpose, but instead of running a
-handful of containers on one server, Kubernetes is a heavy-duty
-production system designed to schedule up to hundreds or thousands of
-\index{Docker}-based workloads across a cluster of many servers.
+handful of containers on one server, \index{Kubernetes}Kubernetes is a
+heavy-duty production system designed to schedule up to hundreds or
+thousands of \index{Docker}Docker-based workloads across a cluster of
+many servers.
 
-In general, I'd recommend sticking with \index{Docker} Compose for the work
-you're doing. If you need the full might of Kubernetes to do what you
-want, you probably should be working closely with a professional
-IT/Admin
+In general, I recommend sticking with \index{Docker}Docker Compose for
+the work you're doing. If you need the full might of
+\index{Kubernetes}Kubernetes to do what you want, you probably should be
+working closely with a professional IT/Admin.
 
 ## Managing R and Python
 
@@ -337,19 +346,20 @@ If you just `sudo apt-get install python` or `sudo apt-get install R`,
 you'll end up with only one version of Python or R, which will get
 overwritten every time you re-run the command.
 
-### Python-specific considerations
+### Python-Specific Considerations
 
 Python is one of the world's most popular programming languages for
 general-purpose computing. This makes configuring Python **harder**.
 Getting Python up and running is famously frustrating on both servers
 and your personal computer.[^2-4-app-admin-1]
 
-[^2-4-app-admin-1]: See, for example, the XKCD comic titled Python
-    Environment.
+[^2-4-app-admin-1]: See, for example, the XKCD comic titled *Python
+    Environment*.
 
 Almost every system comes with a *system version* of Python. This is the
-version of Python the operating system uses for various tasks. It's
-almost always old, and you don't want to mess with it.
+version of Python the \index{operating system}operating system uses for
+various tasks. It's almost always old, and you don't want to mess with
+it.
 
 To configure Python for data science, you have to install the versions
 of Python you want to use, get them on the path, and get the system
@@ -361,35 +371,36 @@ system Python removes some headaches, and adding a single directory to
 the path is easy.
 
 My favorite route (though I'm biased) is to install Python from the
-pre-built binaries provided by \index{Posit}.
+pre-built binaries provided by \index{Posit}Posit.
 
 ::: callout-note
-### A Note on Conda
+### Notes on Conda, Part II
 
-Conda is an excellent solution for managing data science Python versions
-on your personal computer. Conda allows you to install a standalone
-version of Python in *user space*. That means you can install and manage
-versions of Python even if your organization doesn't let you have admin
-rights on your computer.
+In [@sec-env-as-code], I mentioned that \index{Conda}Conda is useful
+when you have to create a laptop-based data science environment for
+yourself, but isn't great in production. Similarly, as an admin trying
+to install Python for all the users on a server, you should stay away
+from \index{Conda}Conda.
 
-For the same reason, Conda isn't as good for administering a data
-science server. You're not a user -- you're an admin. Configuring
-server-wide data science versions of Python is more straightforward
-without Conda.
+Conda is meant to let users install Python for themselves without help
+from an admin. Now, you are that admin, and should you choose to use
+\index{Conda}Conda, you'll be fighting default behaviors the whole time.
+Configuring server-wide data science versions of Python is more
+straightforward without \index{Conda}Conda.
 :::
 
-### R-specific considerations
+### R-Specific Considerations
 
 Generally, people only install R to do data science, so where you
 install R is usually not a big issue. Using `apt-get install` is fine if
 you know you'll only ever want one version of R.
 
 If you want multiple versions, you'll need to install them manually. I
-recommend installing into `/opt/R` with binaries provided by \index{Posit} or
-using `rig`, a great R installation manager that supports Windows, Mac,
-and Ubuntu.
+recommend installing into `/opt/R` with binaries provided by
+\index{Posit}Posit or using `rig`, a great R installation manager that
+supports Windows, Mac, and Ubuntu.
 
-## Managing System Libraries
+## Managing system libraries
 
 As an admin, you'll also have to decide what to do about *system
 packages*, which are Linux libraries you install from a Linux repository
@@ -412,10 +423,10 @@ necessary to ensure that the system package you need appears on the path
 when your code runs.
 
 Some admins with sophisticated requirements around system library
-versions use \index{Docker} Containers or Linux *Environment Modules* to keep
-system libraries linked to projects.
+versions use \index{Docker}Docker Containers or Linux *Environment
+Modules* to keep system libraries linked to projects.
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  What are two different ways to install Linux applications, and what
     are the commands?
@@ -424,16 +435,16 @@ system libraries linked to projects.
 3.  How do you know if you've opened Nano or Vim? How would you exit
     them if you didn't mean to?
 4.  What are four commands to read text files?
-5.  How would you create a file called `secrets.txt`, open it with vim,
+5.  How would you create a file called `secrets.txt`, open it with Vim,
     write something in, close and save it, and make it so that only you
     can read it?
 
-## Lab: Installing Applications
+## Lab: Installing applications
 
 As we've started to administer our server, we've mostly been doing
 generic server administration tasks. Now, let's set up the applications
-we need to run a data science workbench and get our \index{API} and \index{Shiny} app
-set up.
+we need to run a data science workbench and get our \index{API}API and
+\index{Shiny}Shiny app set up.
 
 ### Step 1: Install Python
 
@@ -442,17 +453,17 @@ using the system Python for data science purposes.
 
 If you want just one version of Python, you can `apt-get install` a
 specific version. As of this writing, Python 3.10 is a relatively new
-version of Python, so we'll install that one with
+version of Python, so we'll install that one with:
 
 ``` {.bash filename="Terminal"}
-sudo apt-get install python3.10-venv
+> sudo apt-get install python3.10-venv
 ```
 
 Once you've installed Python, you can check that you've got the correct
-version by running
+version by running the following:
 
 ``` {.bash filename="Terminal"}
-python3 --version
+> python3 --version
 ```
 
 This route to installing Python is easy if you only want one version. If
@@ -462,146 +473,148 @@ Python isn't the way to go.
 ### Step 2: Install R
 
 Since we're using Ubuntu, we can use `rig`. There are good instructions
-on downloading `rig` and using it to install R on the `rlib/rig` GitHub
-repo. Use those instructions to install the current R release on your
-server.
+on downloading `rig` and using it to install R on the `rlib/rig`
+\index{GitHub}GitHub repo. Use those instructions to install the current
+R release on your server.
 
 Once you've installed R on your server, you can check that it's running
 by just typing `R` into the command line. If that works, you can move on
 to the next step. If not, you'll need to ensure R got onto the path.
 
-### Step 3: Install JupyerHub + JupyterLab
+### Step 3: Install JupyterHub andz JupyterLab
 
-\index{JupyterHub} and JupyterLab are Python programs, so we will run them from
-within a Python virtual environment. I'd recommend putting that virtual
-environment inside `/opt/jupyterhub`.
+\index{JupyterHub}JupyterHub and JupyterLab are Python programs, so we
+will run them from within a Python \index{virtual environment}virtual
+environment. I'd recommend putting that virtual environment inside
+`/opt/jupyterhub`.
 
 Here are the commands to create and activate a `jupyterhub` virtual
 environment in `/opt/jupyterhub`:
 
 ``` {.bash filename="Terminal"}
-sudo python3 -m venv /opt/jupyterhub
-source /opt/jupyterhub/bin/activate
+> sudo python3 -m venv /opt/jupyterhub
+> source /opt/jupyterhub/bin/activate
 ```
 
-Now we will get \index{JupyterHub} up and running inside the virtual environment
-we just created. \index{JupyterHub} has great docs (Google "\index{JupyterHub}
-quickstart") to get up and running quickly. If you must stop for any
-reason, assume sudo and start the \index{JupyterHub} virtual environment we
-created when you return.
+Now, we will get \index{JupyterHub}JupyterHub up and running inside the
+\index{virtual environment}virtual environment we just created.
+\index{JupyterHub}JupyterHub has great docs (Google
+"\index{JupyterHub}JupyterHub quickstart") to get up and running
+quickly. If you must stop for any reason, assume sudo and start the
+\index{JupyterHub}JupyterHub \index{virtual environment}virtual
+environment we created when you return.
 
-Note that because we're working inside a virtual environment, you may
-have to use the `jupyterhub-singleuser` version of the binary.
+Note that because we're working inside a
+\index{virtual environment}virtual environment, you may have to use the
+`jupyterhub-singleuser` version of the binary.
 
-### Step 4: Daemonize \index{JupyterHub}
+### Step 4: Daemonize JupyterHub
 
-Because \index{JupyterHub} is a Python process, not a system process, it won't
-automatically get daemonized, so we'll have to do it manually.
+Because \index{JupyterHub}JupyterHub is a Python process, not a system
+process, it won't automatically get daemonized, so we'll have to do it
+manually.
 
-We don't need it right now, but it will be easier to manage \index{JupyterHub}
-later on from a config file that's in `/etc/jupyterhub`. To do so,
-activate the `jupyterhub` virtual environment, create a default
-\index{JupyterHub} config (Google for the command), and move it into
-`/etc/jupyterhub/jupyterhub_config.py`.
+We don't need it right now, but it will be easier to manage
+\index{JupyterHub}JupyterHub later on from a config file that's in
+`/etc/jupyterhub`. To do so, activate the `jupyterhub`
+\index{virtual environment}virtual environment, create a default
+\index{JupyterHub}JupyterHub config (Google for the command), and move
+it into `/etc/jupyterhub/jupyterhub_config.py`.
 
-Now let's move on to daemonizing \index{JupyterHub}. To start, kill the existing
-\index{JupyterHub} process (consult the cheatsheet in [Appendix
-@sec-append-cheat] if you need help). Since \index{JupyterHub} wasn't
-automatically daemonized, you must create the `systemd` file manually.
+::: callout-tip
+You can see working examples of the `jupyterhub_config` and other files mentioned in this lab in the GitHub repo for this book
+([akgold/do4ds](https://github.com/akgold/do4ds)) in the
+[`_labs/lab10`](https://github.com/akgold/do4ds/tree/main/_labs/lab10)
+directory.
+:::
 
-Here's the file I created in `/etc/systemd/system/jupyterhub.service`.
+Now let's move on to daemonizing \index{JupyterHub}JupyterHub. To start,
+kill the existing \index{JupyterHub}JupyterHub process (consult the
+cheat sheet in [Appendix @sec-append-cheat] if you need help). Since
+\index{JupyterHub}JupyterHub wasn't automatically daemonized, you must
+create the `systemd` file in `/etc/systemd/system/jupyterhub.service`.
 
-``` {.yaml filename="/etc/systemd/system/jupyterhub.service"}
-[Unit]
-Description=Jupyterhub
-After=syslog.target network.target
-
-[Service]
-User=root
-Environment="PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/jupyterhub/bin"
-ExecStart=/opt/jupyterhub/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py
-
-[Install]
-WantedBy=multi-user.target
-```
-
-There are two things here worth noticing. The first is the `Environment`
-line that adds `/opt/jupyterhub/bin` to the path -- that's where our
-virtual environment is.
-
-The second is `ExecStart` line, which provides the startup command and
-specifies that \index{JupyterHub} should use the config we just created,
-specified by `-f /etc/jupyterhub/jupyterhub_config.py`.
+That file will need to add `/opt/jupyterhub/bin` to the path because that's where our
+\index{virtual environment}virtual environment is and will have to provide the startup command and
+specify that \index{JupyterHub}JupyterHub should use the config we
+created`.
 
 Now, you'll need to use `systemctl` to reload the daemon, start
-\index{JupyterHub}, and enable it.
+\index{JupyterHub}JupyterHub, and enable it.
 
-### Step 5: Install \index{RStudio Server}
+### Step 5: Install \index{RStudio}RStudio Server
 
-You can find the commands to install \index{RStudio Server} on the \index{Posit}
-website. Make sure to pick the version that matches your operating
-system. Since you've already installed R, skip to the "Install RStudio
-Server" step.
+You can find the commands to install \index{RStudio}RStudio Server on
+the \index{Posit}Posit website. Make sure to pick the version that
+matches your operating system. Since you've already installed R, skip to
+the "Install RStudio Server" step.
 
-Unlike \index{JupyterHub}, \index{RStudio Server} daemonizes itself right out of the
-box, so you can check and control the status with `systemctl` without
-further work.
+Unlike \index{JupyterHub}JupyterHub, \index{RStudio}RStudio Server
+daemonizes itself right out of the box, so you can check and control the
+status with `systemctl` without further work.
 
-### Step 6: Run the penguin \index{API} from \index{Docker}
+### Step 6: Run the Penguin API from Docker
 
-First, you'll have to ensure that \index{Docker} is available. It can be
-installed from `apt` using `apt-get install docker.io`. You may need to
-adopt `sudo` privileges to do so.
+First, you'll have to ensure that \index{Docker}Docker is available. It
+can be installed from `apt` using `apt-get install docker.io`. You may
+need to adopt `sudo` privileges to do so.
 
-Once \index{Docker} is installed, running the \index{API} is almost trivially easy using
-the command we used in [Chapter @sec-docker] to run our \index{container}.
+Once \index{Docker}Docker is installed, running the \index{API}API is
+almost trivially easy using the command we used in [Chapter @sec-docker]
+to run our \index{container}container.
 
 ``` {.bash filename="Terminal"}
-sudo docker run --rm -d \
-  -p 8080:8080 \
-  --name penguin-model \
-  alexkgold/penguin-model
+> sudo docker run --rm -d \
+    -p 8080:8080 \
+    --name penguin-model \
+    alexkgold/penguin-model
 ```
 
 Once it's up, you can check that it's running with `docker ps`.
 
-### Step 7: Put up the \index{Shiny} app
+### Step 7: Put up the Shiny app
 
-We will use \index{Shiny} Server to host our \index{Shiny} app on the server. Start by
-moving the app code to the server. I put mine in
-`/home/test-user/do4ds-lab/app` by cloning the Git repo.
+We will use \index{Shiny}Shiny Server to host our \index{Shiny}Shiny app
+on the server. Start by moving the app code to the server. I put mine in
+`/home/test-user/do4ds-lab/app` by cloning the \index{Git}Git repo.
 
 After that, you'll need to:
 
-1.  Open R or Python and rebuild the package library with `{renv}` or
-    `{venv}`.
-2.  Install \index{Shiny} Server using the instructions from the \index{Shiny} Server
-    Admin Guide.
+1.  Open R or Python and rebuild the package library with
+    \index{renv}`{renv}` or \index{venv}`{venv}`.
+2.  Install \index{Shiny}Shiny Server using the instructions from the
+    \index{Shiny}Shiny Server Admin Guide.
     -   Note that you can skip steps to install R and/or Python, and the
-        `{shiny}` package since we've already done that.
-3.  Edit \index{Shiny} Server's configuration file to run the right app.
-4.  Start and enable \index{Shiny} Server with `systemctl`.
+        \index{Shiny}`{shiny}` package since we've already done that.
+3.  Edit \index{Shiny}Shiny Server's configuration file to run the right
+    app.
+4.  Start and enable \index{Shiny}Shiny Server with `systemctl`.
 
 ### Lab Extensions
 
-You might want to consider a few things before moving into the next
+You might want to consider a few things before moving on to the next
 chapter, where we'll start working on giving this server a stable public
 URL.
 
-First, we haven't daemonized the \index{API}. Feel free to try \index{Docker} Compose or
-set a restart policy for the \index{container}.
+First, we haven't daemonized the \index{API}API. Feel free to try
+\index{Docker}Docker Compose or set a restart policy for the
+\index{container}container.
 
-Second, neither the \index{API} nor the \index{Shiny} app will automatically update when
-we change them. You might want to set up a GitHub Action to do so. For
-\index{Shiny} Server, you'll need to push the updates to the server and then
-restart \index{Shiny} Server. For the \index{API}, you'd need to configure a GitHub
-action to rebuild the \index{container} and push it to a registry. You'd then
-need to tell \index{Docker} on the server to re-pull and restart the \index{container}.
+Second, neither the \index{API}API nor the \index{Shiny}Shiny app will
+automatically update when we change them. You might want to set up
+a\index{GitHub Actions}GitHub Actions to do so. For \index{Shiny}Shiny Server, you'll
+need to push the updates to the server and then restart
+\index{Shiny}Shiny Server. For the \index{API}API, you'd need to
+configure a \index{GitHub}GitHub action to rebuild the
+\index{container}container and push it to a registry. You'd then need to
+tell \index{Docker}Docker on the server to re-pull and restart the
+\index{container}container.
 
-Finally, there's no authentication in front of our \index{API}. The \index{API} has
-limited functionality, so that's not a huge worry. But if you had an \index{API}
-with more functionality, that might be a problem. Additionally, someone
-could try to flood your \index{API} with requests to make it unusable. The most
-common way to solve this is to buy a product that hosts the \index{API} for you
-or to put an authenticating proxy in front of the \index{API}. We'll be adding
+Finally, there's no authentication in front of our \index{API}API. The
+\index{API}API has limited functionality, so that's not a huge worry.
+But if you had an \index{API}API with more functionality, that might be
+a problem. Additionally, someone could try to flood your \index{API}API
+with requests to make it unusable. The most common way to solve this is
+to buy a product that hosts the \index{API}API for you or to put an
+authenticating proxy in front of the \index{API}API. We'll be adding
 NGINX soon, so you can try adding authentication later.

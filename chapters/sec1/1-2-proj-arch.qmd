@@ -16,14 +16,13 @@ Before we get to designing a data science project, let's talk about a
 standard software architecture that's also helpful for data science
 projects -- the *three-layer app*.
 
-A three-layer app is divided into (you guessed it) three layers, which
-are:
+A three-layer app is divided into (you guessed it) three layers:
 
-1.  *Presentation Layer* - what the end users of the app directly
+1.  *Presentation Layer* -- what the end users of the app directly
     interact with. It's the displays, buttons, and functionality the
     user experiences.
 2.  *Processing Layer* -- the processing that happens as a result of
-    user interactions. Sometimes called the *business logic*.
+    user interactions. Sometimes, it is called the *business logic*.
 3.  *Data Layer* -- how and where the app stores and retrieves data.
 
 ::: callout-note
@@ -39,7 +38,7 @@ practices and graft them onto a data science project.
 
 First, you may not be designing an app at all. Data science projects
 produce all kinds of different outputs. An app is one option, but maybe
-you're creating a report, \index{API}, book, or paper.
+you're creating a report, \index{API}API, book, or paper.
 
 Second, you're designing a project, which is often not just an app. You
 likely have, or should have, several different components, like one or
@@ -55,50 +54,55 @@ input data, which means you're beholden to whatever format that data
 shows up in.
 
 Even with these differences, you need to make choices that, if made
-well, can make your app easier to take to production. Here's are some
-guidelines I've found make going to production easier.
+well, can make your app easier to take to production. Here are some
+guidelines I've found that make going to production easier.
 
 ## Choose the right presentation layer
 
 The presentation layer is the thing your users will consume. The data
 flows for your project will be dictated by your presentation layer
-choices so you should start by figuring out the presentation layer for
+choices, so you should start by figuring out the presentation layer for
 your project.
 
-Basically all data science projects fall into the following categories.
+Basically, all data science projects fall into the following categories:
 
 1.  *A* *job*. A job matters because it changes something in another
     system. It might move data around, build a model, or produce plots,
     graphs, or numbers for a Microsoft Office report.
 
-    Frequently, jobs are written in a SQL-based pipelining tool
-    ([*dbt*](https://www.getdbt.com/) has been quickly rising in
+    Frequently, jobs are written in a \index{SQL}SQL-based pipelining
+    tool ([*dbt*](https://www.getdbt.com/) has risen quickly in
     popularity) or in a `.R` or `.py` script.[^1-2-proj-arch-1]
     Depending on your organization, the people who write jobs may be
     called *data engineers*.
 
-2.  *An app.* Data science apps are created in frameworks like \index{Shiny} (R
-    or Python), Dash (Python), or Streamlit (Python). In contrast to
-    general-purpose web apps, which are for all sorts of purposes, data
-    science web apps are usually used to give non-coders a way to
-    explore data sets and see data insights.
+2.  *An app.* Data science apps are created in frameworks like
+    \index{Shiny}Shiny (R or Python), Dash (Python), or
+    \index{Streamlit}Streamlit (Python). In contrast to general-purpose
+    web apps, which are for all sorts of purposes, data science web apps
+    are usually used to give non-coders a way to explore datasets and
+    see data insights.
 
 3.  *A report.* Reports are code you're turning into an output you care
     about -- like a paper, book, presentation, or website. Reports
-    result from rendering an R Markdown doc, Quarto doc, or Jupyter
-    Notebook for people to consume on their computer, in print, or in a
+    result from rendering an \index{R Markdown} doc,
+    \index{Quarto}Quarto doc, or \index{Jupyter
+    Notebook} for people to consume on their computer, in print, or in a
     presentation. These docs may be completely static (this book is a
-    Quarto doc) or have some interactive elements.[^1-2-proj-arch-2]
+    \index{Quarto}Quarto doc) or have some interactive
+    elements.[^1-2-proj-arch-2]
 
-4.  *An \index{API}* *(application programming interface)*. An \index{API} is for
-    machine-to-machine communication. In general-purpose software, APIs
-    are the backbone of how two distinct pieces of software communicate.
-    In data science, APIs are mostly used to provide data feeds and
-    on-demand predictions from machine learning models.
+4.  *An* \index{API}API *(application programming interface)*. An
+    \index{API}API is for machine-to-machine communication. In
+    general-purpose software, APIs are the backbone of how two distinct
+    pieces of software communicate. In data science, APIs are mostly
+    used to provide data feeds and on-demand predictions from machine
+    learning models.
 
 [^1-2-proj-arch-1]: Though I'll argue in [Chapter @sec-log-monitor] that
-    you should always use a literate programming tool like Quarto, R
-    Markdown, or \index{Jupyter Notebook}.
+    you should always use a literate programming tool like
+    \index{Quarto}Quarto, R Markdown, or \index{Jupyter Notebook}Jupyter
+    Notebook.
 
 [^1-2-proj-arch-2]: Exactly how much interactivity turns a report into
     an app is completely subjective. I generally think the distinction
@@ -107,30 +111,32 @@ Basically all data science projects fall into the following categories.
 
 Choosing the right type of presentation layer will make designing the
 rest of your project much easier. Here are some guidelines on how to
-choose which to use.
+choose which one to use for your project.
 
 If the results of your software are for machine-to-machine use, you're
-thinking about a job or \index{API}. You should create a job if it runs in a
-batched way, i.e. you write a data file or results into a database. If
-you want results to be queried in real-time, it's an \index{API}.
+thinking about a job or \index{API}API. You should create a job if it
+runs in a batched way, i.e., you write a data file or results into a
+database. If you want results to be queried in real-time, it's an
+\index{API}API.
 
 If your project is for humans to consume, you're thinking about creating
 an app or report. Reports are great if you don't need to do data
-processing that depends on user input and apps are great if you do.
+processing that depends on user input, and apps are great if you do.
 
 This flow chart illustrates how I decide which of the four types to
 build.
 
-![](images/presentation-layer.png){fig-alt="A flow chart of choosing an App, Report, \index{API}, or Job for the presentation layer as described in this section."
-}
+![](images/presentation-layer.png){.lightbox
+fig-alt="A flow chart of choosing an App, Report, API, or Job for the presentation layer as described in this chapter."}
 
 ## Do less in the presentation layer
 
 Data scientists usually don't do a great job separating out their
 presentation layers. It's not uncommon to see apps or reports that are
-thousands of lines of code, with UI components, code for plots, and data
-cleaning all mixed up together. These smushed up layers make it hard to
-reason about the code or to add testing or logging.
+thousands of lines of code, with user interface (UI) components, code
+for plots, and data cleaning all mixed up together. These smushed up
+layers make it hard to reason about the code or to add testing or
+logging.
 
 The only code that belongs in the presentation layer is code that shows
 something to the user or that collects input from the user. Creating the
@@ -144,9 +150,9 @@ documentation and testing and create scripts that do the processing.
 
 ::: callout-tip
 Moving things out of the presentation layer is especially important if
-you're writing a \index{Shiny} app. You want to use the presentation layer to do
-reactive things and move all non-reactive interactions into the
-processing layer.
+you're writing a \index{Shiny}Shiny app. You want to use the
+presentation layer to do reactive things and move all non-reactive
+interactions into the processing layer.
 :::
 
 ## Small data in the presentation layer
@@ -173,30 +179,30 @@ makes your project's performance too slow.
 
 Dealing with medium or big data requires being somewhat clever and
 adopting a design pattern appropriate for big data (more on that in a
-bit). But being clever is hard.
+bit). But, being clever is hard.
 
 Before you go ahead being clever, it's worth asking a few questions that
 might let you treat your data as small.
 
-### Can you pre-calculate anything?
+### Can You Pre-calculate Anything?
 
-If your data is truly big, it's big. But if your data is medium-sized,
+If your data is truly big, it's big. But, if your data is medium-sized,
 the thing keeping it from being small isn't some esoteric hardware
-issue, its **performance**.
+issue, it's **performance**.
 
 An app requires high performance. Someone staring at their screen
 through a 90-second wait may think your project stinks depending on
 expectations.
 
-But if you can pre-calculate a lookup table of values or turn your app
+But, if you can pre-calculate a lookup table of values or turn your app
 into a report that gets re-rendered on a schedule, you can turn large
-data into a small data set in the presentation layer.
+data into a small dataset in the presentation layer.
 
 Talking to your users and figuring out what cuts of the data they care
 about can help you determine whether pre-calculation is feasible or
 whether you need to load all the data into the presentation layer.
 
-### Can you reduce data granularity?
+### Can You Reduce Data Granularity?
 
 If you can pre-calculate results and you're still hitting performance
 issues, it's always worth asking if your data can get smaller.
@@ -208,7 +214,7 @@ Suppose you work for a large retailer and are responsible for creating a
 dashboard of weekly sales. Your input data is a dataset of every item
 sold at every store for years. This isn't naturally small data.
 
-But you might be able to make the data small if you don't need to allow
+But, you might be able to make the data small if you don't need to allow
 the user to slice the data in too many different dimensions. Each
 additional dimension you allow **multiplies** the amount of data you
 need in the presentation layer.
@@ -219,7 +225,7 @@ $\text{number of weeks} * \text{number of stores} * \text{number of departments}
 Even with a lot of stores and a lot of departments, you're probably
 still squarely in the small data category.
 
-But if you have to switch to a daily view, you multiply the amount of
+But, if you have to switch to a daily view, you multiply the amount of
 data you need by 7. If you break it out across 12 products, your data
 has to get 12 times bigger. And if you do both, it gets 84 times bigger.
 It's not long before you're back to a big data problem.
@@ -238,7 +244,7 @@ There are a few different ways you can avoid pulling all the data. This
 isn't an exhaustive list; each pattern will only work for some projects,
 but adopting one or more can be helpful.
 
-### Push work to the data source
+### Push Work to the Data Source
 
 In most cases, the most time-consuming step is transmitting the data
 from the data source to your project. So, as a general rule, you
@@ -247,9 +253,9 @@ from the data source to your project. So, as a general rule, you
 This works quite well when you're creating simple summary statistics and
 when your database is reasonably fast. It may be unwise if your data
 source is slow or impossible if you're doing complicated machine
-learning tasks on a database that only supports SQL.
+learning tasks on a database that only supports \index{SQL}SQL.
 
-### Be lazy with data pulls
+### Be Lazy with Data Pulls
 
 As you're pushing more work into the database, it's also worth
 considering when the project pulls its data during its runtime. The most
@@ -265,12 +271,12 @@ If you don't always need all the data, especially if the required data
 depends on what the user does inside a session, it might be worthwhile
 to pull only once the user interactions clarify what you need.
 
-### Sample the data
+### Sample the Data
 
 It may be adequate to work on only a sample of the data for many tasks,
 especially machine learning ones. In some cases, like classification of
-highly imbalanced classes, it may work *better* to work on a sample
-rather than the whole data set.
+highly imbalanced classes, it may be *better* to work on a sample rather
+than the whole dataset.
 
 Sampling tends to work well when you're trying to compute statistical
 attributes of your datasets. Computing averages or rates and creating
@@ -282,13 +288,13 @@ sampling to ensure good representation across important dimensions.
 Sampling doesn't work well on counting tasks. It's hard to count when
 you don't have all the data!
 
-### Chunk and pull
+### Chunk and Pull
 
 In some cases, there may be natural groups in your data. For example, in
 our retail dashboard example, it may be the case that we want to compute
-something by time frame or store or product. In this case, you could
-pull just that chunk of the data, compute what you need and move on to
-the next one.
+something by time frame, store, or product. In this case, you could pull
+just that chunk of the data, compute what you need, and move on to the
+next one.
 
 Chunking works well for all kinds of tasks including building machine
 learning models and creating plots. The big requirement is that the
@@ -302,35 +308,33 @@ chunk the data.
 ## Choose location by update frequency
 
 Where you store your data should be dictated by how often the data is
-updated.
-
-The simplest answer is to put it in the *presentation bundle*, the code
-and assets that comprise your presentation layer. For example, let's say
-you're building a simple Dash app, `app.py`.
+updated. The simplest answer is to put it in the *presentation bundle*,
+the code and assets that comprise your presentation layer. For example,
+let's say you're building a simple Dash app, `app.py`.
 
 You could create a project structure like this:
 
 ```         
 my-project/
-├─ app.py
-├─ data/
-│  ├─ my_data.csv
-│  ├─ my_model.pkl
+|- app.py
+|- data/
+|  |- my_data.csv
+|  |- my_model.pkl
 ```
 
 This works well only if your data will be updated at the same cadence as
 the app or report itself. This works well if your project is something
 like an annual report that will be rewritten when you update the data.
 
-But if your data updates more frequently than your project code, you
+But, if your data updates more frequently than your project code, you
 want to put the data outside the project bundle.
 
 ### Filesystem
 
 There are a few ways you can do this. The most basic is to put the data
-on a location in your file system that isn't inside the app bundle.
+on a location in your filesystem that isn't inside the app bundle.
 
-But when it comes to deployment, data on the file system can be
+But, when it comes to deployment, data on the filesystem can be
 complicated. You can use the same directory if you write and deploy your
 project on the same server. If not, you'll need to worry about how to
 make sure that directory is also accessible on the server where you're
@@ -341,37 +345,39 @@ deploying your project.
 If you're not going to store the flat file on the filesystem and you're
 in the cloud, it's most common to use *blob storage*. Blob storage
 allows you to store and recall things by name.[^1-2-proj-arch-3] Each of
-the major cloud providers has blob storage -- AWS's has *s3* (short for
-simple storage service), Azure has *Azure Blob Store*, and Google has
-*Google Storage*.
+the major cloud providers has blob storage -- Amazon Web Services (AWS)
+has \index{S3}*S3* (short for simple storage service), Azure has *Azure
+Blob Store*, and Google has *Google Storage*.
 
-[^1-2-proj-arch-3]: The term blob is great to describe the thing you're
-    saving in blob storage, but it's actually an abbreviation for
-    **b**inary **l**arge **ob**ject. Very clever, in my opinion.
+[^1-2-proj-arch-3]: The term "blob" is great to describe the thing
+    you're saving in blob storage. Even better, it's actually an
+    abbreviation for **b**inary **l**arge **ob**ject! Very clever, in my
+    opinion.
 
 The nice thing about blob storage is that it can be accessed from
-anywhere with access to the cloud. You can also control access using
+anywhere that can reach the internet. You can also control access using
 standard cloud identity management tooling.
 
 There are packages in both R and Python for interacting with AWS that
-are very commonly used to access s3 -- `{boto3}` in Python and `{paws}`
-in R.
+are very commonly used to access \index{S3}S3 -- `{boto3}` in Python and
+`{paws}` in R.
 
 The popular `{pins}` package in both R and Python wraps using blob
-storage into neater code. It can use a variety of storage backends,
+storage into neater code. It can use a variety of storage back ends,
 including cloud blob storage, networked or cloud drives like Dropbox,
-Microsoft365 sites, and \index{Posit} Connect.
+Microsoft365 sites, and \index{Posit}Posit Connect.
 
 ### Google Sheets
 
-If you're still early in your project lifecycle, a \index{Google Sheet} can be a
-great way to save and recall a flat file. I wouldn't recommend a Google
-Sheet as a permanent home for data, but it can be a good intermediate
-step while you're still figuring out the right solution for your
-pipeline.
+If you're still early in your project lifecycle, a \index{Google Sheets}
+can be a great way to save and recall a flat file. I wouldn't recommend
+a Google Sheet as a permanent home for data, but it can be a good
+intermediate step while you're still figuring out the right solution for
+your pipeline.
 
-The primary weakness of a \index{Google Sheet} -- that it's editable by someone
-who logs in -- can also be an asset if that's something you need.
+The primary weakness of a \index{Google Sheets} -- that it's editable by
+someone who logs in -- can also be an asset if that's something you
+need.
 
 ## Store intermediate artifacts in the right format
 
@@ -382,38 +388,40 @@ to pass from one stage to the next.
 If you're producing rectangular data frames (or vectors) and you have
 write access to a database, use that.
 
-But you often don't have write access to a database or have other sorts
+But, you often don't have write access to a database or have other sorts
 of artifacts that you need to save between steps and can't go into a
 database, like machine learning models or rendered plots. In that case,
 you must choose how to store your data.
 
-### Flat files
+### Flat Files
 
 *Flat files* are data files that can be moved around just like any other
 file on your computer.
 
 ### CSV
 
-The most common is a *comma separated value (csv)* file, which is just a
-literal text file of the values in your data with commas as
-separators.[^1-2-proj-arch-4] You could open it in a text editor and
-read it if you wanted to.
+The most common flat file is a \index{csv}*comma separated value* (csv)
+file, which is just a literal text file of the values in your data with
+commas as separators.[^1-2-proj-arch-4] You could open it in a text
+editor and read it if you wanted to.
 
-[^1-2-proj-arch-4]: There are other delimitors you can use. Tab
-    separated value files (tsv) are something you'll see occasionally.
+[^1-2-proj-arch-4]: There are other delimitors you can use.
+    Tab-separated value files (tsv) are something you'll see
+    occasionally.
 
-The advantage of `.csv`s is that they're completely ubiquitous. Every
-programming language has some way to read in a `.csv` file and work with
-it.
+The advantage of \index{csv}`.csv`s is that they're completely
+ubiquitous. Every programming language has some way to read in a
+\index{csv}`.csv` file and work with it.
 
-On the downside, `.csv`s are completely uncompressed. That makes them
-quite large relative to other files and slow to read and write.
-Additionally, because `.csv`s aren't language-specific, complicated data
-types may not be preserved when saving to `.csv`. For example, dates are
-often mangled in the roundtrip to a `.csv` file and back.
+On the downside, \index{csv}`.csv`s are completely uncompressed. That
+makes them quite large relative to other files and slow to read and
+write. Additionally, because \index{csv}`.csv`s aren't
+language-specific, complicated data types may not be preserved when
+saving to \index{csv}`.csv`. For example, dates are often mangled in the
+roundtrip to a \index{csv}`.csv` file and back.
 
 They also can only hold rectangular data, so if you're trying to save a
-machine learning model, a `.csv` doesn't make sense.
+machine learning model, a \index{csv}`.csv` doesn't make sense.
 
 ### Pickle or RDS
 
@@ -426,7 +434,7 @@ save a machine learning model.
 ### DuckDB
 
 If you don't have a database but store rectangular data, you should
-strongly consider using [DuckDB](https://duckdb.org). Its an in-memory
+strongly consider using [DuckDB](https://duckdb.org). It is an in-memory
 database that's great for analytics use cases. In contrast to a standard
 database that runs its own live process, there's no overhead for setting
 up DuckDB.
@@ -439,16 +447,16 @@ need into memory.
 It's hard to stress how cool DuckDB is. Data sets that were big just a
 few years ago are now medium or even small.[^1-2-proj-arch-5]
 
-[^1-2-proj-arch-5]: Some people use SQLite in a similar way, but DuckDB
-    is much more optimized for analytics purposes.
+[^1-2-proj-arch-5]: Some people use \index{SQL}SQLite in a similar way,
+    but DuckDB is much more optimized for analytics purposes.
 
-## Consider data auth upfront
+## Consider data authorization upfront
 
 Life is easy if everyone who views your project has the same permissions
 to see the data. You can allow the project access to the data and check
 for authorization to view the project.
 
-But you're much more constrained if you need to provide different data
+But, you're much more constrained if you need to provide different data
 access to different users. First, you probably need to use an app rather
 than a report so that you can respond to which user is accessing the
 app.
@@ -465,29 +473,31 @@ establish the user's database credentials, ensure those credentials stay
 only in the user's session, and how those credentials get passed along
 to the database. More on this topic in [Chapter @sec-auth].
 
-## Create an \index{API} if you need it
+## Create an \index{API}API if you need it
 
 In the case of a general-purpose three-layer app, it is almost always
-the case that the middle tier will be an \index{API}. Separating processing
-logic into functions is often sufficient in a data science app. But
-separating it into an \index{API} is often helpful if you've got a long-running
-bit of business logic, like training an ML model.
+the case that the middle tier will be an \index{API}API. Separating
+processing logic into functions is often sufficient in a data science
+app. But, separating it into an \index{API}API is often helpful if
+you've got a long-running bit of business logic, like training an ML
+model.
 
 ::: callout-note
-You may have heard the term REST \index{API} or REST-ful.
+You may have heard the term REST \index{API}API or REST-ful.
 
-REST is a set of architectural standards for how to build an \index{API}. An \index{API}
-that conforms to those standards is called REST-ful or a REST \index{API}.
+REST is a set of architectural standards for how to build an
+\index{API}API. An \index{API}API that conforms to those standards is
+called REST-ful or a REST \index{API}API.
 
-If you're using standard methods for constructing an \index{API} like R's
-`{plumber}` package or `{FastAPI}` in Python, they will be REST-ful --
-or at least close enough for standard usage.
+If you're using standard methods for constructing an \index{API}API like
+R's `{plumber}` package or `{FastAPI}` in Python, they will be REST-ful
+-- or at least close enough for standard usage.
 :::
 
-You can think of an \index{API} as a "function as a service". That is, an \index{API} is
-just one or more functions, but instead of being called within the same
-process that your app is running or your report is processing, it will
-run in a completely separate process.
+You can think of an \index{API}API as a "function as a service". That
+is, an \index{API}API is just one or more functions, but instead of
+being called within the same process that your app is running or your
+report is processing, it will run in a completely separate process.
 
 For example, let's say you've got an app that allows users to feed in
 input data and then generate a model based on that data. If you generate
@@ -497,12 +507,13 @@ while they're waiting. Moreover, other app users will find themselves
 affected by this behavior.
 
 If, instead, the button in the app ships the long-running process to a
-separate \index{API}, it allows you to think about scaling out the presentation
-layer separate from the business layer.
+separate \index{API}API, it allows you to think about scaling out the
+presentation layer separate from the business layer.
 
 Luckily, if you've written functions for your app, turning them into an
-\index{API} is trivial since packages like `{fastAPI}` and `{plumber}` let you
-turn a function into an \index{API} by adding some specially-formatted comments.
+\index{API}API is trivial since packages like `{fastAPI}` and
+`{plumber}` let you turn a function into an \index{API}API by adding
+some specially formatted comments.
 
 ## Write a data flow chart
 
@@ -520,10 +531,10 @@ For example, here's a simple data flow chart for the labs in this book.
 You may want to annotate your data flow charts with other attributes
 like data types, update frequencies, and where data objects live.
 
-![](images/data-flow-chart.png){fig-alt="A data flow chart showing how the palmer penguins data flows into the model creation \index{API}, which creates the model and the model creation report. The model serving \index{API} uses the model and feeds the model explorer \index{API}."
-}
+![](images/data-flow-chart.png){.lightbox
+fig-alt="A data flow chart showing how the palmer penguins data flows into the model creation API, which creates the model and the model creation report. The model serving API uses the model and feeds the model explorer API."}
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  What are the layers of a three-layer application architecture? What
     libraries could you use to implement a three-layer architecture in R
@@ -536,60 +547,65 @@ like data types, update frequencies, and where data objects live.
 
 ## Lab: Build the processing layer {#lab2}
 
-In [Chapter @sec-env-as-code], we did some EDA of the Palmer Penguins
-data set and built an ML model. In this lab, we will take that work we
-did and turn it into the actual presentation layer for our project.
+In [Chapter @sec-env-as-code], we did some exploratory data analysis
+(EDA) of the Palmer Penguins dataset and built an ML model. In this lab,
+we will take that work we did and turn it into the actual presentation
+layer for our project.
 
 ### Step 1: Write the model outside the bundle
 
 When we originally wrote our `model.qmd` script, we didn't save the
-model at all.
+model at all. Our model will likely be updated more frequently than our
+app, so let's update `model.qmd` to save the model outside the bundle.
 
-Our model will likely be updated more frequently than our app, so we
-don't want to store it in the app bundle. Later in the book, I'll show
-you how to store it in the cloud. For now, I will store it in a
-directory on my computer.
+For now, I'd recommend using the `{vetiver}` package to store it in the
+`/data/model` directory.
 
-I will use the `{vetiver}` package, an R and Python package to version,
-deploy, and monitor a machine learning model.
-
-We can take our existing model, turn it into a `{vetiver}` model, and
-save it to the `/data/model` folder with
+Once you follow the directions on the `{vetiver}` package website to
+create a `{vetiver}` model, `v`, you can save it to a local directory
+with
 
 ``` {.python filename="model.qmd"}
-from vetiver import VetiverModel
-v = VetiverModel(model, model_name='penguin_model', prototype_data=X)
+from pins import board_folder
+from vetiver import vetiver_pin_write
+
+model_board = board_folder(
+  "/data/model", 
+  allow_pickle_read = True
+)
+vetiver_pin_write(model_board, v)
 ```
 
-If `/data/model` doesn't exist on your machine, you can create it, or
-use a directory that does exist.
+If `/data/model` doesn't exist on your machine, you can create it or use
+a directory that does exist.
 
-### Step 2: Create an \index{API} for model predictions
+::: callout-tip
+You can integrate this new code into your existing `model.qmd`, or you
+can use the one in the GitHub repo for this book
+([`akgold/do4ds`](https://github.com/akgold/do4ds)) in the [`_labs/lab2`](https://github.com/akgold/do4ds/tree/main/_labs/lab2) directory.
+:::
 
-I'll serve the model from an \index{API} to allow for real-time predictions.
+### Step 2: Create an API for model predictions
 
-As the point of this lab is to focus on the architecture, I'm just going
-to use the auto-generation capabilities of `{vetiver}`. If you want to
-improve at writing APIs, I encourage you to consult the documentation
-for `{plumber}` or `{fastAPI}`.
+I'll serve the model from an \index{API}API to allow for real-time
+predictions.
 
-If you've closed your modeling code, you can get your model back from
-your pin with:
-
-```{python}
-b = pins.board_folder('data/model', allow_pickle_read=True)
-v = VetiverModel.from_pin(b, 'penguin_model')
-```
-
-Then you can auto-generate a `{fastAPI}` from this model with
+You can use `{vetiver}` to autogenerate an API for serving model
+predictions. In Python, the code to generate the API is just
 
 ```{python}
-app = VetiverAPI(v, check_prototype=True)
+app = VetiverAPI(v, check_prototype = True)
 ```
 
 You can run this in your Python session with `app.run(port = 8080)`. You
-can then access run your model \index{API} by navigating to
+can then access run your model \index{API}API by navigating to
 `http://localhost:8080` in your browser.
 
-You can play around with the front end there, including trying the
-provided examples.
+If you want to spend some time learning about APIs, you also could build
+your own `{FastAPI}`. Here's some code to get the model back from the
+pin you saved:
+
+```{python}
+b = pins.board_folder('/data/model', allow_pickle_read = True)
+v = VetiverModel.from_pin(b, 'penguin_model')
+```

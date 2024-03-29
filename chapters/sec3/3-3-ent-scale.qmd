@@ -1,10 +1,9 @@
 # Compute at Enterprise Scale {#sec-ent-scale}
 
 Many enterprise data science platforms have requirements that quickly
-outstrip the capacity of a modest server. It's common to have way more
-users than can fit on a single server or have to support intermittent
-jobs that require more capacity than is affordable to have permanently
-available.
+outstrip the capacity of a modest server. It's common to have way too
+many users to fit on a single server or need to run jobs that require
+more capacity than is affordable to have permanently available.
 
 Providing a platform that supports hundreds or thousands of users
 requires the complexity of coordinating multiple servers. And as the
@@ -14,16 +13,17 @@ paramount.
 
 This chapter will help you understand how enterprise IT/Admins think
 about managing and scaling that many servers. It will also help you
-figure out what you need to communicate to your organization's IT/Admins
-so they can appropriately scale the environment.
+communicate to your organization's IT/Admins about what the requirements
+are for a data science environment.
 
 ## DevOps best practices
 
-The process of standing up an environment comes in two stages. First the
-servers and networking need to be *provisioned*, which involves creating
-all the required resources. Once that's done, they must be *configured*,
-which means installing and activating applications like Python, R,
-\index{JupyterHub}, and \index{RStudio Server}.
+The process of standing up an environment comes in two stages. First,
+the servers and networking need to be *provisioned*, which involves
+creating all the required resources. Once that's done, they must be
+*configured*, which means installing and activating applications like
+Python, R, \index{JupyterHub}JupyterHub, and \index{RStudio}RStudio
+Server.
 
 The IT/Admin group manages anywhere from dozens to thousands of servers
 in an enterprise. In many enterprises, provisioning and configuration
@@ -33,9 +33,9 @@ and another team that does configuration and application administration.
 
 To keep that many servers manageable, the IT/Admin group tries to make
 them standardized and interchangeable. This idea is often encompassed in
-the adage that "servers should be cattle, not pets". That means that you
-almost certainly won't be allowed to SSH in and make whatever changes
-you might want as a data scientist.
+the adage stating that "servers should be cattle, not pets". That means
+that you almost certainly won't be allowed to \index{SSH}SSH in and make
+whatever changes you might want as a data scientist.
 
 ::: callout-note
 Avoiding this complexity is why many organizations are moving away from
@@ -43,10 +43,11 @@ directly managing servers. Instead, they outsource server management by
 acquiring PaaS or SaaS software from cloud providers.
 :::
 
-Indeed, in many organizations, **no one** is allowed to SSH in and make
-changes. Instead, all changes must go through a robust change management
-process and are deployed via *Infrastructure as Code (IaC)* tools so the
-environment can always be torn down and replaced quickly.
+Indeed, in many organizations, **no one** is allowed to \index{SSH}SSH
+in and make changes. Instead, all changes must go through a robust
+change management process and are deployed via *Infrastructure as Code*
+(IaC) tools so the environment can always be torn down and replaced
+quickly.
 
 There are many different IaC tools that your IT/Admins may use. These
 include Terraform, Ansible, CloudFormation (AWS's IaC tool), Chef,
@@ -85,15 +86,16 @@ working on data science projects in Dev and Test within the Prod
 IT/Admin environment. Ultimately, the goal is to create an extremely
 reliable Prod-Prod environment.
 
-![](images/dev-test-prod.png){fig-alt="The IT/Admin promotes the complete staging environment, then the data scientist or IT/Admin promote within Prod."}
+![](images/dev-test-prod.png){.lightbox
+fig-alt="The IT/Admin promotes the complete staging environment, then the data scientist or IT/Admin promote within Prod."}
 
 In enterprises, moves from staging to prod, including upgrades to
-applications or operating systems or adding system libraries have rules
-around them. They may need to be validated or approved by security. In
-some highly regulated environments, the IT/Admin group may only be able
-to make changes during specific times. This can cause tension between a
-data scientist who wants a new library or version **now** and an
-IT/Admin who can't move that fast.
+applications or \index{operating system}operating systems or adding
+system libraries have rules around them. They may need to be validated
+or approved by security. In some highly regulated environments, the
+IT/Admin group may only be able to make changes during specific times.
+This can cause tension between a data scientist who wants a new library
+or version **now** and an IT/Admin who can't move that fast.
 
 In addition to changes from staging to prod, enterprises sometimes
 undergo a complete rebuild of their environments. Many of those rebuilds
@@ -107,15 +109,15 @@ How many data scientists it takes to overtax a single server depends
 entirely on what data scientists do at your organization. You may hit it
 with only one person if you do intensive simulation work or deep
 learning. On the other hand, I've seen organizations that primarily work
-on small data sets that can comfortably fit 50 concurrent users on a
+on small datasets that can comfortably fit 50 concurrent users on a
 single server.
 
 Once you need multiple servers to support the data science team(s), you
 must *horizontally scale*. There is a simple way to horizontally scale,
-giving every user or group a standalone server. In some organizations
-this can work very well. The downside is that this results in a lot of
-environments. That can be a hassle for the IT/Admin to manage or they
-delegate server management to the individual teams.
+giving every user or group a standalone server. In some organizations,
+this can work very well. The downside of this pattern is that it results
+in a lot of environments. That can be a hassle for the IT/Admin to
+manage, or they delegate server management to the individual teams.
 
 Many enterprises don't want a profusion of team-level data science
 environments. Instead, they want to run one centralized service that
@@ -125,19 +127,20 @@ increases the cost of downtime. For example, one hour of downtime for a
 platform that supports 500 data scientists wastes over
 \$25,000.[^3-3-ent-scale-2]
 
-[^3-3-ent-scale-2]: Assuming a (probably too low) fully-loaded cost of
+[^3-3-ent-scale-2]: Assuming a (probably too low) fully loaded cost of
     \$100,000 and 2,000 working hours per year.
 
 ::: callout-note
 ### Measuring Uptime
 
-Organizations often introduce *Service Level Agreements (SLAs)* or
-*Operating Level Agreements (OLAs)* about how much downtime is allowed.
+Organizations often introduce *Service Level Agreements* (SLAs) or
+*Operating Level Agreements* (OLAs) about how much downtime is allowed.
 These limits are usually measured in *nines of uptime*, which refers to
 the proportion of the time that the service is guaranteed to be online.
 So, a *one-nine* service is guaranteed to be up 90% of the time,
 allowing 36 days of downtime a year. A *five-nine* service is guaranteed
-up 99.999% of the time, allowing only 5 1/4 minutes of annual downtime.
+to be up 99.999% of the time, allowing only $5\frac{1}{4}$ minutes of
+annual downtime.
 :::
 
 Therefore, organizations that support enterprise data science platforms
@@ -154,13 +157,13 @@ downtime is often called *high availability*.
 ## Computing in clusters
 
 Whether for horizontal scaling or high availability reasons, most
-enterprises run their data science environments in a *load-balanced
+enterprises run their data science environments in a *load balanced
 cluster*, a set of servers (*nodes*) that operate together as one unit.
 Ideally, working in a cluster feels the same as working in a
 single-server environment, but there are multiple servers to add
 computational power or provide resilience if one server fails.
 
-For a cluster to operate as a single environment, the IT/Admin need to
+For a cluster to operate as a single environment, the IT/Admins need to
 solve two problems. First, they want to provide a single front door that
 routes users to a node in the cluster, preferably without them being
 aware of it happening. This is accomplished with a *load balancer*, a
@@ -168,12 +171,13 @@ kind of proxy server.
 
 Second, they must ensure that the user can save things (*state*) on the
 server and access that state even if they end up on a different node
-later. This is accomplished by setting up storage so persistent data
-doesn't stay on the nodes. Instead, it lives in separate storage, most
-often a database and/or file share, that is symmetrically accessible to
-all the nodes in the cluster.
+later. This is accomplished by setting up storage so that persistent
+data doesn't stay on the nodes. Instead, it lives in separate storage,
+most often a database and/or file share, that is symmetrically
+accessible to all the nodes in the cluster.
 
-![](images/lb-cluster.png){fig-alt="Users come to the load balancer, which sends them to the nodes, which connect to the state."}
+![](images/lb-cluster.png){.lightbox
+fig-alt="Users come to the load balancer, which sends them to the nodes, which connect to the state."}
 
 If you are a solo data scientist reading this, please do not try to run
 a load-balanced data science cluster. When you undertake load balancing,
@@ -196,214 +200,195 @@ of configuration, see [Appendix @sec-append-lb].
 ## Docker in enterprise = Kubernetes
 
 Initially created at Google and released in 2014, the open-source
-*Kubernetes (K8S, pronounced koo-ber-net-ees or kates for the
-abbreviation)* is the way to run production services out of \index{Docker}
-containers.[^3-3-ent-scale-3] Many organizations are moving toward
-running most or all of their production work in Kubernetes.
+\index{Kubernetes}*Kubernetes* (K8S, pronounced koo-ber-net-ees or kates
+for the abbreviation) is the way to run production services out of
+\index{Docker}Docker containers.[^3-3-ent-scale-3] Many organizations
+are moving toward running most or all of their production work in
+\index{Kubernetes}Kubernetes.
 
 [^3-3-ent-scale-3]: If you are pedantic, there are other tools for
-    deploying \index{Docker} containers like \index{Docker} Swarm and Kubernetes is not
-    limited to \index{Docker} containers. But for all practical purposes,
-    production \index{Docker} = Kubernetes.
-
-::: callout-note
-Apparently, Kubernetes is an ancient Greek word for "helmsman".
-:::
+    deploying \index{Docker}Docker containers like \index{Docker}Docker
+    Swarm, and \index{Kubernetes}Kubernetes is not limited to
+    \index{Docker}Docker containers. But for all practical purposes,
+    production \index{Docker}Docker = \index{Kubernetes}Kubernetes.
 
 In a load-balanced cluster of servers, the IT/Admin must provision each
-node and then configure applications on it. In Kubernetes, the IT/Admin
-creates and registers a cluster of worker nodes. The only requirement
-for the worker nodes is that they run Kubernetes. No application-level
+node and then configure applications on it. In
+\index{Kubernetes}Kubernetes, the IT/Admin creates and registers a
+cluster of worker nodes. The only requirement for the worker nodes is
+that they run \index{Kubernetes}Kubernetes. No application-level
 configuration occurs on the nodes.
 
-To run applications in a Kubernetes cluster, an IT/Admin tells the
-cluster's *control plane* to run a set of \index{Docker} containers with a
-certain amount of computational power allocated to each one. These
-\index{Docker} Containers running in Kubernetes are called *pods*.
+To run applications in a \index{Kubernetes}Kubernetes cluster, an
+IT/Admin tells the cluster's *control plane* to run a set of
+\index{Docker}Docker containers with a certain amount of computational
+power allocated to each one. These \index{Docker}Docker Containers
+running in \index{Kubernetes}Kubernetes are called *pods*.
 
-The elegance of Kubernetes is that the IT/Admin doesn't have to think
-about where each pod goes. The control plane *schedules* the pods on the
-nodes without a human having to consider networking or application
-requirements.
+The elegance of \index{Kubernetes}Kubernetes is that the IT/Admin
+doesn't have to think about where each pod goes. The control plane
+*schedules* the pods on the nodes without a human having to consider
+networking or application requirements.
 
-![](images/k8s.png){fig-alt="Image of a Kubernetes cluster with 3 nodes and 6 pods of various sizes arranged across the nodes."}
+![](images/k8s.png){.lightbox
+fig-alt="Image of a Kubernetes cluster with 3 nodes and 6 pods of various sizes arranged across the nodes."}
 
 From the IT/Admin's perspective, this is wonderful because they ensure
 the cluster has sufficient horsepower and all the app requirements come
-in the \index{container}, which makes node configuration trivial. The app's
-authors are often responsible for building the \index{Docker} Containers,
-removing one thing from the IT/Admin's to-do list.
+in the \index{container}container, which makes node configuration
+trivial. The app's authors are often responsible for building the
+\index{Docker}Docker Containers, removing one thing from the IT/Admin's
+to-do list.
 
 For production purposes, pod deployments are usually managed with *Helm
 charts*, the standard IaC way to declare what pods you want, how many
 you need, and their relationships.
 
-Almost any IT/Admin running Kubernetes can add nodes with a few clicks
-because they're using a cloud provider's managed service: AWS's *EKS
-(Elastic Kubernetes Service*, Azure's *AKS (Azure Kubernetes Service)*,
-or GCP's *GKE (Google Kubernetes Engine)*.[^3-3-ent-scale-4]
+Almost any IT/Admin running \index{Kubernetes}Kubernetes can add nodes
+with a few clicks because they're using a cloud provider's managed
+service: AWS's *EKS* (Elastic \index{Kubernetes}Kubernetes Service,
+Azure's *AKS* (Azure \index{Kubernetes}Kubernetes Service), or GCP's
+*GKE* (Google \index{Kubernetes}Kubernetes Engine).[^3-3-ent-scale-4]
 
 [^3-3-ent-scale-4]: It's rare, but some organizations do run an on-prem
-    Kubernetes cluster with Oracle's OpenShift.
+    \index{Kubernetes}Kubernetes cluster, most often with Oracle's
+    OpenShift.
 
 Kubernetes is a powerful tool, and there are many reasons to like it.
 But like most powerful tools, it's also complicated. Becoming a
-proficient Kubernetes admin is a skill unto itself. These days, many
-IT/Admins are trying to add Kubernetes to their list of skills. If you
-have a competent Kubernetes admin, you should be in good shape, but you
-should be careful that setting up your data science environment doesn't
-become someone else's chance to learn Kubernetes.
+proficient \index{Kubernetes}Kubernetes admin is a skill unto itself.
+These days, many IT/Admins are trying to add
+\index{Kubernetes}Kubernetes to their list of skills. If you have a
+competent \index{Kubernetes}Kubernetes admin, you should be in good
+shape, but you should be careful that setting up your data science
+environment doesn't become someone else's chance to learn
+\index{Kubernetes}Kubernetes.
 
-## Sizing and scaling clusters
+## Simple clusters and complicated ones
 
-Your IT/Admin team probably knows a lot about how to run a cluster but
-not much about how data scientists use computational resources. To run a
-cluster for your work, they will need your help deciding how many
-machines you need and how to size and configure those machines. Here are
-some mental models I've found helpful to communicate with IT/Admin teams
-about sizing and scaling an enterprise cluster.
+While a clustered set of machines is inherently more complicated than a
+single server, not all clusters are equally complicated. Before your
+IT/Admins go to the time and effort of building out a complicated data
+science cluster, you'll want to see if it's really necessary, and also
+make sure they understand the unique requirements of a data science
+environment that might make some of their standard tooling a
+less-than-ideal fit.
 
-Generally, organizations run the workbench in one cluster and the
-deployment platform in a second. That's because the usage patterns are
-very different between the two. From a resource perspective, a
-deployment platform looks a lot like any other application hosting
-platform. Your IT/Admin team will probably want help figuring out the
-size, but they'll be comfortable with the basic idea.
+### Cluster size and composition
 
-A data science workbench, on the other hand, probably looks nothing like
-the platforms your IT/Admin team is most used to supporting. A workbench
-supports a relatively small number of professionals doing
-computationally-intensive tasks, but in patterns that may be unusual for
-the IT/Admin team to support.
+First, you'll need to determine the total size of the cluster. The rules
+for number of CPUs and amount of RAM from [@sec-scale] apply equally
+well to a cluster of servers as they did to a single server.
 
-Usually, a data science platform has a *baseline load*. For the
-workbench, this is the average number of data professionals who visit on
-a daily basis and the scale of the jobs they're running. For the
-deployment platform, it's the number of jobs and app and \index{API} sessions
-that run on a normal day. Aside from the total load for this work, the
-IT/Admins will also need to know the minimum node size to support a
-single session. For example, some organizations have a large cluster,
-but each job could comfortably fit on a machine with 16 GB of RAM, but
-that would be woefully inadequate for others.
+You'll also want to consider whether the size you need will be
+consistent, or whether there will be burst or special-purpose needs. For
+example, if you do trainings that bring everyone online simultaneously
+or occasionally run very large or GPU-backed jobs, you'll want to
+communicate the frequency, duration, and specific needs for those
+special jobs.
 
-Second, there's *burst usage*. This is extra capacity across both the
-workbench and deployment environment that is sometimes needed to support
-additional users, jobs, or applications. For example, your organization
-might occasionally do workshops that pull in more users than usual, or
-you're launching a new data science app that will add load to the
-deployment cluster.
+Along with the size, you'll want to consider the composition of the
+cluster. The first question on cluster composition is the minimum
+machine size that will work well for the kinds of work your team is
+doing. If your team will only use the cluster for big jobs, it would be
+a mistake to build the cluster out `t3.xlarges`, each with only four GPU
+cores and 16 GB of RAM.
 
-Last, there's the need for *special-purpose computational resources*.
-These needs for very large or GPU-backed instances are usually transient
-for particular projects with very large data or while training specific
-machine learning models. These are common needs for a workbench
-environment but are less likely in the deployment environment unless
-you're re-training machine learning models on a schedule in the
-deployment environment.
+One requirement that immediately requires a more complex cluster is if
+all the nodes can't be identical. For example, you might have one team
+that consistently needs very large machines, or a few people who
+regularly need GPUs, you can't have a cluster of identical nodes, and
+you'll need the ability to route certain people or jobs to specific
+nodes in the cluster.
 
-The IT/Admin team will be pleased if you can help them figure out a
-reasonable estimate for each of the following:
+### Cluster Scaling
 
-1.  Baseline number of CPU cores, amount of RAM, and the largest jobs
-    you'll have to accommodate daily for the workbench and deployment
-    environment.
-2.  Burst usage in terms of frequency, duration of burst demand, and
-    amount of CPU cores and RAM as best you can estimate.
-3.  Special-purpose needs in frequency, duration, job sizes, and GPU
-    needs.
+The simplest way to scale a data science cluster is to add or remove
+nodes as needed with IaC. This often works well if the cluster starts at
+one size and will gradually grow as more users are onboarded over the
+course of weeks or months.
 
-Most teams will find it unaffordable to keep all this capacity
-continuously available, and your IT/Admin team will want to devise a
-scaling strategy.
-
-Usually, the IT/Admin team will target some always-on capacity, often
-matching the baseline load. Ideally, this can be run on just one
-machine. If not, running the appropriate number of approximately
-laptop-sized machines is common. In AWS, this often means a certain
-number of `t3.xlarges` with four CPU cores and 16 GB of RAM or
-`t3.2xlarges` with twice that capacity.
-
-When burst usage or special purpose machines are needed for a discrete
-time (i.e., a day or longer), it's often easiest for an IT/Admin to
-manually stand up more machines with IaC. That means creating a
-temporary standalone environment for special-purpose projects or
-manually expanding the size of an existing cluster.
+And if you need for burst or special-purpose machines for a discrete
+amount of time (i.e., a day or longer), it's often easiest for an
+IT/Admin to manually stand up more machines with IaC. That means
+creating a temporary standalone environment for special-purpose projects
+or manually expanding the size of an existing cluster.
 
 However, manual adjustment doesn't work for some organizations.
 Organizations with complex data source and authentication interactions
-may be unable to create new clusters quickly. In others, organizational
-rules and requirements might make it hard to stand up new nodes.
+may be unable to create new clusters quickly. Others want to get
+aggressive about saving money and want to scale the cluster down at a
+higher frequency than is easily manageable by a human (even up to
+nightly). These organizations want the cluster to automatically scale
+itself based on load, or *autoscale*.
 
-These other organizations often want to run only one cluster and may
-want that cluster to scale itself automatically. Some very competent
-IT/Admin teams can create a single autoscaling data science cluster, but
-it's hard. I've often found that organizations trying for a single
-cluster are besotted with the elegance of the idea and underestimate the
-difficulty of making it work. You may have to impress upon your
-IT/Admins that running heterogeneous workloads in one cluster isn't
-trivial and that a data science workbench is a particularly awkward fit
-for the autoscaling frameworks they probably prefer.
+Autoscaling a deployment environment is usually fine, but autoscaling a
+workbench cluster is trickier than most IT/Admins realize. The reason is
+that usage patterns on a cluster are very strange for most autoscaling
+frameworks.
 
-Autoscaling to make a cluster bigger is never a problem, but autoscaling
-a workbench cluster back down is tricky. Most autoscaling frameworks
-choose the cluster size based on actual resource usage (usually CPU).
-But CPU usage is very uneven for a workbench cluster. Most activities in
-a data science workbench, like typing code, debugging, or examining
-data, use minuscule amounts of CPU. Your brain is cranking, but the CPU
-is not.
+Most autoscaling frameworks choose the cluster size based on actual
+resource usage (usually CPU). But, the work you do on a data science
+workbench, like typing code, debugging, or examining data, result in
+uneven patterns of CPU usage. The CPU will lie nearly idle for minutes
+as you're typing code and then will get red-lined when you run a
+command.
 
-That means a CPU-based autoscaling framework will register that node as
-unused and think it's ok to autoscale away. As a cluster user, you will
-experience this as a frustratingly unstable system. Autoscaling
-frameworks that work well for a data science workbench need to have a
-notion of active sessions that isn't based on moment-to-moment resource
-usage.
+A CPU-based autoscaling framework will register the idle CPU as an
+underutilized node and might wipe it out from under you. You will have a
+bad experience as your sessions quit and restart as you get moved around
+the cluster. Autoscaling frameworks that work well for a data science
+workbench need to have a notion of active sessions that isn't based on
+moment-to-moment resource usage.
+
+### Tools For Running Complicated Clusters
+
+If your organizational requirements demand a complicated cluster that
+autoscales or that has heterogeneous nodes, you'll want to think
+carefully about the technology you use to manage the cluster.
 
 These days, many IT/Admins automatically assume autoscaling means
 Kubernetes, as it has powerful tools for managing cluster size.
-Unfortunately, Kubernetes can be an awkward fit for a data science
-workbench depending on your needs. First, Kubernetes pods are generally
-limited to the size of the underlying nodes. So if you've got a cluster
-of `t3.xlarge`s, pods are usually limited to 16 GB of RAM or less.
-Second, Kubernetes autoscaling is usually CPU-based and you must trick
-the Kubernetes scheduling engine to work well for a data science
-workbench. Last, Kubernetes allows for heterogeneous nodes (e.g., large
-or GPU-backed) in one cluster, but it's not a core use case and can be
-awkward to configure.[^3-3-ent-scale-5]
+Unfortunately, \index{Kubernetes}Kubernetes can be an awkward fit for a
+data science workbench depending on your needs.
+
+First, \index{Kubernetes}Kubernetes pods are generally limited to the
+size of the underlying nodes. So, if you've got a cluster of
+`t3.xlarge`s, pods are usually limited to 16 GB of RAM or less. Second,
+\index{Kubernetes}Kubernetes autoscaling is usually CPU-based, and you
+must trick the \index{Kubernetes}Kubernetes scheduling engine to work
+well for a data science workbench. Last, \index{Kubernetes}Kubernetes
+allows for heterogeneous nodes (e.g., large or GPU-backed) in one
+cluster, but it's not a core use case and can be awkward to
+configure.[^3-3-ent-scale-5]
 
 [^3-3-ent-scale-5]: You, or your IT/Admin, will have to work with
     *taints*, *tolerations*, *node pool selectors*, *node affinities*,
     and more.
 
-*High performance computing (HPC)* frameworks like *Slurm* are often a
+*High performance computing* (HPC) frameworks like *Slurm* are often a
 better fit for a data science workbench. Most people think about HPC in
 the context of supercomputing. That's because HPC allows users to
 address a cluster of many machines as one, so you can have thousands of
-CPU cores working on one job. But HPC also works quite well at a more
-modest size, for example, to run a workload requiring 10 cores in a
-cluster with only `t3.xlarge`s with 4 cores each.
+CPU cores working on one job.
 
-Even if you don't have any node sizing issues, HPC can be an excellent
-fit for autoscaling or a cluster with heterogeneous nodes. HPC
-frameworks are generally quite session-aware, making them a good choice
-for autoscaling a data science workbench. Most also support different
-categories of work, often called *queues* or *partitions*, right out of
-the box. If you're interested in trying out Slurm, AWS has a service
-called *ParallelCluster* that allows users to set up an HPC cluster with
-no additional cost beyond the EC2 instances in the cluster.
+Even if you don't have any issues with individual node sizes, HPC can be
+an excellent fit for autoscaling or a cluster with heterogeneous nodes.
+HPC frameworks usually have a notion of sessions, so they won't
+autoscale a node out from under a data science workbench session. Most
+also support different categories of work, often called *queues* or
+*partitions*, right out of the box.
 
-The upshot is that running a single data science cluster that autoscales
-is hard. It's usually easier to create one-off data science environments
-or manually scale a cluster. If your organization does want a single
-environment, most IT/Admins will use a standard autoscaling framework or
-Kubernetes, but HPC may be a better solution.
+If you're interested in trying out Slurm, AWS has a service called
+*ParallelCluster* that makes it possible to set up an HPC cluster with
+no additional cost beyond the \index{EC2}EC2 instances in the cluster.
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  What is the difference between horizontal and vertical scaling? For
     each of the following examples, which one would be more appropriate?
     a.  You're the only person using your data science workbench and run
-        out of RAM because you're working with very large data sets in
+        out of RAM because you're working with very large datasets in
         memory.
 
     b.  Your company doubles the size of the team working on your data
@@ -415,6 +400,6 @@ Kubernetes, but HPC may be a better solution.
         parallelizable.
 2.  What is the role of the load balancer in horizontal scaling? When do
     you need a load balancer and when can you go without?
-3.  What are the biggest strengths of Kubernetes as a scaling tool? What
-    are some drawbacks? What are some alternatives? When is HPC a better
-    fit?
+3.  What are the biggest strengths of \index{Kubernetes}Kubernetes as a
+    scaling tool? What are some drawbacks? What are some alternatives?
+    When is HPC a better fit?

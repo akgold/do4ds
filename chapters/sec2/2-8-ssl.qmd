@@ -2,13 +2,13 @@
 
 In [Chapter @sec-networking], I used the analogy of putting a letter in
 the mail for sending HTTP traffic over the web. But there's more to it.
-HTTP traffic is sent in plaintext, which means it's actually like
-sending a postcard. Anyone along the way can just look right at what
-you're sending. That's bad.
+HTTP traffic is sent in plaintext, which is really like sending a
+postcard. Anyone along the way can just look right at what you're
+sending. That's bad.
 
 HTTPS is the digital equivalent of putting your HTTP mail inside an
-opaque envelope. It doesn't change anything about the application layer
-protocol, but it does secure the whole process.
+opaque envelope. Using HTTPS is the most basic layer of security on the
+internet, and you should configure it for anything you're administering.
 
 In this chapter, you'll learn the basics of how HTTPS works. In the lab,
 you'll configure your site to use HTTPS so that it can be accessed
@@ -16,20 +16,20 @@ securely.
 
 ## What HTTPS does
 
-HTTPS is the same as HTTP, but secured with a technology called *SSL/TLS
-(secure sockets layer/transport layer security)*. SSL/TLS works by
-configuring the resource to provide an *SSL certificate* upon demand;
-the certificate is then used to verify the site's identity and establish
-an encrypted session.
+HTTPS is the same as HTTP, but secured with a technology called
+*SSL/TLS* (secure sockets layer/transport layer security). A site
+secured with SSL/TLS is configured to provide an *SSL certificate* upon
+demand; the certificate is then used to verify the site's identity and
+establish an encrypted session.
 
 ::: callout-note
-## SSL vs TLS
+## SSL vs. TLS
 
 These days, TLS is actually what's in use, but you'll mostly talk about
 SSL. That's because SSL has been around for a long time and people got
 used to talking about configuring SSL certificates. TLS is configured
-exactly the same, so most people still talk in terms of SSL when they
-really mean TLS.
+exactly the same, so most people still talk about SSL when they really
+mean TLS.
 :::
 
 You use HTTPS constantly. Go to a website in your browser and look for a
@@ -43,7 +43,7 @@ use the WiFi at your neighborhood Starbucks. The issue was twofold.
 First, HTTP has no way to verify that the website you **think** you're
 interacting with is, in fact, that website. A bad actor could put up a
 fake WiFi network that resolves $\text{bankofamerica.com}$ to a
-look-alike website that captures your banking login That's called a
+look-alike website that captures your banking login. That's called a
 *man-in-the-middle* attack.
 
 And even if they didn't use that trick specifically, there were tools to
@@ -53,11 +53,11 @@ a *packet sniffing* attack.
 In 2015, Google Chrome began the process of marking any site using plain
 HTTP as insecure, which led to the nearly complete adoption of HTTPS
 across the internet. Both man-in-the-middle and packet sniffing attacks
-have been neutered. Because of HTTPS it's now safe to use any random
-WiFi network you want.
+have been neutered. It's now safe to use any random WiFi network you
+want because of HTTPS.
 
 As a website administrator, securing your website or server with HTTPS
-is one of the most basic things you can do to make sure your website
+is one of the most basic things you can do to ensure your website
 traffic is safe. You should always configure HTTPS for a public website
 -- full stop.
 
@@ -79,14 +79,14 @@ familiar?).[^2-8-ssl-1] Then, verify the public certificate with a
 trusted *Certificate Authority* (CA) and put the private certificate in
 the right place on the website.
 
-[^2-8-ssl-1]: Like with SSL, this makes more sense if you think "key"
-    where you see private and "lock" where you see public.
+[^2-8-ssl-1]: Like with SSH, this makes more sense if you think "key"
+    where you see private, and "lock" where you see public.
 
 When you go to access that resource, your machine asks for a
 *signature*. The service uses its private key to generate a signature
 and your machine verifies the signature against its internal trusted *CA
 store*.[^2-8-ssl-2] Now your machine knows it's communicating with the
-right host on the other side and you're not falling victim to a
+right host on the other side, and you're not falling victim to a
 man-in-the-middle attack.
 
 [^2-8-ssl-2]: Your machine doesn't actually keep information on
@@ -101,12 +101,12 @@ the other side create temporary *session keys* to establish encryption
 with the website on the other end.[^2-8-ssl-3] Only then does it start
 sending real data, now encrypted securely inside a digital envelope.
 
-[^2-8-ssl-3]: Unlike the asymmetric encryption used by SSL and SSH for
-    the public key encryption, the session keys are symmetric, so they
-    work the same in both directions.
+[^2-8-ssl-3]: Unlike the asymmetric encryption used by SSL and
+    \index{SSH}SSH for the public key encryption, the session keys are
+    symmetric, so they work the same in both directions.
 
-![](images/ssl.png){fig-alt="SSL initialization. 1 client request, 2 public key sent by server, 3 validate key against CA store, 4 establish session w/ session keys."
-}
+![](images/ssl.png){.lightbox
+fig-alt="SSL initialization. 1 client request, 2 public key sent by server, 3 validate key against CA store, 4 establish session w/ session keys."}
 
 ## Getting and using SSL certificates
 
@@ -115,27 +115,27 @@ small number of official CAs. If you want to get a certificate for a
 website, it's easiest to get it from one of those CAs.
 
 In the past, this process was painful. The CAs charged to issue
-certificates. While it was only \$10 per year to for a basic SSL
+certificates. While it was only \$10 per year for a basic SSL
 certificate, they typically would only cover a single subdomain. A
 *wildcard* certificate to cover all the subdomains of a root domain was
 expensive enough to discourage hobbyists.
 
 If you wanted a free certificate, your only option was to use a
 *self-signed certificate*. Creating a self-signed certificate is as easy
-as creating an SSH key. But using a self-signed certificate is a pain
-because you have to manually add the public certificate to the CA store
-of every machine that accesses the site, and then re-add it when the
-certificate expires.[^2-8-ssl-4]
+as creating an \index{SSH}SSH key. But using a self-signed certificate
+is a pain because you have to manually add the public certificate to the
+CA store of every machine that accesses the site, and then re-add it
+when the certificate expires.[^2-8-ssl-4]
 
-[^2-8-ssl-4]: You also could skip that step, in which case you got the
+[^2-8-ssl-4]: You also could skip that step, in which case you get the
     session encryption benefits of SSL/TLS, but not the verification.
 
 Luckily there's now another option. For most small organizations or
 hobbyists, I recommend getting a free SSL certificate from the nonprofit
 CA *Let's Encrypt*. They even have some nice tooling that makes it easy
-to create and configure your certificate right on your server.
+to create and configure your certificate on your server.
 
-Most organizations, use a public CA to get SSL on public-facing
+Most organizations use a public CA for SSL on public-facing
 resources and use plain HTTP with no SSL/TLS inside their private
 networks. Some large organizations want to encrypt their private traffic
 as well and run their own private CA. If this is the case, your
@@ -151,13 +151,13 @@ Some web applications support configuring a certificate directly, while
 others only accept HTTP traffic, meaning you'd need to do *SSL
 termination* with a proxy in front of the application.
 
-## Comprehension Questions
+## Comprehension questions
 
-1.  What are the two risks of using plain HTTP and how does HTTPS
+1.  What are the two risks of using plain HTTP, and how does HTTPS
     mitigate them?
 2.  Write down a mental map of how SSL secures your web traffic. Include
     the following: public certificate, private certificate, certificate
-    authority, encrypted traffic, port 80, port 443
+    authority, encrypted traffic, port 80, port 443.
 
 ## Lab: Configure SSL
 
@@ -176,7 +176,7 @@ entitled *Using Free Let's Encrypt SSL/TLS Certificates with NGINX*. I'd
 encourage you to look for that article (or something similar) and follow
 the steps there.
 
-At a high level, what you'll do is
+At a high level, what you'll do the following:
 
 1.  Configure the NGINX configuration to know what domain it's on.
 2.  Install certbot on the system.
@@ -195,21 +195,23 @@ Scrolling down a little, there's a new server block that is listening on
 $80$. This block returns a `301` status code (permanent redirect) and
 sends traffic to HTTPS on $443$.
 
-### Step 2: Let \index{RStudio Server} know it's on HTTPS
+### Step 2: Let RStudio Server know it's on HTTPS
 
 Before we exit and test it out, let's do one more thing. As mentioned
-when we configured NGINX the first time, \index{RStudio Server} does a bunch of
-proxying traffic back to itself, so it needs to know that it's on HTTPS.
+when we configured NGINX the first time, \index{RStudio}RStudio Server
+does a bunch of proxying traffic back to itself, so it needs to know
+that it's on HTTPS.
 
-You can add a header to all traffic letting \index{RStudio Server} know the
-protocol is HTTPS by adding this line to your `nginx.conf`:
+You can add a header to all traffic letting \index{RStudio}RStudio
+Server know the protocol is HTTPS by adding this line to your
+`nginx.conf`:
 
 ``` {.bash filename="/etc/nginx/nginx.conf"}
 proxy_set_header X-Forwarded-Proto https;
 ```
 
-Ok, now try to visit \index{RStudio Server} at your URL and you'll find
-that...it's broken again.
+Ok, now try to visit \index{RStudio}RStudio Server at your URL and
+you'll find that...it's broken again.
 
 Before you read along, think for just a moment. Why is it broken?
 
@@ -218,14 +220,15 @@ Before you read along, think for just a moment. Why is it broken?
 If your thoughts went to something involving ports and AWS security
 groups, you're right!
 
-By default, our server was open to SSH traffic on port $22$. Since then,
-we may have opened or closed port $80$, $8000$, $8080$, $8787$, and/or
-$3838$.
+By default, our server was open to \index{SSH}SSH traffic on port $22$.
+Since then, we may have opened or closed port $80$, $8000$, $8080$,
+$8787$, and/or $3838$.
 
 But now the proxy is exclusively receiving HTTPS traffic on $443$ and
 redirecting or refusing all other traffic. You have to adjust the
-security group so there are only 2 rules -- one that allows SSH traffic
-on $22$ and one that allows HTTPS traffic on $443$.
+security group so there are only two rules -- one that allows
+\index{SSH}SSH traffic on $22$ and one that allows HTTPS traffic on
+$443$.
 
 It's up to you whether you want to leave port $80$ open. If you do, it
 will redirect people to HTTPS on $443$. If you close it entirely, people
