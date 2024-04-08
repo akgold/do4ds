@@ -36,8 +36,8 @@ Token-based systems are rising in popularity because they are more
 convenient for admins and users and are more secure.
 
 One reason token-based systems are more secure is because of credential
-handling. In a non token system, the user provides their credentials
-directly to the services, which passes them along to authenticate. This
+handling. In a non-token system, the user provides their credentials
+directly to the service, which passes them along to authenticate. This
 means you have to trust the service with the credentials. Additionally,
 if you wanted to use advanced credentials like MFA, biometrics, or
 passkeys, the service itself would have to implement them. Most services
@@ -45,7 +45,7 @@ do not, so username and password credentials are the only option.
 
 In contrast, credentials are only ever provided to the trusted identity
 provider in a token system. That means only the identity provider needs
-to implement advanced credentials and less trust in the service is
+to implement advanced credentials, and less trust in the service is
 required because it never sees user credentials.
 
 Token systems are also more secure because of how sessions expire. No
@@ -73,41 +73,42 @@ use those systems, the service stores encrypted username and password
 pairs in its own database. If you're administering a single service,
 this is really simple. You just set up individual users on the service.
 
-But once you have multiple services, everything has to be managed
+But, once you have multiple services, everything has to be managed
 service-by-service. And the system is only as secure as what the service
 has implemented. Almost any organization with an IT/Admin group will
 prefer not to use service-based auth.
 
-## System (Linux) Accounts
+## System (Linux) accounts
 
 Many pieces of software -- especially data science workbenches -- can
 look at the server it's sitting on and authenticate against the user
 accounts and groups on the server.
 
-On a Linux server, *Pluggable Authentication Modules (PAM)* allow a
-service to make use of the Linux host's users and groups. As of this
-writing, PAM is the default authentication method for RStudio Server and
-JupyterHub.
+On a Linux server, *PAM* (Pluggable Authentication Modules) allows a
+service to use the users and groups from the underlying Linux host. As
+of this writing, PAM is the default authentication method for
+\index{RStudio}RStudio Server and \index{JupyterHub}JupyterHub.
 
 As the name suggests, PAM includes modules that allow it to authenticate
 against different systems. The most common is to authenticate against
 the underlying Linux server, but it can also use LDAP/AD (common) or
 Kerberos tickets (uncommon).
 
-![](images/auth-pam.png){fig-alt="A visual representation of PAM auth flow as described above.."}
+![](images/auth-pam.png){.lightbox
+fig-alt="A visual representation of PAM auth flow as described above.."}
 
 PAM can also be used to do things when users log in. The most common of
 these is initializing Kerberos tickets to connect with databases or
 connecting with shared drives.
 
 When PAM is used in concert with LDAP/AD, the Linux users are usually
-created automatically on the system using *SSSD (System Security
-Services Daemon)*. This process is called *joining the domain*.
+created automatically on the system using *SSSD* (System Security
+Services Daemon). This process is called *joining the domain*.
 
 Though conceptually simple, the syntax of PAM modules is confusing, and
 reading, writing, and managing PAM modules is onerous. Additionally, as
 more services move to the cloud, there isn't necessarily an underlying
-Linux host where identities live and PAM can't be used at all.
+Linux host where identities live, and PAM can't be used at all.
 
 ## LDAP/AD
 
@@ -123,7 +124,7 @@ directly configured to talk to LDAP/AD.
 LDAP is an application-layer protocol, like HTTP. And like HTTP, there
 is an SSL-secured version called LDAPS. Because LDAP is almost always
 used only inside a private network, adoption of LDAPS is uneven. The
-default port for LDAP is $389$ and for LDAPS it's $636$.
+default port for LDAP is $389$, and for LDAPS it's $636$.
 :::
 
 Strictly speaking, LDAP/AD isn't an authentication tool. It's a
@@ -137,17 +138,18 @@ base*, which is the subtree to look for users inside. Additionally, you
 may configure LDAP/AD with *bind credentials* of a service account to
 authenticate to the LDAP/AD server itself.
 
-![](images/auth-ldap.png){fig-alt="A diagram of the LDAP flow. 1-User provides username and password to service. 2-service sends bind credentials w/ ldapsearch to LDAP server. 3-LDAP server checks credentials. 4-LDAP server returns results to service."}
+![](images/auth-ldap.png){.lightbox
+fig-alt="A diagram of the LDAP flow. 1-User provides username and password to service. 2-service sends bind credentials w/ ldapsearch to LDAP server. 3-LDAP server checks credentials. 4-LDAP server returns results to service."}
 
 ::: callout-note
+Standard LDAP/AD usage with bind credentials is called *double-bind*.
 Depending on your application and LDAP/AD configuration, it may be
-possible to skip the bind credentials look up the user with their own
-credentials in *single-bind* mode, as opposed to *double-bind* when
-there are bind credentials. Single-bind is inferior and shouldn't be
-used unless you can't get bind credentials.
+possible to skip the bind credentials and look up the user with their
+own credentials in *single-bind* mode. Single-bind is inferior to
+double-bind and shouldn't be used unless you can't get bind credentials.
 :::
 
-An `ldapsearch` returns the *distinguished name (DN)* of the entity that
+An `ldapsearch` returns the *distinguished name* (DN) of the entity that
 you are looking for -- assuming it's found.
 
 Here's what my entry in a corporate LDAP directory might look like this:
@@ -166,7 +168,7 @@ information about authorization. Instead, you configure the service to
 authorize certain users or groups. This is time-consuming and
 error-prone, as each service needs to be configured separately.
 
-## Kerberos Tickets {#sec-kerberos}
+## Kerberos tickets {#sec-kerberos}
 
 Kerberos is a relatively old, but very secure, token-based auth
 technology for use inside a private network. In Kerberos, encrypted
@@ -185,17 +187,18 @@ ticket using the `kinit` command or via a PAM session that automatically
 fetches a ticket upon user login.
 
 When a Kerberos session is initialized, the service sends the user's
-credentials off to the central *Kerberos Domain Controller (KDC)* and
-requests the *Ticket Granting Ticket (TGT)* from the KDC. Like most
+credentials off to the central *Kerberos Domain Controller* (KDC) and
+requests the *Ticket Granting Ticket* (TGT) from the KDC. Like most
 token authentication, TGTs have a set expiration period and must be
-reacquired when they expire.
+re-acquired when they expire.
 
 When the user wants to access a service, they send the TGT back to the
 KDC again along with the service they're trying to access and get a
 *session key* (sometimes referred to as a *service ticket*) that allows
 access to a particular service.
 
-![](images/auth-kerberos.png){fig-alt="The kerberos flow. 1 - User on server requests TGT from KDC. 2 - TGT granted. 3 - user requests service ticket with TGT from KDC. 4 - Service ticket granted. 5 - user uses service ticket to access service."}
+![](images/auth-kerberos.png){.lightbox
+fig-alt="The kerberos flow. 1 - User on server requests TGT from KDC. 2 - TGT granted. 3 - user requests service ticket with TGT from KDC. 4 - Service ticket granted. 5 - user uses service ticket to access service."}
 
 Kerberos is only used inside a corporate network and is tightly linked
 to the underlying servers. That makes it very secure. Even if someone
@@ -204,15 +207,15 @@ stole a Kerberos ticket, it would be very hard for them to use it.
 On the other hand, because Kerberos is so tightly tied to servers, it is
 a difficult fit alongside cloud technologies and services.
 
-## Modern systems: OAuth + SAML {#oauth-saml}
+## Modern systems: OAuth and SAML {#oauth-saml}
 
 Most organizations are now quickly moving toward implementing a modern
 token-based authentication system through SAML and/or OAuth2.0.
 
-When you go to log in to a service that uses SAML or OAuth, you are
-redirected to the SAML/OAuth identity provider to seek a token that will
-let you in. Assuming all goes well, you're granted a token and go back
-to the service to do your work.
+When you log in to a service that uses SAML or OAuth, you are redirected
+to the SAML/OAuth identity provider to seek a token that will let you
+in. Assuming all goes well, you're granted a token and you return to the
+service to do your work.
 
 Both OAuth and SAML rely on plain HTTP traffic, making them easier to
 configure than LDAP/AD or Kerberos from a networking standpoint.
@@ -231,15 +234,16 @@ In SAML, the service you're accessing is called the *service provider*
 (SP) and the entity issuing the token is the SAML *identity provider*
 (IdP). Most SAML tooling allows you start at either the IdP or the SP.
 
-If you start at the SP, you'll get redirected to the IdP. The IdP will
+If you start at the SP, you'll get re-directed to the IdP. The IdP will
 verify your credentials. If the credentials are valid, the IdP will put
 a SAML token in your browser, which the SP will use to authenticate
 you.[^auth-3]
 
 [^auth-3]: The diagram assumes you don't already have a token in your
-    browser. If the user has a token already, steps 2-5 get skipped.
+    browser. If the user has a token already, steps 2--5 get skipped.
 
-![](images/auth-saml.png){fig-alt="A visual representation of SAML auth flow as described above."}
+![](images/auth-saml.png){.lightbox
+fig-alt="A visual representation of SAML auth flow as described above."}
 
 A SAML token contains several *claims*, which usually include a username
 and may include groups or other attributes. Whoever controls the IdP can
@@ -259,18 +263,19 @@ Google/Facebook/Twitter/GitHub* flow -- that's OAuth.
 
 OAuth relies on passing around cryptographically signed JSON Web Tokens
 (JWTs). This makes OAuth more straightforward to debug than SAML because
-the JWT is plain-text JSON with a signature that proves it's valid.
+the JWT is plaintext JSON with a signature that proves it's valid.
 
 Unlike a SAML token that always lives in a browser cache, JWTs can go
 anywhere. They can live in the browser cache, but they also can pass
 from one server to another to do authorization or can be saved in a
-user's home directory. For example, if you've accessed Google Sheets or
-another Google service from R or Python, you may have manually handled
-the resulting OAuth token in your home directory.
+user's home directory. For example, if you've accessed
+\index{Google Sheets} or another Google service from R or Python, you
+may have manually handled the resulting OAuth token in your home
+directory.
 
 OAuth is an authorization scheme, so the contents of a JWT are about the
 permissions of the bearer of the token. A related standard called
-*OpenID Connect (OIDC)* can be used to do authentication with OAuth
+*OpenID Connect* (OIDC) can be used to do authentication with OAuth
 tokens. Over the next few years, I fully expect all data access to move
 toward using OAuth tokens.
 
@@ -284,14 +289,15 @@ For example, if you want to read my Google Calendar, you need a JWT that
 includes a claim granting *read* access against the scope of *events on
 Alex's calendar*.
 
-![](images/auth-oauth.png){fig-alt="A visual representation of OAuth flow as described above."}
+![](images/auth-oauth.png){.lightbox
+fig-alt="A visual representation of OAuth flow as described above."}
 
 Unlike in SAML where action occurs via browser redirects, OAuth makes no
 assumptions about how this flow happens. The process of requesting and
 getting a token can happen in several different ways, including browser
 redirects and caches, but could be done entirely in R or Python.
 
-## User Provisioning
+## User provisioning
 
 When you're using a service, users often need to be created
 (*provisioned*) in that system. Sometimes, the users will be provisioned
@@ -303,6 +309,6 @@ application to provision everyone who comes back from a particular
 `ldapsearch`. In contrast, token-based systems don't know anything about
 you until you show up for the first time with a valid token.
 
-There is a SAML-based provisioning system called *SCIM (System for
-Cross-Domain Identity Management)* that is slowly being adopted by many
+There is a SAML-based provisioning system called *SCIM* (System for
+Cross-Domain Identity Management) that is slowly being adopted by many
 IdPs and SPs.
