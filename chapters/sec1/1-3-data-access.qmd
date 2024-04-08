@@ -5,26 +5,27 @@ to extract nuggets of real information -- and then use that information.
 Working at the end of an external process, you must meet the data where
 it lives.
 
-Usually, that will be in a database or a data API. This chapter is about
-the mechanics of working with those data sources, i.e., how to access
-the data and keep those connections secure.
+Usually, that will be in a database or a data \index{API}API. This
+chapter is about the mechanics of working with those data sources, i.e.,
+how to access the data and keep those connections secure.
 
 ## Accessing and using databases
 
 Databases are defined by their query-able interface, usually through
-*structured query language (SQL)*.
+\index{SQL}*structured query language* (SQL).
 
 ::: callout-note
 There are many kinds of databases, and choosing the right one for your
 project is beyond the scope of this book. One recommendation:
-open-source *PostgreSQL (Postgres)* is a great place to start for most
+open-source *PostgreSQL* (Postgres) is a great place to start for most
 general-purpose data science tasks.
 :::
 
 Any database connection starts by creating a *connection object* at the
-outset of your code. You'll then use this object to send SQL queries,
-which you can generate by writing them yourself or using a package that
-generates SQL like `{sqlalchemy}` in Python or `{dplyr}` in R.
+outset of your code. You'll then use this object to send \index{SQL}SQL
+queries, which you can generate by writing them yourself or using a
+package that generates \index{SQL}SQL like `{sqlalchemy}` in Python or
+`{dplyr}` in R.
 
 For example, in Python you might write the following to connect to a
 Postgres database:
@@ -40,23 +41,23 @@ In R, it might look like this:
 con <- DBI::dbConnect(RPostgres::postgres())
 ```
 
-Python or R have standard connection APIs that define operations like
+Python and R have standard connection APIs that define operations like
 connecting and disconnecting, sending queries, and retrieving results.
 
 In Python, packages for individual databases like `{psychopg2}` directly
-implement the API, which is why the example above calls the `connect()`
-method of the `{psychopg2}` package.
+implement the \index{API}API, which is why the example above calls the
+`connect()` method of the `{psychopg2}` package.
 
-In R, the API is split into two parts. The `{DBI}` package (short for
-database interface) implements the actual connections. It works with a
-database driver package, which is the first argument to
+In R, the \index{API}API is split into two parts. The `{DBI}` package
+(short for database interface) implements the actual connections. It
+works with a database driver package, which is the first argument to
 `DBI::dbConnect()`. Packages that implement the `{DBI}` interface are
 called *DBI-compliant*.
 
 ::: callout-note
-There are Python packages that don't implement the connections API and
-non DBI-compliant database packages in R. I'd recommend sticking with
-the standard route if possible.
+There are Python packages that don't implement the connections
+\index{API}API and non-DBI-compliant database packages in R. I'd
+recommend sticking with the standard route if possible.
 :::
 
 Often, a Python or R package will directly implement your database
@@ -74,7 +75,7 @@ drivers.
 
 While performance sometimes isn't as good for system drivers, the
 tradeoff is that IT/Admins can pre-configure connection details in a
-*data source name (DSN)*. If one is pre configured for you, you don't
+*data source name (DSN)*. If one is pre-configured for you, you don't
 have to remember the database name, host, port, or even username and
 password if they're shared.
 
@@ -91,8 +92,8 @@ In R, it might look like this:
 con <- DBI::dbConnect(odbc::odbc(), dsn = "MY_DSN")
 ```
 
-System drivers come in two main varieties Java Database Connectivity
-(JDBC) and Open Database Connectivity (ODBC).
+System drivers come in two main varieties: *Java Database Connectivity*
+(JDBC) and *Open Database Connectivity* (ODBC).
 
 In Python, `{pyodbc}` is the main package for using ODBC connections and
 `{JayDeBeApi}` for connecting using JDBC. In R, `{odbc}` is the best
@@ -106,23 +107,23 @@ recommend ODBC. JDBC requires an extra hop through Java and the
 :::
 
 [^1-3-data-access-1]: I have heard that some write operations may be
-    faster with a JDBC driver than an ODBC one. I would argue that if
-    you're doing enough writing to a database that speed matters, you
-    probably should be using database-specific data loading tools, and
-    not just writing from R or Python.
+    faster with a JDBC driver than an ODBC one. If you're doing enough
+    writing to a database that speed matters, I would argue you probably
+    should be using database-specific data loading tools, and not just
+    writing from R or Python.
 
 ## Providing credentials to data projects
 
 Imagine you've created a data science project that pulls data from a
 database. When you're actively working on the project, it's easy for you
-to provide credentials as needed to the database. But what happens when
+to provide credentials as needed to the database. But, what happens when
 you deploy that project to production and you're not sitting there to
 provide credentials?
 
 In many organizations, you'll be allowed to use your data access
 permissions for the project and then to share the project with others in
 the company at your discretion. This situation is sometimes called
-*discretionary access control (DAC)*.
+*discretionary access control* (DAC).
 
 In some more restrictive environments, you won't have this luxury. The
 IT/Admin team may maintain control of permissions or require that data
@@ -138,8 +139,8 @@ In the most restrictive case, you'll have to use the credentials of the
 person viewing the content and pass those along. This last option is
 much more complex than the other two.
 
-![](images/whose-creds.png){fig-alt="A diagram showing that using project creator credentials is simplest, service account is still easy, and viewer is hard."
-}
+![](images/whose-creds.png){.lightbox
+fig-alt="A diagram showing that using project creator credentials is simplest, service account is still easy, and viewer is hard."}
 
 If you have to use the viewer's credentials for data access, you can
 write code to collect them from the viewer and pass them along. I don't
@@ -153,84 +154,89 @@ require working with an IT/Admin. More on this topic in [Chapter
 
 ## Connecting to APIs
 
-Some data sources come in the form of an API.
+Some data sources come in the form of an \index{API}API.
 
 It's common to have Python or R packages that wrap APIs, so you write
-Python or R code without thinking about the API underneath. Using these
-patterns often looks similar to databases -- you create and use a
-connection object that stores the connection details. If your API has a
-package like this, you should use it.
+Python or R code without thinking about the \index{API}API underneath.
+Using these patterns often looks similar to databases -- you create and
+use a connection object that stores the connection details. If your
+\index{API}API has a package like this, you should use it.
 
-If you're consuming a private API at your organization, a helper package
-probably doesn't exist, or you may have to write it yourself.
+If you're consuming a private \index{API}API at your organization, a
+helper package probably doesn't exist, or you may have to write it
+yourself.
 
 ::: callout-note
-There's increasingly good tooling to auto-generate packages based on API
-documentation, so you may never have to write an API wrapper package by
-hand. It's still helpful to understand how it works.
+There's increasingly good tooling to auto-generate packages based on
+\index{API}API documentation, so you may never have to write an
+\index{API}API wrapper package by hand. It's still helpful to understand
+how it works.
 :::
 
-If you have to call an API directly, you can use the `{requests}`
-package in Python or `{httr2}` in R.
+If you have to call an \index{API}API directly, you can use the
+`{requests}` package in Python or `{httr2}` in R.
 
 These packages provide idiomatic R and Python ways to call APIs. It's
 worth understanding that they're purely syntactic sugar. There's nothing
-special about calling an API from inside Python or R versus using the
-command line and you can go back and forth as you please. It is
-sometimes helpful to try to replicate Python or R API calls without the
-language wrapper for debugging reasons.
+special about calling an \index{API}API from inside Python or R versus
+using the command line and you can go back and forth as you please. It
+is sometimes helpful to try to replicate Python or R \index{API}API
+calls without the language wrapper for debugging reasons.
 
-### What's in an API?
+### What's in an \index{API}API?
 
-APIs are the standard way for two computer systems to communicate. API
-is a general term that describes machine-to-machine communication. For
-our purposes, we're talking about `http`-based `REST`-ful APIs.
+APIs are the standard way for two computer systems to communicate.
+\index{API}API is a general term that describes machine-to-machine
+communication. For our purposes, we're talking about `http`-based
+`REST`-ful APIs.
 
-`http` operates on a request-response model. So when you use an API, you
-send a request to the API and it sends a response back.
+`http` operates on a request-response model. So when you use an
+\index{API}API, you send a request to the \index{API}API and it sends a
+response back.
 
-![](images/req_resp.png){fig-alt="A client requesting puppy pictures from a server and getting back a 200-coded response with a puppy."
-}
+The best way to learn about a new \index{API}API is to read the
+documentation, which will include many details about usage. Let's go
+through some of the most salient ones.
 
-The best way to learn about a new API is to read the documentation,
-which will include many details about usage. Let's go through some of
-the most salient ones.
+![](images/req_resp.png){.lightbox
+fig-alt="A client requesting puppy pictures from a server and getting back a 200-coded response with a puppy."}
 
-### API Endpoints and Paths
+### \index{API}API Endpoints and Paths
 
-Each request to an API is directed to a specific *endpoint*. An API can
-have many endpoints, each of which you can think of like a function in a
-package. Each endpoint lives on a *path*, where you find that particular
-endpoint.
+Each request to an \index{API}API is directed to a specific *endpoint*.
+An \index{API}API can have many endpoints, each of which you can think
+of like a function in a package. Each endpoint lives on a *path*, where
+you find that particular endpoint.
 
 For example, if you did the lab in [Chapter @sec-proj-arch] and used
-`{vetiver}` to create an API for serving the penguin mass model, you
-found your API at `http://localhost:8080`. By default, you went to the
-*root* path at `/` and found the API documentation there.
+`{vetiver}` to create an \index{API}API for serving the penguin mass
+model, you found your \index{API}API at `http://localhost:8080`. By
+default, you went to the *root* path at `/` and found the \index{API}API
+documentation there.
 
-As you scrolled the documentation, there were two endpoints -- `/ping`
-and `/predict`. You can read the definition to see what parameters you
-could send them and what you'd get back. Those paths are relative to the
-root, so you could access `/ping` at `http://localhost:8080/ping`.
+As you scrolled the documentation, there were two endpoints: `/ping` and
+`/predict`. You can read the definition to see what parameters you could
+send them and what you'd get back. Those paths are relative to the root,
+so you could access `/ping` at `http://localhost:8080/ping`.
 
-### HTTP verbs
+### HTTP Verbs
 
 When you make an HTTP request, you ask a server to do something. The
-*http* *verb*, also known as the *request method*, describes the type of
+HTTP *verb*, also known as the *request method*, describes the type of
 operation you're asking for. Each endpoint has one or more verbs that it
 knows how to use.
 
-Looking at the penguin mass API, you'll see that `/ping` is a `GET`
-endpoint and `/predict` is a `POST`. This isn't a coincidence. I'd
-approximate that 95% of the API endpoints you'll use as a data scientist
-are `GET` and `POST`, which respectively fetch information from the
-server and provide information to the server.
+Looking at the penguin mass \index{API}API, you'll see that `/ping` is a
+`GET` endpoint and `/predict` is a `POST`. This isn't a coincidence. I'd
+approximate that 95% of the \index{API}API endpoints you'll use as a
+data scientist are `GET` and `POST`, which respectively fetch
+information from the server and provide information to the server.
 
-To round out the basic http verbs you might see, `PUT` and `PATCH`
-change or update something and `DELETE` (you guessed it) deletes
+To round out the basic HTTP verbs, you might use `PUT` or `PATCH` to
+change or update something and `DELETE` (you guessed it) to delete
 something. There are also more esoteric ones you'll probably never see.
 
-### Request parameters and bodies
+### Request Parameters and Bodies
 
 Like a function in a package, each endpoint accepts specific arguments
 in a required format. Again, like a function, some arguments may be
@@ -251,28 +257,30 @@ Python and `{jsonlite}` in R to figure out how to get it nested
 correctly.
 
 [^1-3-data-access-2]: You may see `POST` for things that look like
-    `GET`s. For example, fetching a model prediction from an API feels
-    like a `GET` to me. The reason is the HTTP spec only recently
-    allowed `GET` endpoints to use request bodies and it's still
-    discouraged. So if the API wants to use a body in the request, it's
-    likely to be a `POST` even if it's more of a `GET` activity.
+    `GET`s. For example, fetching a model prediction from an
+    \index{API}API feels like a `GET` to me. The reason is the HTTP spec
+    only recently allowed `GET` endpoints to use request bodies, and
+    it's still discouraged. So if the \index{API}API wants to use a body
+    in the request, it's likely to be a `POST` even if it's more of a
+    `GET` activity.
 
 ### (Auth) Headers
 
 Most APIs require authentication. The most common forms of
-authentication are a username and password combination, an API key, or
-an OAuth token.
+authentication are a username and password combination, an
+\index{API}API key, or an OAuth token.
 
-API keys and OAuth tokens are often associated with particular *scopes*.
-Scopes are permissions to do particular things. For example, an API key
-might be scoped to have `GET` access to a given endpoint but not `POST`
-access.
+\index{API}API keys and OAuth tokens are often associated with
+particular *scopes*. Scopes are permissions to do particular things. For
+example, an \index{API}API key might be scoped to have `GET` access to a
+given endpoint but not `POST` access.
 
 Regardless of your authentication type, it will be provided in a
-*header* to your API call. Your API documentation will tell you how to
-provide your username and password, API key, or token to the API in a
-header. Both `{requests}` and `{httr2}` provide easy helpers for adding
-authentication headers and more general ways to set headers if needed.
+*header* to your \index{API}API call. Your \index{API}API documentation
+will tell you how to provide your username and password, \index{API}API
+key, or token to the \index{API}API in a header. Both `{requests}` and
+`{httr2}` provide easy helpers for adding authentication headers and
+more general ways to set headers if needed.
 
 Aside from authentication, headers are also used for metadata like the
 type of machine sending the request and cookies. You'll rarely interact
@@ -285,9 +293,9 @@ Status codes indicate what happened with your request to the server. You
 always hope to see `200` codes, which indicate a successful response.
 
 There are also two common error codes. `4xx` codes indicate a problem
-with your request and the API couldn't understand what you were asking.
-`5xx` codes indicate that your request was fine, but some error happened
-in processing your request.
+with your request and the \index{API}API couldn't understand what you
+were asking. `5xx` codes indicate that your request was fine, but some
+error happened in processing your request.
 
 See [Appendix @sec-append-cheat] for a table of common HTTP codes.
 
@@ -296,104 +304,115 @@ See [Appendix @sec-append-cheat] for a table of common HTTP codes.
 The contents of the response are in the *body*. You'll need to turn the
 body into a Python or R object you can work with.
 
-Most often, bodies are in JSON and you'll decode them with `{json}` or
-`{jsonlite}`. Depending on the API, you may have the option to request
-something other than JSON as the return. I rarely need anything other
-than JSON.
+Most often, bodies are in JSON and you'll decode them with `{json}` in
+Python or `{jsonlite}` in R. Depending on the \index{API}API, you may
+have the option to request something other than JSON as the return. I
+rarely need anything other than JSON.
 
-### Common API patterns
+### Common \index{API}API Patterns
 
-Here are a couple of common API patterns that are good to know about:
+Below are common \index{API}API patterns that are good to know about:
 
 -   **Pagination** -- many data-feed APIs implement pagination. A
-    paginated API returns only a certain number of results to keep data
-    sizes modest. Check out the API documentation to learn how to get
-    all your pages.
+    paginated \index{API}API returns only a certain number of results to
+    keep data sizes modest. Check out the \index{API}API documentation
+    to learn how to get all your pages.
 
 -   **Job APIs** -- HTTP is designed for relatively quick
-    request-response cycles. If your API kicks off a long-running job,
-    it's rare to wait until the job is done to get a response. Instead,
-    a common pattern is to return a `job-id`, which you can use to poll
-    a `job-status` endpoint to check how things are going and eventually
-    claim your result.
+    request-response cycles. If your \index{API}API kicks off a
+    long-running job, it's rare to wait until the job is done to get a
+    response. Instead, a common pattern is to return a `job-id`, which
+    you can use to poll a `job-status` endpoint to check how things are
+    going and eventually claim your result.
 
 -   **Multiple Verbs** -- a single endpoint often accepts multiple
     verbs, such as a `GET` and a `POST` at the same endpoint, for
     getting and setting the data that the endpoint stores.
 
-## Environment variables to secure data connections {#env-vars}
+## \index{environment variable}Environment variable to secure data connections {#env-vars}
 
 When you take an app to production, authenticating to your data source
 while keeping your secrets secure is crucial.
 
 The most important thing you can do to secure your credentials is to
 avoid ever putting credentials in your code. **Your username and
-password or API key should never appear in your code.**
+password or** \index{API}API key should never appear in your code.
 
 The simplest way to provide credentials without the values appearing in
-your code is with an *environment variable*. Environment variables are
-set before your code starts -- sometimes from completely outside Python
-or R.
+your code is with an \index{environment variable}environment variable.
+\index{environment variable}Environment variable are set before your
+code starts -- sometimes from completely outside Python or R.
 
 ::: callout-note
-This section assumes you can use a username and password or an API key
-to connect to your data source. That may not be true, depending on your
-organization. See [Chapter @sec-auth] for handling data connections if
-you can't directly connect with a username and password.
+This section assumes you can use a username and password or an
+\index{API}API key to connect to your data source. That may not be true,
+depending on your organization. See [Chapter @sec-auth] for handling
+data connections if you can't directly connect with a username and
+password.
 :::
 
-### Getting environment variables
+### Getting \index{environment variable}Environment Variables
 
-The power of using an environment variable is that you reference them by
-name. Using only a name makes it easy to swap out the value in
-production versus other environments. Also, it means it's safe to share
-code since all it does is reveal that an environment variable exists.
+The power of using an \index{environment variable}environment variable
+is that you reference them by name. Using only a name makes it easy to
+swap out the value in production versus other environments. Also, it
+means it's safe to share code since all it does is reveal that an
+\index{environment variable}environment variable exists.
 
 ::: callout-note
-It is a convention to make environment variable names in all caps with
-words separated by underscores. The values are always simple character
-values, though these can be cast to some other type inside R or Python.
+It is a convention to make \index{environment variable}environment
+variable names in all caps with words separated by underscores. The
+values are always simple character values, though these can be cast to
+some other type inside R or Python.
 :::
 
-In Python, you can read environment variables from the `os.environ`
-dictionary or by using `os.getenv("<VAR_NAME>")`. In R, you can get
-environment variables with `Sys.getenv("<VAR_NAME>")`.
+In Python, you can read \index{environment variable}environment
+variables from the `os.environ` dictionary or by using
+`os.getenv("<VAR_NAME>")`. In R, you can get
+\index{environment variable}environment variables with
+`Sys.getenv("<VAR_NAME>")`.
 
-It's common to provide environment variables directly to functions as
-arguments, including as defaults, though you can also put the values in
-normal Python or R variables and use them from there.
+It's common to provide \index{environment variable}environment variables
+directly to functions as arguments, including as defaults, though you
+can also put the values in normal Python or R variables and use them
+from there.
 
-### Setting environment variables
+### Setting \index{environment variable}Environment Variables
 
-The most common way to set environment variables in a development
-environment is to load secrets from a text file. Environment variables
-are usually set in Python by reading a `.env` file into your session.
-The `{python-dotenv}` package is a good choice for doing this.
+The most common way to set \index{environment variable}environment
+variables in a development environment is to load secrets from a text
+file. \index{environment variable}Environment variable are usually set
+in Python by reading a `.env` file into your session. The
+`{python-dotenv}` package is a good choice for doing this.
 
-R automatically reads the `.Renviron` file as environment variables and
-also sources the `.Rprofile` file, where you can set environment
-variables with `Sys.setenv()`. Personally, I prefer putting everything
-in the `.Rprofile` so I'm only using one file, but that's not a
-universal opinion.
+R automatically reads the `.Renviron` file as
+\index{environment variable}environment variables and also sources the
+`.Rprofile` file, where you can set environment variables with
+`Sys.setenv()`. Personally, I prefer putting everything in the
+`.Rprofile` so I'm only using one file, but that's not a universal
+opinion.
 
-Some organizations don't ever want credential files in plain text. After
-all, if someone steals a plaintext secrets file, nothing can stop the
-thief from using them.
+Some organizations don't ever want credential files in plaintext. After
+all, if someone steals a file that's just a list of usernames and
+passwords, nothing can stop the thief from using the credentials inside.
 
 There are packages in both R and Python called `{keyring}` that allow
-you to use the system keyring to securely store environment variables
-and recall them at runtime.
+you to use the system keyring to securely store
+\index{environment variable}environment variables and recall them at
+runtime.
 
-Setting environment variables in production is a little harder.
+Setting \index{environment variable}environment variables in production
+is a little harder.
 
 Moving your secrets from your code into a different file you push to
 prod doesn't solve the problem of putting secrets in code. And using
 `{keyring}` in a production environment is quite cumbersome.
 
 Your production environment may provide environment management tools.
-For example, GitHub Actions and Posit Connect both allow you to set
-secrets that aren't visible to the users, but are accessible to the code
-at runtime in an environment variable.
+For example, \index{GitHub Actions}GitHub Actions and \index{Posit}Posit
+Connect both allow you to set secrets that aren't visible to the users
+but are accessible to the code at runtime in an
+\index{environment variable}environment variable.
 
 Organizations increasingly use token-based authorization schemes that
 exchange one cryptographically secure token for another, never relying
@@ -402,7 +421,7 @@ they can be difficult to implement, likely requiring coordination with
 an IT/Admin to use technologies like Kerberos or OAuth. There's more on
 how to do that in [Chapter @sec-auth].
 
-## Data Connection Packages
+## Data connector packages
 
 It's widespread for organizations to write data connector packages in
 Python or R that include all of the shared connection details so users
@@ -447,31 +466,32 @@ my_db_con <- function(
 }
 ```
 
-Note that the function signature defines default environment variables
-that will be consulted. If those environment variables are set ahead of
-time by the user, this code will just work.
+Note that the function signature defines default
+\index{environment variable}environment variables that will be
+consulted. If those \index{environment variable}environment variables
+are set ahead of time by the user, this code will just work.
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  Draw two mental maps for connecting to a database, one using a
-    database driver in a Python or R package vs an ODBC or JDBC driver.
+    database driver in a Python or R package vs. an ODBC or JDBC driver.
     You should (at a minimum) include the nodes database package, DBI (R
     only), driver, system driver, ODBC, JDBC, and database.
-2.  Draw a mental map for using an API from R or Python. You should (at
-    a minimum) include nodes for `{requests}`/`{httr2}`, request, http
-    verb/request method, headers, query parameters, body, json,
-    response, and response code.
-3.  How can environment variables be used to keep secrets secure in your
-    code?
+2.  Draw a mental map for using an \index{API}API from R or Python. You
+    should (at a minimum) include nodes for `{requests}`/`{httr2}`,
+    request, HTTP verb/request method, headers, query parameters, body,
+    JSON, response, and response code.
+3.  How can \index{environment variable}environment variables be used to
+    keep secrets secure in your code?
 
-## Lab: Use a database and an API
+## Lab: Use a database and an \index{API}API
 
 In this lab, we will build the data and the presentation layers for our
 penguin mass model exploration. We're going to create an app to explore
-the model, which will look like this: 
+the model, which will look like this:
 
-![](images/penguin_app.png){fig-alt="A screenshot of a simple Shiny app.."
-}
+![](images/penguin_app.png){.lightbox
+fig-alt="A screenshot of a simple Shiny app.."}
 
 Let's start by moving the data into an actual data layer.
 
@@ -484,7 +504,7 @@ To start, let's load the data.
 
 Here's what that looks like in R:
 
-``` {.r}
+``` r
 con <- DBI::dbConnect(duckdb::duckdb(), dbdir = "my-db.duckdb")
 DBI::dbWriteTable(con, "penguins", palmerpenguins::penguins)
 DBI::dbDisconnect(con)
@@ -492,7 +512,7 @@ DBI::dbDisconnect(con)
 
 Or equivalently, in Python:
 
-``` {.python}
+``` python
 import duckdb
 from palmerpenguins import penguins
 
@@ -502,14 +522,27 @@ con.execute('CREATE TABLE penguins AS SELECT * FROM df')
 con.close()
 ```
 
+### Step 2: Point the EDA and modeling scripts to the database
+
 Now that the data is loaded, let's adjust our scripts to use the
 database.
 
-In R, we will replace our data loading with connecting to the database.
-Leaving out all the parts that don't change, it looks like
+::: callout-tip
+If you're using my scripts, or just want to look at an example, you can
+find my scripts in the GitHub repo for this book
+([akgold/do4ds](https://github.com/akgold/do4ds)) in the
+[`_labs/lab3`](https://github.com/akgold/do4ds/tree/main/_labs/lab3)
+directory.
+:::
+
+In the R EDA script, we will replace our data loading with connecting to
+the database. Leaving out all the parts that don't change, it looks
+like:[^1-3-data-access-3]
+
+[^1-3-data-access-3]: You may need to install and load the `{dbplyr}`
+    package for this to work.
 
 ``` {.r filename="eda.qmd"}
-library(dbplyr)
 con <- DBI::dbConnect(
   duckdb::duckdb(), 
   dbdir = "my-db.duckdb"
@@ -517,34 +550,18 @@ con <- DBI::dbConnect(
 df <- dplyr::tbl(con, "penguins")
 ```
 
+\pagebreak
+
 We also need to call to `DBI::dbDisconnect(con)` at the end of the
 script.
 
-We don't have to change anything because we wrote our data processing
-code in `{dplyr}`. Under the hood, `{dplyr}` can switch seamlessly to a
-database backend, which is really cool.
+The `{dplyr}` package can switch seamlessly to a database backend, so if
+you used my data processing code or wrote your own in `{dplyr}`, you
+literally don't have to change anything.
 
-``` {.r filename="eda.qmd"}
-df %>%
-  group_by(species, sex) %>%
-  summarise(
-    across(
-        ends_with("mm") | ends_with("g"),
-      \(x) mean(x, na.rm = TRUE)
-      )
-    ) %>%
-  dplyr::collect() %>%
-  knitr::kable()
-```
-
-It's unnecessary, but I've added a call to `dplyr::collect()` in line
-31. It will be implied if I don't put it there manually, but it helps
-make it obvious that all the work before there has been pushed off to
-the database. It doesn't matter for this small dataset, but it could
-benefit a larger dataset.
-
-In Python, we're just going to load the entire dataset into memory for
-modeling, so the line loading the dataset changes to
+For the Python modeling script, we're just going to load the entire
+dataset into memory for modeling, so the line loading the dataset
+changes to:
 
 ``` {.python filename="model.qmd"}
 con = duckdb.connect('my-db.duckdb')
@@ -555,186 +572,59 @@ con.close()
 Now let's switch to figuring out the connection we'll need to our
 processing layer in the presentation layer.
 
-### Step 2: Call the model API from code
+### Step 3: Build an app that calls the API
 
-Before you start, ensure the API is running on your machine from the
-last lab.
+I'm going to use the \index{Shiny}`{shiny}` package to create an
+interactive web app. There are versions of `{shiny}` for both R and
+Python.
 
-::: callout-note
-I'm assuming it's running on port `8080` in this lab. If you've put it
-somewhere else, change the `8080` in the code below to match the port on
-your machine.
+If you want to take a detour into learning Shiny, I highly recommend the
+[Mastering Shiny](https://mastering-shiny.org/) book. Otherwise feel
+free to just use my examples from the GitHub repo.
+
+::: callout-tip
+If you shut things down after the last lab, you'll need to start the
+\index{API}API running again in order to call it.
 :::
 
-If you want to call the model in code, you can use any http request
-library. In R you should use `httr2` and in Python you should use
-`requests`.
+The `{vetiver}` package knows how to send requests to a Vetiver API and
+interpret the results. If you want to get a little more practice calling
+APIs, you can use `{httr2}` in R and `{requests}` in Python to provide
+some request data to the API call and then interpret the JSON that comes
+back.
 
-Here's what it looks like to call the API in Python
+To integrate this into an app, you'll want to store input parameters in
+a reactive and then send a request to the API when the user presses a
+button.
 
-```{python}
-import requests
+::: callout-tip
+I recommend setting an `api_url` value at the top of your app.
 
-req_data = {
-  "bill_length_mm": 0,
-  "species_Chinstrap": False,
-  "species_Gentoo": False,
-  "sex_male": False
-}
-req = requests.post('http://127.0.0.1:8080/predict', json = [req_data])
-res = req.json().get('predict')[0]
-```
-
-or equivalently in R
-
-```{r}
-req <- httr2::request("http://127.0.0.1:8080/predict") |>
-  httr2::req_body_json(
-    list(
-      list(
-        "bill_length_mm" = 0,
-        "species_Chinstrap" = FALSE,
-        "species_Gentoo" = FALSE,
-        "sex_male" = FALSE
-      )
-    )
-  ) |>
-  httr2::req_perform()
-res <- httr2::resp_body_json(req)$predict[[1]]
-```
-
-Note that there's no translation necessary to send the request. The
-`{requests}` and`{httr2}` packages automatically know what to do with
-the Python dictionary and the R list.
-
-Getting the result back takes more work to find the right spot in the
-JSON returned. This is quite common.
-
-::: callout-note
-The `{vetiver}` package also includes the ability to auto-query a
-`{vetiver}` API. I'm not using it here to expose the details of calling
-an API.
+By default, be $\text{"http://127.0.0.1:8080/predict"}$. If you've
+changed the port from $8080$ or used a different name for your
+prediction endpoint, you should adjust accordingly.
 :::
 
-Let's take this API-calling code and build the presentation layer around
-it.
+In my app, I have inputs `bill_length`, `sex`, and `species`, which I
+collect in a reactive called `vals()`.
 
-### Step 3: Build a shiny app
-
-We will use the `{shiny}` R and Python package for creating interactive
-web apps using just Python code. If you don't know much about `{shiny}`,
-you can unthinkingly follow the examples here or spend time with the
-[Mastering Shiny](https://mastering-shiny.org/) book to learn to use it
-yourself.
-
-Either way, an app that looks like the picture above would look like
-this in Python
+In Python, that looks like:
 
 ``` {.python filename="app.py"}
-from shiny import App, render, ui, reactive
-import requests
-
-api_url = 'http://127.0.0.1:8080/predict'
-
-app_ui = ui.page_fluid(
-    ui.panel_title("Penguin Mass Predictor"), 
-    ui.layout_sidebar(
-        ui.panel_sidebar(
-            [ui.input_slider("bill_length", "Bill Length (mm)", 30, 60, 45, step = 0.1),
-            ui.input_select("sex", "Sex", ["Male", "Female"]),
-            ui.input_select("species", "Species", ["Adelie", "Chinstrap", "Gentoo"]),
-            ui.input_action_button("predict", "Predict")]
-        ),
-        ui.panel_main(
-            ui.h2("Penguin Parameters"),
-            ui.output_text_verbatim("vals_out"),
-            ui.h2("Predicted Penguin Mass (g)"), 
-            ui.output_text("pred_out")
-        )
-    )   
-)
-
-def server(input, output, session):
-    @reactive.Calc
-    def vals():
-        d = {
-            "bill_length_mm" : input.bill_length(),
-            "sex_male" : input.sex() == "Male",
-            "species_Gentoo" : input.species() == "Gentoo", 
-            "species_Chinstrap" : input.species() == "Chinstrap"
-
-        }
-        return d
-    
-    @reactive.Calc
-    @reactive.event(input.predict)
-    def pred():
-        r = requests.post(api_url, json = [vals()])
-        return r.json().get('predict')[0]
-
-    @output
-    @render.text
-    def vals_out():
-        return f"{vals()}"
-
-    @output
-    @render.text
-    def pred_out():
-        return f"{round(pred())}"
-
-app = App(app_ui, server)
-
+  @reactive.Calc
+  def vals():
+    d = {
+      "bill_length_mm" : input.bill_length(),
+      "sex_male" : input.sex() == "Male",
+      "species_Gentoo" : input.species() == "Gentoo", 
+      "species_Chinstrap" : input.species() == "Chinstrap"
+    }
+    return d
 ```
 
-And like this in R
+And in R, it's:
 
 ``` {.r filename="app.R"}
-library(shiny)
-
-api_url <- "http://127.0.0.1:8080/predict"
-
-ui <- fluidPage(
-  titlePanel("Penguin Mass Predictor"),
-
-  # Model input values
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput(
-        "bill_length",
-        "Bill Length (mm)",
-        min = 30,
-        max = 60,
-        value = 45,
-        step = 0.1
-      ),
-      selectInput(
-        "sex",
-        "Sex",
-        c("Male", "Female")
-      ),
-      selectInput(
-        "species",
-        "Species",
-        c("Adelie", "Chinstrap", "Gentoo")
-      ),
-      # Get model predictions
-      actionButton(
-        "predict",
-        "Predict"
-      )
-    ),
-
-    mainPanel(
-      h2("Penguin Parameters"),
-      verbatimTextOutput("vals"),
-      h2("Predicted Penguin Mass (g)"),
-      textOutput("pred")
-    )
-  )
-)
-
-server <- function(input, output) {
-  # Input params
   vals <- reactive(
     list(
       bill_length_mm = input$bill_length,
@@ -743,7 +633,24 @@ server <- function(input, output) {
       sex_male = input$sex == "Male"
     )
   )
+```
 
+Then, when the user presses the `predict` button, I return the
+prediction.
+
+The Python code looks like:
+
+``` {.python filename="app.py"}
+  @reactive.Calc
+  @reactive.event(input.predict)
+  def pred():
+    r = requests.post(api_url, json = [vals()])
+    return r.json().get('predict')[0]
+```
+
+And in R, I've got:
+
+``` {.r filename="app.R"}
   # Fetch prediction from API
   pred <- eventReactive(
     input$predict,
@@ -753,15 +660,4 @@ server <- function(input, output) {
       httr2::resp_body_json(),
     ignoreInit = TRUE
   )
-
-  # Render to UI
-  output$pred <- renderText(pred()$predict[[1]])
-  output$vals <- renderPrint(vals())
-}
-
-# Run the application
-shinyApp(ui = ui, server = server)
 ```
-
-Over the next few chapters, we will implement more architectural best
-practices for the app and eventually go to deployment.

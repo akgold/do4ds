@@ -16,9 +16,9 @@ In this chapter, you'll learn the basics about how DNS works and how it
 gets configured.[^2-7-dns-1] In the lab, you'll configure your workbench
 with an actual domain.
 
-[^2-7-dns-1]: This is a very shallow intro to DNS. If you want to go a
-    little deeper, I highly recommend Julia Evans's zines on a variety
-    of technical topics, including DNS. You can find them at
+[^2-7-dns-1]: This is a very shallow introduction to DNS. If you want to
+    go a little deeper, I highly recommend Julia Evans's zines on a
+    variety of technical topics, including DNS. You can find them at
     wizardzines.com.
 
 ## Basics of DNS and domains
@@ -33,10 +33,10 @@ the IP Address via a *DNS lookup* against public DNS nameservers. By
 purchasing a domain, you register the association between your domain
 and the IP Address with the DNS nameservers so users can look them up.
 
-![](images/dns_resolution.png){fig-alt="An image of the user querying a DNS nameserver for example.com and getting back an IP address."
-}
+![](images/dns_resolution.png){.lightbox
+fig-alt="An image of the user querying a DNS nameserver for example.com and getting back an IP address."}
 
-A complete domain is called a *Fully-Qualified Domain Name (FQDN)* and
+A complete domain is called a *Fully Qualified Domain Name* (FQDN) and
 consists of three parts:
 
 $$
@@ -50,16 +50,16 @@ domains, so you might be able to get $\text{example.fun}$ even if
 someone else owns $\text{example.com}$.
 
 ::: callout-note
-## Top-level domains
+## Top-Level Domains
 
 When the web first launched, there were only a few top-level domains,
 such as $\text{.com}$, $\text{.org}$, and $\text{.net}$. ICANN, the
 group that controls how domains are assigned, controlled them all.
 
-In 2013, ICANN decided to allow people and organizations to register
-their own top-level domains. That's why, over the last decade or so,
-there's been an explosion in websites at top-level domains like
-$\text{.io}$, $\text{.ai}$, and $\text{.fun}$.
+In 2013, ICANN allowed people and organizations to register their own
+top-level domains. That's why, over the last decade or so, there's been
+an explosion in websites at top-level domains like $\text{.io}$,
+$\text{.ai}$, and $\text{.fun}$.
 
 If you feel, like me, that it would be fun to own a top-level domain,
 you'll be sad to learn that it's not something to do on a whim. In 2012,
@@ -67,8 +67,8 @@ the initial application fee was \$185,000.
 :::
 
 Subdomains are a way to specify a part of a domain, usually to signify
-to users that its for a distinct purpose. You can generally register as
-many subdomains as you want against a root domain.
+to users that it is for a distinct purpose. You can generally register
+as many subdomains as you want against a root domain.
 
 ## Configuring DNS
 
@@ -78,9 +78,10 @@ minor configuration on the server side as well to let the server know
 where it lives.
 
 The best way to configure DNS is to google how to configure DNS for
-wherever you're hosting your website or server, be it EC2 or GitHub
-Pages or somewhere else. This section is designed to give you a mental
-model so what you find in your googling makes sense.
+wherever you're hosting your website or server, be it \index{EC2}EC2 or
+\index{GitHub}GitHub Pages or somewhere else. This section is designed
+to give you a mental model so what you find in your googling makes
+sense.
 
 There are a variety of domain name registrars. AWS, Azure, and GCP each
 have their own registrar; there are a number of independent registrars
@@ -151,7 +152,7 @@ organizing how users experience your website and what's easiest for your
 organization to maintain.
 
 ::: callout-note
-## $\text{www}$ is just a subdomain
+## $\text{www}$ Is Just a Subdomain
 
 When the internet was first started, it seemed like it might be
 important to differentiate the $\text{www}$ subdomain for the website
@@ -161,8 +162,8 @@ That turned out not really to be the case; now $\text{www}$ and the bare
 root domain are usually used interchangeably.
 :::
 
-Once you've configured your DNS records, you will need to wait an
-annoyingly long time to see if you did it correctly.
+Once you've configured your DNS records, you have to wait an annoyingly
+long time to see if you did it correctly.
 
 When your computer does a DNS lookup, there are often at least three
 nameservers involved. First, your computer talks to a *resolver*, which
@@ -171,21 +172,20 @@ are. Then you're routed to the nameserver for the top-level domain which
 routes you to the nameserver for your actual domain. And this whole
 system is duplicated across geographies for redundancy.
 
-When you configure a DNS record, you configure something called the *TTL
-(time to live)*. Each nameserver, as well as your browser, caches recent
-DNS lookups to keep things snappy. The TTL defines how long the DNS
-cache lasts.
+When you configure a DNS record, you configure something called the
+*TTL* (time to live). Each nameserver, as well as your browser, caches
+recent DNS lookups to keep things snappy. The TTL defines how long the
+DNS cache lasts.
 
 The upshot is that it can take up to 24 hours for DNS changes to
-propagate because the change won't be effective until all the caches end
-across all of the DNS servers as well as in your browser. If you make a
-DNS change and it's not working, you have no idea whether you made a
-mistake or it just hasn't propagated yet. It's very annoying.
+propagate because the change won't be effective until the caches end
+across all of the DNS servers and in your browser. If you make a DNS
+change and it's not working, you have no idea whether you made a mistake
+or it just hasn't propagated yet. It's very annoying.
 
-## Comprehension Questions
+## Comprehension questions
 
-1.  What are the parts of a fully-qualified domain name? How does each
-    of them get created?
+1.  What are the parts of a FQDN? How does each of them get created?
 2.  How does your computer find the IP Address for a domain? Why could
     it sometimes be wrong?
 3.  What are the different kinds of DNS records you're likely to use?
@@ -202,11 +202,11 @@ available at a real domain.
 
 ### Step 1: Allocate an Elastic IP
 
-Our EC2 instance got a public IP when it started. We could just use that
-IP Address, but that address is released every time the server stops and
-a new one is assigned when it comes back up. This means you'd have to
-change your DNS record every time you temporarily take your server
-offline -- no good.
+Our \index{EC2}EC2 instance got a public IP when it started. We could
+just use that IP Address, but that address is released every time the
+server stops and a new one is assigned when it comes back up. This means
+you'd have to change your DNS record every time you temporarily take
+your server offline -- no good.
 
 Luckily, AWS has a service called *Elastic IP* which gives you a stable
 public IP Address that you can move from one instance to another as you
@@ -215,8 +215,8 @@ wish.
 ::: callout-tip
 ## Paying for Elastic IPs
 
-Elastic IPs are free if they're attached to a running EC2 instance. You
-pay when they're not in use to discourage hoarding them.
+Elastic IPs are free if they're attached to a running \index{EC2}EC2
+instance. You pay when they're not in use to discourage hoarding them.
 
 If you do take your server down for a short time, it's no big deal. As
 of this writing, it's 12 cents per day for a single IP. But do make sure
@@ -228,9 +228,9 @@ address. Then you will associate your Elastic IP as the default public
 IP Address for your instance.
 
 Note that once you make this change, your server will no longer be
-available at its old IP Address, so you'll have to SSH in at the new
-one. If you have SSH terminals open when you make the change, they will
-break.
+available at its old IP Address, so you'll have to \index{SSH}SSH in at
+the new one. If you have \index{SSH}SSH terminals open when you make the
+change, they will break.
 
 ::: callout-note
 Next time you stand up a server, you should start by giving it an
@@ -256,7 +256,7 @@ $\text{*}$ host pointing to your IP and one for the CNAME at
 $\text{www}$ with the value being your bare domain.
 
 Exactly how you configure this will depend on the domain name provider
-you choose. In NameCheap, you configure this via a table under Advanced
+you choose. In Namecheap, you configure this via a table under Advanced
 DNS, which looks like this.
 
 | Type           | Host         | Value                   | TTL       |
@@ -284,26 +284,28 @@ URL as $\text{http://}$, because your browser will otherwise assume it's
 HTTPS.
 :::
 
-### Step 5: Add the Shiny app to your site
+### Step 5: Add the \index{Shiny}Shiny app to your site
 
-Now that the Shiny app is at a stable URL, let's put it on our site so
-people can look at our penguin size prediction model. I put the app at
-the subpath $\text{/penguins}$, so it's now at
+Now that the \index{Shiny}Shiny app is at a stable URL, let's put it on
+our site so people can look at our penguin size prediction model. I put
+the app at the subpath $\text{/penguins}$, so it's now at
 $\text{http://do4ds-lab.shop/penguins}$.
 
 We're going to use something called an *iFrame*, which lets you embed
 one website inside another. An iFrame is a basic HTML construct and it's
-easy to put one in a Quarto site.
+easy to put one in a \index{Quarto}Quarto site.
 
 ::: callout-note
 Once you change your website to go over HTTPS in the next section,
 you'll have to adjust the iFrame URL as well.
 :::
 
-In Quarto, you can just add an `html` block to any document and it will
-get loaded in automatically. I want the app on the landing page of my
-site, `index.qmd`. So I've added a block that looks like:
+In \index{Quarto}Quarto, you can just add an `html` block to any
+document, and it will get loaded in automatically. I want the app on the
+landing page of my site, `index.qmd`. So I've added a block that looks
+like:
 
 ``` {.html filename="index.qmd"}
-<iframe width=80% height="500" src="http://do4ds-lab.shop/penguins/" title="Penguin Model Explorer"></iframe>
+<iframe width=80% height="500" src="http://do4ds-lab.shop/
+  penguins/" title="Penguin Model Explorer"></iframe>
 ```

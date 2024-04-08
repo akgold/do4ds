@@ -1,29 +1,30 @@
 # Logging and Monitoring {#sec-log-monitor}
 
-You get a call, a text, a Slack. A bead of cold sweat runs down your
+You get a call, a text, or a Slack. A bead of cold sweat runs down your
 back. Your entire world -- it seems all your world has ever been -- is
 your failed job or error-bound app, which the CEO needs **right now**.
 
 It didn't have to be this way. You can't control whether code will fail
 -- it will. And you can't ensure it will happen at a convenient time.
-But you can live in a world where you sleep soundly, assured that you'll
-know when issues arise and can figure out why.
+But, you can live in a world where you sleep soundly, assured that
+you'll know when issues arise and can figure out why.
 
 The key to living in that world is *observability*. If your code is
 observable, you'll know when something goes wrong because you have
-enabled *monitoring* on the system and when you dig in, you'll have
+enabled *monitoring* on the system, and, when you dig in, you'll have
 *logging* that lets you reconstruct the pathway to failure.
 
 Beyond getting a good night's sleep, making your work more observable
-can also help demonstrate its value. Being able to show who is using
-your work and how can help decision makers understand that your team
+can also help demonstrate its value. Showing who is using your work and
+how they are using it can help decision makers understand that your team
 matters.
 
 There are two halves to observability -- emitting the logs and metrics
 that reveal what's happening inside your project and aggregating and
 consuming them. As a data scientist, you need to take on the task of
 emitting helpful logs and metrics for your code. In most cases, you'll
-integrate with tooling your organization already has for aggregation.
+integrate with tooling that your organization already has for log
+aggregation.
 
 In this chapter we'll get into how to make your code observable. You'll
 learn how to use tooling in R and Python to see what's happening inside
@@ -31,18 +32,15 @@ your data science project. I'll also give you some specific tips about
 what I always monitor or log and how to consume and use the metrics and
 logs your project is now emitting.
 
-## Observing Correctness
+## Observing correctness
 
-Observability of general-purpose software is primarily concerned with
+For general-purpose software, observability is primarily concerned with
 the *operational* qualities of the software. A software engineer wants
-to know whether their software uses too much RAM or CPU, is fast enough,
-or has crashed.
+to know how their software operates, and an uncaught exception or memory
+leak that makes the software crash is about as bad as it gets.
 
-For a general-purpose software engineer, an uncaught exception that
-makes the software crash is about as bad as it gets.
-
-For a data scientist, something even scarier is an issue that doesn't
-result in code failure but yields incorrect answers. Data joins usually
+For a data scientist, an an issue that doesn't result in code failure
+but yields incorrect answers is even scarier. Data joins usually
 complete even if the merge quality is terrible. Model APIs will return a
 prediction even if the prediction is very, very bad.
 
@@ -58,8 +56,8 @@ layer and into the data and processing layers, you can make it easier to
 observe.
 
 Moreover, you're already probably familiar with tools for *literate
-programming* like Jupyter Notebooks, R Markdown Documents, and Quarto
-Documents.
+programming* like \index{Jupyter Notebook}Jupyter Notebooks,
+\index{R Markdown} Documents, and \index{Quarto}Quarto Documents.
 
 One of my spicier opinions is that *all* jobs should be in a literate
 programming format. When used well, these tools intersperse code,
@@ -70,10 +68,10 @@ There are a few particular things I always make sure to include in job
 output.
 
 The first is the quality of data joins. Based on the number of rows (or
-unique IDs), I know how many rows should be in the data set after a
-join. Figuring out how many rows to expect can take a minute, but
-checking that the size of the joined data matches my expectations has
-avoided many gnarly issues.
+unique IDs), I know how many rows should be in the dataset after a join.
+Figuring out how many rows to expect can take a minute, but checking
+that the size of the joined data matches my expectations has avoided
+many gnarly issues.
 
 The second is checking cross-tabulations before and after recoding a
 categorical variable. I've caught many mistakes in my recode logic by
@@ -84,22 +82,22 @@ way to spot novel values to ensure they're recoded correctly.
 The last is goodness-of-fit metrics of an ML model in production. There
 are many frameworks and products for monitoring model quality and model
 drift once your model is in production. I don't have strong opinions on
-these other than that you need to use one if you've got a model
+these, other than that you need to use one if you've got a model
 producing results you hope to rely on.
 
-## Observing Operations
+## Observing operations
 
 As a data scientist, you can't only pay attention to correctness. You
 still need to pay attention to the operational qualities of your code
 like the speed and responsiveness, system resources it's consuming, the
 number of users, and user interactions just before an error occurs.
 
-The first step to making your app or API observable is to add logging.
-You may be accustomed to just adding `print` statements throughout your
-code. Honestly, this is far better than nothing. But purpose-built
-tooling for logging allows you to apply consistent formats within logs,
-emit logs in useful formats, and provide visibility into the severity of
-issues.
+The first step to making your app or \index{API}API observable is to add
+logging. You may be accustomed to just adding `print` statements
+throughout your code. Honestly, this is far better than nothing. But,
+purpose-built tooling for logging allows you to apply consistent formats
+within logs, emit logs in useful formats, and provide visibility into
+the severity of issues.
 
 There are great logging packages in both Python and R. Python's logging
 package is standard and included. There is no standard logging package
@@ -112,9 +110,9 @@ use the log session to write *log statements* about what your code does.
 When the log statement runs, it creates a *log entry*.
 
 For example, here's what logging for an app starting up might look like
-in Python
+in Python:
 
-```{.python filename="app.py"}
+``` {.python filename="app.py"}
 import logging
 
 # Configure the log object
@@ -127,9 +125,9 @@ logging.basicConfig(
 logging.info("App Started")
 ```
 
-And here's what that looks like using `{log4r}`
+And here's what that looks like using `{log4r}`:
 
-```{.r filename="app.R"}
+``` {.r filename="app.R"}
 # Configure the log object
 log <- log4r::logger()
 
@@ -153,13 +151,13 @@ Like all log entries, this entry has three components:
     server you're running on or the user.
 
 -   The second component is the *log level*. The log level indicates the
-    severity of the event you're logging. In the example above the log
+    severity of the event you're logging. In the example above, the log
     level was `INFO`.
 
 -   The last component is the *log data*, which details the event you
     want to log -- `App Started` in this case.
 
-### Understanding log levels
+### Understanding Log Levels
 
 The log level indicates how serious the logged event is. Most logging
 libraries have 5-7 log levels.
@@ -191,27 +189,27 @@ level, which is the **least critical** level you want to see in the logs
 for the session. In development, you probably want to log everything
 down to the debug level, though that probably isn't ideal in prod.
 
-### Configuring log formats
+### Configuring Log Formats
 
 When you initialize your logging session, you'll choose where logs will
 be written and in what format. You'll configure the format with a
 *formatter* or *layout*.
 
-The default for most logging is to emit logs in *plain text*. For
-example, a plain text log of an app starting might put this on your
+The default for most logging is to emit logs in *plaintext*. For
+example, a plaintext log of an app starting might put this on your
 console:
 
 ```         
 2022-11-18 21:57:50 INFO App Started
 ```
 
-Plain text logging is an excellent choice if the only use of the logs is
+Plaintext logging is an excellent choice if the only use of the logs is
 for humans to read them. You might prefer *structured logs* if you're
 shipping your logs to an *aggregation service*.
 
 The most common structured logging format is JSON, though YAML and XML
 are often options. If you used JSON logging, the same record might be
-emitted as
+emitted as:
 
 ```         
 {
@@ -239,18 +237,14 @@ there is a Linux library called `logrotate` that you can use in concert
 with `{log4r}`.[^1-4-monitor-log-1]
 
 [^1-4-monitor-log-1]: There are two common naming patterns with rotating
-    log files.
-
-    The first is to have dated log filenames that look like
-    `my-log-20221118.log`.
-
-    The other pattern is to keep one file that's current and have the
-    older ones numbered. So today's log would be `my-log.log`,
-    yesterday's would be `my-log.log.1` , the day before `my-log.log.2`,
-    etc. This second pattern works particularly well if you're using
-    `logrotate` with `log4r`, because then `log4r` doesn't need to know
-    anything about the log rotation. It's just always writing to
-    `my-log.log`.
+    log files. The first is to have individual log filenames with dates
+    that look like `my-log-20221118.log`. The second is to keep one file
+    that's current and have the older ones numbered. So today's log
+    would be `my-log.log`, yesterday's would be `my-log.log.1`, the day
+    before `my-log.log.2`, etc. This second pattern works particularly
+    well if you're using `logrotate` with `log4r`, because then `log4r`
+    doesn't need to know anything about the log rotation. It's just
+    always writing to `my-log.log`.
 
 If you run in a relatively sophisticated organization, they probably
 want to move logs off the server and into a centralized monitoring
@@ -258,16 +252,17 @@ location. In many cases, they'll just run a log collection agent on your
 server, which is configured to send logs to the central monitoring
 platform.
 
-If you're running in a Docker Container, you need to direct the logs
-outside the Container. This is usually accomplished by sending normal
-operating logs to *stdout* (usually pronounced standard out) and
-failures to *stderr* (standard error).
+If you're running in a \index{Docker}Docker \index{container}container,
+you need to direct the logs outside the \index{container}container. This
+is usually accomplished by sending normal operating logs to *stdout*
+(usually pronounced standard out) and failures to *stderr* (standard
+error).
 
 ::: callout-note
 As you'll learn more about in [Chapter @sec-docker], anything that lives
-inside a Docker Container is ephemeral. This is bad if you're writing a
-log that might contain clues for why a Docker Container was unexpectedly
-killed.
+inside a \index{Docker}Docker \index{container}container is ephemeral.
+This is bad if you're writing a log that might contain clues for why a
+\index{Docker}Docker \index{container}container was unexpectedly killed.
 :::
 
 You may also want to do something else completely custom with your logs.
@@ -300,129 +295,104 @@ DataDog, a SaaS service for log aggregation and monitoring.
 Because the Prometheus/Grafana stack started in the DevOps world, they
 are most optimized to monitor a whole server or fleet of servers;
 however, it's not hard to use them to monitor things you might care
-about, like data quality or API response times. There is an official
-Prometheus client in Python and the `{openmetrics}` package in R makes
-registering metrics from a Plumber API or Shiny app easy.
+about, like data quality or \index{API}API response times. There is an
+official Prometheus client in Python and the `{openmetrics}` package in
+R makes registering metrics from a Plumber \index{API}API or
+\index{Shiny}Shiny app easy.
 
 There's a great Get Started with Grafana and Prometheus doc on the
 Grafana Labs website if you want to try it out.
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  What is the difference between monitoring and logging? What are the
     two halves of the monitoring and logging process?
 2.  Logging is generally good, but what are some things you should be
     careful *not to log*?
 3.  At what level would you log each of the following events:
-    1.  Someone clicks on a particular tab in your Shiny app.
+    1.  Someone clicks on a particular tab in your \index{Shiny}Shiny
+        app.
 
     2.  Someone puts an invalid entry into a text entry box.
 
-    3.  An HTTP call your app makes to an external API fails.
+    3.  An HTTP call your app makes to an external \index{API}API fails.
 
     4.  The numeric values that are going into your computational
         function.
 
-## Lab: An App with Logging
+## Lab: An app with logging
 
 Let's return to the last lab's prediction generator app and add a little
 logging. This is easy in both R and Python. We declare that we're using
 the logger and then put logging statements into our code.
 
-I decided to log when the app starts, just before and after each
-request, and an error logger if an HTTP error code comes back from the
-API.
+::: callout-tip
+If you're using my scripts, or just want to look at an example, you can
+find my scripts in the GitHub repo for this book
+([akgold/do4ds](https://github.com/akgold/do4ds)) in the
+[`_labs/lab4`](https://github.com/akgold/do4ds/tree/main/_labs/lab4)
+directory.
+:::
 
-This is what the server block of the app looks like now in R:
+### Step 1: Initiate logging
 
-``` {.r filename="app.R"}
-server <- function(input, output) {
-  log <- log4r::logger()
-  log4r::info(log, "App Started")
-  # Input params
-  vals <- reactive(
-    list(
-      bill_length_mm = input$bill_length,
-      species_Chinstrap = input$species == "Chinstrap",
-      species_Gentoo = input$species == "Gentoo",
-      sex_male = input$sex == "Male"
-    )
-  )
+As the app starts up, you'll want it to create a log. You can do that by initializing the logging session at the very top of the server block.
 
-  # Fetch prediction from API
-  pred <- eventReactive(
-    input$predict,
-    {
-      log4r::info(log, "Prediction Requested")
-      r <- httr2::request(api_url) |>
-        httr2::req_body_json(list(vals())) |>
-        httr2::req_perform()
-      log4r::info(log, "Prediction Returned")
+In Python, you can start a logging session with:[^1-4-monitor-log-2]
 
-      if (httr2::resp_is_error(r)) {
-        log4r::error(log, paste("HTTP Error"))
-      }
-
-      httr2::resp_body_json(r)
-    },
-    ignoreInit = TRUE
-  )
-
-  # Render to UI
-  output$pred <- renderText(pred()$predict[[1]])
-  output$vals <- renderPrint(vals())
-}
-```
-
-At the outset of the Python app, I've added:
+[^1-4-monitor-log-2]: My "App Started" message is mostly useful for the
+    timestamp. You can feel free to put whatever you want.
 
 ``` {.python filename="app.py"}
 import logging
-
 logging.basicConfig(
-    format='%(asctime)s - %(message)s',
-    level=logging.INFO
+  format='%(asctime)s - %(message)s',
+  level=logging.INFO
 )
+logging.info("App Started")
 ```
 
-And the server block now looks like: 
+In R, opening the logging session looks like:
+
+``` {.r filename="app.R"}
+log <- log4r::logger()
+log4r::info(log, "App Started")
+```
+
+### Step 2: Log app actions
+
+You can decide what you want to log. If you look at my example apps, I've decided to log when the app starts, just before and after each
+request, and an error logger if an HTTP error code comes back from the
+\index{API}API.
+
+For example, reactive event that occurs when the button is pressed might look
+like this in Python:
 
 ``` {.python filename="app.py"}
-def server(input, output, session):
-    logging.info("App start")
+logging.info("Request Made")
+r = requests.post(api_url, json = [vals()])
+logging.info("Request Returned")
 
-    @reactive.Calc
-    def vals():
-        d = {
-            "bill_length_mm" : input.bill_length(),
-            "sex_male" : input.sex() == "Male",
-            "species_Gentoo" : input.species() == "Gentoo", 
-            "species_Chinstrap" : input.species() == "Chinstrap"
+if r.status_code != 200:
+  logging.error("HTTP error returned")
+  
+return r.json().get('predict')[0]
+```
 
-        }
-        return d
-    
-    @reactive.Calc
-    @reactive.event(input.predict)
-    def pred():
-        logging.info("Request Made")
-        r = requests.post(api_url, json = [vals()])
-        logging.info("Request Returned")
+And like this in R:
 
-        if r.status_code != 200:
-            logging.error("HTTP error returned")
+``` {.r filename="app.R"}
+log4r::info(log, "Prediction Requested")
+r <- httr2::request(api_url) |>
+  httr2::req_body_json(vals()) |>
+  httr2::req_perform()
+log4r::info(log, "Prediction Returned")
 
-        return r.json().get('predict')[0]
+if (httr2::resp_is_error(r)) {
+  log4r::error(log, paste("HTTP Error"))
+}
 
-    @output
-    @render.text
-    def vals_out():
-        return f"{vals()}"
-
-    @output
-    @render.text
-    def pred_out():
-        return f"{round(pred())}"
+httr2::resp_body_json(r)
 ```
 
 Now, if you load up this app locally, you can see the logs of what's

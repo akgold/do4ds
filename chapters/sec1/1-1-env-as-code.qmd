@@ -1,8 +1,8 @@
 # Environments as Code {#sec-env-as-code}
 
-I want to turn you a professional chef.
+I want to turn you into a professional chef.
 
-Not a real chef mind you, but the data science equivalent. Creating a
+Not a real chef, mind you, but the data science equivalent. Creating a
 great data science project is like cooking a delicious meal. You have to
 take raw ingredients and a recipe -- your data and code -- and turn them
 into something great.
@@ -19,7 +19,9 @@ environment is the stack of software and hardware below your code, from
 the R and Python packages you're using right down to the physical
 hardware your code runs on.
 
-![](images/environment.png){fig-alt="Code and data going into an environment with hardware, R and Python, and packages."}
+![](images/environment.png){.lightbox
+fig-alt="Code and data going into an environment with hardware, R and Python, and packages."
+height="300"}
 
 Ignoring the readiness of the data science environment results in the
 dreaded *it works on my machine* phenomenon with a failed attempt to
@@ -36,9 +38,10 @@ Crafting a completely reproducible environment is a fool's errand.
 There's always a tradeoff. Making things more reproducible generally
 takes more work -- in a frustratingly asymptotic way.
 
-![](images/repro-spectrum.png){fig-alt="Spectrum of reproducibility from not at all to \"fully\" indicating that as reproducibility rises, so does that amount of work."}
+![](images/repro-spectrum.png){.lightbox
+fig-alt="Spectrum of reproducibility from not at all to \"fully\" indicating that as reproducibility rises, so does that amount of work."}
 
-But the first steps toward a more reproducible environment are simple
+But, the first steps toward a more reproducible environment are simple
 enough to fit in a single book chapter (this one!) -- to create and use
 *environments as code*.
 
@@ -61,28 +64,35 @@ which environmental layers you need to target putting into code.
 At the bottom of the environment is the *hardware layer.* This is the
 physical and virtual hardware where the code runs. For example, this
 might be your laptop or a virtual server from a cloud provider. Above
-that is the *system* *layer*, which includes the operating system,
-essential system libraries, and Python and/or R. Above that is the
-*package layer*, where your Python and R packages live.
+that is the *system* *layer*, which includes the
+\index{operating system}operating system, essential system libraries,
+and Python and/or R. Above that is the *package layer*, where your
+Python and R packages live.
 
 **Layers of data science environments**
 
-+-------------+--------------------------+
-| Layer       | Contents                 |
-+=============+==========================+
-| Packages    | Python + R Packages      |
-+-------------+--------------------------+
-| System      | Python + R Language      |
-|             | Versions                 |
-|             |                          |
-|             | Other System Libraries   |
-|             |                          |
-|             | Operating System         |
-+-------------+--------------------------+
-| Hardware    | Virtual Hardware         |
-|             |                          |
-|             | Physical Hardware        |
-+-------------+--------------------------+
++---------------+-----------------+
+| Layer         | Contents        |
++===============+=================+
+| Packages      | Python + R      |
+|               | Packages        |
++---------------+-----------------+
+| System        | Python + R      |
+|               | Language        |
+|               | Versions        |
+|               |                 |
+|               | Other System    |
+|               | Libraries       |
+|               |                 |
+|               | Operating       |
+|               | System          |
++---------------+-----------------+
+| Hardware      | Virtual         |
+|               | Hardware        |
+|               |                 |
+|               | Physical        |
+|               | Hardware        |
++---------------+-----------------+
 
 In an ideal world, the *hardware* and *system* layers should be the
 responsibility of an IT/Admin. You may be responsible for them, but then
@@ -91,19 +101,19 @@ you're fulfilling the IT/Admin role.
 As a data scientist, you can and should be responsible for the package
 layer, and getting this layer right is where the biggest reproducibility
 bang for your buck lies. If you find yourself managing the system or
-hardware layer, chapters [@sec-cloud] through [@sec-ssl] will teach you
-how to manage those layers.
+hardware layer, [@sec-cloud] through [@sec-ssl] will teach you how to
+manage those layers.
 
 ## The package layer
 
 There are three different places packages can live.
 
 1.  **In a repository.** You're used to installing packages from
-    repositories like PyPI, Conda, CRAN, or BioConductor. These
-    repositories are like the grocery store. The food is packaged up and
-    ready to go, but inert. There are also many varieties there.
-    Repositories hold both current and archival versions of each
-    package.[^1-1-env-as-code-1]
+    repositories like PyPI, \index{Conda}Conda, \index{CRAN}CRAN, or
+    BioConductor. These repositories are like the grocery store. The
+    food is packaged up and ready to go, but it is inert. There are also
+    many varieties there. Repositories hold both current and archival
+    versions of each package.[^1-1-env-as-code-1]
 2.  **In a library.** Once you install the packages you need with
     `install.packages()` or `pip install` or `conda install`, they're in
     your library, the data science equivalent of a pantry. Libraries can
@@ -136,74 +146,81 @@ A successful package environment as code setup has two key attributes:
 2.  Your package environment can easily be captured and transported
     elsewhere.
 
-In Python, there are many different options for virtual environment
-tooling. I recommend `{virtualenv}`/`{venv}` and related tools for
-production data science.
+In Python, there are many different options for
+\index{virtual environment}virtual environment tooling. I recommend
+`{virtualenv}`/\index{venv}`{venv}` and related tools for production
+data science.
 
-In R, there's really only one game in town: the `{renv}` package.
+In R, there's really only one game in town: the \index{renv}`{renv}`
+package.
 
 ::: callout-note
-## A note on Conda
+## Notes on \index{Conda}Conda
 
-Conda allows you to create a virtual environment in user space on your
-laptop without having admin access. It's especially useful when your
-machine is locked down by IT.
+Conda allows you to create a \index{virtual environment}virtual
+environment in user space on your laptop without having admin access.
+It's especially useful when your machine is locked down by IT.
 
-That's not a great fit for a production environment. Conda smashes
-together the language version, the package management, and, sometimes,
-the system library management. This is conceptually simple and
-easy-to-use, but it often goes awry in production environments. In a
-production environment (or a shared workbench server) I recommend people
-manage Python packages with a virtual environment tool like `{venv}` and
-manage system libraries and versions of Python with tools built for
-those purposes.
+That's not a great fit for a production environment. \index{Conda}Conda
+smashes together the language version, the package management, and,
+sometimes, the system library management. This is conceptually simple
+and easy to use, but it often goes awry in production environments. In a
+production environment (or a shared workbench server), I recommend
+people manage Python packages with a \index{virtual environment}virtual
+environment tool like \index{venv}`{venv}` and manage system libraries
+and versions of Python with tools built for those purposes.
 :::
 
-## Using a virtual environment
+## Using a \index{virtual environment}virtual environment
 
-Using a virtual environment tool is a four-step process.
+Using a \index{virtual environment}virtual environment tool is a
+four-step process.
 
 At a high level, you'll create and use standalone package libraries, use
 tooling to capture the state of that package environment, and restore
 that state wherever else you might need the environment.
 
 ::: callout-note
-See the cheatsheet in [Appendix @sec-append-cheat] for the exact
+See the cheat sheet in [Appendix @sec-append-cheat] for the exact
 commands for both R and Python.
 :::
 
 ### Step 1: Create standalone package libraries
 
-Each project should have its own `{renv}`/`{venv}` library. When you
-start your project, it should be in a standalone directory that includes
-everything the project needs -- including a virtual environment.
+Each project should have its own
+\index{renv}`{renv}`/\index{venv}`{venv}` library. When you start your
+project, it should be in a standalone directory that includes everything
+the project needs -- including a \index{virtual environment}virtual
+environment.
 
 This is called a *project-oriented workflow*. You can do it in either R
 or Python. The *What They Forgot to Teach You About R* course (materials
 available online at [rstats.wtf](https://rstats.wtf/)) is an excellent
-intro to a project-oriented workflow whether you work in R or Python.
-The tooling will be somewhat different in Python, but the idea is the
-same.
+introduction to a project-oriented workflow whether you work in R or
+Python. The tooling will be somewhat different in Python, but the idea
+is the same.
 
 ::: callout-tip
-Suppose your project includes multiple content items (say an app, API,
-and ETL script). In that case, I recommend using one git repo for the
-whole project with each content item in its own directory with its own
-virtual environment.
+Suppose your project includes multiple content items (say an app,
+\index{API}API, and ETL script). In that case, I recommend using one
+\index{Git}Git repo for the whole project with each content item in its
+own directory with its own \index{virtual environment}virtual
+environment.
 :::
 
-When you work on the project, you activate the virtual environment and
-install and use packages in there.
+When you work on the project, you activate the
+\index{virtual environment}virtual environment and install and use
+packages in there.
 
 ### Step 2: Document environment state
 
 The way to make the environment portable is to document what's in the
-package library. Both `{renv}` and `{venv}` have standard file formats
-for documenting the packages, as well as the versions, that are
-installed in the environment.
+package library. Both \index{renv}`{renv}` and \index{venv}`{venv}` have
+standard file formats for documenting the packages, as well as the
+versions, that are installed in the environment.
 
-In `{renv}`, the file is called a `lockfile` and it's a
-`requirements.txt` in `{venv}`.
+In \index{renv}`{renv}`, the file is called a `lockfile` and it's a
+`requirements.txt` in \index{venv}`{venv}`.
 
 Since all this work occurs in a standalone package environment, you
 don't have to worry about what will happen if you return after a break.
@@ -212,9 +229,10 @@ You'll still have those same packages to use.
 ### Step 3: Collaborate or deploy
 
 When you go to share your project, you don't want to share your actual
-package libraries. Package installs are specific to the operating system
-and the language version you're using, so you want your target system to
-install the package specifically for that system.
+package libraries. Package installs are specific to the
+\index{operating system}operating system and the language version you're
+using, so you want your target system to install the package
+specifically for that system.
 
 For example, if you're working on a Mac and you collaborate or deploy to
 a Windows or Linux machine, you can't share the actual package files.
@@ -223,14 +241,14 @@ themselves.
 
 Additionally, package files can be large. Sharing a requirements file
 makes downloads and uploads much more manageable, especially if you're
-using git. So, check your `lockfile` or `requirements.txt` into git with
-your project.
+using \index{Git}. So, check your `lockfile` or `requirements.txt` into
+\index{Git}Git with your project.
 
-### Step 4: Use a virtual environment
+### Step 4: Use a \index{virtual environment}virtual environment
 
 Then, when your deployment target, collaborator, or future you downloads
 your project, it will restore the documented environment, again using
-tools from `{renv}`/`{venv}`.
+tools from \index{renv}`{renv}`/\index{venv}`{venv}`.
 
 ## What's happening under the hood
 
@@ -244,7 +262,8 @@ allowed. And when you load a package with `import` or `library`, it
 searches the directories from `sys.path` or `.libPaths()` and returns
 the package when it finds it.
 
-![](images/pkg-libs.png){fig-alt="A diagram of package libraries. An import or library statement triggers a call to sys.path or .libPaths(), which returns directories to search. That returns a package to the session."}
+![](images/pkg-libs.png){.lightbox
+fig-alt="A diagram of package libraries. An import or library statement triggers a call to sys.path or .libPaths(), which returns directories to search. That returns a package to the session."}
 
 Each library can contain, at most, one version of any package. So order
 matters for the directories in `sys.path` or `.libPaths()`. Whatever
@@ -252,124 +271,91 @@ version is found first during the search will be returned.
 
 ::: callout-note
 This works the same for Python modules as for packages. I'm just using
-the term packages since most modules that aren't purpos-built for a
+the term packages since most modules that aren't purpose-built for a
 project are in packages.
 :::
 
-If you're not in a virtual environment, the top libraries are user-level
-libraries by default. Activating a virtual environment puts
-project-level libraries at the top of the lists in `sys.path` or
-`.libPaths()` so package installs and loads happen from there.
+If you're not in a \index{virtual environment}virtual environment, the
+top libraries are user-level libraries by default. Activating a
+\index{virtual environment}virtual environment puts project-level
+libraries at the top of the lists in `sys.path` or `.libPaths()` so
+package installs and loads happen from there.
 
-To economize on space and install time, both `{renv}` and `{venv}` do
-something clever. The packages in your project-level library aren't
-there. Instead, `{renv}` and `{venv}` keep user-level *package caches*
-of the actual packages and use *symlinks,* so only one copy of the
-package is installed.
+To economize on space and install time, both \index{renv}`{renv}` and
+\index{venv}`{venv}` do something clever. The packages in your
+project-level library aren't there. Instead, \index{renv}`{renv}` and
+\index{venv}`{venv}` keep user-level *package caches* of the actual
+packages and use *symlinks,* so only one copy of the package is
+installed.
 
 Sometimes, IT/Admins want to save space further by sharing package
 caches across users. This is usually a mistake. Sharing package caches
 leads to headaches over user file permissions to write to the package
 cache versus read. Storage space is cheap, way cheaper than your time.
-If you have to do it, both `{renv}` and `venv` include settings to allow
-you to relocate the package cache to a shared location on the server.
+If you have to do it, both \index{renv}`{renv}` and \index{venv}`venv`
+include settings to allow you to relocate the package cache to a shared
+location on the server.
 
-## Comprehension Questions
+## Comprehension questions
 
 1.  Why does difficulty increase as the level of required
     reproducibility increase for a data science project. In your
     day-to-day work, what's the hardest reproducibility challenge?
-2.  Draw a mental map of the relationships between the seven levels of
-    the reproducibility stack. Pay particular attention to **why** the
-    higher layers depend on the lower ones.
+2.  There's a table of the layers of the data science environment above.
+    It names six items across three layers. Draw a mental map of the
+    relationships between these six items. Pay particular attention to
+    **why** the higher layers depend on the lower ones.
 3.  What are the two key attributes of environments as code? Why do you
     need both of them? Are there cases where you might only care about
     one?
 4.  Draw a mental map of the relationships between the following:
     package repository, package library, package, project-level-library,
-    `.libPaths()` (R) or `sys.path`(python), lockfile
+    `.libPaths()` (R) or `sys.path`(Python), lockfile.
 5.  Why is it a bad idea to share package libraries? What's the best way
     to collaborate with a colleague using an environment as code? What
     commands will you run in R or Python to save a package environment
     and restore it later?
 
-## Lab: Create and use a virtual environment {#lab1}
+## Lab: Create and use a \index{virtual environment}virtual environment {#lab1}
 
 In this lab, we will start working on our penguin explorer website. We
-will create a simple website using [Quarto](https://quarto.org), an
-open-source scientific and technical publishing system that makes it
-easy to render R and Python code into beautiful documents, websites,
-reports, and presentations.
+will create a simple website using
+\index{Quarto}[Quarto](https://quarto.org), an open-source scientific
+and technical publishing system that makes it easy to render R and
+Python code into beautiful documents, websites, reports, and
+presentations.
 
-We will create pages for a simple exploratory data analysis and model
-building from the [Palmer
+We will create pages for a simple exploratory data analysis (EDA) and
+model building from the [Palmer
 Penguins](https://allisonhorst.github.io/palmerpenguins/) dataset. To
 get to practice with both R and Python, I'm going to do the EDA page in
 R and the modeling in Python. By the end of this lab, we'll have both
-pages created using standalone Python and R virtual environments.
+pages created using standalone Python and R
+\index{virtual environment}virtual environments.
 
-If you're starting, check out the Quarto website to use Quarto in the
-editor of your choice.
+If you've never used \index{Quarto} before, the \index{Quarto} website
+([quarto.org](https://quarto.org)) has great instructions for getting
+started in your editor of choice.
 
 ::: callout-tip
-Ensure you add each page below to your `_quarto.yml` so Quarto knows to
-render them.
+You can write your own Quarto docs if you like.
+
+If you're already comfortable with Quarto and want to focus on the DevOps aspects, you can just used the scripts I wrote from the
+GitHub repo for this book
+([akgold/do4ds](https://github.com/akgold/do4ds)) in the [`_labs/lab1`](https://github.com/akgold/do4ds/tree/main/_labs/lab1)
+directory. 
 :::
 
 ### EDA in R
 
-Let's add a simple R-language EDA of the Palmer Penguins data set to our
+Let's add a simple R-language EDA of the Palmer Penguins dataset to our
 website by adding a file called `eda.qmd` in the project's root
 directory.
 
-Before you add code, create and activate an `{renv}` environment with
-`renv::init()`.
+Before you add code, create and activate an \index{renv}`{renv}`
+environment with `renv::init()`.
 
-Now, go ahead and do your analysis. Here's the contents of my `eda.qmd`.
-
-```` {.markdown filename="eda.qmd"}
----
-title: "Penguins EDA"
-format:
-  html:
-    code-fold: true
----
-
-## Penguin Size and Mass by Sex and Species
-
-```{r}
-library(palmerpenguins)
-library(dplyr)
-library(ggplot2)
-
-df <- palmerpenguins::penguins
-```
-
-```{r}
-df %>%
-  group_by(species, sex) %>%
-  summarise(
-    across(
-      where(is.numeric), 
-      \(x) mean(x, na.rm = TRUE)
-      )
-    ) %>%
-  knitr::kable()
-```
-
-## Penguin Size vs Mass by Species
-
-```{r}
-df %>%
-  ggplot(aes(x = bill_length_mm, y = body_mass_g, color = species)) +
-  geom_point() + 
-  geom_smooth(method = "lm")
-```
-
-````
-
-Feel free to copy this Quarto doc into your website or to write your
-own.
+Now, go ahead and do your analysis in the `.qmd` file. I'd recommend using `{dplyr}` for your analysis. When we switch the backend to be a database in [@sec-data-access], `{dplyr}` will automatically run against the database with no further work on your part.
 
 Once you've finished writing your EDA script and checked that it
 previews nicely into the website, save the doc, and create your lockfile
@@ -381,55 +367,12 @@ Now let's build a `{scikit-learn}` model for predicting penguin weight
 based on bill length in a Python notebook by adding a `model.qmd` to the
 root of our project.
 
-Again, you'll want to create and activate your virtual environment
-before you start `pip install`-ing packages.
+Again, you'll want to create and activate your
+\index{virtual environment}virtual environment before you start
+`pip install`-ing packages.
 
-Here's what's in my `model.qmd`, but you should feel free to include
+I've included my `model.qmd` below, but you should feel free to include
 whatever you want.
-
-```` {.markdown filename="model.qmd"}
----
-title: "Model"
-format:
-  html:
-    code-fold: true
----
-
-```{python}
-from palmerpenguins import penguins
-from pandas import get_dummies
-import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn import preprocessing
-```
-
-## Get Data
-
-```{python}
-df = penguins.load_penguins().dropna()
-
-df.head(3)
-```
-
-## Define Model and Fit
-
-```{python}
-X = get_dummies(df[['bill_length_mm', 'species', 'sex']], drop_first = True)
-y = df['body_mass_g']
-
-model = LinearRegression().fit(X, y)
-```
-
-## Get some information
-
-```{python}
-print(f"R^2 {model.score(X,y)}")
-print(f"Intercept {model.intercept_}")
-print(f"Columns {X.columns}")
-print(f"Coefficients {model.coef_}")
-```
-
-````
 
 Once you're happy with how the page works, capture your dependencies in
 a `requirements.txt` using `pip freeze > requirements.txt` on the
