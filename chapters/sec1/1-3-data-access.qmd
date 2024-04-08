@@ -304,10 +304,10 @@ See [Appendix @sec-append-cheat] for a table of common HTTP codes.
 The contents of the response are in the *body*. You'll need to turn the
 body into a Python or R object you can work with.
 
-Most often, bodies are in JSON and you'll decode them with `{json}` in Python or
-`{jsonlite}` in R. Depending on the \index{API}API, you may have the option
-to request something other than JSON as the return. I rarely need
-anything other than JSON.
+Most often, bodies are in JSON and you'll decode them with `{json}` in
+Python or `{jsonlite}` in R. Depending on the \index{API}API, you may
+have the option to request something other than JSON as the return. I
+rarely need anything other than JSON.
 
 ### Common \index{API}API Patterns
 
@@ -409,9 +409,9 @@ prod doesn't solve the problem of putting secrets in code. And using
 `{keyring}` in a production environment is quite cumbersome.
 
 Your production environment may provide environment management tools.
-For example, \index{GitHub Actions}GitHub Actions and \index{Posit}Posit Connect both
-allow you to set secrets that aren't visible to the users but are
-accessible to the code at runtime in an
+For example, \index{GitHub Actions}GitHub Actions and \index{Posit}Posit
+Connect both allow you to set secrets that aren't visible to the users
+but are accessible to the code at runtime in an
 \index{environment variable}environment variable.
 
 Organizations increasingly use token-based authorization schemes that
@@ -528,17 +528,19 @@ Now that the data is loaded, let's adjust our scripts to use the
 database.
 
 ::: callout-tip
-If you're using my scripts, or just want to look at an example, you can find my scripts in the
-GitHub repo for this book
-([akgold/do4ds](https://github.com/akgold/do4ds)) in the [`_labs/lab3`](https://github.com/akgold/do4ds/tree/main/_labs/lab3)
-directory. 
+If you're using my scripts, or just want to look at an example, you can
+find my scripts in the GitHub repo for this book
+([akgold/do4ds](https://github.com/akgold/do4ds)) in the
+[`_labs/lab3`](https://github.com/akgold/do4ds/tree/main/_labs/lab3)
+directory.
 :::
 
-In the R EDA script, we will replace our data loading with connecting to the database.
-Leaving out all the parts that don't change, it looks
+In the R EDA script, we will replace our data loading with connecting to
+the database. Leaving out all the parts that don't change, it looks
 like:[^1-3-data-access-3]
 
-[^1-3-data-access-3]: You may need to install and load the `{dbplyr}` package for this to work.
+[^1-3-data-access-3]: You may need to install and load the `{dbplyr}`
+    package for this to work.
 
 ``` {.r filename="eda.qmd"}
 con <- DBI::dbConnect(
@@ -548,15 +550,18 @@ con <- DBI::dbConnect(
 df <- dplyr::tbl(con, "penguins")
 ```
 
+\pagebreak
+
 We also need to call to `DBI::dbDisconnect(con)` at the end of the
 script.
 
 The `{dplyr}` package can switch seamlessly to a database backend, so if
 you used my data processing code or wrote your own in `{dplyr}`, you
-literally don't have to change anything. 
+literally don't have to change anything.
 
-For the Python modeling script, we're just going to load the entire dataset into memory for
-modeling, so the line loading the dataset changes to:
+For the Python modeling script, we're just going to load the entire
+dataset into memory for modeling, so the line loading the dataset
+changes to:
 
 ``` {.python filename="model.qmd"}
 con = duckdb.connect('my-db.duckdb')
@@ -569,29 +574,42 @@ processing layer in the presentation layer.
 
 ### Step 3: Build an app that calls the API
 
-I'm going to use the \index{Shiny}`{shiny}` package to create an interactive web app. There are versions of `{shiny}` for both R and Python. 
+I'm going to use the \index{Shiny}`{shiny}` package to create an
+interactive web app. There are versions of `{shiny}` for both R and
+Python.
 
-If you want to take a detour into learning Shiny, I highly recommend the [Mastering
-Shiny](https://mastering-shiny.org/) book. Otherwise feel free to just use my examples from the GitHub repo.
+If you want to take a detour into learning Shiny, I highly recommend the
+[Mastering Shiny](https://mastering-shiny.org/) book. Otherwise feel
+free to just use my examples from the GitHub repo.
 
 ::: callout-tip
-If you shut things down after the last lab, you'll need to start the \index{API}API running again in order to call it.
+If you shut things down after the last lab, you'll need to start the
+\index{API}API running again in order to call it.
 :::
 
-The `{vetiver}` package knows how to send requests to a Vetiver API and interpret the results. If you want to get a little more practice calling APIs, you can use `{httr2}` in R and `{requests}` in Python to provide some request data to the API call and then interpret the JSON that comes back.
+The `{vetiver}` package knows how to send requests to a Vetiver API and
+interpret the results. If you want to get a little more practice calling
+APIs, you can use `{httr2}` in R and `{requests}` in Python to provide
+some request data to the API call and then interpret the JSON that comes
+back.
 
-To integrate this into an app, you'll want to store input parameters in a reactive and then send a request to the API when the user presses a button.
+To integrate this into an app, you'll want to store input parameters in
+a reactive and then send a request to the API when the user presses a
+button.
 
-:::callout-tip
+::: callout-tip
 I recommend setting an `api_url` value at the top of your app.
 
-By default, be $\text{"http://127.0.0.1:8080/predict"}$. If you've changed the port from $8080$ or used a different name for your prediction endpoint, you should adjust accordingly.
+By default, be $\text{"http://127.0.0.1:8080/predict"}$. If you've
+changed the port from $8080$ or used a different name for your
+prediction endpoint, you should adjust accordingly.
 :::
 
-In my app, I have inputs `bill_length`, `sex`, and `species`, which I collect
-in a reactive called `vals()`. 
+In my app, I have inputs `bill_length`, `sex`, and `species`, which I
+collect in a reactive called `vals()`.
 
 In Python, that looks like:
+
 ``` {.python filename="app.py"}
   @reactive.Calc
   def vals():
@@ -605,6 +623,7 @@ In Python, that looks like:
 ```
 
 And in R, it's:
+
 ``` {.r filename="app.R"}
   vals <- reactive(
     list(
@@ -616,13 +635,12 @@ And in R, it's:
   )
 ```
 
-Then, when the user presses the `predict` button, I return the prediction.
-
-\pagebreak
+Then, when the user presses the `predict` button, I return the
+prediction.
 
 The Python code looks like:
 
-``` {.python filename="app.py"}  
+``` {.python filename="app.py"}
   @reactive.Calc
   @reactive.event(input.predict)
   def pred():
@@ -631,7 +649,8 @@ The Python code looks like:
 ```
 
 And in R, I've got:
-```{.r filename="app.R"}
+
+``` {.r filename="app.R"}
   # Fetch prediction from API
   pred <- eventReactive(
     input$predict,
