@@ -284,7 +284,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Enterprise-grade data science</span></a>
+ <span class="menu-text">Enterprise-Grade Data Science</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -346,7 +346,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/cheatsheets.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Cheatsheets</span></span></a>
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Cheat Sheets</span></span></a>
   </div>
 </li>
       </ul>
@@ -379,12 +379,12 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>If your server is for more than just playing, you will need sufficient computational resources. That means appropriately sizing and scaling your server to accommodate your work.</p>
+<p>You will need sufficient computational resources if you want to do more than play around. That means appropriately sizing and scaling your server to accommodate your work.</p>
 <p>This chapter will help you develop a mental model of a server’s computational resources, teach you about the command line tools to assess resource usage, and provide recommendations on scaling and sizing a server for data science.</p>
 <section id="the-briefest-intro-to-computational-theory" class="level2">
 <h2 class="anchored" data-anchor-id="the-briefest-intro-to-computational-theory">The briefest intro to computational theory</h2>
 <p>You’re probably aware that everything you’ve ever seen on a computer – from this book to your work in R or Python, your favorite internet cat videos, and Minecraft – is just 1s and 0s.</p>
-<p>But the 1s and 0s aren’t the interesting part. They are just binary representations of integers (whole numbers). The mind-bending part is that the integers represent something meaningful, and the computer <strong>only</strong> adds these integers.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>But the 1s and 0s aren’t the interesting part. They are just binary representations of integers (whole numbers) that themselves represent something meaningful. The mind-bending part is that everything your computer does – every single cooking video, Jupyter Notebook, and internet personality quiz – is accomplished solely by adding these integers.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 <p>That means a helpful mental model for a computer is a factory for doing addition problems. Everything you ask your computer to do is turned into an addition problem, then processed and returned, with the results interpreted as meaningful.</p>
 <p>Since a computer is like an addition factory, decisions about server sizing and scaling are akin to optimally designing the conveyor belts in a factory. In this computer as factory analogy, you should consider three main resources: compute, memory, and storage.</p>
 </section>
@@ -394,15 +394,16 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <p>Computers do most computing in their central processing unit (CPU), which completes addition problems in one or more <em>cores</em>.</p>
 <p>The CPU’s speed is primarily determined by the number of cores and the speed of those cores.</p>
 <p>The <em>number of cores</em> is like the number of lines in the factory. These days, most consumer-grade laptops have between 4 and 16 physical cores. Many have software capabilities that effectively double that number, so they can simultaneously do between 4 and 32 addition problems.</p>
-<p>The baseline speed of an individual core, called <em>single-core clock speed</em>, is how quickly a single core completes a single addition problem. You can think of this as how fast the conveyor belt moves. Clock speeds are measured in operations per second or <em>hertz (Hz)</em>. The cores in your laptop probably max out between two and five <em>gigahertz (GHz)</em>, which means between two billion and five billion operations per second.</p>
-<p>For decades, many of the innovations in computing came from increases in single-core clock speed, but those have fallen off in the last few decades. The clock speeds of consumer-grade chips increased by approximately 10x during the 90s, by 2-3x in the 2000s, and somewhere between not at all and 1.5x in the 2010s.</p>
-<p>But computers have continued getting faster anyway. The improvements mostly come from increases in the number of cores, better usage of software parallelization, and faster loading and unloading of the CPU (called the <em>bus</em>).</p>
+<p>The baseline speed of an individual core, called <em>single-core clock speed</em>, is how quickly a single core completes a single addition problem. You can think of this as how fast the conveyor belt moves. Clock speeds are measured in operations per second or <em>hertz</em> (Hz). The cores in your laptop probably max out between two and five <em>gigahertz</em> (GHz), which means between two billion and five billion operations per second.</p>
+<p>For decades, many of the innovations in computing came from increases in single-core clock speed, but those have fallen off in the last few decades. The single-core clock speeds of consumer-grade chips increased by approximately 10 times during the 90s, by 2–3 times in the 2000s, and somewhere between not at all and 1.5 times in the 2010s.</p>
+<p>But computers have continued getting faster anyway. The improvements mostly came from increases in the number of cores, better usage of software parallelization, better heat management so the machine can run at full speed for longer, and faster loading and unloading of the CPU (called the <em>bus</em>).</p>
+<p>With this background in mind, here are some of my recommendations for how to choose a performant data science machine.</p>
 </section>
 <section id="recommendation-1-fewer-faster-cpu-cores" class="level2">
 <h2 class="anchored" data-anchor-id="recommendation-1-fewer-faster-cpu-cores">Recommendation 1: Fewer, faster CPU cores</h2>
 <p>R and Python are single-threaded. This means that unless you’re using special libraries for parallel processing, you’ll max out a single CPU core while the others sit unused.</p>
 <p>Therefore, for most R and Python work, single-core clock speed matters more than the number of cores, and fewer, faster cores are usually preferable to many slower ones.</p>
-<p>You’re probably not used to thinking about this tradeoff from buying a laptop or phone. Modern CPUs are generally good, and you should buy the one that fits your budget. But, if you’re standing up a cloud server, you often do have an explicit choice between more slower cores and fewer faster ones, determined by the instance family.</p>
+<p>You’re not really exposed to this tradeoff when you buy a laptop or phone. Modern consumer CPUs are all pretty good, and you should buy the one that fits your budget. But, if you’re standing up a cloud server, you often do have an explicit choice between more slower cores and fewer faster ones, determined by the instance family.</p>
 <p>The number of cores you need for a multi-user data science server can be hard to estimate. If you’re doing non-ML tasks like counts and dashboarding or relatively light-duty machine learning, I might advise the following:</p>
 <p><span class="math display">\[
 \text{n cores} = \text{1 core per user} + 1
@@ -443,24 +444,24 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you’re facing this limitation, reconsider your project architecture as discussed in <a href="../sec1/1-2-proj-arch.html">Chapter&nbsp;<span>2</span></a>. Maybe you can load less data into memory.</p>
+<p>If you’re facing a memory limitation, reconsider your project architecture as discussed in <a href="../sec1/1-2-proj-arch.html">Chapter&nbsp;<span>2</span></a>. Maybe you can load less data into memory.</p>
 </div>
 </div>
-<p>Because your computer needs memory for things other than R and Python, and because you’ll often be doing transformations that temporarily increase the size of your data, you need more memory than your largest data set.</p>
+<p>Because your computer needs memory for things other than R and Python, and because you’ll often be doing transformations that temporarily increase the size of your data, you need more memory than your largest dataset.</p>
 <p>Nobody has ever complained about having too much RAM, but a good rule of thumb is that you’ll be happy if:</p>
 <p><span class="math display">\[\text{Amount of RAM} \ge 3 * \text{max amount of data}\]</span></p>
 <p>If you’re considering running a multi-user server, you’ll need to take a step back to think about how many concurrent users you expect and how much data you anticipate each one to load.</p>
 </section>
 <section id="understanding-storage" class="level2">
 <h2 class="anchored" data-anchor-id="understanding-storage">Understanding storage</h2>
-<p><em>Storage</em>, or <em>hard disk/drive</em>, is where your computer stores things for the long term. It’s where applications are installed, and you save objects you want to keep.</p>
-<p>Relative to the RAM right next to the factory floor, your computer’s storage is like the warehouse in the next building. Storage is much slower than RAM, often 10x to 100x slower, but storage allows you to save things permanently.</p>
-<p>Storage was even slower until a few years ago when <em>solid-state drives (SSDs)</em> became common. SSDs are collections of flash memory chips up to 15x faster than the <em>hard disk drives (HDDs)</em> that preceded them.</p>
+<p><em>Storage</em>, or <em>hard disk/drive</em>, is where your computer stores things for the long term. It’s where applications are installed, and where you save objects you want to keep.</p>
+<p>Relative to the RAM right next to the factory floor, your computer’s storage is like the warehouse in the next building. Storage is much slower than RAM, often 10 times to 100 times slower, but storage allows you to save things permanently.</p>
+<p>Storage was even slower until a few years ago when <em>solid-state drives</em> (SSDs) became common. SSDs are collections of flash memory chips that are up to 15 times faster than the <em>hard disk drives</em> (HDDs) that preceded them.</p>
 <p>HDDs consist of spinning magnetic disks with magnetized read/write heads that save and read data from the disks. While HDDs spin very fast – 5,400 and 7,200 RPM are typical speeds – SSDs with no moving parts are much faster.</p>
 </section>
 <section id="recommendation-3-get-lots-of-storage-its-cheap" class="level2">
 <h2 class="anchored" data-anchor-id="recommendation-3-get-lots-of-storage-its-cheap">Recommendation 3: Get lots of storage; it’s cheap</h2>
-<p>You should get plenty when configuring storage on your server, but don’t think too hard since storage is cheap and easy to upgrade. It’s almost always more cost-effective to buy additional storage rather than have an expensive professional figure out how to delete things to free up room.</p>
+<p>Get however much storage you think you’ll need when you configure storage your server, but don’t think too hard. Storage is cheap and easy to upgrade. It’s almost always more cost-effective to buy additional storage than to have a highly-paid human figure out how to delete things to free up room.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -471,14 +472,14 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If the IT/Admins at your organization want you to spend a lot of time deleting things from storage, that’s usually a red flag that they aren’t thinking much about how to make the overall organization work more smoothly.</p>
+<p>If the IT/Admins at your organization want you to spend a lot of time deleting things from storage, that’s usually a red flag indicating that they aren’t thinking much about how to make the overall organization work more smoothly.</p>
 </div>
 </div>
-<p>If you’re running a multi-user server, the amount of storage you need depends significantly on your data and workflows. If you’re not saving large data files, the amount of space each person needs on the server is small. Code files are negligible, and it’s rare to see R and Python packages take up more than a few dozen Mb per data scientist. A reasonable rule of thumb is to choose</p>
+<p>If you’re running a multi-user server, the amount of storage you need depends significantly on your data and workflows. If you’re not saving large data files, the amount of space each person needs on the server is small. Code files are negligible, and it’s rare to see R and Python packages take up more than a few dozen megabytes per data scientist. A reasonable rule of thumb is to choose</p>
 <p><span class="math display">\[
-\text{Amount of Storage} = \text{1Gb} * \text{n users}
+\text{Amount of Storage} = \text{1GB} * \text{n users}
 \]</span></p>
-<p>On the other hand, if your workflows save a lot of data to disk, you must consider that. In some organizations, each data scientist will save dozens of flat files of a GB or more for each project.</p>
+<p>On the other hand, if your workflows save a lot of data to disk, you must consider that. In some organizations, each data scientist will save dozens of flat files of a gigabyte or more for each project.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -489,16 +490,16 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>If you’re working with a professional IT admin, they may be concerned about the storage implications of having package copies for each team member, a best practice for using environments as code as discussed in <a href="../sec1/1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>. I’ve frequently heard this concern from IT/Admins thinking ahead about running their server but rarely encountered a case where it’s actually been a problem.</p>
+<p>If you’re working with a professional IT/Admin, they may be concerned about the storage implications of having package copies for each team member, a best practice for using environments as code is discussed in <a href="../sec1/1-1-env-as-code.html">Chapter&nbsp;<span>1</span></a>. I’ve frequently heard this concern from IT/Admins thinking ahead about running their server but rarely encountered a case where it’s actually been a problem.</p>
 </div>
 </div>
 <p>If you’re operating in the cloud, this isn’t an important choice. As you’ll see in the lab, upgrading the amount of storage you have is a trivial operation, requiring at most a few minutes of downtime. Choose a size you estimate will be adequate and add more if needed.</p>
 </section>
 <section id="gpus-are-special-purpose-compute" class="level2">
 <h2 class="anchored" data-anchor-id="gpus-are-special-purpose-compute">GPUs are special-purpose compute</h2>
-<p>All computers have a CPU. Some computers have specialized chips where the CPU can offload particular tasks – the most common being the graphical processing unit (GPU). GPUs are architected for tasks like editing photos or videos, rendering video game graphics, some kinds of machine learning, and, yes, Bitcoin mining.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>All computers have a CPU. Some computers have specialized chips where the CPU can offload particular tasks – the most common being the graphical processing unit (GPU). GPUs are architected for tasks like rendering video game graphics, some kinds of machine learning, training large language models (LLMs), and, yes, Bitcoin mining.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
 <p>A GPU is an addition factory just like a CPU, but with the opposite architecture. CPUs have only a handful of cores, but those cores are fast. A GPU takes the opposite approach with many (relatively) slow cores.</p>
-<p>Where a consumer-grade CPU has 4-16 cores, mid-range GPUs have 700-4,000 cores, each running at only about 1% to 10% of the speed of a CPU core. For the tasks GPUs are good at, the overwhelming parallelism ends up being more important than the speed of any individual core, and GPU computation can be dramatically faster.</p>
+<p>Where a consumer-grade CPU has 4–16 cores, mid-range GPUs have 700–4,000 cores, each running at only about 1 to 10% of the speed of a CPU core. For the tasks GPUs are good at, the overwhelming parallelism ends up being more important than the speed of any individual core, and GPU computation can be dramatically faster.</p>
 </section>
 <section id="recommendation-4-get-a-gpu-maybe" class="level2">
 <h2 class="anchored" data-anchor-id="recommendation-4-get-a-gpu-maybe">Recommendation 4: Get a GPU, maybe</h2>
@@ -508,13 +509,13 @@ Note
 <p>It’s also worth noting that using a GPU won’t happen automatically. The tooling has gotten good enough that it’s usually easy to set up, but your computer won’t train your XGBoost models on your GPU unless you tell it to do so.</p>
 <p>Now that you’re equipped with some general recommendations about choosing the right amount of resources, let’s learn how to tell whether it might be time to upgrade a system you already have.</p>
 </section>
-<section id="assessing-ram-cpu-usage" class="level2">
-<h2 class="anchored" data-anchor-id="assessing-ram-cpu-usage">Assessing RAM + CPU usage</h2>
+<section id="assessing-ram-and-cpu-usage" class="level2">
+<h2 class="anchored" data-anchor-id="assessing-ram-and-cpu-usage">Assessing RAM and CPU usage</h2>
 <p>Once you’ve chosen your server size and gotten up and running, you’ll want to be able to monitor RAM and CPU for problems.</p>
-<p>A running program is running is called a <em>process</em>. For example, when you type <code>python</code> on the command line to open a REPL, that starts a single Python process. If you were to start a second terminal session and run <code>python</code> again, you’d have a second Python process.</p>
+<p>A running program is called a <em>process</em>. For example, when you type <code>python</code> on the command line to start an interactive Python prompt, that starts a single Python process. If you were to start a second terminal session and run <code>python</code> again, you’d have a second Python process.</p>
 <p>Complicated programs often involve multiple interlocking processes. For example, running the RStudio IDE involves (at minimum) one process for the IDE itself and one for the R session it uses in the background. The relationships between these processes are mostly hidden from you – the end user.</p>
 <p>As an admin, you may want to inspect the processes running on your system at any given time. The <code>top</code> command is a good first stop. <code>top</code> shows information about the processes consuming the most CPU in real-time.</p>
-<p>Here’s the <code>top</code> output from my machine as I write this sentence.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>Here’s the <code>top</code> output from my machine as I write this sentence:<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -535,7 +536,7 @@ Note
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-So much CPU?
+So Much CPU?
 </div>
 </div>
 <div class="callout-body-container callout-body">
@@ -545,7 +546,7 @@ So much CPU?
 <p>Another useful command for finding runaway processes is <code>ps aux</code>. It lists a snapshot of all processes running on the system and how much CPU or RAM they use. You can sort the output with the <code>--sort</code> flag and specify sorting by CPU with <code>--sort -%cpu</code> or by memory with <code>--sort -%mem</code>.</p>
 <p>Because <code>ps aux</code> returns <em>every</em> running process on the system, you’ll probably want to pipe the output into <code>head</code>. In addition to CPU and Memory usage, <code>ps aux</code> tells you who launched the command and the PID.</p>
 <p>One of the times you’ll be most interested in the output of <code>top</code> or <code>ps aux</code> is when something is going rogue on your system and using more resources than you intended. If you have some sense of the name or who started it, you may want to pipe the output of <code>ps aux</code> into <code>grep</code> to find the <code>pid</code>.</p>
-<p>For example, I might run <code>ps aux | grep RStudio</code> to get<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>For example, I might run <code>ps aux | grep RStudio</code> to get:<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -557,10 +558,10 @@ So much CPU?
 </div>
 <p>RStudio is behaving nicely on my machine, but if it were not responsive, I could make a note of its <code>pid</code> and end the process immediately by calling the <code>kill</code> command with the <code>pid</code>.</p>
 </section>
-<section id="examining-at-storage-usage" class="level2">
-<h2 class="anchored" data-anchor-id="examining-at-storage-usage">Examining at storage usage</h2>
+<section id="examining-storage-usage" class="level2">
+<h2 class="anchored" data-anchor-id="examining-storage-usage">Examining storage usage</h2>
 <p>A common culprit for weird server behavior is running out of storage space. There are two handy commands for monitoring the amount of storage you’ve got: <code>du</code> and <code>df</code>. These commands are almost always used with the <code>-h</code> flag to put file sizes in human-readable formats.</p>
-<p><code>df</code> (disk free) shows the capacity left on the device where the directory sits. For example, here’s the first few columns from running the <code>df</code> command on the chapters directory on my laptop that includes this chapter.</p>
+<p><code>df</code> (disk free) shows the capacity left on the device where the directory sits. For example, here are the first few columns from running the <code>df</code> command on the <code>chapters</code> directory on my laptop that includes this chapter.</p>
 <div class="code-with-filename">
 <div class="code-with-filename-file">
 <pre><strong>Terminal</strong></pre>
@@ -569,7 +570,7 @@ So much CPU?
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">Filesystem</span>     Size   Used  Avail Capacity</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="ex">/dev/disk3s5</span>  926Gi  227Gi  686Gi    25% </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>You can see that the <code>chapters</code> folder lives on a disk called <code>/dev/disk3s5</code> that’s a little less than 1Tb and is 25% full – no problem. This can be particularly useful to know on a cloud server because switching a disk out for a bigger one in the same spot is easy.</p>
+<p>You can see that the <code>chapters</code> folder lives on a disk called <code>/dev/disk3s5</code> that’s a little less than one TB and is 25% full – no problem. This can be particularly useful to know on a cloud server because switching a disk out for a bigger one in the same spot is easy.</p>
 <p>If you’ve figured out that a disk is full, buying a bigger one is usually the most cost-effective. But sometimes something weird happens. Maybe there are a few exceptionally big files, or you think unnecessary copies are being made.</p>
 <p>If so, the <code>du</code> command (disk usage) gives you the size of individual files inside a directory. It’s particularly useful in combination with the sort command. For example, here’s the result of running <code>du</code> on the chapters directory where the text files for this book live.</p>
 <div class="code-with-filename">
@@ -591,27 +592,27 @@ So much CPU?
 <p>If I were thinking about cleaning up this directory, I could see that my <code>sec1/images</code> directory is my biggest single directory. If you need to find big files on your Linux server, it’s worth looking through the options in the help pages for <code>du</code>.</p>
 </section>
 <section id="running-out-of-resources" class="level2">
-<h2 class="anchored" data-anchor-id="running-out-of-resources">Running out of Resources</h2>
+<h2 class="anchored" data-anchor-id="running-out-of-resources">Running out of resources</h2>
 <p>If you recognize you’re running out of resources on your current server, you may want to move to something bigger. There are two primary reasons servers run out of room.</p>
-<p>The first is because people are running big jobs. This can happen at any scale of organization. There are data science teams of one person with use cases that necessitate terabytes of data.</p>
-<p>The second reason is because you have many people using your server. This is generally a feature of big data science teams, irrespective of workload size.</p>
-<p>Either way, there are two options for how to scale your data science workbench. The first is <em>vertical scaling</em>, which is a fancy way to say get a bigger server. The second option is <em>horizontal scaling</em>, which means running a whole fleet of servers in parallel and spreading the workload across them.</p>
+<p>The first reason is because people are running big jobs. This can happen at any scale of organization. There are data science teams of one person with use cases that necessitate terabytes of data.</p>
+<p>The second reason is you have many people using your server. This is generally a feature of big data science teams, irrespective of workload size.</p>
+<p>Either way, there are two options for how to scale your data science workbench. The first option is <em>vertical scaling</em>, which is a fancy way to say get a bigger server. The second option is <em>horizontal scaling</em>, which means running a whole fleet of servers in parallel and spreading the workload across them.</p>
 <p>As a data scientist, you shouldn’t be shy about vertically scaling if your budget allows it. The complexity of managing a <code>t3.nano</code> with two cores and 0.5 GB of memory is the same as a <code>C5.24xlarge</code> with 96 cores and 192 GB of memory. In fact, the bigger one may be easier to manage since you won’t have to worry about running low on resources.</p>
-<p>There are limits to the capacity of vertical scaling. As of this writing, AWS’s general-use instance types max out at 96-128 cores. That can quickly get eaten up by 50 data scientists with reasonably heavy computational demands.</p>
+<p>There are limits to the capacity of vertical scaling. As of this writing, AWS’s general-use instance types max out at 96–128 cores. That can quickly get eaten up by 50 data scientists with reasonably heavy computational demands.</p>
 <p>Once you’re thinking about horizontal scaling, you’ve got a distributed service problem, which is inherently complex. You should almost certainly get an IT/Admin professional involved. See <a href="../sec3/3-3-ent-scale.html">Chapter&nbsp;<span>17</span></a> for more on how to talk to them about it.</p>
 <section id="aws-instances-for-data-science" class="level3">
-<h3 class="anchored" data-anchor-id="aws-instances-for-data-science">AWS Instances for data science</h3>
+<h3 class="anchored" data-anchor-id="aws-instances-for-data-science">AWS Instances for Data Science</h3>
 <p>AWS offers various EC2 instance types split up by <em>family</em> and <em>size</em>. The family is the category of EC2 instance. Different families of instances are optimized for different kinds of workloads.</p>
 <p>Here’s a table of common instance types for data science purposes:</p>
 <table class="table">
 <colgroup>
-<col style="width: 29%">
-<col style="width: 70%">
+<col style="width: 32%">
+<col style="width: 67%">
 </colgroup>
 <thead>
 <tr class="header">
 <th>Instance Type</th>
-<th>What it is</th>
+<th>What It Is</th>
 </tr>
 </thead>
 <tbody>
@@ -629,7 +630,7 @@ So much CPU?
 </tr>
 <tr class="even">
 <td><code>P</code></td>
-<td>GPU instances, very expensive.</td>
+<td>GPU instances. Very expensive.</td>
 </tr>
 </tbody>
 </table>
@@ -638,26 +639,26 @@ So much CPU?
 </section>
 </section>
 <section id="comprehension-questions" class="level2">
-<h2 class="anchored" data-anchor-id="comprehension-questions">Comprehension Questions</h2>
+<h2 class="anchored" data-anchor-id="comprehension-questions">Comprehension questions</h2>
 <ol type="1">
 <li><p>Think about the scenarios below. Which part of your computer would you want to upgrade to solve the problem?</p>
 <ol type="1">
 <li><p>You try to load a <code>.csv</code> file into <code>{pandas}</code> in Python. It churns for a while and then crashes.</p></li>
 <li><p>You go to build a new ML model on your data. You’d like to re-train the model once a day, but training this model takes 26 hours on your laptop.</p></li>
-<li><p>You design a visualization using the <code>{matplotlib}</code> package and want to create one version of the visualization for each US State. You could do it in a loop, but it would be faster to parallelize the plot creation. Right now, you’re running on a <code>t2.small</code> with 1 CPU.</p></li>
+<li><p>You design a visualization using the <code>{matplotlib}</code> package and want to create one version of the visualization for each US state. You could do it in a loop, but it would be faster to parallelize the plot creation. Right now, you’re running on a <code>t2.small</code> with 1 CPU.</p></li>
 </ol></li>
-<li><p>Draw a mind map of the following: CPU, RAM, Storage, Operations Per Second, Parallel Operations, GPU, Machine Learning</p></li>
+<li><p>Draw a mind map of the following: CPU, RAM, Storage, Operations Per Second, Parallel Operations, GPU, Machine Learning.</p></li>
 <li><p>What are the architectural differences between a CPU and a GPU? Why does this make a GPU particularly good for Machine Learning?</p></li>
-<li><p>How would you do the following:</p>
+<li><p>How would you do the following?</p>
 <ol type="1">
-<li><p>Find all running Jupyter processes that belong to the user <code>alexkgold</code>.</p></li>
+<li><p>Find all running JupyterHub processes that belong to the user <code>alexkgold</code>.</p></li>
 <li><p>Find the different disks attached to your server and see how full each one is.</p></li>
 <li><p>Find the biggest files in each user’s home directory.</p></li>
 </ol></li>
 </ol>
 </section>
 <section id="lab-changing-instance-size" class="level2">
-<h2 class="anchored" data-anchor-id="lab-changing-instance-size">Lab: Changing Instance Size</h2>
+<h2 class="anchored" data-anchor-id="lab-changing-instance-size">Lab: Changing instance size</h2>
 <p>In this lab, we will upgrade the size of our server. And the best part is that we’re in the cloud, so it will only take a few minutes.</p>
 <section id="step-1-confirm-the-current-server-size" class="level3">
 <h3 class="anchored" data-anchor-id="step-1-confirm-the-current-server-size">Step 1: Confirm the current server size</h3>
@@ -671,19 +672,24 @@ So much CPU?
 <section id="step-3-confirm-the-new-server-size" class="level3">
 <h3 class="anchored" data-anchor-id="step-3-confirm-the-new-server-size">Step 3: Confirm the new server size</h3>
 <p>For example, I changed from a <code>t2.micro</code> to a <code>t2.small</code>. Both only have 1 CPU, so I won’t see any difference in <code>lscpu</code>, but running <code>free -h</code> before and after the switch reveals that I’ve got more RAM:</p>
-<pre><code>test-user@ip-172-31-53-181:~$ free -h
-               total  used  free   available
-Mem:           966Mi  412Mi  215Mi   404Mi
-test-user@ip-172-31-53-181:~$ free -h
-               total  used  free   available
-Mem:           1.9Gi  412Mi  1.4Gi   1.6Gi</code></pre>
+<div class="code-with-filename">
+<div class="code-with-filename-file">
+<pre><strong>Terminal</strong></pre>
+</div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">test-user@ip-172-31-53-181:~$</span> free <span class="at">-h</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>               <span class="ex">total</span>  used  free   available</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="ex">Mem:</span>           966Mi  412Mi  215Mi   404Mi</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ex">test-user@ip-172-31-53-181:~$</span> free <span class="at">-h</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>               <span class="ex">total</span>  used  free   available</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="ex">Mem:</span>           1.9Gi  412Mi  1.4Gi   1.6Gi</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 <p>There’s twice as much after the change!</p>
 <p>There are some rules around being able to change from one instance type to another, but this is a superpower if you’ve got variable workloads or a team that’s growing. Once you’re done with your larger server, it’s just as easy to scale it back down.</p>
 </section>
 <section id="step-4-upgrade-storage-maybe" class="level3">
 <h3 class="anchored" data-anchor-id="step-4-upgrade-storage-maybe">Step 4: Upgrade storage (maybe)</h3>
 <p>If you want more storage, resizing the EBS volume attached to your server is similarly straightforward.</p>
-<p>I wouldn’t recommend doing it for this lab because you can only automatically adjust volume sizes upwards. That means you’d have to manually transfer your data if you ever wanted to scale back down.</p>
+<p>I wouldn’t recommend doing it for this lab because you can only automatically adjust volume sizes upward. That means you’d have to manually transfer your data if you ever wanted to scale back down.</p>
 <p>If you do resize the volume, you’ll have to let Linux know so it can resize the filesystem with the new space available. AWS has a great walkthrough called <em>Extend a Linux filesystem after resizing the volume</em> that I recommend you follow.</p>
 
 
@@ -692,8 +698,8 @@ Mem:           1.9Gi  412Mi  1.4Gi   1.6Gi</code></pre>
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>This was proved in Alan Turing’s 1936 paper on computability. If you’re interested in learning more, I recommend <a href="https://www.goodreads.com/en/book/show/2333956.The_Annotated_Turing">The Annotated Turing: A Guided Tour Through Alan Turing’s Historic Paper on Computability and the Turing Machine</a> by Charles Petzold for a surprisingly readable walkthrough.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>You probably don’t experience this. Modern computers are pretty smart about dumping RAM onto the hard disk before shutting down and bringing it back on startup, so you usually won’t notice this happening.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>This was proved in Alan Turing’s 1936 paper on computability. If you’re interested in learning more, I recommend <a href="https://www.goodreads.com/en/book/show/2333956.The_Annotated_Turing"><em>The Annotated Turing: A Guided Tour Through Alan Turing’s Historic Paper on Computability and the Turing Machine</em></a> by Charles Petzold for a surprisingly readable walkthrough.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>You probably don’t experience this. Modern computers are pretty smart about saving RAM state onto the hard disk before shutting down and bringing it back on startup, so you won’t notice this happening unless something goes wrong.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn3"><p>Purpose-built chips are becoming more common for AI/ML tasks, especially doing local inference on large models. These include Tensor Processing Units (TPUs) and Intelligence Processing Units (IPUs).<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn4"><p>I’ve cut out a few columns for readability.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn5"><p>I’ve done a bunch of doctoring to the output to make it easier to read.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>

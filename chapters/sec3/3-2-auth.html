@@ -82,7 +82,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec3/3-0-sec-intro.html">Enterprise-grade data science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec3/3-2-auth.html"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></a></li></ol></nav>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../chapters/sec3/3-0-sec-intro.html">Enterprise-Grade Data Science</a></li><li class="breadcrumb-item"><a href="../../chapters/sec3/3-2-auth.html"><span class="chapter-number">16</span>&nbsp; <span class="chapter-title">Auth in Enterprise</span></a></li></ol></nav>
       <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
       </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -248,7 +248,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a href="../../chapters/sec3/3-0-sec-intro.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Enterprise-grade data science</span></a>
+ <span class="menu-text">Enterprise-Grade Data Science</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -310,7 +310,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../../chapters/append/cheatsheets.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Cheatsheets</span></span></a>
+ <span class="menu-text"><span class="chapter-number">D</span>&nbsp; <span class="chapter-title">Cheat Sheets</span></span></a>
   </div>
 </li>
       </ul>
@@ -343,9 +343,10 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 
 </header>
 
-<p>Imagine you’re suddenly responsible for managing access to the services and data in an enterprise. You’ve got dozens of people joining, leaving, or changing roles each week – and there could be dozens or hundreds of systems they might need to access. And complying with the principle of least privilege means you don’t want to give everyone access to everything. Managing who is allowed to do what could be a major headache.</p>
-<p>One thing you almost certainly want to avoid is individual people running services and deciding how to secure standalone systems. Instead, you want to centralize the process of giving people access to the services they need, called <em>auth</em>, inside the IT/Admin group.</p>
-<p>If you work in an enterprise, you’ll almost certainly have to work with the organization’s corporate auth to log in to your data science workbench and use data sources. Additionally, if you’re advocating for a data science environment at your organization, you’ll probably be given IT/Admin requirements related to auth. This chapter is designed to help you understand how IT/Admins think about auth and the technologies they have to make it work.</p>
+<p>Imagine you’re suddenly responsible for managing all the software access in an enterprise. You’ve got dozens of people joining, leaving, and changing roles each week – and there could be hundreds of data sources and services they need to do their jobs. You can’t just give everyone access to everything. You might be getting a headache just imagining the situation.</p>
+<p>Luckily, if you work in an enterprise, you won’t have to worry about this task. Instead, managing the process of giving people access to the services they need, called <em>auth</em>, is one of the prime responsibilities of the IT/Admin group.</p>
+<p>While the good news is that a professional is taking care of auth, the bad news is that you’ll have to figure out how to work with the organization’s corporate auth to log in to your data science workbench and use data sources. Additionally, if you’re advocating for a data science environment at your organization, you’ll probably be given IT/Admin requirements related to auth.</p>
+<p>This chapter will help you understand how IT/Admins think about auth and the technologies they can use. By the time you’ve finished, you should be able to communicate effectively with whoever manages auth at your organization.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -359,25 +360,25 @@ Note
 <p>This chapter will help you understand a mental model for auth and the available technologies. If you’re curious about the technical operation of these technologies, there’s more detail on each in <a href="../append/auth.html">Appendix&nbsp;<span>A</span></a>.</p>
 </div>
 </div>
-<section id="a-gentle-introduction-to-auth" class="level2">
-<h2 class="anchored" data-anchor-id="a-gentle-introduction-to-auth">A gentle introduction to auth</h2>
-<p>Consider all of the services in an enterprise that require auth: email, databases, servers, social media accounts, HR systems, and more. Let’s picture each of those services as a room in a building.</p>
-<p>Now, imagine yourself as the person who’s in charge of auth. Your job is to give everyone access to the rooms they need and <strong>only</strong> the rooms they need.</p>
-<p>First, you need a way to ascertain and validate the identity of anyone trying to enter a room; to do that, you’ll need to issue and verify <em>credentials</em>. The most common computer credentials are a username and password, but they are relatively insecure, and more secure alternatives are on the rise. These include passkeys, biometrics like fingerprints and facial identification, multi-factor codes, push notifications on your phone, and ID cards. The process of verifying credentials is called <em>authentication (authn)</em>.</p>
-<p>But in an enterprise context, just knowing that someone has valid credentials is insufficient. Remember, not every person gets to access every system or every feature of every system. You’ll also need a way to check their <em>permissions</em>, which is the binary choice of whether they can take an action like accessing a service. The permissions checking process is called <em>authorization (authz)</em>. The combination of authn and authz comprise auth.</p>
-<p><img src="images/auth.png" class="img-fluid" alt="Authentication -- someone proving who they are with an ID card. Authorization -- someone asking if they can come in and a list being consulted."></p>
+<section id="gentle-introduction-to-auth" class="level2">
+<h2 class="anchored" data-anchor-id="gentle-introduction-to-auth">Gentle introduction to auth</h2>
+<p>Consider all of the services in an enterprise that require auth: email, databases, servers, social media accounts, HR systems, and more. Now, imagine yourself as the person who’s in charge of managing all that auth.</p>
+<p>I find it helpful to think of each service as a room in a building. Your job is to give everyone access to the rooms they need and <strong>only</strong> the rooms they need.</p>
+<p>First, you need to know who a person is when they try to enter a room. To do that, you’ll need to issue and verify <em>credentials</em> in the <em>authentication</em> (authn) process. The most common computer credentials are a username and password. While they are common, passwords are quite insecure because they can be stolen or cracked and many are unwisely re-used.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> More secure alternatives are on the rise and include passkeys, biometrics like fingerprints and facial identification, multi-factor codes, push notifications on your phone, and ID cards.</p>
+<p>But just knowing that someone has valid credentials is insufficient. Remember, not every person gets to access every room. You’ll also need a way to check their <em>permissions</em>, which is the binary choice of whether that person can enter that room. The permissions checking process is called <em>authorization</em> (authz). The combination of authn and authz comprise auth.</p>
+<p><img src="images/auth.png" class="lightbox img-fluid" alt="Authentication -- someone proving who they are with an ID card. Authorization -- someone asking if they can come in and a list being consulted."></p>
 <p>Many organizations start simply. They add services one at a time and allow each to use built-in functionality to issue service-specific usernames and passwords to users. This would be similar to posting a guard at each room’s door to create a unique credential for each user.</p>
-<p><img src="images/simple_auth.png" class="img-fluid" alt="A user logging into 3 different services with 3 different usernames and passwords."></p>
-<p>This quickly becomes a mess for everyone. It’s bad for users because they either need to keep many credentials straight or reuse the same ones, which is insecure. And as an IT/Admin, adding, removing, or changing permissions is cumbersome, because each system has to be changed individually.</p>
+<p><img src="images/simple_auth.png" class="lightbox img-fluid" alt="A user logging into 3 different services with 3 different usernames and passwords."></p>
+<p>This quickly becomes a mess for everyone. It’s bad for users because they either need to keep many credentials straight or re-use the same ones, which is insecure. And as an IT/Admin, adding, removing, or changing permissions is cumbersome, because each system has to be changed individually.</p>
 </section>
 <section id="centralizing-user-management-with-ldapad" class="level2">
 <h2 class="anchored" data-anchor-id="centralizing-user-management-with-ldapad">Centralizing user management with LDAP/AD</h2>
-<p>In the mid-1990s, an open protocol called <em>LDAP (Lightweight Directory Access Protocol, pronounced ell-dapp)</em> became popular. LDAP allows services to collect usernames and passwords and send them to a central LDAP database for verification. The LDAP server sends back information on the user, often including their username and groups, which the service can use to authorize the user. Microsoft implemented LDAP as a piece of software called <em>Active Directory</em> <em>(AD)</em> that became so synonymous with LDAP that the technology is often called LDAP/AD.</p>
-<p>Switching to LDAP/AD is like changing the door guarding process so the guard will radio in the user’s credentials and you’ll radio back if those credentials are valid. This is a vast improvement as having only one set of credentials makes life easier for users. We know now that all the rooms are using a similar level of security and if credentials are compromised, it’s easy to swap them out.</p>
-<p><img src="images/ldap-ad.png" class="img-fluid" alt="A user logging into different services with the same username and password with an LDAP/AD server in the back."></p>
+<p>In the mid-1990s, an open protocol called <em>LDAP</em> (Lightweight Directory Access Protocol, pronounced ell-dapp) became popular. LDAP allows services to collect usernames and passwords and send them to a central LDAP database for verification. The LDAP server sends back information on the user, often including their username and groups, which the service can use to authorize the user. Microsoft implemented LDAP as a piece of software called <em>Active Directory</em> (AD) that became so synonymous with LDAP that the technology is often called LDAP/AD.</p>
+<p>Switching to LDAP/AD is like changing the door-guarding process so the guard will radio in the user’s credentials and you’ll radio back if those credentials are valid. This is a vast improvement for users, as life is easier with only one set of credentials. Now, all the rooms are using a similar level of security. If credentials are compromised, then it’s easy to swap them out.</p>
+<p><img src="images/ldap-ad.png" class="lightbox img-fluid" alt="A user logging into different services with the same username and password with an LDAP/AD server in the back."></p>
 <p>LDAP/AD also provides a straightforward way to create Linux users with a home directory, so it’s often used in data science workbench contexts that have that requirement.</p>
 <p>LDAP/AD is being phased out in many organizations. LDAP/AD predates the rise of the cloud and SaaS services. It is usually used on-prem and has limited features relative to SSO providers.</p>
-<p>Additionally, LDAP/AD requires that the service request the user credentials and pass them along, which is a potential security risk. It also means it’s usually impossible to incorporate now-common requirements like <em>multi-factor authentication (MFA)</em>. Many organizations are getting rid of their LDAP/AD implementations and are adopting a smoother user and admin experience with cloud-friendly technologies.</p>
+<p>Additionally, LDAP/AD introduces a potential security risk, as the service has to collect and handle the user credentials when it sends them to the LDAP server. It also means it’s usually impossible to incorporate now-common requirements like <em>multi-factor authentication</em> (MFA). Many organizations are getting rid of their LDAP/AD implementations and are adopting a smoother user and admin experience with cloud-friendly technologies.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -388,14 +389,15 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>It’s worth noting that LDAP/AD isn’t an auth technology at all. It’s a type of database that happens to be particularly well-suited to managing users in an organization. So even as many organizations are switching to more modern systems, they may be wrappers around user data stored in an existing LDAP/AD system.</p>
+<p>It’s worth noting that LDAP/AD isn’t really an auth technology at all. It’s a type of database that happens to be particularly well suited to managing users in an organization. So even as many organizations are switching to more modern systems, they may be wrappers around user data stored in an existing LDAP/AD system.</p>
 </div>
 </div>
 </section>
-<section id="the-rise-of-single-sign-on-sso" class="level2">
-<h2 class="anchored" data-anchor-id="the-rise-of-single-sign-on-sso">The rise of Single Sign On (SSO)</h2>
-<p><em>Single Sign On (SSO)</em> is when you log in once to a standalone <em>identity provider</em> at the start of your workday. The identity provider gives you a secure <em>SSO token</em> that is responsible for granting access to various services you might use.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Usually, the acquisition and management of SSO tokens are hidden from the user, resulting in a pleasant experience where accessing different services throughout the day “just works”.</p>
-<p>Advantages of SSO include centrally managing authorization at the identity provider and making it easier to implement more sophisticated credentials, like MFA, because they only need to be implemented by the identity provider. For many organizations, especially enterprise ones, SSO is a requirement for any new service.</p>
+<section id="the-rise-of-single-sign-on" class="level2">
+<h2 class="anchored" data-anchor-id="the-rise-of-single-sign-on">The rise of Single Sign On</h2>
+<p><em>Single Sign On</em> (SSO) is when you log in once to a standalone <em>identity provider</em> at the start of your workday. The identity provider gives you a secure <em>SSO token</em> that is responsible for granting access to various services you might use.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>If you’re thinking of services like rooms in a building, the SSO token is like issuing users an access pass when they enter the building. Then, when they go to enter a room, they can swipe the access pass and gain entry if they’re allowed.</p>
+<p>As an auth admin, SSO is great because you only have to manage authentication and authorization in one place – at the identity provider. Additionally, implementing sophisticated credentials, like MFA, is only dependent on support from the identity provider, not the individual services. As a user, the the acquisition and management of SSO tokens are mostly hidden, so you get a pleasant “it just works” experience as you access different services throughout the day. For many organizations, SSO is a requirement for any new service.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -406,22 +408,21 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The term SSO is somewhat ill-defined. It usually means the experience described here, but sometimes just means the centralized user and credential management in an LDAP/AD system.</p>
+<p>The term SSO is somewhat ill defined. It usually means the experience described here, but sometimes it just means the centralized user and credential management in an LDAP/AD system.</p>
 </div>
 </div>
-<p>SSO is analogous to a process where users exchange their credentials for an access pass upon entering the building. Each room has a machine to send a request to the central security office, where the room can be remotely unlocked if the request is approved.</p>
-<p><img src="images/sso.png" class="img-fluid" alt="A user getting an SSO token, which they use to log in to each service."></p>
-<p>SSO isn’t a technology. It describes a user and admin experience almost always accomplished through a standalone identity provider like Okta, OneLogin, Ping, or Microsoft Entra ID.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> These providers most often use one of two technologies – <em>SAML (Security Assertion Markup Language)</em> or <em>OIDC/OAuth</em> <em>(Open Identity Connect/OAuth2.0)</em>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> Your organization’s IT/Admins will likely use OAuth for external SaaS services and may prefer SAML for services inside your organization’s firewall. The experience of using either is very similar as a user.</p>
-<p>As I write this in 2023, there’s a transition underway from on-prem systems like LDAP/AD to cloud-friendly SSO systems and the enhanced security they enable. In particular, the use of non-password credentials like passkeys and the use of OAuth to do sophisticated authorization management inside enterprises are now cutting-edge, but will be standard practices within a few years.</p>
+<p><img src="images/sso.png" class="lightbox img-fluid" alt="A user getting an SSO token, which they use to log in to each service."></p>
+<p>It’s worth being clear – SSO is not a technology. It is a user and admin experience that is accomplished through technologies like <em>SAML</em> (Security Assertion Markup Language) or <em>OIDC/OAuth</em> (Open Identity Connect/OAuth2.0).<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. Most organizations implement SSO through integration with a standalone identity provider like Okta, OneLogin, Ping, or Microsoft Entra ID.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>Over the last few years, there’s been an accelerating transition from on-prem systems like LDAP/AD to cloud-friendly SSO systems and the enhanced security they enable. In particular, the use of non-password credentials like passkeys and the use of OAuth to do sophisticated authorization management inside enterprises are quickly moving from being cutting-edge to being standard practices.</p>
 </section>
 <section id="connecting-to-data-sources" class="level2">
 <h2 class="anchored" data-anchor-id="connecting-to-data-sources">Connecting to data sources</h2>
 <p>Whether you’re working directly on a data science workbench or deploying a project to a deployment platform, you’re almost certainly connecting to a database, storage bucket, or data API along the way.</p>
 <p>It used to be the case that most data sources had simple username and password auth, so you could authenticate by just passing those credentials along to the data source, preferably via environment variables (see <a href="../sec1/1-3-data-access.html">Chapter&nbsp;<span>3</span></a>). This is still the easiest way to connect to data sources.</p>
-<p>Organizations are increasingly turning to modern technologies, like OAuth and IAM, to secure access to data sources, including databases, APIs, and cloud services. Sometimes you’ll have to manually navigate the token exchange process in your Python or R code. For example, you’ve likely acquired and dispatched an OAuth token to access a Google Sheet or a modern data API.</p>
+<p>Organizations are increasingly turning to modern technologies, like OAuth and IAM, to secure access to data sources, including databases, APIs, and cloud services. Sometimes, you’ll have to manually navigate the token exchange process in your Python or R code. For example, you’ve likely acquired and dispatched an OAuth token to access a or a modern data API.</p>
 <p>Increasingly, IT/Admins want users to have the experience of logging in and automatically accessing data sources. This situation is sometimes termed <em>passthrough auth</em> or <em>identity federation</em>. This is a great user experience and is highly secure because there are never any credentials in the data science environment, only secure cryptographic tokens.</p>
-<p>However, this experience is more complicated than it appears. From what we’ve discussed so far, it seems like you could use the SSO token that got you into the data science environment to access the data source. But that doesn’t work. Instead, each service has its own token that can’t be transformed into one for a different service for security reasons. That means “passthrough” is a misnomer, and a much more complicated exchange occurs.</p>
-<p><img src="images/passthrough_auth.png" class="img-fluid" alt="The user logs into the data science platform with an SSO token and then can automatically access the data source with the proper token."></p>
+<p>However, this experience is more complicated than it appears. From what we’ve discussed so far, it seems like you could use the SSO token that got you into the data science environment to access the data source. But it doesn’t work like that. Instead, accessing each service requires its own token that can’t be used for a different service for security reasons. So, “passthrough” is a misnomer, and a much more complicated token exchange is required.</p>
+<p><img src="images/passthrough_auth.png" class="lightbox img-fluid" alt="The user logs into the data science platform with an SSO token and then can automatically access the data source with the proper token."></p>
 <p>OAuth and IAM are quickly becoming industry standards for accessing data sources, but automated handoffs for every combination of SSO technology, data science platform, and service token aren’t fully implemented. I expect broader adoption in the next few years. For now, you’ll need to talk to your IT/Admin team about whether there’s an integration to access a data source seamlessly when you log in or if you’ll have to continue using a username and password for a little longer.</p>
 <p>Another technology you may encounter when accessing data sources is an old, but very secure, technology called <em>Kerberos</em> that uses a <em>Kerberos Ticket</em> to connect to databases and file shares. Kerberos is most often used in on-prem Windows environments with LDAP/AD.</p>
 </section>
@@ -429,20 +430,20 @@ Note
 <h2 class="anchored" data-anchor-id="managing-permissions">Managing permissions</h2>
 <p>Irrespective of the technology used, your organization will have policies about managing permissions that you must incorporate or adopt.</p>
 <p>There are meaningful differences in how LDAP, SAML, and OAuth communicate to services about permissions. That’s a level of detail beyond this chapter – more in <a href="../append/auth.html">Appendix&nbsp;<span>A</span></a> if you’re interested.</p>
-<p>If your organization has a policy that you’re going to need to be able to enforce inside the data science environment, it’s most likely a <em>Role Based Access Control (RBAC)</em> policy. In RBAC, permissions are assigned to an abstraction called a role. Users and groups are then given roles depending on their needs.</p>
+<p>If your organization has a policy that you’re going to need to be able to enforce inside the data science environment, it’s most likely a <em>Role Based Access Control</em> (RBAC) policy. In RBAC, permissions are assigned to an abstraction called a role. Users and groups are then given roles depending on their needs.</p>
 <p>For example, there might be a <code>manager</code> role that should have access to specific permissions in the HR software. This role would be applied to anyone in the <code>data-science-manager</code> group as well as the <code>data-engineering-manager</code> group.</p>
 <p>There are a few issues with RBAC. Most importantly, if there are many idiosyncratic permissions, creating tons of special roles is often simpler than figuring out how to harmonize them into a system.</p>
-<p>Many organizations haven’t reached the complexity of adopting RBAC. They often use simple <em>Access Control Lists (ACLs)</em> of who can access each service.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> ACLs have the advantage of being conceptually simple, but maintaining individual lists for each service is a lot of work with many services and users.</p>
-<p>Some organizations are moving toward even more granular techniques than RBAC and are adopting <em>Attribute Based Access Control (ABAC)</em>. In ABAC, permissions are granted based on an interaction of user-level and object-level attributes and a rules engine.</p>
-<p>For example, you can imagine three distinct attributes a user could have: <code>data-science</code>, <code>data-engineer</code>, and <code>manager</code>. You could create a rules engine that provides access to different resources based on the combinations of these attributes.</p>
-<p>Relative to RBAC, ABAC is a more robust system that allows for more granular permissions, but it’s a much bigger lift to configure initially. You’ve already encountered an ABAC system in the AWS IAM system. You were probably completely befuddled if you tried to configure anything in IAM. You can thank the power and complexity of ABAC.</p>
+<p>Many organizations don’t need the complexity and power of RBAC. They often use simple <em>Access Control Lists</em> (ACLs) of who can access each service.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> ACLs have the advantage of being conceptually simple, but maintaining individual lists for each service is a lot of work with many services and users.</p>
+<p>Some organizations are moving toward even more granular techniques than RBAC and are adopting <em>Attribute Based Access Control</em> (ABAC). In ABAC, permissions are granted based on an interaction of user-level and object-level attributes and a rules engine.</p>
+<p>For example, you can imagine three distinct attributes a user could have: <code>data-science</code>, <code>data-engineer</code>, and <code>manager</code>. You could create a rules engine that provides access to different resources based on the combinations of these attributes and attributes of the resources like, <code>dev</code> and <code>prod</code>.</p>
+<p>Relative to RBAC, ABAC allows for more granular permissions, but it’s a much bigger lift to configure initially. You’ve already encountered an ABAC system in the AWS IAM system. You were probably completely befuddled if you tried to configure anything in IAM. You can thank the power and complexity of ABAC.</p>
 </section>
 <section id="comprehension-questions" class="level2">
-<h2 class="anchored" data-anchor-id="comprehension-questions">Comprehension Questions</h2>
+<h2 class="anchored" data-anchor-id="comprehension-questions">Comprehension questions</h2>
 <ol type="1">
 <li>What is the difference between authentication and authorization?</li>
 <li>What are some advantages of token-based auth? Why are most organizations adopting it? Are there any drawbacks?</li>
-<li>For each of the following, is it a username + password method or a token method? PAM, LDAP, Kerberos, SAML, ODIC/OAuth</li>
+<li>For each of the following, is it a username + password method or a token method: PAM, LDAP, Kerberos, SAML, ODIC/OAuth?</li>
 <li>What are some different ways to manage permissions? What are the advantages and drawbacks of each?</li>
 </ol>
 
@@ -451,12 +452,11 @@ Note
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>I’m using the term token colloquially. The actual name for this token depends on the underlying technology and may be called a <em>token</em>, <em>ticket</em>, or <em>assertion</em>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Until recently, Microsoft Entra ID was called Azure Active Directory, which confusingly was for SSO, not Active Directory. That’s probably why they changed the name.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn3"><p>OIDC is an authentication standard based on the much broader OAuth authorization standard. As a user, you’ll never know the difference.</p>
-<p>There is a technology called <em>Kerberos</em> that some organizations use to accomplish SSO with LDAP/AD, though this is rare.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn4"><p>Standard Linux permissions (POSIX permissons) that were discussed in <a href="../sec2/2-3-linux.html">Chapter&nbsp;<span>9</span></a> are a special case of ACLs. ACLs allow setting individual-level permissions for any number of users and groups, as opposed to the one owner, one group, and everyone else permissions set for POSIX.</p>
-<p>Linux distros now have support for ACLs on top of the standard POSIX permissions.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>If you’re reading this book, you’re probably already aware. But you <strong>really</strong> should use a password manager to make sure your passwords are strong and that you don’t re-use them.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>I’m using the term token colloquially. The actual name for this token depends on the underlying technology and may be called a <em>token</em>, <em>ticket</em>, or <em>assertion</em>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>OIDC is an authentication standard based on the much broader OAuth authorization standard. As a user, you’ll never know the difference. There is a technology called <em>Kerberos</em> that some organizations use to accomplish SSO with LDAP/AD, though this is rare.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Until recently, Microsoft Entra ID was called Azure Active Directory, which confusingly was for SSO, not Active Directory. That’s probably why they changed the name.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Standard Linux permissions (POSIX permissions) that were discussed in <a href="../sec2/2-3-linux.html">Chapter&nbsp;<span>9</span></a> are a special case of ACLs. ACLs allow setting individual-level permissions for any number of users and groups, as opposed to the one owner, one group, and everyone else permissions set for POSIX. Linux distros now have support for ACLs on top of the standard POSIX permissions.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 
