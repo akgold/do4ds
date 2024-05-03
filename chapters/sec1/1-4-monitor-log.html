@@ -381,7 +381,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <p>It didn’t have to be this way. You can’t control whether code will fail – it will. And you can’t ensure it will happen at a convenient time. But, you can live in a world where you sleep soundly, assured that you’ll know when issues arise and can figure out why.</p>
 <p>The key to living in that world is <em>observability</em>. If your code is observable, you’ll know when something goes wrong because you have enabled <em>monitoring</em> on the system, and, when you dig in, you’ll have <em>logging</em> that lets you reconstruct the pathway to failure.</p>
 <p>Beyond getting a good night’s sleep, making your work more observable can also help demonstrate its value. Showing who is using your work and how they are using it can help decision makers understand that your team matters.</p>
-<p>There are two halves to observability – emitting the logs and metrics that reveal what’s happening inside your project and aggregating and consuming them. As a data scientist, you need to take on the task of emitting helpful logs and metrics for your code. In most cases, you’ll integrate with tooling that your organization already has for log aggregation.</p>
+<p>There are two halves to observability – emitting the logs and metrics that reveal what’s happening inside your project and aggregating and consuming them. As a data scientist, you need to take on the task of emitting helpful logs and metrics for your code. In most cases, you’ll integrate with tooling that your organization already has for log aggregation and monitoring.</p>
 <p>In this chapter we’ll get into how to make your code observable. You’ll learn how to use tooling in R and Python to see what’s happening inside your data science project. I’ll also give you some specific tips about what I always monitor or log and how to consume and use the metrics and logs your project is now emitting.</p>
 <section id="observing-correctness" class="level2">
 <h2 class="anchored" data-anchor-id="observing-correctness">Observing correctness</h2>
@@ -389,7 +389,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <p>For a data scientist, an an issue that doesn’t result in code failure but yields incorrect answers is even scarier. Data joins usually complete even if the merge quality is terrible. Model APIs will return a prediction even if the prediction is very, very bad.</p>
 <p>Checking the correctness of the numbers and figures you produce is hard because data scientists are (basically by definition) doing something novel. The solution is to use process metrics to reveal a problem before it surfaces in your results.</p>
 <p>One crucial tool is correctly architecting your project. Jobs are generally much simpler to check for correctness than presentation layers. By moving as much processing as possible out of the presentation layer and into the data and processing layers, you can make it easier to observe.</p>
-<p>Moreover, you’re already probably familiar with tools for <em>literate programming</em> like Jupyter Notebooks, Documents, and Quarto Documents.</p>
+<p>Moreover, you’re already probably familiar with tools for <em>literate programming</em> like Jupyter Notebooks, R Markdown Documents, and Quarto Documents.</p>
 <p>One of my spicier opinions is that <em>all</em> jobs should be in a literate programming format. When used well, these tools intersperse code, commentary, and output – having the output of a run weaved in with context makes it much easier to spot issues.</p>
 <p>There are a few particular things I always make sure to include in job output.</p>
 <p>The first is the quality of data joins. Based on the number of rows (or unique IDs), I know how many rows should be in the dataset after a join. Figuring out how many rows to expect can take a minute, but checking that the size of the joined data matches my expectations has avoided many gnarly issues.</p>
@@ -400,7 +400,7 @@ gtag('config', 'G-EQR1RYSHQK', { 'anonymize_ip': true});
 <h2 class="anchored" data-anchor-id="observing-operations">Observing operations</h2>
 <p>As a data scientist, you can’t only pay attention to correctness. You still need to pay attention to the operational qualities of your code like the speed and responsiveness, system resources it’s consuming, the number of users, and user interactions just before an error occurs.</p>
 <p>The first step to making your app or API observable is to add logging. You may be accustomed to just adding <code>print</code> statements throughout your code. Honestly, this is far better than nothing. But, purpose-built tooling for logging allows you to apply consistent formats within logs, emit logs in useful formats, and provide visibility into the severity of issues.</p>
-<p>There are great logging packages in both Python and R. Python’s logging package is standard and included. There is no standard logging package in R, but I recommend <code>{log4r}</code>.</p>
+<p>There are great logging packages in both Python and R. Python’s <code>{logging}</code> package is standard and included. There is no standard logging package in R, but I recommend <code>{log4r}</code>.</p>
 <p>These packages – and basically every other logging package – work very similarly. At the outset of your code, you’ll create and parameterize a <em>log session</em> that persists as long as the Python or R session. You’ll use the log session to write <em>log statements</em> about what your code does. When the log statement runs, it creates a <em>log entry</em>.</p>
 <p>For example, here’s what logging for an app starting up might look like in Python:</p>
 <div class="code-with-filename">
@@ -492,14 +492,14 @@ Note
 <p>Prometheus is an open-source monitoring tool that makes it easy to store metrics data, query it, and alert based on it. Grafana is an open source dashboarding tool that sits on top of Prometheus to do visualization of metrics. They are usually used together to do monitoring and visualization of metrics.</p>
 <p>You can run Prometheus and Grafana, but Grafana Labs provides a generous free tier for their SaaS service. This is great because you can set up their service and point your app to it. Many organizations also use DataDog, a SaaS service for log aggregation and monitoring.</p>
 <p>Because the Prometheus/Grafana stack started in the DevOps world, they are most optimized to monitor a whole server or fleet of servers; however, it’s not hard to use them to monitor things you might care about, like data quality or API response times. There is an official Prometheus client in Python and the <code>{openmetrics}</code> package in R makes registering metrics from a Plumber API or Shiny app easy.</p>
-<p>There’s a great Get Started with Grafana and Prometheus doc on the Grafana Labs website if you want to try it out.</p>
+<p>There’s a great <a href="https://grafana.com/docs/grafana/latest/getting-started/get-started-grafana-prometheus/"><em>Get Started with Grafana and Prometheus</em></a> doc on the Grafana Labs website if you want to try it out.</p>
 </section>
 </section>
 <section id="comprehension-questions" class="level2">
 <h2 class="anchored" data-anchor-id="comprehension-questions">Comprehension questions</h2>
 <ol type="1">
 <li>What is the difference between monitoring and logging? What are the two halves of the monitoring and logging process?</li>
-<li>Logging is generally good, but what are some things you should be careful <em>not to log</em>?</li>
+<li>Logging is generally good, but what are some things you should be careful not to log?</li>
 <li>At what level would you log each of the following events:
 <ol type="1">
 <li><p>Someone clicks on a particular tab in your Shiny app.</p></li>
@@ -592,7 +592,7 @@ Tip
 <section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
 <hr>
 <ol>
-<li id="fn1"><p>There are two common naming patterns with rotating log files. The first is to have individual log filenames with dates that look like <code>my-log-20221118.log</code>. The second is to keep one file that’s current and have the older ones numbered. So today’s log would be <code>my-log.log</code>, yesterday’s would be <code>my-log.log.1</code>, the day before <code>my-log.log.2</code>, etc. This second pattern works particularly well if you’re using <code>logrotate</code> with <code>log4r</code>, because then <code>log4r</code> doesn’t need to know anything about the log rotation. It’s just always writing to <code>my-log.log</code>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>There are two common naming patterns with rotating log files. The first is to have individual log filenames with dates that look like <code>my-log-20221118.log</code>. The second is to keep one file that’s current and have the older ones numbered. So today’s log would be <code>my-log.log</code>, yesterday’s would be <code>my-log.log.1</code>, the day before <code>my-log.log.2</code>, etc. This second pattern works particularly well if you’re using <code>logrotate</code> with <code>{log4r}</code>, because then <code>{log4r}</code> doesn’t need to know anything about the log rotation. It’s just always writing to <code>my-log.log</code>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn2"><p>My “App Started” message is mostly useful for the timestamp. You can feel free to put whatever you want.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
